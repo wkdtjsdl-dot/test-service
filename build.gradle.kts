@@ -52,7 +52,7 @@ dependencies {
     kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("org.postgresql:r2dbc-postgresql")
+    implementation("org.postgresql:r2dbc-postgresql")
     jooqGenerator("org.postgresql:postgresql")
     implementation("org.jooq:jooq:3.20.7")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
