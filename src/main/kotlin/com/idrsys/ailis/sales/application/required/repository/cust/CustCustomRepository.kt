@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Pageable
 
 interface CustCustomRepository {
-    fun findcustsWithSalsPicInfo(searchParam: CustSearchParam,pageable: Pageable): Flow<CustWithSalsPicInfo>
+    fun findCustsWithSalsPicInfo(searchParam: CustSearchParam,pageable: Pageable?): Flow<CustWithSalsPicInfo>
     suspend fun countCusts(param: CustSearchParam): Long
 
 }
