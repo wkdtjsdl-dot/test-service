@@ -4,7 +4,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "adminId": "TEST002",
+  "adminId": "TEST003",
   "passwd": "test1234"
 }
 
@@ -24,3 +24,8 @@ Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
+### 고객 목록 엑셀다운로드
+GET {{api-service}}/api/sals/custs/excel
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

@@ -23,7 +23,7 @@ class CustCustomRepositoryImpl(
 ) : CustCustomRepository {
 
     // TODO 작업중
-    override fun findcustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable): Flow<CustWithSalsPicInfo> {
+    override fun findCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable?): Flow<CustWithSalsPicInfo> {
         val conditions = buildConditions(searchParam)
 
         val query = dslContext.select(
@@ -38,7 +38,7 @@ class CustCustomRepositoryImpl(
             .where(conditions)
             .groupBy(*SCS_CUST_MST.fields())
             .orderBy(SCS_CUST_MST.CUST_CD.asc())
-            .let {applyPaging(it, pageable)}
+            .let {applyPaging(it, pageable ?: Pageable.unpaged())}
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
@@ -64,8 +64,8 @@ class CustCustomRepositoryImpl(
             .awaitSingle()
     }
 
-    private fun applyPaging(q: SelectLimitStep<out Record>, pageable: Pageable): Query {
-        if(pageable.isUnpaged) return q
+    private fun applyPaging(q: SelectLimitStep<out Record>, pageable: Pageable?): Query {
+        if(pageable == null || pageable.isUnpaged) return q
         else return q.limit(pageable.pageSize).offset(pageable.offset)
     }
 

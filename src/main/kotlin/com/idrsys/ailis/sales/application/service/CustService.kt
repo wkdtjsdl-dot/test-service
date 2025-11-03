@@ -5,6 +5,8 @@ import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -16,14 +18,19 @@ class CustService(
     private val custRepository: CustCustomRepository,
     private val custMapper: CustMapper
 ) : CustUseCase {
-    override suspend fun getCustPage(param: CustSearchParam, pageable: Pageable): Page<CustListResponse> {
-        val total = custRepository.countCusts(param)
+    override suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable): Page<CustListResponse> {
+        val total = custRepository.countCusts(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val custs = custRepository.findcustsWithSalsPicInfo(param, pageable).toList()
+        val custs = custRepository.findCustsWithSalsPicInfo(searchParam, pageable).toList()
         val responses = custs.map(custMapper::toListResponse)
 
         return PageImpl(responses, pageable, total)
+    }
+
+    override fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> {
+        val custs = custRepository.findCustsWithSalsPicInfo(searchParam,null)
+        return custs.map(custMapper::toListResponse)
     }
 
 }
