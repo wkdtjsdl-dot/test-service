@@ -1,14 +1,13 @@
 
 package com.idrsys.ailis.sales.adapter.repository.cust
 
-import com.idrsys.ailis.base.generated.jooq.Tables.SCS_CUST_MST
-import com.idrsys.ailis.base.generated.jooq.tables.ScsGcgnSalsPicInfo.SCS_GCGN_SALS_PIC_INFO
+import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
+import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustWithSalsPicInfo
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
 import org.jooq.*
