@@ -1,0 +1,25 @@
+package com.idrsys.ailis.sales.adapter.persistence.mapper
+
+import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
+import io.r2dbc.spi.Row
+import java.time.LocalDateTime
+
+/**
+ * Maps a [Row] to a [CustWithSalsPicInfo] object.
+ */
+internal fun Row.toCustWithSalsPicInfo(): CustWithSalsPicInfo {
+    return CustWithSalsPicInfo(
+        custCd = this.get("cust_cd", String::class.java)!!,
+        custNm = this.get("cust_nm", String::class.java)!!,
+        bzoffiCd = this.get("bzoffi_cd", String::class.java),
+        cust_div_cd = this.get("cust_div_cd", String::class.java)!!,
+        cust_type_cd = this.get("cust_type_cd", String::class.java)!!,
+        rprs_cust_cd = this.get("rprs_cust_cd", String::class.java),
+        bizrno = this.get("bizrno", String::class.java),
+        careInstNo = this.get("care_inst_no", String::class.java),
+        sapCustCd = this.get("sap_cust_cd", String::class.java),
+        salsPicInfo = this.get("sals_pic_info", String::class.java), // Reads the aggregated string
+        custStatCd = this.get("cust_stat_cd", String::class.java)!!,
+        createDtime = this.get("create_dtime", LocalDateTime::class.java)!!
+    )
+}
