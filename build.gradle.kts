@@ -119,7 +119,7 @@ jooq {
                         isIndexes = false
                     }
                     target.apply {
-                        packageName = "com.idrsys.ailis.base.generated.jooq"
+                        packageName = "com.idrsys.ailis.sales.generated.jooq"
                         directory = "src/main/generated"
                     }
                     strategy.name = "org.jooq.codegen.DefaultGeneratorStrategy"
