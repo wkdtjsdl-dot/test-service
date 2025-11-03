@@ -6,5 +6,5 @@ import org.mapstruct.Mapper
 
 @Mapper(componentModel = "spring")
 interface CustMapper {
-    fun toResponse(model: CustWithSalsPicInfo): CustListResponse
+    fun toListResponse(model: CustWithSalsPicInfo): CustListResponse
 }

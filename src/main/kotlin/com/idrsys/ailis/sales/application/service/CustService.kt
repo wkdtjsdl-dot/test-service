@@ -21,7 +21,7 @@ class CustService(
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
         val custs = custRepository.findcustsWithSalsPicInfo(param, pageable).toList()
-        val responses = custs.map(custMapper::toResponse)
+        val responses = custs.map(custMapper::toListResponse)
 
         return PageImpl(responses, pageable, total)
     }
