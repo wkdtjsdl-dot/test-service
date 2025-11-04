@@ -72,13 +72,12 @@ class CustCustomRepositoryImpl(
     private fun buildConditions(searchParam: CustSearchParam): List<Condition> {
         val conds = mutableListOf<Condition>()
 
-        searchParam.custCd?.takeIf { it.isNotBlank() }?.let {
-            conds += SCS_CUST_MST.CUST_CD.likeIgnoreCase("%$it%")
-        }
-
-        searchParam.custNm?.takeIf { it.isNotBlank() }?.let {
-            conds += SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$it%")
-        }
+        searchParam.custCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_CD.likeIgnoreCase("%$it%") }
+        searchParam.custNm?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$it%") }
+        searchParam.custStatCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_STAT_CD.eq(it) }
+        searchParam.custDivCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_DIV_CD.eq(it) }
+        searchParam.bizrno?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.BIZRNO.likeIgnoreCase("%$it%") }
+        searchParam.careInstNo?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CARE_INST_NO.likeIgnoreCase("%$it%") }
 
         return conds
     }
