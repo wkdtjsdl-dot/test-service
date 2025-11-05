@@ -20,7 +20,7 @@ class Cust(
     rprsCustCd: String?,
     custDivCd: String,
     directAcctCd: String?,
-    directAcctAcctCd: String,
+    directAcctAcctCd: String?,
     frgnAcctYn: Boolean = false,
     studyProjCustYn: Boolean = false,
     studyProjNm: String?,
@@ -115,7 +115,7 @@ class Cust(
         private set
 
     @Column("direct_acct_acct_cd")
-    var directAcctAcctCd: String = directAcctAcctCd
+    var directAcctAcctCd: String? = directAcctAcctCd
         private set
 
     @Column("frgn_acct_yn")
