@@ -76,8 +76,13 @@ class CustCustomRepositoryImpl(
         searchParam.custNm?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$it%") }
         searchParam.custStatCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_STAT_CD.eq(it) }
         searchParam.custDivCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_DIV_CD.eq(it) }
+        searchParam.asrtCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.ASRT_CD.likeIgnoreCase("%$it%") }
         searchParam.bizrno?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.BIZRNO.likeIgnoreCase("%$it%") }
         searchParam.careInstNo?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CARE_INST_NO.likeIgnoreCase("%$it%") }
+        searchParam.frgnAcctYn?.let { conds += SCS_CUST_MST.FRGN_ACCT_YN.eq(it) }
+        searchParam.studyProjCustYn?.let { conds += SCS_CUST_MST.STUDY_PROJ_CUST_YN.eq(it) }
+        searchParam.sapCustCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.SAP_CUST_CD.likeIgnoreCase("%$it%") }
+        searchParam.custTypeCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_TYPE_CD.eq(it) }
 
         return conds
     }

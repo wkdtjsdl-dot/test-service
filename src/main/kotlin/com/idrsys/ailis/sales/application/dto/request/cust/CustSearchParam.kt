@@ -5,6 +5,11 @@ data class CustSearchParam(
     val custNm: String? = null,
     val custStatCd: String? = null,
     val custDivCd: String? = null,
+    val asrtCd: String? = null,
     val bizrno:String? = null,
-    val careInstNo:String? = null
+    val careInstNo:String? = null,
+    val frgnAcctYn:Boolean? = null,
+    val studyProjCustYn:Boolean? = null,
+    val sapCustCd:String? = null,
+    val custTypeCd:String? = null
 )
