@@ -1,9 +1,11 @@
 package com.idrsys.ailis.sales.application.dto.cust
 
 data class CustSearchParam(
-    val custCd: String? = null,
-    val custNm: String? = null,
+    val custCdNm: String? = null,
+    val rprsCustCdNm: String? = null,
     val custStatCd: String? = null,
+    val regStartDt: String? = null,
+    val regEndDt: String? = null,
     val custDivCd: String? = null,
     val asrtCd: String? = null,
     val bizrno:String? = null,

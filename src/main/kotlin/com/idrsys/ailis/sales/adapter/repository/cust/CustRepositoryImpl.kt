@@ -12,6 +12,10 @@ interface CustDataRepository : CoroutineCrudRepository<Cust, String>
 class CustRepositoryImpl(
     private val custDataRepository: CustDataRepository
 ) : CustRepository {
+    override suspend fun findByCustMstId(custMstId: String): Cust? {
+        return custDataRepository.findById(custMstId)
+    }
+
     override suspend fun save(cust: Cust): Cust{
         return custDataRepository.save(cust)
     }

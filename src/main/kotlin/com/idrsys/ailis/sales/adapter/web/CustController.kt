@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
+import com.idrsys.ailis.sales.application.dto.response.CustResponse
 import com.idrsys.reactive.excel.ReactiveExcelWriter
 import io.swagger.v3.oas.annotations.Parameter
 import kotlinx.coroutines.flow.Flow
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PathVariable
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
@@ -65,6 +67,14 @@ class CustController(
             .header("Access-Control-Expose-Headers", "Content-Disposition")
             .body(excelFlow)
 
+    }
+
+    @GetMapping("/{custMstId}")
+    @Operation(summary = "findCustByCustMstId", description = "고객 상세 조회")
+    suspend fun findCustByCustMstId(
+        @PathVariable custMstId: String
+    ) : CustResponse {
+        return custUseCase.findCustByCustMstId(custMstId)
     }
 
 }

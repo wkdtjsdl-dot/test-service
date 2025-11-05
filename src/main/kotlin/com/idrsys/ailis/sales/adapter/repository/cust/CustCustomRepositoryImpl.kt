@@ -15,6 +15,7 @@ import org.jooq.impl.DSL
 import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 
 @Repository
 class CustCustomRepositoryImpl(
@@ -72,9 +73,17 @@ class CustCustomRepositoryImpl(
     private fun buildConditions(searchParam: CustSearchParam): List<Condition> {
         val conds = mutableListOf<Condition>()
 
-        searchParam.custCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_CD.likeIgnoreCase("%$it%") }
-        searchParam.custNm?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$it%") }
+        searchParam.custCdNm?.takeIf { it.isNotBlank() }?.let { keyword -> conds += SCS_CUST_MST.CUST_CD.likeIgnoreCase("%$keyword%").or(SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$keyword%")) }
+        searchParam.rprsCustCdNm?.takeIf { it.isNotBlank() }?.let { keyword -> conds += SCS_CUST_MST.RPRS_CUST_CD.likeIgnoreCase("%$keyword%").or(SCS_CUST_MST.RPRS_NM.likeIgnoreCase("%$keyword%")) }
         searchParam.custStatCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_STAT_CD.eq(it) }
+        searchParam.regStartDt?.takeIf { it.isNotBlank() }?.let {
+            val startCreateDtime = LocalDate.parse(it).atStartOfDay()
+            conds += SCS_CUST_MST.CREATE_DTIME.ge(startCreateDtime)
+        }
+        searchParam.regEndDt?.takeIf { it.isNotBlank() }?.let {
+            val endCreateDtime = LocalDate.parse(it).atTime(23, 59, 59, 999999999)
+            conds += SCS_CUST_MST.CREATE_DTIME.lessOrEqual(endCreateDtime)
+        }
         searchParam.custDivCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_DIV_CD.eq(it) }
         searchParam.asrtCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.ASRT_CD.likeIgnoreCase("%$it%") }
         searchParam.bizrno?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.BIZRNO.likeIgnoreCase("%$it%") }
