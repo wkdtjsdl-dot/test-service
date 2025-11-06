@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/custs/{custMstId}/sals-pics")
+@RequestMapping("/api/custs/sals-pics")
 @Tag(name = "GcgnSalsPicInfoController", description = "고객 영업담당자 Controller")
 class GcgnSalsPicInfoController(
     private val gcgnSalsPicInfoUseCase: GcgnSalsPicInfoUseCase,
@@ -26,18 +26,17 @@ class GcgnSalsPicInfoController(
     @GetMapping
     @Operation(summary = "getGcgnSalsPicInfoList", description = "고객 영업담당자 정보 목록")
     suspend fun getGcgnSalsPicInfoList(
-        @PathVariable custMstId: String,
+        @RequestParam custMstId: String,
         @ParameterObject @Parameter(hidden = true) searchParam: GcgnSalsPicInfoSearchParam,
         @PageableDefault(page = 0, size = 15) pageable: Pageable,
     ): Page<GcgnSalsPicInfoResponse> {
-        val updatedSearchParam = searchParam.copy(custMstId = custMstId)
-        return gcgnSalsPicInfoUseCase.getGcgnSalsPicInfoPage(updatedSearchParam, pageable)
+        return gcgnSalsPicInfoUseCase.getGcgnSalsPicInfoPage(searchParam.copy(custMstId = custMstId), pageable)
     }
 
     @GetMapping("/{gcgnSalsPicInfoId}")
     @Operation(summary = "getGcgnSalsPicInfoDetail", description = "고객 영업담당자 정보 상세 조회")
     suspend fun getGcgnSalsPicInfoDetail(
-        @PathVariable custMstId: String,
+        @RequestParam custMstId: String,
         @PathVariable gcgnSalsPicInfoId: Long,
     ): GcgnSalsPicInfoResponse {
         return gcgnSalsPicInfoUseCase.getGcgnSalsPicInfoDetail(custMstId, gcgnSalsPicInfoId)
@@ -47,23 +46,23 @@ class GcgnSalsPicInfoController(
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "createGcgnSalsPicInfo", description = "고객 영업담당자 정보 등록")
     suspend fun createGcgnSalsPicInfo(
-        @PathVariable custMstId: String,
+        @RequestParam custMstId: String,
         @RequestBody command: GcgnSalsPicInfoCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): GcgnSalsPicInfoResponse {
         val updatedCommand = command.copy(custMstId = custMstId)
-        return gcgnSalsPicInfoUseCase.createGcgnSalsPicInfo(custMstId, updatedCommand, auth.adminId)
+        return gcgnSalsPicInfoUseCase.createGcgnSalsPicInfo(updatedCommand, auth.adminId)
     }
 
     @PutMapping("/{gcgnSalsPicInfoId}")
     @Operation(summary = "updateGcgnSalsPicInfo", description = "고객 영업담당자 정보 수정")
     suspend fun updateGcgnSalsPicInfo(
-        @PathVariable custMstId: String,
+        @RequestParam custMstId: String,
         @PathVariable gcgnSalsPicInfoId: Long,
         @RequestBody command: GcgnSalsPicInfoCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): GcgnSalsPicInfoResponse {
         val updatedCommand = command.copy(custMstId = custMstId)
-        return gcgnSalsPicInfoUseCase.updateGcgnSalsPicInfo(custMstId, gcgnSalsPicInfoId, updatedCommand, auth.adminId)
+        return gcgnSalsPicInfoUseCase.updateGcgnSalsPicInfo(gcgnSalsPicInfoId, updatedCommand, auth.adminId)
     }
 }

@@ -40,10 +40,10 @@ class GcgnSalsPicInfoService(
         return gcgnSalsPicInfoMapper.toResponse(dto)
     }
 
-    override suspend fun createGcgnSalsPicInfo(custMstId: String, command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
+    override suspend fun createGcgnSalsPicInfo(command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
         val now = LocalDateTime.now()
         val gcgnSalsPicInfo = GcgnSalsPicInfo(
-            custMstId = custMstId,
+            custMstId = command.custMstId,
             applyStartDt = command.applyStartDt,
             salsTeamCd = command.salsTeamCd,
             empno = command.empno,
@@ -60,7 +60,7 @@ class GcgnSalsPicInfoService(
         return gcgnSalsPicInfoMapper.toResponse(savedGcgnSalsPicInfo)
     }
 
-    override suspend fun updateGcgnSalsPicInfo(custMstId: String, gcgnSalsPicInfoId: Long, command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
+    override suspend fun updateGcgnSalsPicInfo(gcgnSalsPicInfoId: Long, command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
         val gcgnSalsPicInfo = gcgnSalsPicInfoCustomRepository.findDomainById(gcgnSalsPicInfoId)
             ?: throw NoSuchElementException("GcgnSalsPicInfo not found with id: $gcgnSalsPicInfoId")
 

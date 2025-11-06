@@ -8,7 +8,7 @@ Accept: application/json
   "passwd": "test1234"
 }
 
-> {% 
+> {%
     client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
         .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
     );
@@ -19,17 +19,17 @@ Accept: application/json
 %}
 
 ### 고객 영업활동 목록 조회
-GET {{api-service}}/api/sals/custs/CUST001/actions?page=0&size=10
+GET {{api-service}}/api/sals/custs/actions?custMstId=CUST001&page=0&size=10
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 고객 영업활동 상세 조회
-GET {{api-service}}/api/sals/custs/CUST001/actions/1
+GET {{api-service}}/api/sals/custs/actions/1?custMstId=CUST001
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 고객 영업활동 등록
-POST {{api-service}}/api/sals/custs/CUST001/actions
+POST {{api-service}}/api/sals/custs/actions?custMstId=CUST001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -46,7 +46,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 고객 영업활동 수정
-PUT {{api-service}}/api/sals/custs/CUST001/actions/1
+PUT {{api-service}}/api/sals/custs/actions/1?custMstId=CUST001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

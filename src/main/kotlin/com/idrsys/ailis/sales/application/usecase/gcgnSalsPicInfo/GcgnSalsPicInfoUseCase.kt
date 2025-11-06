@@ -9,6 +9,6 @@ import org.springframework.data.domain.Pageable
 interface GcgnSalsPicInfoUseCase {
     suspend fun getGcgnSalsPicInfoPage(searchParam: GcgnSalsPicInfoSearchParam, pageable: Pageable): Page<GcgnSalsPicInfoResponse>
     suspend fun getGcgnSalsPicInfoDetail(custMstId: String, gcgnSalsPicInfoId: Long): GcgnSalsPicInfoResponse
-    suspend fun createGcgnSalsPicInfo(custMstId: String, command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse
-    suspend fun updateGcgnSalsPicInfo(custMstId: String, gcgnSalsPicInfoId: Long, command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse
+    suspend fun createGcgnSalsPicInfo(command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse
+    suspend fun updateGcgnSalsPicInfo(gcgnSalsPicInfoId: Long, command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse
 }

@@ -38,7 +38,7 @@ class ContractService(
         return PageImpl(contracts, pageable, total)
     }
 
-    override suspend fun getContractDetail(custMstId: String, custCntrId: Long): ContractResponse {
+    override suspend fun getContractDetail(custCntrId: Long): ContractResponse {
         val dto = contractCustomRepository.findContractById(custCntrId)
             ?: throw NoSuchElementException("Contract not found with id: $custCntrId")
 

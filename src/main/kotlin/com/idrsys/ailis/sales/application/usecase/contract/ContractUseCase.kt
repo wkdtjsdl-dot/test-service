@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable
 
 interface ContractUseCase {
     suspend fun getContractPage(searchParam: ContractSearchParam, pageable: Pageable): Page<ContractListResponse>
-    suspend fun getContractDetail(custMstId: String, custCntrId: Long): ContractResponse
+    suspend fun getContractDetail(custCntrId: Long): ContractResponse
     suspend fun createContract(custMstId: String, command: ContractCommand, adminId: String): ContractResponse
     suspend fun updateContract(custMstId: String, custCntrId: Long, command: ContractCommand, adminId: String): ContractResponse
 }

@@ -8,7 +8,7 @@ Accept: application/json
   "passwd": "test1234"
 }
 
-> {% 
+> {%
     client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
         .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
     );
@@ -19,19 +19,19 @@ Accept: application/json
 %}
 
 ### 고객 계약 목록 조회
-GET {{api-service}}/api/sals/custs/36973D74-A010-4975-A5EE-9B8697F28C51/cntrs
+GET {{api-service}}/api/sals/custs/cntrs?custMstId=36973D74-A010-4975-A5EE-9B8697F28C51
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 고객 계약 상세 조회
-GET {{api-service}}/api/sals/custs/36973D74-A010-4975-A5EE-9B8697F28C51/cntrs/1
+GET {{api-service}}/api/sals/custs/cntrs/1
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 고객 계약 등록
-POST {{api-service}}/api/sals/custs/36973D74-A010-4975-A5EE-9B8697F28C51/cntrs
+POST {{api-service}}/api/sals/custs/cntrs?custMstId=36973D74-A010-4975-A5EE-9B8697F28C51
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -52,13 +52,13 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 고객 계약 수정
-PUT {{api-service}}/api/sals/custs/36973D74-A010-4975-A5EE-9B8697F28C51/cntrs/4
+PUT {{api-service}}/api/sals/custs/cntrs/7?custMstId=36973D74-A010-4975-A5EE-9B8697F28C51
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 {
-  "custCd": "CONTRACT_CUST_CD_UPDATED2",
+  "custCd": "CONTRACT_CUST_CD_UPDATED7",
   "cntrNo": "CNTR-001-UPDATED",
   "cntrDt": "2023-01-01",
   "cntrStartDt": "2023-01-01",

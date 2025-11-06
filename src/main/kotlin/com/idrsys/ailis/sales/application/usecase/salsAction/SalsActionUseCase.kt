@@ -9,6 +9,6 @@ import org.springframework.data.domain.Pageable
 interface SalsActionUseCase {
     suspend fun getSalsActionPage(searchParam: SalsActionSearchParam, pageable: Pageable): Page<SalsActionResponse>
     suspend fun getSalsActionDetail(custMstId: String, salsActionId: Long): SalsActionResponse
-    suspend fun createSalsAction(custMstId: String, command: SalsActionCommand, adminId: String): SalsActionResponse
-    suspend fun updateSalsAction(custMstId: String, salsActionId: Long, command: SalsActionCommand, adminId: String): SalsActionResponse
+    suspend fun createSalsAction(command: SalsActionCommand, adminId: String): SalsActionResponse
+    suspend fun updateSalsAction(salsActionId: Long, command: SalsActionCommand, adminId: String): SalsActionResponse
 }

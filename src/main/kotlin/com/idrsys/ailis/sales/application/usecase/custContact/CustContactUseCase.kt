@@ -9,6 +9,6 @@ import org.springframework.data.domain.Pageable
 interface CustContactUseCase {
     suspend fun getCustContactPage(searchParam: CustContactSearchParam, pageable: Pageable): Page<CustContactResponse>
     suspend fun getCustContactDetail(custMstId: String, custContactId: Long): CustContactResponse
-    suspend fun createCustContact(custMstId: String, command: CustContactCommand, adminId: String): CustContactResponse
-    suspend fun updateCustContact(custMstId: String, custContactId: Long, command: CustContactCommand, adminId: String): CustContactResponse
+    suspend fun createCustContact(command: CustContactCommand, adminId: String): CustContactResponse
+    suspend fun updateCustContact(custContactId: Long, command: CustContactCommand, adminId: String): CustContactResponse
 }

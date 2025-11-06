@@ -40,10 +40,10 @@ class SalsActionService(
         return salsActionMapper.toResponse(dto)
     }
 
-    override suspend fun createSalsAction(custMstId: String, command: SalsActionCommand, adminId: String): SalsActionResponse {
+    override suspend fun createSalsAction(command: SalsActionCommand, adminId: String): SalsActionResponse {
         val now = LocalDateTime.now()
         val salsAction = SalsAction(
-            custMstId = custMstId,
+            custMstId = command.custMstId,
             custCd = command.custCd,
             visitDtime = command.visitDtime,
             visitPrpsCd = command.visitPrpsCd,
@@ -61,7 +61,7 @@ class SalsActionService(
         return salsActionMapper.toResponse(savedSalsAction)
     }
 
-    override suspend fun updateSalsAction(custMstId: String, salsActionId: Long, command: SalsActionCommand, adminId: String): SalsActionResponse {
+    override suspend fun updateSalsAction(salsActionId: Long, command: SalsActionCommand, adminId: String): SalsActionResponse {
         val salsAction = salsActionCustomRepository.findDomainById(salsActionId)
             ?: throw NoSuchElementException("SalsAction not found with id: $salsActionId")
 

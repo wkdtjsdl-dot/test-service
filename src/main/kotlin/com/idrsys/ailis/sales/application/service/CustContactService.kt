@@ -40,10 +40,10 @@ class CustContactService(
         return custContactMapper.toResponse(dto)
     }
 
-    override suspend fun createCustContact(custMstId: String, command: CustContactCommand, adminId: String): CustContactResponse {
+    override suspend fun createCustContact(command: CustContactCommand, adminId: String): CustContactResponse {
         val now = LocalDateTime.now()
         val custContact = CustContact(
-            custMstId = custMstId,
+            custMstId = command.custMstId,
             custCd = command.custCd,
             acctChargeNm = command.acctChargeNm,
             ofpoJbpo = command.ofpoJbpo,
@@ -62,7 +62,7 @@ class CustContactService(
         return custContactMapper.toResponse(savedCustContact)
     }
 
-    override suspend fun updateCustContact(custMstId: String, custContactId: Long, command: CustContactCommand, adminId: String): CustContactResponse {
+    override suspend fun updateCustContact(custContactId: Long, command: CustContactCommand, adminId: String): CustContactResponse {
         val custContact = custContactCustomRepository.findDomainById(custContactId)
             ?: throw NoSuchElementException("CustContact not found with id: $custContactId")
 

@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/custs/{custMstId}/contacts")
+@RequestMapping("/api/custs/contacts")
 @Tag(name = "CustContactController", description = "고객 연락처 Controller")
 class CustContactController(
     private val custContactUseCase: CustContactUseCase,
@@ -26,18 +26,17 @@ class CustContactController(
     @GetMapping
     @Operation(summary = "getCustContactList", description = "고객 연락처 정보 목록")
     suspend fun getCustContactList(
-        @PathVariable custMstId: String,
+        @RequestParam custMstId: String,
         @ParameterObject @Parameter(hidden = true) searchParam: CustContactSearchParam,
         @PageableDefault(page = 0, size = 15) pageable: Pageable,
     ): Page<CustContactResponse> {
-        val updatedSearchParam = searchParam.copy(custMstId = custMstId)
-        return custContactUseCase.getCustContactPage(updatedSearchParam, pageable)
+        return custContactUseCase.getCustContactPage(searchParam.copy(custMstId = custMstId), pageable)
     }
 
     @GetMapping("/{custContactId}")
     @Operation(summary = "getCustContactDetail", description = "고객 연락처 정보 상세 조회")
     suspend fun getCustContactDetail(
-        @PathVariable custMstId: String,
+        @RequestParam custMstId: String,
         @PathVariable custContactId: Long,
     ): CustContactResponse {
         return custContactUseCase.getCustContactDetail(custMstId, custContactId)
@@ -47,23 +46,23 @@ class CustContactController(
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "createCustContact", description = "고객 연락처 정보 등록")
     suspend fun createCustContact(
-        @PathVariable custMstId: String,
+        @RequestParam custMstId: String,
         @RequestBody command: CustContactCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): CustContactResponse {
         val updatedCommand = command.copy(custMstId = custMstId)
-        return custContactUseCase.createCustContact(custMstId, updatedCommand, auth.adminId)
+        return custContactUseCase.createCustContact(updatedCommand, auth.adminId)
     }
 
     @PutMapping("/{custContactId}")
     @Operation(summary = "updateCustContact", description = "고객 연락처 정보 수정")
     suspend fun updateCustContact(
-        @PathVariable custMstId: String,
+        @RequestParam custMstId: String,
         @PathVariable custContactId: Long,
         @RequestBody command: CustContactCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): CustContactResponse {
         val updatedCommand = command.copy(custMstId = custMstId)
-        return custContactUseCase.updateCustContact(custMstId, custContactId, updatedCommand, auth.adminId)
+        return custContactUseCase.updateCustContact(custContactId, updatedCommand, auth.adminId)
     }
 }
