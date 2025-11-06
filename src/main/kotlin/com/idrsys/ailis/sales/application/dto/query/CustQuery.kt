@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 
 // 고객관리 리스트
 data class CustWithSalsPicInfo(
+    val custMstId: String,              // 고객마스터UUID
     val custCd: String,                 // 고객코드
     val custNm: String,                 // 고객명
     val bzoffiCd: String?,              // 영업소코드
