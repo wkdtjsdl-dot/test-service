@@ -36,33 +36,28 @@ class CustContactController(
     @GetMapping("/{custContactId}")
     @Operation(summary = "getCustContactDetail", description = "고객 연락처 정보 상세 조회")
     suspend fun getCustContactDetail(
-        @RequestParam custMstId: String,
         @PathVariable custContactId: Long,
     ): CustContactResponse {
-        return custContactUseCase.getCustContactDetail(custMstId, custContactId)
+        return custContactUseCase.getCustContactDetail(custContactId)
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "createCustContact", description = "고객 연락처 정보 등록")
     suspend fun createCustContact(
-        @RequestParam custMstId: String,
         @RequestBody command: CustContactCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): CustContactResponse {
-        val updatedCommand = command.copy(custMstId = custMstId)
-        return custContactUseCase.createCustContact(updatedCommand, auth.adminId)
+        return custContactUseCase.createCustContact(command, auth.adminId)
     }
 
     @PutMapping("/{custContactId}")
     @Operation(summary = "updateCustContact", description = "고객 연락처 정보 수정")
     suspend fun updateCustContact(
-        @RequestParam custMstId: String,
         @PathVariable custContactId: Long,
         @RequestBody command: CustContactCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): CustContactResponse {
-        val updatedCommand = command.copy(custMstId = custMstId)
-        return custContactUseCase.updateCustContact(custContactId, updatedCommand, auth.adminId)
+        return custContactUseCase.updateCustContact(custContactId, command, auth.adminId)
     }
 }

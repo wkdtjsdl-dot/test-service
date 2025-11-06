@@ -34,7 +34,7 @@ class GcgnSalsPicInfoService(
         return PageImpl(gcgnSalsPicInfos, pageable, total)
     }
 
-    override suspend fun getGcgnSalsPicInfoDetail(custMstId: String, gcgnSalsPicInfoId: Long): GcgnSalsPicInfoResponse {
+    override suspend fun getGcgnSalsPicInfoDetail(gcgnSalsPicInfoId: Long): GcgnSalsPicInfoResponse {
         val dto = gcgnSalsPicInfoCustomRepository.findGcgnSalsPicInfoById(gcgnSalsPicInfoId)
             ?: throw NoSuchElementException("GcgnSalsPicInfo not found with id: $gcgnSalsPicInfoId")
         return gcgnSalsPicInfoMapper.toResponse(dto)

@@ -24,7 +24,7 @@ Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 고객 연락처 상세 조회
-GET {{api-service}}/api/sals/custs/contacts/3?custMstId=CUST001
+GET {{api-service}}/api/sals/custs/contacts/5
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 

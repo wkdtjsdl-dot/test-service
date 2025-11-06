@@ -36,33 +36,28 @@ class SalsActionController(
     @GetMapping("/{salsActionId}")
     @Operation(summary = "getSalsActionDetail", description = "고객 영업활동 정보 상세 조회")
     suspend fun getSalsActionDetail(
-        @RequestParam custMstId: String,
         @PathVariable salsActionId: Long,
     ): SalsActionResponse {
-        return salsActionUseCase.getSalsActionDetail(custMstId, salsActionId)
+        return salsActionUseCase.getSalsActionDetail(salsActionId)
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "createSalsAction", description = "고객 영업활동 정보 등록")
     suspend fun createSalsAction(
-        @RequestParam custMstId: String,
         @RequestBody command: SalsActionCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): SalsActionResponse {
-        val updatedCommand = command.copy(custMstId = custMstId)
-        return salsActionUseCase.createSalsAction( updatedCommand, auth.adminId)
+        return salsActionUseCase.createSalsAction(command, auth.adminId)
     }
 
     @PutMapping("/{salsActionId}")
     @Operation(summary = "updateSalsAction", description = "고객 영업활동 정보 수정")
     suspend fun updateSalsAction(
-        @RequestParam custMstId: String,
         @PathVariable salsActionId: Long,
         @RequestBody command: SalsActionCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): SalsActionResponse {
-        val updatedCommand = command.copy(custMstId = custMstId)
-        return salsActionUseCase.updateSalsAction(salsActionId, updatedCommand, auth.adminId)
+        return salsActionUseCase.updateSalsAction(salsActionId, command, auth.adminId)
     }
 }

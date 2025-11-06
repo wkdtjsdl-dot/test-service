@@ -24,7 +24,7 @@ Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 영업담당자 상세 조회
-GET {{api-service}}/api/sals/custs/sals-pics/6?custMstId=CUST001
+GET {{api-service}}/api/sals/custs/sals-pics/6
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 

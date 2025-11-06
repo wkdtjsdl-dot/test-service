@@ -56,7 +56,7 @@ class ContractController(
     @PutMapping("/{custCntrId}")
     @Operation(summary = "updateContract", description = "고객 계약정보 수정")
             suspend fun updateContract(
-                @RequestParam custMstId: String, // custMstId is still needed for the use case
+                @RequestParam custMstId: String,
                 @PathVariable custCntrId: Long,
                 @RequestBody command: ContractCommand,
                 @JwtAuthorization auth: AuthenticationAdmin,

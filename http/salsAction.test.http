@@ -24,7 +24,7 @@ Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 고객 영업활동 상세 조회
-GET {{api-service}}/api/sals/custs/actions/1?custMstId=CUST001
+GET {{api-service}}/api/sals/custs/actions/1
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 

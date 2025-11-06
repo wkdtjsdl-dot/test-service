@@ -36,33 +36,28 @@ class GcgnSalsPicInfoController(
     @GetMapping("/{gcgnSalsPicInfoId}")
     @Operation(summary = "getGcgnSalsPicInfoDetail", description = "고객 영업담당자 정보 상세 조회")
     suspend fun getGcgnSalsPicInfoDetail(
-        @RequestParam custMstId: String,
         @PathVariable gcgnSalsPicInfoId: Long,
     ): GcgnSalsPicInfoResponse {
-        return gcgnSalsPicInfoUseCase.getGcgnSalsPicInfoDetail(custMstId, gcgnSalsPicInfoId)
+        return gcgnSalsPicInfoUseCase.getGcgnSalsPicInfoDetail(gcgnSalsPicInfoId)
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "createGcgnSalsPicInfo", description = "고객 영업담당자 정보 등록")
     suspend fun createGcgnSalsPicInfo(
-        @RequestParam custMstId: String,
         @RequestBody command: GcgnSalsPicInfoCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): GcgnSalsPicInfoResponse {
-        val updatedCommand = command.copy(custMstId = custMstId)
-        return gcgnSalsPicInfoUseCase.createGcgnSalsPicInfo(updatedCommand, auth.adminId)
+        return gcgnSalsPicInfoUseCase.createGcgnSalsPicInfo(command, auth.adminId)
     }
 
     @PutMapping("/{gcgnSalsPicInfoId}")
     @Operation(summary = "updateGcgnSalsPicInfo", description = "고객 영업담당자 정보 수정")
     suspend fun updateGcgnSalsPicInfo(
-        @RequestParam custMstId: String,
         @PathVariable gcgnSalsPicInfoId: Long,
         @RequestBody command: GcgnSalsPicInfoCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): GcgnSalsPicInfoResponse {
-        val updatedCommand = command.copy(custMstId = custMstId)
-        return gcgnSalsPicInfoUseCase.updateGcgnSalsPicInfo(gcgnSalsPicInfoId, updatedCommand, auth.adminId)
+        return gcgnSalsPicInfoUseCase.updateGcgnSalsPicInfo(gcgnSalsPicInfoId, command, auth.adminId)
     }
 }

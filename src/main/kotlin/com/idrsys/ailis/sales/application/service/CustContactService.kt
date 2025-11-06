@@ -34,7 +34,7 @@ class CustContactService(
         return PageImpl(custContacts, pageable, total)
     }
 
-    override suspend fun getCustContactDetail(custMstId: String, custContactId: Long): CustContactResponse {
+    override suspend fun getCustContactDetail(custContactId: Long): CustContactResponse {
         val dto = custContactCustomRepository.findCustContactById(custContactId)
             ?: throw NoSuchElementException("CustContact not found with id: $custContactId")
         return custContactMapper.toResponse(dto)

@@ -34,7 +34,7 @@ class SalsActionService(
         return PageImpl(salsActions, pageable, total)
     }
 
-    override suspend fun getSalsActionDetail(custMstId: String, salsActionId: Long): SalsActionResponse {
+    override suspend fun getSalsActionDetail(salsActionId: Long): SalsActionResponse {
         val dto = salsActionCustomRepository.findSalsActionById(salsActionId)
             ?: throw NoSuchElementException("SalsAction not found with id: $salsActionId")
         return salsActionMapper.toResponse(dto)
