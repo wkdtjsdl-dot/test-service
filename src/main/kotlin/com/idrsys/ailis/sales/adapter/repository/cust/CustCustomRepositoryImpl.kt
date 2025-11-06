@@ -31,7 +31,7 @@ class CustCustomRepositoryImpl(
             SCS_CUST_MST.asterisk(),
             DSL.field("string_agg({0} || '=' || {1}, ',')", String::class.java,
                 SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD,
-                SCS_GCGN_SALS_PIC_INFO.EMPNO
+                SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID
             ).`as`("sals_pic_info")
         )
             .from(SCS_CUST_MST)
