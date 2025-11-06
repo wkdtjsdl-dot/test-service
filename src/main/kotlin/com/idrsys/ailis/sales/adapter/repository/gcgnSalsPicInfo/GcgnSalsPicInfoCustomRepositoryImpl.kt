@@ -93,7 +93,7 @@ class GcgnSalsPicInfoCustomRepositoryImpl(
             conds += SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD.eq(it)
         }
         searchParam.empno?.takeIf { it.isNotBlank() }?.let {
-            conds += SCS_GCGN_SALS_PIC_INFO.EMPNO.eq(it)
+            conds += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(it)
         }
         return conds
     }
