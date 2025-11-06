@@ -1,0 +1,63 @@
+### 관리자 Login 요청
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {% 
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+### 고객 영업활동 목록 조회
+GET {{api-service}}/api/sals/custs/CUST001/actions?page=0&size=10
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 영업활동 상세 조회
+GET {{api-service}}/api/sals/custs/CUST001/actions/1
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 영업활동 등록
+POST {{api-service}}/api/sals/custs/CUST001/actions
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "custMstId": "CUST001",
+  "custCd": "CUST001",
+  "visitDtime": "2023-10-26T10:00:00",
+  "visitPrpsCd": "MEETING",
+  "visitTargetPersonNm": "박영희",
+  "visitTargetPersonContact": "010-5555-4444",
+  "memo": "신제품 설명 및 계약 논의",
+  "useYn": true
+}
+
+### 고객 영업활동 수정
+PUT {{api-service}}/api/sals/custs/CUST001/actions/1
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "custMstId": "CUST001",
+  "custCd": "CUST001",
+  "visitDtime": "2023-10-27T11:00:00",
+  "visitPrpsCd": "FOLLOW_UP",
+  "visitTargetPersonNm": "이철수",
+  "visitTargetPersonContact": "010-3333-2222",
+  "memo": "계약 조건 최종 조율",
+  "useYn": true
+}
