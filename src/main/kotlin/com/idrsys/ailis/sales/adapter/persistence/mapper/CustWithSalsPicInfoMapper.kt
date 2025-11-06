@@ -9,6 +9,7 @@ import java.time.LocalDateTime
  */
 internal fun Row.toCustWithSalsPicInfo(): CustWithSalsPicInfo {
     return CustWithSalsPicInfo(
+        custMstId = this.get("cust_mst_id", String::class.java)!!,
         custCd = this.get("cust_cd", String::class.java)!!,
         custNm = this.get("cust_nm", String::class.java)!!,
         bzoffiCd = this.get("bzoffi_cd", String::class.java),

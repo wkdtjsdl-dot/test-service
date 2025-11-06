@@ -8,6 +8,7 @@ import kotlin.String
 
 // 고객 관리 상세
 data class CustResponse(
+    val custMstId: String?,               // 고객마스터 UUID
     val custCd: String,                 // 고객코드
     val custNm: String,                 // 고객명
     val rstOutputCustNm: String?,       // 결과지출력고객명
@@ -76,6 +77,7 @@ data class CustResponse(
 
 // 고객 관리 목록
 data class CustListResponse(
+    val custMstId: String,               // 고객마스터 UUID
     @ExcelColumn("고객코드")
     val custCd: String,                 // 고객코드
     @ExcelColumn("고객명")

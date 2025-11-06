@@ -29,3 +29,9 @@ GET {{api-service}}/api/sals/custs/excel
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 상세 조회
+GET {{api-service}}/api/sals/custs/DDF7D716-E498-4EE6-8391-F03160FA4E03
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
