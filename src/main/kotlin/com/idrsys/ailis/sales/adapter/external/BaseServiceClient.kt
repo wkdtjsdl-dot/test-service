@@ -39,8 +39,19 @@ class BaseServiceClient(
                 .uri("/api/inner/departments/{departmentId}", departmentId)
                 .retrieve()
                 .awaitBody<BaseDepartmentResponse>()
-        } catch (ex: Exception){
+        } catch (ex: Exception) {
             null
         }
+    }
+
+    suspend fun findDepartmentByDeptTypeCd(deptTypeCd: String?): BaseDepartmentResponse? {
+            return try {
+                client.get()
+                    .uri("/api/inner/departments/by-deptType", deptTypeCd)
+                    .retrieve()
+                    .awaitBody<BaseDepartmentResponse>()
+            } catch (ex: Exception){
+                null
+            }
     }
 }

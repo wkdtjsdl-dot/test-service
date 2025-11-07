@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.application.service
 
+import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
@@ -7,6 +8,8 @@ import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRep
 import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -19,14 +22,38 @@ import org.springframework.stereotype.Service
 class CustService(
     private val custCustomRepository: CustCustomRepository,
     private val custRepository: CustRepository,
-    private val custMapper: CustMapper
+    private val custMapper: CustMapper,
+    private val baseServiceClient: BaseServiceClient
 ) : CustUseCase {
     override suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable): Page<CustListResponse> {
         val total = custCustomRepository.countCusts(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
         val custs = custCustomRepository.findCustsWithSalsPicInfo(searchParam, pageable).toList()
-        val responses = custs.map(custMapper::toListResponse)
+
+        val deptIds = custs.mapNotNull { it.bzoffiCd }.filter { it.isNotBlank() }.distinct()
+
+        val deptsMap = if (deptIds.isNotEmpty()) {
+            kotlinx.coroutines.coroutineScope {
+                deptIds.map { id ->
+                    async {
+                        try {
+                            baseServiceClient.findDepartmentById(id)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                }.awaitAll().filterNotNull().associateBy { it.deptCd }
+            }
+        } else {
+            emptyMap()
+        }
+
+        val responses = custs.map { cust ->
+            val response = custMapper.toListResponse(cust)
+            val dept = deptsMap[cust.bzoffiCd]
+            response.copy(deptNm = dept?.deptNm)
+        }
 
         return PageImpl(responses, pageable, total)
     }
