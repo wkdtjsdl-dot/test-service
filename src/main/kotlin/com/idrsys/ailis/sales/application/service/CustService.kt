@@ -1,13 +1,17 @@
 package com.idrsys.ailis.sales.application.service
 
 import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
+import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
+import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
+import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
+import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +21,8 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class CustService(
@@ -67,6 +73,33 @@ class CustService(
         val cust = custRepository.findByCustMstId(custMstId)
             ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
         return custMapper.toDetailResponse(cust)
+    }
+
+    @Transactional(readOnly = false)
+    override suspend fun registerCust(command: CustRegisterCommand, creator: String): Cust {
+        val custCd = command.custCd
+
+        if (custCustomRepository.existByCustCd(custCd)) {
+            throw UserDefinedException(
+                "USER_ALREADY_EXIST", "이미 존재하는 고객코드입니다 : $custCd")
+        }
+
+        val newCust = custMapper.toDomain(command, creator, LocalDateTime.now())
+
+        return custRepository.save(newCust)
+    }
+
+    override suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust {
+        val cust = custRepository.findByCustMstId(custMstId)
+            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+
+        cust.update(command, updater)
+
+        return custRepository.save(cust)
+    }
+
+    override suspend fun isCustCdExists(custCd: String): Boolean {
+        return custCustomRepository.existByCustCd(custCd)
     }
 
 }
