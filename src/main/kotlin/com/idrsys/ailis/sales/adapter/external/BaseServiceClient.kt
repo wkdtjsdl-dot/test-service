@@ -23,7 +23,7 @@ class BaseServiceClient(
     suspend fun getUser(userId: String?): BaseUserResponse? {
         return try {
             client.get()
-                .uri("/api/inner/users/{userId}", userId)
+                .uri("/api/users/{userId}", userId)
                 .retrieve()
                 .awaitBody<BaseUserResponse>()
         } catch (ex: org.springframework.web.reactive.function.client.WebClientResponseException.NotFound) {
@@ -36,7 +36,7 @@ class BaseServiceClient(
     suspend fun findDepartmentById(departmentId: String?): BaseDepartmentResponse? {
         return try {
             client.get()
-                .uri("/api/inner/departments/{departmentId}", departmentId)
+                .uri("/api/departments/{departmentId}", departmentId)
                 .retrieve()
                 .awaitBody<BaseDepartmentResponse>()
         } catch (ex: Exception) {
