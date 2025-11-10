@@ -20,8 +20,7 @@ interface GcgnSalsPicInfoMapper {
         Mapping(target = "creator", ignore = true),
         Mapping(target = "createDtime", ignore = true),
         Mapping(target = "updater", ignore = true),
-        Mapping(target = "updateDtime", ignore = true),
-        Mapping(target = "useYn", defaultValue = "true")
+        Mapping(target = "updateDtime", ignore = true)
     )
     fun toRecord(command: GcgnSalsPicInfoCommand): ScsGcgnSalsPicInfoRecord
 

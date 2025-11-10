@@ -15,10 +15,9 @@ class GcgnSalsPicInfo(
     custMstId: String,
     applyStartDt: LocalDate,
     salsTeamCd: String,
-    empno: String,
+    empUserId: String,
     custCd: String,
     applyEndDt: LocalDate?,
-    useYn: Boolean = true,
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
@@ -41,8 +40,8 @@ class GcgnSalsPicInfo(
     var salsTeamCd: String = salsTeamCd
         private set
 
-    @Column("empno")
-    var empno: String = empno
+    @Column("emp_user_id")
+    var empUserId: String = empUserId
         private set
 
     @Column("cust_cd")
@@ -51,10 +50,6 @@ class GcgnSalsPicInfo(
 
     @Column("apply_end_dt")
     var applyEndDt: LocalDate? = applyEndDt
-        private set
-
-    @Column("use_yn")
-    var useYn: Boolean = useYn
         private set
 
     @Column("creator")
@@ -88,10 +83,9 @@ class GcgnSalsPicInfo(
         this.custMstId = command.custMstId
         this.applyStartDt = command.applyStartDt
         this.salsTeamCd = command.salsTeamCd
-        this.empno = command.empno
+        this.empUserId = command.empUserId
         this.custCd = command.custCd
         this.applyEndDt = command.applyEndDt
-        this.useYn = command.useYn
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }
