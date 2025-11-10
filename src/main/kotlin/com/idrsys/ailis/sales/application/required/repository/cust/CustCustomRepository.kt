@@ -9,4 +9,5 @@ import org.springframework.data.domain.Pageable
 interface CustCustomRepository {
     fun findCustsWithSalsPicInfo(searchParam: CustSearchParam,pageable: Pageable?): Flow<CustWithSalsPicInfo>
     suspend fun countCusts(searchParam: CustSearchParam): Long
+    suspend fun existByCustCd(custCd: String): Boolean
 }

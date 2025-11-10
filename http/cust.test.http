@@ -35,3 +35,119 @@ GET {{api-service}}/api/sals/custs/DDF7D716-E498-4EE6-8391-F03160FA4E03
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+
+### 고객 등록
+POST {{api-service}}/api/sals/custs
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "custCd": "TESTCUST004",
+  "custNm": "미니멀테스트고객",
+  "rprsCustYn": false,
+  "custDivCd": "CSDV_DA",
+  "directAcctAcctCd": "1",
+  "frgnAcctYn": false,
+  "studyProjCustYn": false,
+  "natnCd": "UN_KOR",
+  "useLangCd": "LG_KO",
+  "crcyCd": "CRCY_KRW",
+  "custStatCd": "CSST_TS",
+  "reqPossYn": true,
+  "custTypeCd": "CSTP_H",
+  "billPublYn": true,
+  "billAutoPublTargetYn": false,
+  "addtaxInclYn": true,
+  "taxDivCd": "TXDV_T",
+  "rprsAcctBillCombPublYn": false,
+  "gccStmtMethodCd": "GCSM_E",
+  "invcEmailRecpYn": false,
+  "outamtWritingYn": false,
+  "sotOutputYn": false,
+  "sotOutputQnty": 0,
+  "rstNtcnRecpYn": false
+}
+
+> {% 
+    client.global.set("custMstId", response.body.custMstId);
+    client.log("Created custMstId: " + client.global.get("custMstId"));
+%}
+
+### 고객 코드 중복 체크 (존재하는 경우)
+GET {{api-service}}/api/sals/custs/validation/TESTCUST001
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 코드 중복 체크 (존재하지 않는 경우)
+GET {{api-service}}/api/sals/custs/validation/NONEXISTENT001
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 수정
+PUT {{api-service}}/api/custs/{{custMstId}}
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "custCd": "TESTCUST001",
+  "custNm": "테스트고객(수정)",
+  "rstOutputCustNm": "테스트고객출력(수정)",
+  "rprsNm": "대표자명(수정)",
+  "rprsCustYn": false,
+  "rprsCustCd": null,
+  "custDivCd": "10",
+  "directAcctCd": null,
+  "directAcctAcctCd": "1",
+  "frgnAcctYn": false,
+  "studyProjCustYn": false,
+  "studyProjNm": null,
+  "natnCd": "KR",
+  "useLangCd": "ko",
+  "crcyCd": "KRW",
+  "custStatCd": "20",
+  "reqPossYn": true,
+  "custTypeCd": "10",
+  "custGradeCd": null,
+  "branchCd": null,
+  "bzoffiCd": null,
+  "bzoffiPicId": null,
+  "asrtCd": null,
+  "zipcd": "12345",
+  "addr1": "서울시 테스트구(수정)",
+  "addr2": "테스트로 123",
+  "hpUrl": null,
+  "careInstNo": null,
+  "careInstId": null,
+  "bizrno": "123-45-67890",
+  "corpNo": null,
+  "bzse": "서비스",
+  "bztp": "소프트웨어",
+  "biznm": "테스트사업체",
+  "bizregRprsNm": "대표자명(수정)",
+  "openDt": "2023-01-01",
+  "billPublYn": true,
+  "billAutoPublTargetYn": false,
+  "addtaxInclYn": true,
+  "taxDivCd": "10",
+  "billPic": null,
+  "billPicEmaiAddr": null,
+  "billPicTelno": null,
+  "billPublDt": null,
+  "rprsAcctBillCombPublYn": false,
+  "payRtday": null,
+  "payPlanDt": null,
+  "payMethodCd": null,
+  "gccStmtMethodCd": "10",
+  "sapCustCd": null,
+  "spcmPickupMethodCd": null,
+  "gcgPickupPicEmpNo": null,
+  "truncUnitCd": null,
+  "invcEmailRecpYn": false,
+  "invcRecpEmailAddr": null,
+  "outamtWritingYn": false,
+  "sotOutputYn": false,
+  "sotOutputQnty": 0,
+  "rstNtcnRecpYn": false,
+  "rstNtcnRecpEmailAddr": null
+}

@@ -3,12 +3,15 @@ package com.idrsys.ailis.sales.infrastructure.config
 import com.idrsys.common.kor2dbc.config.EnableCommOnMstSlvDataSource
 import com.idrsys.common.kor2dbc.datasource.CustomDatabaseProperties
 import com.idrsys.common.kor2dbc.datasource.DatabaseProperties
+import com.idrsys.common.kor2dbc.generator.UuidIdGeneratorCallback
 
 import com.idrsys.reactive.excel.EnableReactiveExcel
+import org.apache.poi.ss.formula.functions.T
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.data.r2dbc.mapping.event.BeforeSaveCallback
 
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -42,4 +45,7 @@ class BaseConfig {
 
         return DelegatingPasswordEncoder(encodingId, encoders)
     }
+
+    @Bean
+    fun beforeSaveCallback(): BeforeSaveCallback<T> = UuidIdGeneratorCallback() // UUID 저장시 필요
 }

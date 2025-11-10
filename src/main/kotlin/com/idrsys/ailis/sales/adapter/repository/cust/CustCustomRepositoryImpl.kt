@@ -97,4 +97,20 @@ class CustCustomRepositoryImpl(
         return conds
     }
 
+
+    override suspend fun existByCustCd(custCd: String): Boolean {
+        val query = dslContext.selectCount()
+            .from(SCS_CUST_MST)
+            .where(SCS_CUST_MST.CUST_CD.eq(custCd))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        val count = sql
+            .map { row, _ -> row.get(0, java.lang.Long::class.java)!!.toLong() }
+            .one()
+            .awaitSingle()
+
+        return count > 0
+    }
 }
