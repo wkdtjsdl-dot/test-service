@@ -84,6 +84,11 @@ GET {{api-service}}/api/sals/custs/validation/NONEXISTENT001
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
+### 고객 코드 자동완성조회
+GET {{api-service}}/api/sals/custs/search-custCdNm?custCdNm=A000
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
 ### 고객 수정
 PUT {{api-service}}/api/custs/{{custMstId}}
 Content-Type: application/json

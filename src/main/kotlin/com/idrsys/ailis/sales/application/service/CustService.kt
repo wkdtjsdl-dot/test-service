@@ -5,6 +5,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
+import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
@@ -65,7 +66,7 @@ class CustService(
     }
 
     override fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> {
-        val custs = custCustomRepository.findCustsWithSalsPicInfo(searchParam,null)
+        val custs = custCustomRepository.findCustsWithSalsPicInfo(searchParam,Pageable.unpaged())
         return custs.map(custMapper::toListResponse)
     }
 
@@ -100,6 +101,11 @@ class CustService(
 
     override suspend fun isCustCdExists(custCd: String): Boolean {
         return custCustomRepository.existByCustCd(custCd)
+    }
+
+    override fun getAutoCompleteCustCdNm(searchParam: CustSearchParam): Flow<CustCdNmAutoCompleteResponse> {
+        val autoCdNm = custCustomRepository.findAutoCompleteCustCdNm(searchParam)
+        return autoCdNm.map(custMapper::toAutoCompleteResponse)
     }
 
 }

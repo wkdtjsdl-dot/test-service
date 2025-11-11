@@ -4,11 +4,14 @@ package com.idrsys.ailis.sales.adapter.repository.cust
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_CNTR
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustWithSalsPicInfo
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
+import com.idrsys.ailis.sales.application.dto.query.CustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
 import org.jooq.*
@@ -17,6 +20,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
+import io.r2dbc.spi.Row
 
 @Repository
 class CustCustomRepositoryImpl(
@@ -25,7 +29,7 @@ class CustCustomRepositoryImpl(
 ) : CustCustomRepository {
 
     // TODO 작업중
-    override fun findCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable?): Flow<CustWithSalsPicInfo> {
+    override fun findCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable): Flow<CustWithSalsPicInfo> {
         val conditions = buildConditions(searchParam)
 
         val needsContractJoin = !searchParam.cntrStartDt.isNullOrBlank() ||
@@ -165,5 +169,26 @@ class CustCustomRepositoryImpl(
             .awaitSingle()
 
         return count > 0
+    }
+
+    override fun findAutoCompleteCustCdNm(searchParam: CustSearchParam): Flow<CustCdNmAutoCompleteInfo> {
+        val keyword = searchParam.custCdNm?.takeIf { it.isNotBlank() } ?: return flowOf()
+
+        val query = dslContext.select(
+            SCS_CUST_MST.CUST_CD,
+            SCS_CUST_MST.CUST_NM
+        )
+            .from(SCS_CUST_MST)
+            .where(SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword)))
+            .orderBy(SCS_CUST_MST.CUST_CD.asc())
+            .limit(20)
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustCdNmAutoCompleteInfo() }
+            .all()
+            .asFlow()
     }
 }
