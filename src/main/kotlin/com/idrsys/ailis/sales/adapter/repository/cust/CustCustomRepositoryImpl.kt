@@ -1,13 +1,17 @@
 
 package com.idrsys.ailis.sales.adapter.repository.cust
 
+import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_CNTR
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustWithSalsPicInfo
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
+import com.idrsys.ailis.sales.application.dto.query.CustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
 import org.jooq.*
@@ -16,6 +20,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
+import io.r2dbc.spi.Row
 
 @Repository
 class CustCustomRepositoryImpl(
@@ -24,10 +29,16 @@ class CustCustomRepositoryImpl(
 ) : CustCustomRepository {
 
     // TODO 작업중
-    override fun findCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable?): Flow<CustWithSalsPicInfo> {
+    override fun findCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable): Flow<CustWithSalsPicInfo> {
         val conditions = buildConditions(searchParam)
 
-        val query = dslContext.select(
+        val needsContractJoin = !searchParam.cntrStartDt.isNullOrBlank() ||
+                !searchParam.cntrEndDt.isNullOrBlank() ||
+                !searchParam.cntrEndStartDt.isNullOrBlank() ||
+                !searchParam.cntrEndEndDt.isNullOrBlank() ||
+                !searchParam.recntrMonth.isNullOrBlank()
+
+        var queryPart = dslContext.select(
             SCS_CUST_MST.asterisk(),
             DSL.field("string_agg({0} || '=' || {1}, ',')", String::class.java,
                 SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD,
@@ -36,6 +47,13 @@ class CustCustomRepositoryImpl(
         )
             .from(SCS_CUST_MST)
             .leftJoin(SCS_GCGN_SALS_PIC_INFO).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID))
+
+        if (needsContractJoin) {
+            queryPart = queryPart.leftJoin(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
+                .and(SCS_CUST_CNTR.USE_YN.isTrue)
+        }
+
+        val query = queryPart
             .where(conditions)
             .groupBy(*SCS_CUST_MST.fields())
             .orderBy(SCS_CUST_MST.CUST_CD.asc())
@@ -52,9 +70,24 @@ class CustCustomRepositoryImpl(
 
     override suspend fun countCusts(searchParam: CustSearchParam): Long {
         val conditions = buildConditions(searchParam)
-        val query = dslContext.selectCount()
-            .from(SCS_CUST_MST)
-            .where(conditions)
+
+        val needsContractJoin = !searchParam.cntrStartDt.isNullOrBlank() ||
+                !searchParam.cntrEndDt.isNullOrBlank() ||
+                !searchParam.cntrEndStartDt.isNullOrBlank() ||
+                !searchParam.cntrEndEndDt.isNullOrBlank() ||
+                !searchParam.recntrMonth.isNullOrBlank()
+
+        var queryPart = if (needsContractJoin) {
+            dslContext.select(DSL.countDistinct(SCS_CUST_MST.CUST_MST_ID))
+        } else {
+            dslContext.selectCount()
+        }.from(SCS_CUST_MST)
+
+        if (needsContractJoin) {
+            queryPart = queryPart.leftJoin(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
+        }
+
+        val query = queryPart.where(conditions)
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
@@ -94,6 +127,30 @@ class CustCustomRepositoryImpl(
         searchParam.sapCustCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.SAP_CUST_CD.likeIgnoreCase("%$it%") }
         searchParam.custTypeCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_TYPE_CD.eq(it) }
 
+        // Contract Date filtering
+        searchParam.cntrStartDt?.takeIf { it.isNotBlank() }?.let {
+            val startDate = LocalDate.parse(it)
+            conds += SCS_CUST_CNTR.CNTR_START_DT.ge(startDate)
+        }
+        searchParam.cntrEndDt?.takeIf { it.isNotBlank() }?.let {
+            val endDate = LocalDate.parse(it)
+            conds += SCS_CUST_CNTR.CNTR_START_DT.le(endDate)
+        }
+
+        // Contract End Date filtering
+        searchParam.cntrEndStartDt?.takeIf { it.isNotBlank() }?.let {
+            val startDate = LocalDate.parse(it)
+            conds += SCS_CUST_CNTR.CNTR_END_DT.ge(startDate)
+        }
+        searchParam.cntrEndEndDt?.takeIf { it.isNotBlank() }?.let {
+            val endDate = LocalDate.parse(it)
+            conds += SCS_CUST_CNTR.CNTR_END_DT.le(endDate)
+        }
+
+        searchParam.recntrMonth?.takeIf { it.isNotBlank() }?.let {
+            conds += SCS_CUST_CNTR.RECNTR_MONTH.eq(it)
+        }
+
         return conds
     }
 
@@ -112,5 +169,26 @@ class CustCustomRepositoryImpl(
             .awaitSingle()
 
         return count > 0
+    }
+
+    override fun findAutoCompleteCustCdNm(searchParam: CustSearchParam): Flow<CustCdNmAutoCompleteInfo> {
+        val keyword = searchParam.custCdNm?.takeIf { it.isNotBlank() } ?: return flowOf()
+
+        val query = dslContext.select(
+            SCS_CUST_MST.CUST_CD,
+            SCS_CUST_MST.CUST_NM
+        )
+            .from(SCS_CUST_MST)
+            .where(SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword)))
+            .orderBy(SCS_CUST_MST.CUST_CD.asc())
+            .limit(20)
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustCdNmAutoCompleteInfo() }
+            .all()
+            .asFlow()
     }
 }
