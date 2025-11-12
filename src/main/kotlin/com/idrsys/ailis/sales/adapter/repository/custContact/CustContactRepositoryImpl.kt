@@ -19,4 +19,8 @@ class CustContactRepositoryImpl(
     override suspend fun findById(id: Long): CustContact? {
         return custContactDataRepository.findById(id)
     }
+
+    override suspend fun deleteById(id: Long) {
+        custContactDataRepository.deleteById(id)
+    }
 }

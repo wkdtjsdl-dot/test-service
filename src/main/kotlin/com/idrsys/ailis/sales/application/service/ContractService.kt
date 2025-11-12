@@ -30,10 +30,10 @@ class ContractService(
         val total = contractCustomRepository.countContracts(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val contracts = contractCustomRepository.findContracts(searchParam, pageable).map { dto ->
+        val contracts = contractCustomRepository.findContracts(searchParam, pageable).map({ dto ->
             val cntrPicNm = dto.cntrPicId?.let { baseServiceClient.getUser(it)?.userNm }
             contractMapper.toListResponse(dto.copy(cntrPicNm = cntrPicNm))
-        }.toList()
+        }).toList()
 
         return PageImpl(contracts, pageable, total)
     }

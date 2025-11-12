@@ -11,4 +11,5 @@ interface SalsActionUseCase {
     suspend fun getSalsActionDetail(salsActionId: Long): SalsActionResponse
     suspend fun createSalsAction(command: SalsActionCommand, adminId: String): SalsActionResponse
     suspend fun updateSalsAction(salsActionId: Long, command: SalsActionCommand, adminId: String): SalsActionResponse
+    suspend fun deleteSalsAction(salsActionId: Long)
 }

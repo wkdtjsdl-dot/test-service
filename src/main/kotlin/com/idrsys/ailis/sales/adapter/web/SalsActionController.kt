@@ -60,4 +60,13 @@ class SalsActionController(
     ): SalsActionResponse {
         return salsActionUseCase.updateSalsAction(salsActionId, command, auth.adminId)
     }
+
+    @DeleteMapping("/{salsActionId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "deleteSalsAction", description = "고객 영업활동 정보 삭제")
+    suspend fun deleteSalsAction(
+        @PathVariable salsActionId: Long,
+    ) {
+        salsActionUseCase.deleteSalsAction(salsActionId)
+    }
 }

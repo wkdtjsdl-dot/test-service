@@ -19,4 +19,8 @@ class GcgnSalsPicInfoRepositoryImpl(
     override suspend fun findById(id: Long): GcgnSalsPicInfo? {
         return gcgnSalsPicInfoDataRepository.findById(id)
     }
+
+    override suspend fun deleteById(id: Long) {
+        gcgnSalsPicInfoDataRepository.deleteById(id)
+    }
 }

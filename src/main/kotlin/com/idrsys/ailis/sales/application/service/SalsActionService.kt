@@ -70,4 +70,8 @@ class SalsActionService(
         val updatedSalsAction = salsActionRepository.save(salsAction)
         return salsActionMapper.toResponse(updatedSalsAction)
     }
+
+    override suspend fun deleteSalsAction(salsActionId: Long) {
+        salsActionRepository.deleteById(salsActionId)
+    }
 }

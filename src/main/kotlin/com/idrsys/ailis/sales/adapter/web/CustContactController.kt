@@ -60,4 +60,13 @@ class CustContactController(
     ): CustContactResponse {
         return custContactUseCase.updateCustContact(custContactId, command, auth.adminId)
     }
+
+    @DeleteMapping("/{custContactId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "deleteCustContact", description = "고객 연락처 정보 삭제")
+    suspend fun deleteCustContact(
+        @PathVariable custContactId: Long,
+    ) {
+        custContactUseCase.deleteCustContact(custContactId)
+    }
 }

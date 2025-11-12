@@ -6,6 +6,7 @@ import com.idrsys.ailis.sales.application.dto.response.GcgnSalsPicInfoResponse
 import com.idrsys.ailis.sales.application.required.repository.gcgnSalsPicInfo.GcgnSalsPicInfoCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.gcgnSalsPicInfo.GcgnSalsPicInfoRepository
 import com.idrsys.ailis.sales.application.usecase.gcgnSalsPicInfo.GcgnSalsPicInfoUseCase
+import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
 import com.idrsys.ailis.sales.domain.model.GcgnSalsPicInfo
 import com.idrsys.ailis.sales.shared.mapper.GcgnSalsPicInfoMapper
 import kotlinx.coroutines.flow.map
@@ -21,14 +22,16 @@ class GcgnSalsPicInfoService(
     private val gcgnSalsPicInfoRepository: GcgnSalsPicInfoRepository,
     private val gcgnSalsPicInfoCustomRepository: GcgnSalsPicInfoCustomRepository,
     private val gcgnSalsPicInfoMapper: GcgnSalsPicInfoMapper,
+    private val baseServiceClient: BaseServiceClient,
 ) : GcgnSalsPicInfoUseCase {
 
     override suspend fun getGcgnSalsPicInfoPage(searchParam: GcgnSalsPicInfoSearchParam, pageable: Pageable): Page<GcgnSalsPicInfoResponse> {
         val total = gcgnSalsPicInfoCustomRepository.countGcgnSalsPicInfos(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val gcgnSalsPicInfos = gcgnSalsPicInfoCustomRepository.findGcgnSalsPicInfos(searchParam, pageable).map {
-            gcgnSalsPicInfoMapper.toResponse(it)
+        val gcgnSalsPicInfos = gcgnSalsPicInfoCustomRepository.findGcgnSalsPicInfos(searchParam, pageable).map { dto ->
+            val empNm = dto.empUserId.let { baseServiceClient.getUser(it)?.userNm }
+            gcgnSalsPicInfoMapper.toResponse(dto.copy(empNm = empNm))
         }.toList()
 
         return PageImpl(gcgnSalsPicInfos, pageable, total)
@@ -37,7 +40,9 @@ class GcgnSalsPicInfoService(
     override suspend fun getGcgnSalsPicInfoDetail(gcgnSalsPicInfoId: Long): GcgnSalsPicInfoResponse {
         val dto = gcgnSalsPicInfoCustomRepository.findGcgnSalsPicInfoById(gcgnSalsPicInfoId)
             ?: throw NoSuchElementException("GcgnSalsPicInfo not found with id: $gcgnSalsPicInfoId")
-        return gcgnSalsPicInfoMapper.toResponse(dto)
+
+        val empNm = dto.empUserId.let { baseServiceClient.getUser(it)?.userNm }
+        return gcgnSalsPicInfoMapper.toResponse(dto.copy(empNm = empNm))
     }
 
     override suspend fun createGcgnSalsPicInfo(command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
@@ -56,7 +61,9 @@ class GcgnSalsPicInfoService(
         ).apply { setAsNew() }
 
         val savedGcgnSalsPicInfo = gcgnSalsPicInfoRepository.save(gcgnSalsPicInfo)
-        return gcgnSalsPicInfoMapper.toResponse(savedGcgnSalsPicInfo)
+        val response = gcgnSalsPicInfoMapper.toResponse(savedGcgnSalsPicInfo)
+        val empNm = response.empUserId.let { baseServiceClient.getUser(it)?.userNm }
+        return response.copy(empNm = empNm)
     }
 
     override suspend fun updateGcgnSalsPicInfo(gcgnSalsPicInfoId: Long, command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
@@ -66,6 +73,12 @@ class GcgnSalsPicInfoService(
         gcgnSalsPicInfo.update(command, adminId)
 
         val updatedGcgnSalsPicInfo = gcgnSalsPicInfoRepository.save(gcgnSalsPicInfo)
-        return gcgnSalsPicInfoMapper.toResponse(updatedGcgnSalsPicInfo)
+        val response = gcgnSalsPicInfoMapper.toResponse(updatedGcgnSalsPicInfo)
+        val empNm = response.empUserId.let { baseServiceClient.getUser(it)?.userNm }
+        return response.copy(empNm = empNm)
+    }
+
+    override suspend fun deleteGcgnSalsPicInfo(gcgnSalsPicInfoId: Long) {
+        gcgnSalsPicInfoRepository.deleteById(gcgnSalsPicInfoId)
     }
 }
