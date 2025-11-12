@@ -1,11 +1,12 @@
 package com.idrsys.ailis.sales.application.service
 
 import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
+import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
-import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
+import com.idrsys.ailis.sales.application.dto.response.CustAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
@@ -103,9 +104,9 @@ class CustService(
         return custCustomRepository.existByCustCd(custCd)
     }
 
-    override fun getAutoCompleteCustCdNm(searchParam: CustSearchParam): Flow<CustCdNmAutoCompleteResponse> {
-        val autoCdNm = custCustomRepository.findAutoCompleteCustCdNm(searchParam)
-        return autoCdNm.map(custMapper::toAutoCompleteResponse)
+    override fun getCustAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustAutoCompleteResponse> {
+        val autoCompleteList = custCustomRepository.findCustAutoComplete(searchParam)
+        return autoCompleteList.map(custMapper::toAutoCompleteResponse)
     }
 
 }

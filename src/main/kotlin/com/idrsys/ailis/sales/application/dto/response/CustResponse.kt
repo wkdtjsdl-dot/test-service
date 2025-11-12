@@ -106,9 +106,11 @@ data class CustListResponse(
 
 )
 
-data class CustCdNmAutoCompleteResponse(
+data class CustAutoCompleteResponse(
     val custCd: String?,
     val custNm: String?,
+    val rprsCustCd: String?,
+    val rprsNm: String?
 )
 
 data class salsPicInfoResponse(

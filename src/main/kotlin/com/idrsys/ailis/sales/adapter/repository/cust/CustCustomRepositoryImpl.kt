@@ -6,8 +6,9 @@ import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustWithSalsPicInfo
+import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
-import com.idrsys.ailis.sales.application.dto.query.CustCdNmAutoCompleteInfo
+import com.idrsys.ailis.sales.application.dto.query.CustAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import kotlinx.coroutines.flow.Flow
@@ -20,7 +21,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
-import io.r2dbc.spi.Row
 
 @Repository
 class CustCustomRepositoryImpl(
@@ -108,7 +108,9 @@ class CustCustomRepositoryImpl(
 
         searchParam.bzoffiCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.BZOFFI_CD.eq(it) }
         searchParam.custCdNm?.takeIf { it.isNotBlank() }?.let { keyword -> conds += SCS_CUST_MST.CUST_CD.likeIgnoreCase("%$keyword%").or(SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$keyword%")) }
+        searchParam.custCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_CD.eq(it) } // 자동완성 선택시
         searchParam.rprsCustCdNm?.takeIf { it.isNotBlank() }?.let { keyword -> conds += SCS_CUST_MST.RPRS_CUST_CD.likeIgnoreCase("%$keyword%").or(SCS_CUST_MST.RPRS_NM.likeIgnoreCase("%$keyword%")) }
+        searchParam.rprsCustCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.RPRS_CUST_CD.eq(it) }
         searchParam.custStatCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_STAT_CD.eq(it) }
         searchParam.regStartDt?.takeIf { it.isNotBlank() }?.let {
             val startCreateDtime = LocalDate.parse(it).atStartOfDay()
@@ -171,17 +173,48 @@ class CustCustomRepositoryImpl(
         return count > 0
     }
 
-    override fun findAutoCompleteCustCdNm(searchParam: CustSearchParam): Flow<CustCdNmAutoCompleteInfo> {
-        val keyword = searchParam.custCdNm?.takeIf { it.isNotBlank() } ?: return flowOf()
+    override fun findCustAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<CustAutoCompleteInfo> {
+        val conditions = mutableListOf<Condition>()
+        var keyword: String? = null
+        var selectFields: Array<out SelectField<*>>
+        var groupByFields: Array<out GroupField>
+        var orderByField: OrderField<*>
 
-        val query = dslContext.select(
-            SCS_CUST_MST.CUST_CD,
-            SCS_CUST_MST.CUST_NM
-        )
+        val custCdNmSearch = searchParam.custCdNm?.takeIf { it.isNotBlank() }
+        val rprsCustCdNmSearch = searchParam.rprsCustCdNm?.takeIf { it.isNotBlank() }
+
+        if (custCdNmSearch != null) {
+            keyword = custCdNmSearch
+            conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
+            selectFields = arrayOf(
+                SCS_CUST_MST.CUST_CD,
+                SCS_CUST_MST.CUST_NM,
+                DSL.max(SCS_CUST_MST.RPRS_CUST_CD).`as`(SCS_CUST_MST.RPRS_CUST_CD),
+                DSL.max(SCS_CUST_MST.RPRS_NM).`as`(SCS_CUST_MST.RPRS_NM)
+            )
+            groupByFields = arrayOf(SCS_CUST_MST.CUST_CD, SCS_CUST_MST.CUST_NM)
+            orderByField = SCS_CUST_MST.CUST_CD.asc()
+        } else if (rprsCustCdNmSearch != null) {
+            keyword = rprsCustCdNmSearch
+            conditions += SCS_CUST_MST.RPRS_CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.RPRS_NM.containsIgnoreCase(keyword))
+            selectFields = arrayOf(
+                DSL.max(SCS_CUST_MST.CUST_CD).`as`(SCS_CUST_MST.CUST_CD),
+                DSL.max(SCS_CUST_MST.CUST_NM).`as`(SCS_CUST_MST.CUST_NM),
+                SCS_CUST_MST.RPRS_CUST_CD,
+                SCS_CUST_MST.RPRS_NM
+            )
+            groupByFields = arrayOf(SCS_CUST_MST.RPRS_CUST_CD, SCS_CUST_MST.RPRS_NM)
+            orderByField = SCS_CUST_MST.RPRS_CUST_CD.asc()
+        } else {
+            return flowOf()
+        }
+
+        val query = dslContext.select(*selectFields)
             .from(SCS_CUST_MST)
-            .where(SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword)))
-            .orderBy(SCS_CUST_MST.CUST_CD.asc())
-            .limit(20)
+            .where(conditions)
+            .groupBy(*groupByFields)
+            .orderBy(orderByField)
+            //.limit(20)
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
