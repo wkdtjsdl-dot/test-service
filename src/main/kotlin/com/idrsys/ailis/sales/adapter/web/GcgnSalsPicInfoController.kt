@@ -60,4 +60,13 @@ class GcgnSalsPicInfoController(
     ): GcgnSalsPicInfoResponse {
         return gcgnSalsPicInfoUseCase.updateGcgnSalsPicInfo(gcgnSalsPicInfoId, command, auth.adminId)
     }
+
+    @DeleteMapping("/{gcgnSalsPicInfoId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "deleteGcgnSalsPicInfo", description = "고객 영업담당자 정보 삭제")
+    suspend fun deleteGcgnSalsPicInfo(
+        @PathVariable gcgnSalsPicInfoId: Long,
+    ) {
+        gcgnSalsPicInfoUseCase.deleteGcgnSalsPicInfo(gcgnSalsPicInfoId)
+    }
 }

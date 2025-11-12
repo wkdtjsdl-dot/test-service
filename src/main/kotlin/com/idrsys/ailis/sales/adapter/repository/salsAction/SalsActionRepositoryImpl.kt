@@ -19,4 +19,8 @@ class SalsActionRepositoryImpl(
     override suspend fun findById(id: Long): SalsAction? {
         return salsActionDataRepository.findById(id)
     }
+
+    override suspend fun deleteById(id: Long) {
+        salsActionDataRepository.deleteById(id)
+    }
 }

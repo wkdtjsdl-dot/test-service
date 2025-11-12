@@ -11,4 +11,5 @@ interface CustContactUseCase {
     suspend fun getCustContactDetail(custContactId: Long): CustContactResponse
     suspend fun createCustContact(command: CustContactCommand, adminId: String): CustContactResponse
     suspend fun updateCustContact(custContactId: Long, command: CustContactCommand, adminId: String): CustContactResponse
+    suspend fun deleteCustContact(custContactId: Long)
 }

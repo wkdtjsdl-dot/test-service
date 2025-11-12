@@ -11,4 +11,5 @@ interface GcgnSalsPicInfoUseCase {
     suspend fun getGcgnSalsPicInfoDetail(gcgnSalsPicInfoId: Long): GcgnSalsPicInfoResponse
     suspend fun createGcgnSalsPicInfo(command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse
     suspend fun updateGcgnSalsPicInfo(gcgnSalsPicInfoId: Long, command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse
+    suspend fun deleteGcgnSalsPicInfo(gcgnSalsPicInfoId: Long)
 }
