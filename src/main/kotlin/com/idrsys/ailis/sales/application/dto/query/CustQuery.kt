@@ -19,9 +19,11 @@ data class CustWithSalsPicInfo(
     val createDtime: LocalDateTime      // 등록일시
 )
 
-data class CustCdNmAutoCompleteInfo(
-    val custCd: String,
-    val custNm: String,
+data class CustAutoCompleteInfo(
+    val custCd: String?,
+    val custNm: String?,
+    val rprsCustCd: String?,
+    val rprsNm: String?
 )
 
 data class PicInfo (

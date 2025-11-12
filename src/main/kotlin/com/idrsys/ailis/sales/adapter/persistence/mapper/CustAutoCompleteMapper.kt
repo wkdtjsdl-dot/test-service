@@ -1,11 +1,13 @@
 package com.idrsys.ailis.sales.adapter.persistence.mapper
 
-import com.idrsys.ailis.sales.application.dto.query.CustCdNmAutoCompleteInfo
+import com.idrsys.ailis.sales.application.dto.query.CustAutoCompleteInfo
 import io.r2dbc.spi.Row
 
-fun Row.toCustCdNmAutoCompleteInfo(): CustCdNmAutoCompleteInfo {
-    return CustCdNmAutoCompleteInfo(
-        custCd = this.get("cust_cd", String::class.java)!!,
-        custNm = this.get("cust_nm", String::class.java)!!
+fun Row.toCustCdNmAutoCompleteInfo(): CustAutoCompleteInfo {
+    return CustAutoCompleteInfo(
+        custCd = this.get("cust_cd", String::class.java),
+        custNm = this.get("cust_nm", String::class.java),
+        rprsCustCd = this.get("rprs_cust_cd", String::class.java),
+        rprsNm = this.get("rprs_nm", String::class.java)
     )
 }

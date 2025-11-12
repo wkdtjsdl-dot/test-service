@@ -1,9 +1,10 @@
 package com.idrsys.ailis.sales.application.usecase.cust
 
+import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
-import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
+import com.idrsys.ailis.sales.application.dto.response.CustAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
 import com.idrsys.ailis.sales.domain.model.Cust
@@ -18,5 +19,5 @@ interface CustUseCase {
     suspend fun registerCust(command: CustRegisterCommand, creator: String): Cust
     suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust
     suspend fun isCustCdExists(custCd: String): Boolean
-    fun getAutoCompleteCustCdNm(searchParam: CustSearchParam): Flow<CustCdNmAutoCompleteResponse>
+    fun getCustAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustAutoCompleteResponse>
 }

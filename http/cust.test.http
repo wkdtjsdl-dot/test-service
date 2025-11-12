@@ -85,7 +85,7 @@ Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 고객 코드 자동완성조회
-GET {{api-service}}/api/sals/custs/search-custCdNm?custCdNm=A000
+GET {{api-service}}/api/sals/custs/search/custAutoComplete?rprsCustCdNm=이현영
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
