@@ -8,6 +8,6 @@ fun Row.toCustCdNmAutoCompleteInfo(): CustAutoCompleteInfo {
         custCd = this.get("cust_cd", String::class.java),
         custNm = this.get("cust_nm", String::class.java),
         rprsCustCd = this.get("rprs_cust_cd", String::class.java),
-        rprsNm = this.get("rprs_nm", String::class.java)
+        rprsCustNm = this.get("rprs_cust_nm", String::class.java)
     )
 }

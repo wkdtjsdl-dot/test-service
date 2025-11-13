@@ -88,8 +88,9 @@ data class CustListResponse(
     val custDivCd: String,            // 고객구분
     @ExcelColumn("고객유형")
     val custTypeCd: String,           // 고객유형
+    val rprsCustCd: String?,          // 대표고객코드
     @ExcelColumn("대표고객")
-    val rprsCustCd: String?,          // 대표고객
+    val rprsCustNm: String?,          // 대표고객코드의 custNm
     @ExcelColumn("사업자번호")
     val bizrno: String?,                // 사업자번호
     @ExcelColumn("요양기관번호")
@@ -110,7 +111,7 @@ data class CustAutoCompleteResponse(
     val custCd: String?,
     val custNm: String?,
     val rprsCustCd: String?,
-    val rprsNm: String?
+    val rprsCustNm: String?
 )
 
 data class salsPicInfoResponse(

@@ -1,15 +1,16 @@
 package com.idrsys.ailis.sales.application.dto.cust
 
 data class CustSearchParam(
-    val bzoffiCd: String? = null,
-    val custCdNm: String? = null,
-    val custCd: String? = null, // 자동완성 선택시
-    val rprsCustCdNm: String? = null,
-    val rprsCustCd: String? = null, // 자동완성 선택시
-    val custStatCd: String? = null,
-    val regStartDt: String? = null,
-    val regEndDt: String? = null,
-    val custDivCd: String? = null,
+    val bzoffiCd: String? = null, // 영업소
+    val custCdNm: String? = null, // 고객코드/명 사용자 입력값 or 자동완성 선택시 고객코드명
+    val custCd: String? = null, // 자동완성 선택시 고객코드
+    val rprsCustCdNm: String? = null, // 대표고객코드/명 사용자 입력값 or 자동완성 선택시 대표고객코드의 custNm
+    val rprsCustCd: String? = null, // 자동완성 선택시 대표고객코드
+    val custStatCd: String? = null, // 고객상태코드
+    val regStartDt: String? = null, // 등록일시 시작일
+    val regEndDt: String? = null, // 등록일시 종료일
+    val empUserId: String? = null, // 자동완성 선택만 받음, 담당사원 ID
+    val custDivCd: String? = null, // 고객구분코드
     val asrtCd: String? = null,
     val medicalSubj: String? = null,
     val bizrno:String? = null,

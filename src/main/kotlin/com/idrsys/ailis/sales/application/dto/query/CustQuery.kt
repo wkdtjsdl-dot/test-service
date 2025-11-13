@@ -11,6 +11,7 @@ data class CustWithSalsPicInfo(
     val custDivCd: String,            // 고객구분
     val custTypeCd: String,           // 고객유형
     val rprsCustCd: String?,          // 대표고객
+    val rprsCustNm: String?,          // 대표고객의 고객명
     val bizrno: String?,                // 사업자번호
     val careInstNo: String?,            // 요양기관번호
     val sapCustCd: String?,             // ERP코드
@@ -23,7 +24,7 @@ data class CustAutoCompleteInfo(
     val custCd: String?,
     val custNm: String?,
     val rprsCustCd: String?,
-    val rprsNm: String?
+    val rprsCustNm: String?
 )
 
 data class PicInfo (

@@ -16,6 +16,7 @@ internal fun Row.toCustWithSalsPicInfo(): CustWithSalsPicInfo {
         custDivCd = this.get("cust_div_cd", String::class.java)!!,
         custTypeCd = this.get("cust_type_cd", String::class.java)!!,
         rprsCustCd = this.get("rprs_cust_cd", String::class.java),
+        rprsCustNm = this.get("rprs_cust_nm", String::class.java),
         bizrno = this.get("bizrno", String::class.java),
         careInstNo = this.get("care_inst_no", String::class.java),
         sapCustCd = this.get("sap_cust_cd", String::class.java),
