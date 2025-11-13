@@ -6,6 +6,7 @@ import com.idrsys.ailis.sales.application.dto.response.CustContactResponse
 import com.idrsys.ailis.sales.application.required.repository.custContact.CustContactCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.custContact.CustContactRepository
 import com.idrsys.ailis.sales.application.usecase.custContact.CustContactUseCase
+import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
 import com.idrsys.ailis.sales.domain.model.CustContact
 import com.idrsys.ailis.sales.shared.mapper.CustContactMapper
 import kotlinx.coroutines.flow.map
@@ -21,14 +22,16 @@ class CustContactService(
     private val custContactRepository: CustContactRepository,
     private val custContactCustomRepository: CustContactCustomRepository,
     private val custContactMapper: CustContactMapper,
+    private val baseServiceClient: BaseServiceClient,
 ) : CustContactUseCase {
 
     override suspend fun getCustContactPage(searchParam: CustContactSearchParam, pageable: Pageable): Page<CustContactResponse> {
         val total = custContactCustomRepository.countCustContacts(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val custContacts = custContactCustomRepository.findCustContacts(searchParam, pageable).map {
-            custContactMapper.toResponse(it)
+        val custContacts = custContactCustomRepository.findCustContacts(searchParam, pageable).map { dto ->
+            val empNm = dto.creator.let { baseServiceClient.getUser(it)?.userNm }
+            custContactMapper.toResponse(dto.copy(empNm = empNm))
         }.toList()
 
         return PageImpl(custContacts, pageable, total)
@@ -37,7 +40,9 @@ class CustContactService(
     override suspend fun getCustContactDetail(custContactId: Long): CustContactResponse {
         val dto = custContactCustomRepository.findCustContactById(custContactId)
             ?: throw NoSuchElementException("CustContact not found with id: $custContactId")
-        return custContactMapper.toResponse(dto)
+
+        val empNm = dto.creator.let { baseServiceClient.getUser(it)?.userNm }
+        return custContactMapper.toResponse(dto.copy(empNm = empNm))
     }
 
     override suspend fun createCustContact(command: CustContactCommand, adminId: String): CustContactResponse {
@@ -70,5 +75,9 @@ class CustContactService(
 
         val updatedCustContact = custContactRepository.save(custContact)
         return custContactMapper.toResponse(updatedCustContact)
+    }
+
+    override suspend fun deleteCustContact(custContactId: Long) {
+        custContactRepository.deleteById(custContactId)
     }
 }

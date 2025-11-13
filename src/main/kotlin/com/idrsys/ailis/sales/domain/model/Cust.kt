@@ -76,7 +76,7 @@ class Cust(
     createDtime: LocalDateTime,
     updater: String,
     updateDtime: LocalDateTime
-) : Persistable<String> {
+) {
     @Id
     @UuidGeneratedId(idFieldName = "custMstId")
     @Column("cust_mst_id")
@@ -337,17 +337,6 @@ class Cust(
     @Column("update_dtime")
     var updateDtime: LocalDateTime = updateDtime
         private set
-
-    @Transient
-    private var _isNew: Boolean = false
-
-    fun setAsNew() {
-        this._isNew = true
-    }
-
-    override fun getId(): String = custMstId!!
-
-    override fun isNew(): Boolean = _isNew
 
     fun update(command: CustUpdateCommand, updater: String) {
         this.custCd = command.custCd

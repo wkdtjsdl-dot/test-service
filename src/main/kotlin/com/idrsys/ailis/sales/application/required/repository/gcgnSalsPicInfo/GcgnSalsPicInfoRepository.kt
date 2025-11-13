@@ -5,4 +5,5 @@ import com.idrsys.ailis.sales.domain.model.GcgnSalsPicInfo
 interface GcgnSalsPicInfoRepository {
     suspend fun save(gcgnSalsPicInfo: GcgnSalsPicInfo): GcgnSalsPicInfo
     suspend fun findById(id: Long): GcgnSalsPicInfo?
+    suspend fun deleteById(id: Long)
 }

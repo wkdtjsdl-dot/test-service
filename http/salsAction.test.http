@@ -29,14 +29,14 @@ Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 고객 영업활동 등록
-POST {{api-service}}/api/sals/custs/actions?custMstId=CUST001
+POST {{api-service}}/api/sals/custs/actions
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 {
-  "custMstId": "CUST001",
-  "custCd": "CUST001",
+  "custMstId": "36973D74-A010-4975-A5EE-9B8697F28C51",
+  "custCd": "G010000",
   "visitDtime": "2023-10-26T10:00:00",
   "visitPrpsCd": "MEETING",
   "visitTargetPersonNm": "박영희",
@@ -46,7 +46,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 고객 영업활동 수정
-PUT {{api-service}}/api/sals/custs/actions/1?custMstId=CUST001
+PUT {{api-service}}/api/sals/custs/actions/1
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

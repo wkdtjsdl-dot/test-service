@@ -28,9 +28,9 @@ class BaseServiceClient(
                 .retrieve()
                 .awaitBody<BaseUserResponse>()
         } catch (ex: org.springframework.web.reactive.function.client.WebClientResponseException.NotFound) {
-            null // 404 [ user Table과 join이 되지 않을 때 scs_cust_contract.cntr_pic_id 는 nullable이라 통과하게 생성함.
+            null // 404 [ user Table과 join이 되지 않을 때 scs_cust_contract.cntr_pic_id 는 nullable이라 통과하게 생성함
         } catch (ex: Exception) {
-            null // 외의 exception은 config의 yml 파일에서 제어한다고 전달받음 [20251106]
+            null
         }
     }
 

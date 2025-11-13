@@ -42,3 +42,4 @@ out/
 
 # Gradle properties file with sensitive credentials
 gradle.properties
+GEMINI.md

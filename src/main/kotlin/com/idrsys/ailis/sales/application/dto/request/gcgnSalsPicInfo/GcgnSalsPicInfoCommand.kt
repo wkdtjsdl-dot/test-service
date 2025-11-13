@@ -6,8 +6,7 @@ data class GcgnSalsPicInfoCommand(
     val custMstId: String,
     val applyStartDt: LocalDate,
     val salsTeamCd: String,
-    val empno: String,
+    val empUserId: String,
     val custCd: String,
     val applyEndDt: LocalDate?,
-    val useYn: Boolean = true,
 )

@@ -17,4 +17,5 @@ data class CustContactResponse(
     val createDtime: LocalDateTime,
     val updater: String,
     val updateDtime: LocalDateTime,
+    val empNm: String? = null,
 )

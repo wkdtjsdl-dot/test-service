@@ -29,14 +29,14 @@ Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 고객 연락처 등록
-POST {{api-service}}/api/sals/custs/contacts?custMstId=CUST001
+POST {{api-service}}/api/sals/custs/contacts
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 {
-  "custMstId": "CUST001",
-  "custCd": "CUST001",
+  "custMstId": "36973D74-A010-4975-A5EE-9B8697F28C51",
+  "custCd": "G010000",
   "acctChargeNm": "홍길동",
   "ofpoJbpo": "과장",
   "telno": "02-1234-5678",

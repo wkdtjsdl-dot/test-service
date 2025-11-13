@@ -102,8 +102,15 @@ data class CustListResponse(
     val custStatCd: String,             // 고객상태
     @ExcelColumn("등록일시")
     val createDtime: LocalDateTime,      // 등록일시
-    val cntr: custCntrResponse?,
+    val cntr: custCntrResponse?,         //
 
+)
+
+data class CustAutoCompleteResponse(
+    val custCd: String?,
+    val custNm: String?,
+    val rprsCustCd: String?,
+    val rprsNm: String?
 )
 
 data class salsPicInfoResponse(
