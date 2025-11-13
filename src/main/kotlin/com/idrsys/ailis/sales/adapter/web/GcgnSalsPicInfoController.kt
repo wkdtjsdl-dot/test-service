@@ -1,7 +1,9 @@
 package com.idrsys.ailis.sales.adapter.web
 
+import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalaPicInfoAutoSearchParam
 import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalsPicInfoCommand
 import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalsPicInfoSearchParam
+import com.idrsys.ailis.sales.application.dto.response.GcgnSalsPicInfoAutoResponse
 import com.idrsys.ailis.sales.application.dto.response.GcgnSalsPicInfoResponse
 import com.idrsys.ailis.sales.application.usecase.gcgnSalsPicInfo.GcgnSalsPicInfoUseCase
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
@@ -41,6 +43,7 @@ class GcgnSalsPicInfoController(
         return gcgnSalsPicInfoUseCase.getGcgnSalsPicInfoDetail(gcgnSalsPicInfoId)
     }
 
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "createGcgnSalsPicInfo", description = "고객 영업담당자 정보 등록")
@@ -69,4 +72,13 @@ class GcgnSalsPicInfoController(
     ) {
         gcgnSalsPicInfoUseCase.deleteGcgnSalsPicInfo(gcgnSalsPicInfoId)
     }
+
+    @GetMapping("/autoComplete")
+    @Operation(summary = "getSalsPicAutoCompleteList", description = "영업담당자 자동완성 조회")
+    suspend fun getSalsPicAutoCompleteList(
+        @ParameterObject @Parameter(hidden = true) searchParam: GcgnSalaPicInfoAutoSearchParam
+    ) : List<GcgnSalsPicInfoAutoResponse> {
+        return gcgnSalsPicInfoUseCase.getSalsPicAutoCompleteList(searchParam)
+    }
+
 }

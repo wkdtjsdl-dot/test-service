@@ -8,6 +8,7 @@ import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
 import com.idrsys.ailis.sales.shared.mapper.GcgnSalsPicInfoMapper
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toGcgnSalsPicInfo
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toGcgnSalsPicInfoQuery
+import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalaPicInfoAutoSearchParam
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
@@ -16,6 +17,8 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Query
 import org.jooq.SelectLimitStep
+import org.jooq.impl.DSL.falseCondition
+import org.jooq.impl.DSL.trueCondition
 import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -77,6 +80,33 @@ class GcgnSalsPicInfoCustomRepositoryImpl(
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
         return sql.map { row, _ -> row.toGcgnSalsPicInfo() }.one().awaitSingleOrNull()
+    }
+    override fun findEmpUserIdsForAutoComplete(searchParam: GcgnSalaPicInfoAutoSearchParam, includeUserIds: Collection<String>): Flow<String> {
+        val keyword = searchParam.empUserIdNm?.trim()?.takeIf { it.isNotEmpty() }
+
+        var cond: Condition = trueCondition()
+
+        if (keyword != null) {
+            cond = cond.and(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.likeIgnoreCase("%$keyword%")
+                    .or(
+                        if (includeUserIds.isEmpty()) falseCondition()
+                        else SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.`in`(includeUserIds)
+                    )
+            )
+        }
+        val query = dslContext
+            .selectDistinct(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID)
+            .from(SCS_GCGN_SALS_PIC_INFO)
+            .where(cond)
+            .orderBy(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.desc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.get("emp_user_id", String::class.java)!! }
+            .all()
+            .asFlow()
     }
 
     private fun applyPaging(q: SelectLimitStep<*>, pageable: Pageable?): Query {

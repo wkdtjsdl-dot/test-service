@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class GcgnSalsPicInfoQuery(
     val gcgnSalsPicInfoId: Long,
-    val custMstId: String,
+    val custMstId: String?,
     val applyStartDt: LocalDate,
     val salsTeamCd: String,
     val empUserId: String,
@@ -16,4 +16,8 @@ data class GcgnSalsPicInfoQuery(
     val updater: String,
     val updateDtime: LocalDateTime,
     val empNm: String? = null,
+)
+
+data class GcgnSalsPicInfoQueryEmpUserId(
+    val empUserId: String,
 )

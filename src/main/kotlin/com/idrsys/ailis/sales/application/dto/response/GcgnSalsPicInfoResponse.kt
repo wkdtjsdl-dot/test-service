@@ -17,3 +17,8 @@ data class GcgnSalsPicInfoResponse(
     val updateDtime: LocalDateTime,
     val empNm: String? = null,
 )
+
+data class GcgnSalsPicInfoAutoResponse(
+    val empUserId: String,  // 영업담당자 ID
+    val empUserNm: String    // 영업담당자명
+)

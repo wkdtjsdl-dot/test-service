@@ -77,3 +77,8 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 DELETE {{api-service}}/api/sals/custs/sals-pics/1816
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 영업담당자 자동완성 조회
+GET {{api-service}}/api/sals/custs/sals-pics/autoComplete?empUserId=2500&empUserIdNm=2200
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
