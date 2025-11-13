@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.application.required.repository.gcgnSalsPicInfo
 
 import com.idrsys.ailis.sales.application.dto.query.GcgnSalsPicInfoQuery
+import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalaPicInfoAutoSearchParam
 import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalsPicInfoSearchParam
 import com.idrsys.ailis.sales.domain.model.GcgnSalsPicInfo
 import kotlinx.coroutines.flow.Flow
@@ -11,4 +12,5 @@ interface GcgnSalsPicInfoCustomRepository {
     suspend fun countGcgnSalsPicInfos(searchParam: GcgnSalsPicInfoSearchParam): Long
     suspend fun findGcgnSalsPicInfoById(gcgnSalsPicInfoId: Long): GcgnSalsPicInfoQuery?
     suspend fun findDomainById(id: Long): GcgnSalsPicInfo?
+    fun findEmpUserIdsForAutoComplete(searchParam: GcgnSalaPicInfoAutoSearchParam, includeUserIds: Collection<String>): Flow<String>
 }

@@ -33,6 +33,16 @@ class BaseServiceClient(
             null
         }
     }
+    suspend fun getUsers(): List<BaseUserResponse>? {
+        return try {
+            client.get()
+                .uri("/api/inner/users")
+                .retrieve()
+                .awaitBody<List<BaseUserResponse>>()
+        }catch (ex: Exception) {
+            null
+        }
+    }
 
     suspend fun getDepartments(): List<BaseDepartmentDetailResponse>? {
         return try {

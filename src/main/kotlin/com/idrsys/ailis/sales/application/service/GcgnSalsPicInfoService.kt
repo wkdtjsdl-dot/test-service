@@ -7,6 +7,8 @@ import com.idrsys.ailis.sales.application.required.repository.gcgnSalsPicInfo.Gc
 import com.idrsys.ailis.sales.application.required.repository.gcgnSalsPicInfo.GcgnSalsPicInfoRepository
 import com.idrsys.ailis.sales.application.usecase.gcgnSalsPicInfo.GcgnSalsPicInfoUseCase
 import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
+import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalaPicInfoAutoSearchParam
+import com.idrsys.ailis.sales.application.dto.response.GcgnSalsPicInfoAutoResponse
 import com.idrsys.ailis.sales.domain.model.GcgnSalsPicInfo
 import com.idrsys.ailis.sales.shared.mapper.GcgnSalsPicInfoMapper
 import kotlinx.coroutines.flow.map
@@ -80,5 +82,33 @@ class GcgnSalsPicInfoService(
 
     override suspend fun deleteGcgnSalsPicInfo(gcgnSalsPicInfoId: Long) {
         gcgnSalsPicInfoRepository.deleteById(gcgnSalsPicInfoId)
+    }
+
+    override suspend fun getSalsPicAutoCompleteList(searchParam: GcgnSalaPicInfoAutoSearchParam): List<GcgnSalsPicInfoAutoResponse> {
+
+        val users = baseServiceClient.getUsers() ?: emptyList()
+        val userNameById = users.associate { it.userId to it.userNm }
+
+        val keyword = searchParam.empUserIdNm?.trim()?.takeIf { it.isNotEmpty() }
+
+        val nameMatchedIds: List<String> =
+            if (keyword != null)
+                users.asSequence()
+                    .filter { it.userNm.contains(keyword, ignoreCase = true) }
+                    .map { it.userId }
+                    .toList()
+            else emptyList()
+
+        val ids: List<String> =
+            gcgnSalsPicInfoCustomRepository
+                .findEmpUserIdsForAutoComplete(searchParam, includeUserIds = nameMatchedIds)
+                .toList()
+
+        return ids.map { userId ->
+            GcgnSalsPicInfoAutoResponse(
+                empUserId = userId,
+                empUserNm = userNameById[userId] ?: ""
+            )
+        }
     }
 }

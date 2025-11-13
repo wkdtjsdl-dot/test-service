@@ -8,6 +8,7 @@ import com.idrsys.ailis.sales.application.dto.response.CustAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
+import com.idrsys.ailis.sales.application.usecase.gcgnSalsPicInfo.GcgnSalsPicInfoUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
 import com.idrsys.reactive.excel.ReactiveExcelWriter
@@ -111,21 +112,11 @@ class CustController(
         return custUseCase.isCustCdExists(custCd)
     }
 
-    @GetMapping("/search/custAutoComplete")
+    @GetMapping("/autoComplete")
     @Operation(summary = "getCustAutoCompleteList", description = "고객 테이블 검색어 자동완성 조회")
     fun getCustAutoCompleteList(
         @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam
     ) : Flow<CustAutoCompleteResponse> {
         return custUseCase.getCustAutoCompleteList(searchParam)
     }
-
-    @GetMapping("/search/salsPicAutoComplete")
-    @Operation(summary = "getAutoCompleteRprsCustCdNm", description = "담당자 자동완성 조회")
-    fun getAutoCompleteRprsCustCdNm(
-        @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam
-    ) : Flow<CustAutoCompleteResponse> {
-        return custUseCase.getCustAutoCompleteList(searchParam)
-    }
-
-
 }
