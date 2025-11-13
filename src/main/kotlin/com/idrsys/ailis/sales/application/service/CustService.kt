@@ -37,38 +37,28 @@ class CustService(
         val total = custCustomRepository.countCusts(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val custs = custCustomRepository.findCustsWithSalsPicInfo(searchParam, pageable).toList()
+        val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(searchParam, pageable).toList()
 
-        val deptIds = custs.mapNotNull { it.bzoffiCd }.filter { it.isNotBlank() }.distinct()
+        val (deptNameById, userNameById) = fetchLookupMaps()
 
-        val deptsMap = if (deptIds.isNotEmpty()) {
-            kotlinx.coroutines.coroutineScope {
-                deptIds.map { id ->
-                    async {
-                        try {
-                            baseServiceClient.findDepartmentById(id)
-                        } catch (e: Exception) {
-                            null
-                        }
-                    }
-                }.awaitAll().filterNotNull().associateBy { it.deptCd }
-            }
-        } else {
-            emptyMap()
-        }
-
-        val responses = custs.map { cust ->
-            val response = custMapper.toListResponse(cust)
-            val dept = deptsMap[cust.bzoffiCd]
-            response.copy(deptNm = dept?.deptNm)
+        val responses = custsFromRepo.map { custWithSalsPicInfo ->
+            val initialResponse = custMapper.toListResponse(custWithSalsPicInfo)
+            transformCustListResponse(initialResponse, deptNameById, userNameById)
         }
 
         return PageImpl(responses, pageable, total)
     }
 
-    override fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> {
-        val custs = custCustomRepository.findCustsWithSalsPicInfo(searchParam,Pageable.unpaged())
-        return custs.map(custMapper::toListResponse)
+    override suspend fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> { // Make it suspend
+        val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(searchParam,Pageable.unpaged())
+
+        val (deptNameById, userNameById) = fetchLookupMaps()
+
+        return custsFromRepo
+            .map(custMapper::toListResponse) // Map to CustListResponse first
+            .map { initialResponse ->
+                transformCustListResponse(initialResponse, deptNameById, userNameById)
+            }
     }
 
     override suspend fun findCustByCustMstId(custMstId: String): CustResponse {
@@ -109,4 +99,42 @@ class CustService(
         return autoCompleteList.map(custMapper::toAutoCompleteResponse)
     }
 
+    private suspend fun fetchLookupMaps(): LookupMaps {
+        val depts = baseServiceClient.getDepartments() ?: emptyList()
+        val deptNameById = depts.associate { it.deptCd to it.deptNm }
+
+        val users = baseServiceClient.getUsers() ?: emptyList()
+        val userNameById = users.associate { it.userId to it.userNm }
+
+        return LookupMaps(deptNameById, userNameById)
+    }
+
+    private suspend fun transformCustListResponse(
+        custListResponse: CustListResponse,
+        deptNameById: Map<String, String>,
+        userNameById: Map<String, String>
+    ): CustListResponse {
+        val deptNm = custListResponse.bzoffiCd?.let { deptNameById[it] }
+
+        val transformedSalsPicInfo = custListResponse.salsPicInfo?.let { infoString ->
+            infoString.split(",").joinToString(",") { pair ->
+                val parts = pair.split("=")
+                if (parts.size == 2) {
+                    val teamCode = parts[0]
+                    val userId = parts[1]
+                    val userName = userNameById[userId] ?: userId
+                    "$teamCode=$userName"
+                } else {
+                    pair
+                }
+            }
+        } ?: custListResponse.salsPicInfo
+
+        return custListResponse.copy(deptNm = deptNm, salsPicInfo = transformedSalsPicInfo)
+    }
+
+    data class LookupMaps(
+        val deptNameById: Map<String, String>,
+        val userNameById: Map<String, String>
+    )
 }
