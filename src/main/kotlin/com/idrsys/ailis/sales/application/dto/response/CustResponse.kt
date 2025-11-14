@@ -82,8 +82,8 @@ data class CustListResponse(
     @ExcelColumn("고객명")
     val custNm: String,                 // 고객명
     val bzoffiCd: String?,              // 영업소코드
-    @ExcelColumn("영업소")        // 영업소 deptNm
-    val deptNm: String?,
+    @ExcelColumn("영업소")
+    val deptNm: String?,                // 부서명 ( base-service deptNm)
     @ExcelColumn("고객구분")
     val custDivCd: String,            // 고객구분
     @ExcelColumn("고객유형")
@@ -98,18 +98,22 @@ data class CustListResponse(
     @ExcelColumn("ERP코드")
     val sapCustCd: String?,             // ERP코드
     @ExcelColumn("담당사원")
-    val salsPicInfo: String?,           // 담당사원 //TODO 지놈영업담당자정보 scs_gcgn_sals_pic_info
+    val salsPicInfo: String?,           // 담당사원 정보 ( 영업담당자 id + base-service userNm )
     @ExcelColumn("고객상태")
     val custStatCd: String,             // 고객상태
     @ExcelColumn("등록일시")
     val createDtime: LocalDateTime,      // 등록일시
+    val frgnAcctYn: Boolean,            // 해외거래처여부
     val cntr: custCntrResponse?,         //
 
 )
 
-data class CustAutoCompleteResponse(
+data class CustCdNmAutoCompleteResponse(
     val custCd: String?,
-    val custNm: String?,
+    val custNm: String?
+)
+
+data class RprsCustCdNmAutoCompleteResponse(
     val rprsCustCd: String?,
     val rprsCustNm: String?
 )

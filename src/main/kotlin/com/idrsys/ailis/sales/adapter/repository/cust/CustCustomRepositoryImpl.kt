@@ -1,4 +1,3 @@
-
 package com.idrsys.ailis.sales.adapter.repository.cust
 
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_CNTR
@@ -6,10 +5,12 @@ import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustWithSalsPicInfo
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toRprsCustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
-import com.idrsys.ailis.sales.application.dto.query.CustAutoCompleteInfo
+import com.idrsys.ailis.sales.application.dto.query.CustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
+import com.idrsys.ailis.sales.application.dto.query.RprsCustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -29,10 +30,9 @@ class CustCustomRepositoryImpl(
     private val databaseClient: DatabaseClient,
 ) : CustCustomRepository {
 
-    // TODO 작업중
     override fun findCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable): Flow<CustWithSalsPicInfo> {
         val conditions = buildConditions(searchParam)
-        val RPRS_CUST_MST = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+        val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
 
         // 계약종료일 들어올 경우 계약테이블 leftjoin
         val needsContractJoin = !searchParam.cntrStartDt.isNullOrBlank() ||
@@ -41,56 +41,20 @@ class CustCustomRepositoryImpl(
                 !searchParam.cntrEndEndDt.isNullOrBlank() ||
                 !searchParam.recntrMonth.isNullOrBlank()
 
-        val substitutedTeamCd: Field<String> =
-            `when`(SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD.eq("SLTM_TS-G"), inline("G"))
-                .`when`(SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD.eq("SLTM_TS-C"), inline("C"))
-                .`when`(SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD.eq("SLTM_TS-H"), inline("H"))
-                .otherwise(inline(""))
-
-        val domesticAgg: Field<String?> =
-            stringAgg(
-                `when`(
-                    SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD.`in`(inline("SLTM_TS-G"), inline("SLTM_TS-C"), inline("SLTM_TS-H")),
-                    substitutedTeamCd.concat("=").concat(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID)
-                ),
-                inline(",")
-            ).orderBy(
-                field(
-                    "CASE {0} " +
-                            "WHEN {1} THEN 1 " +
-                            "WHEN {2} THEN 2 " +
-                            "WHEN {3} THEN 3 " +
-                            "END",
-                    SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD,
-                    inline("SLTM_TS-G"),
-                    inline("SLTM_TS-C"),
-                    inline("SLTM_TS-H")
-                )// G,C,H order by
-            )
-
-        val foreignAgg: Field<String?> =
-            stringAgg(
-                `when`(
-                    SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD.eq(inline("OBT")),
-                    inline("O").concat("=").concat(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID)
-                ),
-                inline(",")
-            ).orderBy(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID)
-
         val salsPicInfoField: Field<String?> =
-            `when`(SCS_CUST_MST.FRGN_ACCT_YN.isTrue, foreignAgg)
-                .otherwise(domesticAgg)
-                .`as`("sals_pic_info")
-
+            (stringAgg(
+                SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD.concat("=").concat(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID),
+                inline(",")
+            ) as Field<String?>).`as`("sals_pic_info")
 
         var queryPart = dslContext.select(
             SCS_CUST_MST.asterisk(),
-            RPRS_CUST_MST.CUST_NM.`as`("RPRS_CUST_NM"),
+            rprsCustMst.CUST_NM.`as`("RPRS_CUST_NM"),
             salsPicInfoField
         )
             .from(SCS_CUST_MST)
             .leftJoin(SCS_GCGN_SALS_PIC_INFO).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID))
-            .leftJoin(RPRS_CUST_MST).on(SCS_CUST_MST.RPRS_CUST_CD.eq(RPRS_CUST_MST.CUST_CD))
+            .leftJoin(rprsCustMst).on(SCS_CUST_MST.RPRS_CUST_CD.eq(rprsCustMst.CUST_CD))
 
         if (needsContractJoin) {
             queryPart = queryPart.leftJoin(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
@@ -99,7 +63,7 @@ class CustCustomRepositoryImpl(
 
         val query = queryPart
             .where(conditions)
-            .groupBy(*SCS_CUST_MST.fields(), RPRS_CUST_MST.CUST_NM)
+            .groupBy(*SCS_CUST_MST.fields(), rprsCustMst.CUST_NM)
             .orderBy(SCS_CUST_MST.CUST_CD.asc())
             .let {applyPaging(it, pageable ?: Pageable.unpaged())}
 
@@ -155,12 +119,12 @@ class CustCustomRepositoryImpl(
 
     private fun buildConditions(searchParam: CustSearchParam): List<Condition> {
         val conds = mutableListOf<Condition>()
-        val RPRS_CUST_MST = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+        val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
 
         searchParam.bzoffiCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.BZOFFI_CD.eq(it) }
         searchParam.custCdNm?.takeIf { it.isNotBlank() }?.let { keyword -> conds += SCS_CUST_MST.CUST_CD.likeIgnoreCase("%$keyword%").or(SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$keyword%")) }
         searchParam.custCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_CD.eq(it) } // 자동완성 선택시
-        searchParam.rprsCustCdNm?.takeIf { it.isNotBlank() }?.let { keyword -> conds += SCS_CUST_MST.RPRS_CUST_CD.likeIgnoreCase("%$keyword%").or(RPRS_CUST_MST.CUST_NM.likeIgnoreCase("%$keyword%")) }
+        searchParam.rprsCustCdNm?.takeIf { it.isNotBlank() }?.let { keyword -> conds += SCS_CUST_MST.RPRS_CUST_CD.likeIgnoreCase("%$keyword%").or(rprsCustMst.CUST_NM.likeIgnoreCase("%$keyword%")) }
         searchParam.rprsCustCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.RPRS_CUST_CD.eq(it) }
         searchParam.custStatCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_STAT_CD.eq(it) }
         searchParam.regStartDt?.takeIf { it.isNotBlank() }?.let {
@@ -226,57 +190,57 @@ class CustCustomRepositoryImpl(
         return count > 0
     }
 
-    override fun findCustAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<CustAutoCompleteInfo> {
+    override fun findCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteInfo> {
         val conditions = mutableListOf<Condition>()
-        var keyword: String? = null
-        var selectFields: Array<out SelectField<*>>
-        var groupByFields: Array<out GroupField>
-        var orderByField: OrderField<*>
+        val keyword = searchParam.custCdNm?.takeIf { it.isNotBlank() } ?: return flowOf()
 
-        val custCdNmSearch = searchParam.custCdNm?.takeIf { it.isNotBlank() }
-        val rprsCustCdNmSearch = searchParam.rprsCustCdNm?.takeIf { it.isNotBlank() }
+        conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
 
-        val RPRS_CUST_MST = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+        val selectFields = arrayOf(
+            SCS_CUST_MST.CUST_CD,
+            SCS_CUST_MST.CUST_NM
+        )
+        val orderByField = SCS_CUST_MST.CUST_CD.asc()
 
-        if (custCdNmSearch != null) {
-            keyword = custCdNmSearch
-            conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
-            selectFields = arrayOf(
-                SCS_CUST_MST.CUST_CD,
-                SCS_CUST_MST.CUST_NM,
-                max(SCS_CUST_MST.RPRS_CUST_CD).`as`(SCS_CUST_MST.RPRS_CUST_CD),
-                max(RPRS_CUST_MST.CUST_NM).`as`("RPRS_CUST_NM") // Alias for the representative customer's name
-            )
-            groupByFields = arrayOf(SCS_CUST_MST.CUST_CD, SCS_CUST_MST.CUST_NM)
-            orderByField = SCS_CUST_MST.CUST_CD.asc()
-        } else if (rprsCustCdNmSearch != null) {
-            keyword = rprsCustCdNmSearch
-            conditions += SCS_CUST_MST.RPRS_CUST_CD.containsIgnoreCase(keyword).or(RPRS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
-            selectFields = arrayOf(
-                max(SCS_CUST_MST.CUST_CD).`as`(SCS_CUST_MST.CUST_CD),
-                max(SCS_CUST_MST.CUST_NM).`as`(SCS_CUST_MST.CUST_NM),
-                SCS_CUST_MST.RPRS_CUST_CD,
-                RPRS_CUST_MST.CUST_NM.`as`("RPRS_CUST_NM") // Alias for the representative customer's name
-            )
-            groupByFields = arrayOf(SCS_CUST_MST.RPRS_CUST_CD, RPRS_CUST_MST.CUST_NM)
-            orderByField = SCS_CUST_MST.RPRS_CUST_CD.asc()
-        } else {
-            return flowOf()
-        }
-
-        val query = dslContext.select(*selectFields)
+        val query = dslContext.selectDistinct(*selectFields)
             .from(SCS_CUST_MST)
-            .leftJoin(SCS_CUST_MST.`as`("RPRS_CUST_MST")).on(SCS_CUST_MST.RPRS_CUST_CD.eq(SCS_CUST_MST.`as`("RPRS_CUST_MST").CUST_CD))
             .where(conditions)
-            .groupBy(*groupByFields)
             .orderBy(orderByField)
-            //.limit(20)
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
         return sql
             .map { row, _ -> row.toCustCdNmAutoCompleteInfo() }
+            .all()
+            .asFlow()
+    }
+
+    override fun findRprsCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteInfo> {
+        val conditions = mutableListOf<Condition>()
+        val keyword = searchParam.rprsCustCdNm?.takeIf { it.isNotBlank() } ?: return flowOf()
+
+        conditions += SCS_CUST_MST.RPRS_CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.`as`("RPRS_CUST_MST").CUST_NM.containsIgnoreCase(keyword))
+
+        val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+
+        val selectFields = arrayOf(
+            SCS_CUST_MST.RPRS_CUST_CD,
+            rprsCustMst.CUST_NM.`as`("RPRS_CUST_NM")
+        )
+        val orderByField = SCS_CUST_MST.RPRS_CUST_CD.asc()
+
+        val query = dslContext.selectDistinct(*selectFields)
+            .from(SCS_CUST_MST)
+            .leftJoin(rprsCustMst).on(SCS_CUST_MST.RPRS_CUST_CD.eq(rprsCustMst.CUST_CD))
+            .where(conditions)
+            .orderBy(orderByField)
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toRprsCustCdNmAutoCompleteInfo() }
             .all()
             .asFlow()
     }
