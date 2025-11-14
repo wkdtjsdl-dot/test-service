@@ -6,10 +6,14 @@ import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustWithSalsPicInfo
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toRprsCustCdNmAutoCompleteInfo
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toDirectAcctCdNmAutoCompleteInfo
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustDetailInfo
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.CustCdNmAutoCompleteInfo
+import com.idrsys.ailis.sales.application.dto.query.CustDetailInfo
 import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
+import com.idrsys.ailis.sales.application.dto.query.DirectAcctCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.query.RprsCustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import kotlinx.coroutines.flow.Flow
@@ -41,11 +45,11 @@ class CustCustomRepositoryImpl(
                 !searchParam.cntrEndEndDt.isNullOrBlank() ||
                 !searchParam.recntrMonth.isNullOrBlank()
 
-        val salsPicInfoField: Field<String?> =
+        val salsPicInfoField: Field<*> =
             (stringAgg(
                 SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD.concat("=").concat(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID),
                 inline(",")
-            ) as Field<String?>).`as`("sals_pic_info")
+            ) as Field<*>).`as`("sals_pic_info")
 
         var queryPart = dslContext.select(
             SCS_CUST_MST.asterisk(),
@@ -65,7 +69,7 @@ class CustCustomRepositoryImpl(
             .where(conditions)
             .groupBy(*SCS_CUST_MST.fields(), rprsCustMst.CUST_NM)
             .orderBy(SCS_CUST_MST.CUST_CD.asc())
-            .let {applyPaging(it, pageable ?: Pageable.unpaged())}
+            .let {applyPaging(it, pageable)}
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
@@ -190,6 +194,51 @@ class CustCustomRepositoryImpl(
         return count > 0
     }
 
+    override suspend fun findCustDetailInfoByCustMstId(custMstId: String): CustDetailInfo? {
+        val directAcctMst = SCS_CUST_MST.`as`("DIRECT_ACCT_MST")
+
+        val query = dslContext.select(
+            SCS_CUST_MST.asterisk(),
+            directAcctMst.CUST_NM.`as`("direct_acct_nm")
+        )
+            .from(SCS_CUST_MST)
+            .leftJoin(directAcctMst).on(SCS_CUST_MST.DIRECT_ACCT_CD.eq(directAcctMst.CUST_CD))
+            .where(SCS_CUST_MST.CUST_MST_ID.eq(custMstId))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustDetailInfo() }
+            .one()
+            .awaitSingle()
+    }
+
+    // 직접거래처 자동완성
+    override fun findDirectAcctCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteInfo> {
+        val conditions = mutableListOf<Condition>()
+        val keyword = searchParam.directAcctCdNm?.takeIf { it.isNotBlank() } ?: return flowOf()
+
+        // 검색 들어온 고객코드나 고객명이 직접거래처인 경우
+        conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
+        conditions += SCS_CUST_MST.CUST_DIV_CD.eq("CSDV_DA") // 직접거래처
+        val query = dslContext.select(
+            SCS_CUST_MST.CUST_CD.`as`("direct_acct_cd"),
+            SCS_CUST_MST.CUST_NM.`as`("direct_acct_nm")
+        )
+            .from(SCS_CUST_MST)
+            .where(conditions)
+            .orderBy(SCS_CUST_MST.DIRECT_ACCT_CD.asc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toDirectAcctCdNmAutoCompleteInfo() }
+            .all()
+            .asFlow()
+    }
+
     override fun findCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteInfo> {
         val conditions = mutableListOf<Condition>()
         val keyword = searchParam.custCdNm?.takeIf { it.isNotBlank() } ?: return flowOf()
@@ -220,9 +269,9 @@ class CustCustomRepositoryImpl(
         val conditions = mutableListOf<Condition>()
         val keyword = searchParam.rprsCustCdNm?.takeIf { it.isNotBlank() } ?: return flowOf()
 
-        conditions += SCS_CUST_MST.RPRS_CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.`as`("RPRS_CUST_MST").CUST_NM.containsIgnoreCase(keyword))
-
         val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+
+        conditions += SCS_CUST_MST.RPRS_CUST_CD.containsIgnoreCase(keyword).or(rprsCustMst.CUST_NM.containsIgnoreCase(keyword))
 
         val selectFields = arrayOf(
             SCS_CUST_MST.RPRS_CUST_CD,

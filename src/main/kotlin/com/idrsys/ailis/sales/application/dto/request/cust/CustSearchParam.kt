@@ -27,6 +27,7 @@ data class CustSearchParam(
 )
 
 data class CustAutoCompleteSearchParam(
-    val custCdNm: String? = null,
-    val rprsCustCdNm: String? = null,
+    val custCdNm: String? = null, // 고객코드/명 자동완성 검색어
+    val rprsCustCdNm: String? = null, // 대표고객코드/명 자동완성 검색어
+    val directAcctCdNm: String? = null, // 직접거래처코드/명 자동완성 검색어
 )

@@ -9,6 +9,7 @@ import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
+import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
@@ -16,7 +17,6 @@ import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Page
@@ -62,9 +62,11 @@ class CustService(
     }
 
     override suspend fun findCustByCustMstId(custMstId: String): CustResponse {
-        val cust = custRepository.findByCustMstId(custMstId)
-            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+        val cust = custCustomRepository.findCustDetailInfoByCustMstId(custMstId)
+                    ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+
         return custMapper.toDetailResponse(cust)
+
     }
 
     @Transactional(readOnly = false)
@@ -102,6 +104,11 @@ class CustService(
     override fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse> {
         val autoCompleteList = custCustomRepository.findRprsCustCdNmAutoComplete(searchParam)
         return autoCompleteList.map(custMapper::toRprsCustCdNmAutoCompleteResponse)
+    }
+
+    override fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteResponse> {
+        val autoCompleteList = custCustomRepository.findDirectAcctCdNmAutoComplete(searchParam)
+        return autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
     }
 
     private suspend fun fetchLookupMaps(): LookupMaps {

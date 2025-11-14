@@ -14,9 +14,10 @@ data class CustResponse(
     val rprsNm: String?,                 // 대표자명
     val rprsCustYn: Boolean,            // 대표고객여부
     val rprsCustCd: String?,             // 대표고객코드
-    val custDivCd: String,              // 고객구분코드
-    val directAcctCd: String?,           // 직납처코드
-    val directAcctAcctCd: String?,       // 직납처 거래처코드
+    val custDivCd: String,              // 고객구분코드       직접거래처여부 : 직접거래처 / 재수탁거래처
+    val directAcctCd: String?,           // 직접거래처코드
+    val directAcctNm: String?,           // 직접거래처코드의 custNm
+    val directAcctAcctCd: String?,       // 직접거래처거래처코드 인터페이스용
     val frgnAcctYn: Boolean,            // 해외거래처여부
     val studyProjCustYn: Boolean,       // 연구과제고객여부
     val studyProjNm: String?,            // 연구과제명
@@ -68,6 +69,7 @@ data class CustResponse(
     val sotOutputQnty: Int,             // SOT출력수량
     val rstNtcnRecpYn: Boolean,          // 결과알림수신여부
     val rstNtcnRecpEmailAddr: String?,   // 결과알림수신이메일주소
+    val qcCustYn: Boolean,              // QC고객여부
     val creator: String,                // 생성자
     val createDtime: LocalDateTime,     // 생성일시
     val updater: String,                // 수정자
@@ -116,6 +118,11 @@ data class CustCdNmAutoCompleteResponse(
 data class RprsCustCdNmAutoCompleteResponse(
     val rprsCustCd: String?,
     val rprsCustNm: String?
+)
+
+data class DirectAcctCdNmAutoCompleteResponse(
+    val directAcctCd: String?,
+    val directAcctNm: String?
 )
 
 data class salsPicInfoResponse(

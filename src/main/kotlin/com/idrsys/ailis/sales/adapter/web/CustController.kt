@@ -8,6 +8,7 @@ import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteRespo
 import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
+import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.application.usecase.gcgnSalsPicInfo.GcgnSalsPicInfoUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
@@ -128,5 +129,13 @@ class CustController(
         @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam
     ) : Flow<RprsCustCdNmAutoCompleteResponse> {
         return custUseCase.getRprsCustCdNmAutoCompleteList(searchParam)
+    }
+
+    @GetMapping("/autoComplete/directAcctCdNm")
+    @Operation(summary = "getDirectAcctCdNmAutoCompleteList", description = "직접거래처코드/명 자동완성 조회")
+    fun getDirectAcctCdNmAutoCompleteList(
+        @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam
+    ) : Flow<DirectAcctCdNmAutoCompleteResponse> {
+        return custUseCase.getDirectAcctCdNmAutoCompleteList(searchParam)
     }
 }

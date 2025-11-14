@@ -8,6 +8,7 @@ import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteRespo
 import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
+import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.domain.model.Cust
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Page
@@ -22,4 +23,5 @@ interface CustUseCase {
     suspend fun isCustCdExists(custCd: String): Boolean
     fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteResponse>
     fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse>
+    fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteResponse>
 }

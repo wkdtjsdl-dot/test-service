@@ -72,6 +72,7 @@ class Cust(
     sotOutputQnty: Int,
     rstNtcnRecpYn: Boolean = false,
     rstNtcnRecpEmailAddr: String?,
+    qcCustYn: Boolean = false,
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
@@ -320,6 +321,10 @@ class Cust(
 
     @Column("rst_ntcn_recp_email_addr")
     var rstNtcnRecpEmailAddr: String? = rstNtcnRecpEmailAddr
+        private set
+
+    @Column("qc_cust_yn")
+    var qcCustYn: Boolean = qcCustYn
         private set
 
     @Column("creator")

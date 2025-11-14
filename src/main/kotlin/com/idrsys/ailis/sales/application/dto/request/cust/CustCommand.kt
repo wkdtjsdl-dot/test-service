@@ -63,6 +63,7 @@ data class CustRegisterCommand(
     val sotOutputQnty: Int,
     val rstNtcnRecpYn: Boolean,
     val rstNtcnRecpEmailAddr: String?,
+    val qcCustYn: Boolean,
 )
 
 data class CustUpdateCommand(
@@ -126,4 +127,5 @@ data class CustUpdateCommand(
     val sotOutputQnty: Int,
     val rstNtcnRecpYn: Boolean,
     val rstNtcnRecpEmailAddr: String?,
+    val qcCustYn: Boolean,
 )

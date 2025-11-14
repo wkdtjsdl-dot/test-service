@@ -89,6 +89,11 @@ GET {{api-service}}/api/sals/custs/search/custAutoComplete?rprsCustCdNm=이현�
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
+### 직접거래처 자동완성조회
+GET {{api-service}}/api/sals/custs/autoComplete/directAcctCdNm?directAcctCdNm=Alpha
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
 ### 고객 수정
 PUT {{api-service}}/api/custs/{{custMstId}}
 Content-Type: application/json
