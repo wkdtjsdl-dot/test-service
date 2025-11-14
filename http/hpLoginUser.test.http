@@ -1,0 +1,45 @@
+### 관리자 Login 요청
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {% 
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+### 고객 추가정보(홈페이지 로그인 사용자) 단건 조회
+GET {{api-service}}/api/sals/custs/hp-login-user/USER_ID_PLACEHOLDER
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 추가정보(홈페이지 로그인 사용자) 저장
+POST {{api-service}}/api/sals/custs/hp-login-user
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "hpLoginUserId": "DDF7D716-E498-4EE6-8391-F03160FA4E03",
+  "custMstId": "DDF7D716-E498-4EE6-8391-F03160FA4E03",
+  "custCd": "TESTCUST001",
+  "hpCustDiv": "HCD_01",
+  "loginId": "testuser001",
+  "loginPswd": "password123",
+  "loginFailNum": 0,
+  "pswdChngDtime": null,
+  "lastLoginDtime": null,
+  "loginNm": "테스트사용자",
+  "loginPersonContact": "010-1234-5678",
+  "useYn": true
+}
