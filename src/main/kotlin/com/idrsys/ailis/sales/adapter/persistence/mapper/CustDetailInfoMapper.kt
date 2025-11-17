@@ -14,6 +14,7 @@ fun Row.toCustDetailInfo(): CustDetailInfo {
         rprsNm = this.get("rprs_nm", String::class.java),
         rprsCustYn = this.get("rprs_cust_yn", Boolean::class.java)!!,
         rprsCustCd = this.get("rprs_cust_cd", String::class.java),
+        rprsCustNm = this.get("rprs_cust_nm", String::class.java), // Alias from join   rprs_cust_cd's cust_nm
         custDivCd = this.get("cust_div_cd", String::class.java)!!,
         directAcctCd = this.get("direct_acct_cd", String::class.java),
         directAcctNm = this.get("direct_acct_nm", String::class.java), // Alias from join   direct_acct_cd's cust_nm

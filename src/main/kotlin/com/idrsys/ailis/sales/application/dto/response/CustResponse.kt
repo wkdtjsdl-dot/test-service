@@ -14,6 +14,7 @@ data class CustResponse(
     val rprsNm: String?,                 // 대표자명
     val rprsCustYn: Boolean,            // 대표고객여부
     val rprsCustCd: String?,             // 대표고객코드
+    val rprsCustNm: String?,           //  대표고객코드의 custNm
     val custDivCd: String,              // 고객구분코드       직접거래처여부 : 직접거래처 / 재수탁거래처
     val directAcctCd: String?,           // 직접거래처코드
     val directAcctNm: String?,           // 직접거래처코드의 custNm
