@@ -13,7 +13,7 @@ class BaseServiceClient(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
 ) {
-    private val client: WebClient
+    final private val client: WebClient
 
     init {
         val serviceEndpoint = appConfig.services.find { it.name == "base-service" }?.endPoint

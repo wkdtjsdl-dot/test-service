@@ -6,16 +6,16 @@ import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
-import com.idrsys.ailis.sales.application.dto.response.CustAutoCompleteResponse
+import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
+import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
+import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
 import com.idrsys.web.exception.UserDefinedException
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -62,9 +62,11 @@ class CustService(
     }
 
     override suspend fun findCustByCustMstId(custMstId: String): CustResponse {
-        val cust = custRepository.findByCustMstId(custMstId)
-            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+        val cust = custCustomRepository.findCustDetailInfoByCustMstId(custMstId)
+                    ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+
         return custMapper.toDetailResponse(cust)
+
     }
 
     @Transactional(readOnly = false)
@@ -94,9 +96,19 @@ class CustService(
         return custCustomRepository.existByCustCd(custCd)
     }
 
-    override fun getCustAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustAutoCompleteResponse> {
-        val autoCompleteList = custCustomRepository.findCustAutoComplete(searchParam)
-        return autoCompleteList.map(custMapper::toAutoCompleteResponse)
+    override fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteResponse> {
+        val autoCompleteList = custCustomRepository.findCustCdNmAutoComplete(searchParam)
+        return autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
+    }
+
+    override fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse> {
+        val autoCompleteList = custCustomRepository.findRprsCustCdNmAutoComplete(searchParam)
+        return autoCompleteList.map(custMapper::toRprsCustCdNmAutoCompleteResponse)
+    }
+
+    override fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteResponse> {
+        val autoCompleteList = custCustomRepository.findDirectAcctCdNmAutoComplete(searchParam)
+        return autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
     }
 
     private suspend fun fetchLookupMaps(): LookupMaps {
@@ -109,6 +121,7 @@ class CustService(
         return LookupMaps(deptNameById, userNameById)
     }
 
+    // 부서명, 사원명, 영업팀코드 치환
     private suspend fun transformCustListResponse(
         custListResponse: CustListResponse,
         deptNameById: Map<String, String>,
@@ -117,17 +130,42 @@ class CustService(
         val deptNm = custListResponse.bzoffiCd?.let { deptNameById[it] }
 
         val transformedSalsPicInfo = custListResponse.salsPicInfo?.let { infoString ->
-            infoString.split(",").joinToString(",") { pair ->
+            val salesPicEntries = infoString.split(",").mapNotNull { pair ->
                 val parts = pair.split("=")
-                if (parts.size == 2) {
-                    val teamCode = parts[0]
-                    val userId = parts[1]
-                    val userName = userNameById[userId] ?: userId
-                    "$teamCode=$userName"
-                } else {
-                    pair
-                }
+                if (parts.size == 2) parts[0] to parts[1] else null
             }
+
+            val filteredSalesPicEntries = if (custListResponse.frgnAcctYn == true) {
+                salesPicEntries.filter { (rawTeamCode, _) -> rawTeamCode == "OBT" }
+            } else {
+                salesPicEntries.filter { (rawTeamCode, _) -> rawTeamCode in listOf("SLTM_TS-G", "SLTM_TS-C", "SLTM_TS-H") }
+            }
+
+            val substitutedAndNamedEntries = filteredSalesPicEntries.map { (rawTeamCode, userId) ->
+                val substitutedTeamCode = when (rawTeamCode) {
+                    "SLTM_TS-G" -> "G"
+                    "SLTM_TS-C" -> "C"
+                    "SLTM_TS-H" -> "H"
+                    "OBT" -> "O"
+                    else -> rawTeamCode
+                }
+                val userName = userNameById[userId] ?: userId
+                substitutedTeamCode to userName
+            }
+
+            val sortedEntries = if (custListResponse.frgnAcctYn == true) {
+                substitutedAndNamedEntries.sortedBy { (_, userName) -> userName }
+            } else {
+                substitutedAndNamedEntries.sortedWith(compareBy { (teamCode, _) ->
+                    when (teamCode) {
+                        "G" -> 1
+                        "C" -> 2
+                        "H" -> 3
+                        else -> 4
+                    }
+                })
+            }
+            sortedEntries.joinToString(",") { (teamCode, userName) -> "$teamCode=$userName" }
         } ?: custListResponse.salsPicInfo
 
         return custListResponse.copy(deptNm = deptNm, salsPicInfo = transformedSalsPicInfo)

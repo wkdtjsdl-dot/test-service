@@ -4,15 +4,11 @@ import com.idrsys.common.kor2dbc.config.EnableCommOnMstSlvDataSource
 import com.idrsys.common.kor2dbc.datasource.CustomDatabaseProperties
 import com.idrsys.common.kor2dbc.datasource.DatabaseProperties
 import com.idrsys.common.kor2dbc.generator.UuidIdGeneratorCallback
-
-import com.idrsys.reactive.excel.EnableReactiveExcel
 import org.apache.poi.ss.formula.functions.T
-
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.r2dbc.mapping.event.BeforeSaveCallback
-
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder
@@ -25,7 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
     basePackages = ["com.idrsys.ailis.sales.adapter.repository"],
     entityOperationsRef = "r2dbcEntityTemplate"
 )
-@EnableReactiveExcel
 class BaseConfig {
 
     @Bean

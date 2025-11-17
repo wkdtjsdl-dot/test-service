@@ -14,9 +14,10 @@ data class CustResponse(
     val rprsNm: String?,                 // 대표자명
     val rprsCustYn: Boolean,            // 대표고객여부
     val rprsCustCd: String?,             // 대표고객코드
-    val custDivCd: String,              // 고객구분코드
-    val directAcctCd: String?,           // 직납처코드
-    val directAcctAcctCd: String?,       // 직납처 거래처코드
+    val custDivCd: String,              // 고객구분코드       직접거래처여부 : 직접거래처 / 재수탁거래처
+    val directAcctCd: String?,           // 직접거래처코드
+    val directAcctNm: String?,           // 직접거래처코드의 custNm
+    val directAcctAcctCd: String?,       // 직접거래처거래처코드 인터페이스용
     val frgnAcctYn: Boolean,            // 해외거래처여부
     val studyProjCustYn: Boolean,       // 연구과제고객여부
     val studyProjNm: String?,            // 연구과제명
@@ -68,6 +69,7 @@ data class CustResponse(
     val sotOutputQnty: Int,             // SOT출력수량
     val rstNtcnRecpYn: Boolean,          // 결과알림수신여부
     val rstNtcnRecpEmailAddr: String?,   // 결과알림수신이메일주소
+    val qcCustYn: Boolean,              // QC고객여부
     val creator: String,                // 생성자
     val createDtime: LocalDateTime,     // 생성일시
     val updater: String,                // 수정자
@@ -82,8 +84,8 @@ data class CustListResponse(
     @ExcelColumn("고객명")
     val custNm: String,                 // 고객명
     val bzoffiCd: String?,              // 영업소코드
-    @ExcelColumn("영업소")        // 영업소 deptNm
-    val deptNm: String?,
+    @ExcelColumn("영업소")
+    val deptNm: String?,                // 부서명 ( base-service deptNm)
     @ExcelColumn("고객구분")
     val custDivCd: String,            // 고객구분
     @ExcelColumn("고객유형")
@@ -98,20 +100,29 @@ data class CustListResponse(
     @ExcelColumn("ERP코드")
     val sapCustCd: String?,             // ERP코드
     @ExcelColumn("담당사원")
-    val salsPicInfo: String?,           // 담당사원 //TODO 지놈영업담당자정보 scs_gcgn_sals_pic_info
+    val salsPicInfo: String?,           // 담당사원 정보 ( 영업담당자 id + base-service userNm )
     @ExcelColumn("고객상태")
     val custStatCd: String,             // 고객상태
     @ExcelColumn("등록일시")
     val createDtime: LocalDateTime,      // 등록일시
+    val frgnAcctYn: Boolean,            // 해외거래처여부
     val cntr: custCntrResponse?,         //
 
 )
 
-data class CustAutoCompleteResponse(
+data class CustCdNmAutoCompleteResponse(
     val custCd: String?,
-    val custNm: String?,
+    val custNm: String?
+)
+
+data class RprsCustCdNmAutoCompleteResponse(
     val rprsCustCd: String?,
     val rprsCustNm: String?
+)
+
+data class DirectAcctCdNmAutoCompleteResponse(
+    val directAcctCd: String?,
+    val directAcctNm: String?
 )
 
 data class salsPicInfoResponse(

@@ -4,9 +4,11 @@ import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
-import com.idrsys.ailis.sales.application.dto.response.CustAutoCompleteResponse
+import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
+import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
+import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.application.usecase.gcgnSalsPicInfo.GcgnSalsPicInfoUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
@@ -17,6 +19,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.data.domain.Page
@@ -112,11 +115,27 @@ class CustController(
         return custUseCase.isCustCdExists(custCd)
     }
 
-    @GetMapping("/autoComplete")
-    @Operation(summary = "getCustAutoCompleteList", description = "고객 테이블 검색어 자동완성 조회")
-    fun getCustAutoCompleteList(
+    @GetMapping("/autoComplete/custCdNm")
+    @Operation(summary = "getCustCdNmAutoCompleteList", description = "고객코드/명 자동완성 조회")
+    fun getCustCdNmAutoCompleteList(
         @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam
-    ) : Flow<CustAutoCompleteResponse> {
-        return custUseCase.getCustAutoCompleteList(searchParam)
+    ) : Flow<CustCdNmAutoCompleteResponse> {
+        return custUseCase.getCustCdNmAutoCompleteList(searchParam)
+    }
+
+    @GetMapping("/autoComplete/rprsCustCdNm")
+    @Operation(summary = "getRprsCustCdNmAutoCompleteList", description = "대표고객코드/명 자동완성 조회")
+    fun getRprsCustCdNmAutoCompleteList(
+        @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam
+    ) : Flow<RprsCustCdNmAutoCompleteResponse> {
+        return custUseCase.getRprsCustCdNmAutoCompleteList(searchParam)
+    }
+
+    @GetMapping("/autoComplete/directAcctCdNm")
+    @Operation(summary = "getDirectAcctCdNmAutoCompleteList", description = "직접거래처코드/명 자동완성 조회")
+    fun getDirectAcctCdNmAutoCompleteList(
+        @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam
+    ) : Flow<DirectAcctCdNmAutoCompleteResponse> {
+        return custUseCase.getDirectAcctCdNmAutoCompleteList(searchParam)
     }
 }
