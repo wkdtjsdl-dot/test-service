@@ -196,13 +196,16 @@ class CustCustomRepositoryImpl(
 
     override suspend fun findCustDetailInfoByCustMstId(custMstId: String): CustDetailInfo? {
         val directAcctMst = SCS_CUST_MST.`as`("DIRECT_ACCT_MST")
+        val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
 
         val query = dslContext.select(
             SCS_CUST_MST.asterisk(),
-            directAcctMst.CUST_NM.`as`("direct_acct_nm")
+            directAcctMst.CUST_NM.`as`("direct_acct_nm"),
+            rprsCustMst.CUST_NM.`as`("rprs_cust_nm")
         )
             .from(SCS_CUST_MST)
             .leftJoin(directAcctMst).on(SCS_CUST_MST.DIRECT_ACCT_CD.eq(directAcctMst.CUST_CD))
+            .leftJoin(rprsCustMst).on(SCS_CUST_MST.RPRS_CUST_CD.eq(rprsCustMst.CUST_CD))
             .where(SCS_CUST_MST.CUST_MST_ID.eq(custMstId))
 
         var sql = databaseClient.sql(query.sql)
@@ -265,25 +268,21 @@ class CustCustomRepositoryImpl(
             .asFlow()
     }
 
+    // 대표거래처 자동완성
     override fun findRprsCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteInfo> {
         val conditions = mutableListOf<Condition>()
         val keyword = searchParam.rprsCustCdNm?.takeIf { it.isNotBlank() } ?: return flowOf()
 
-        val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+        conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
+        conditions += SCS_CUST_MST.RPRS_CUST_YN.isTrue()
 
-        conditions += SCS_CUST_MST.RPRS_CUST_CD.containsIgnoreCase(keyword).or(rprsCustMst.CUST_NM.containsIgnoreCase(keyword))
-
-        val selectFields = arrayOf(
-            SCS_CUST_MST.RPRS_CUST_CD,
-            rprsCustMst.CUST_NM.`as`("RPRS_CUST_NM")
+        val query = dslContext.select(
+            SCS_CUST_MST.CUST_CD.`as`("rprs_cust_cd"),
+            SCS_CUST_MST.CUST_NM.`as`("rprs_cust_nm")
         )
-        val orderByField = SCS_CUST_MST.RPRS_CUST_CD.asc()
-
-        val query = dslContext.selectDistinct(*selectFields)
             .from(SCS_CUST_MST)
-            .leftJoin(rprsCustMst).on(SCS_CUST_MST.RPRS_CUST_CD.eq(rprsCustMst.CUST_CD))
             .where(conditions)
-            .orderBy(orderByField)
+            .orderBy(SCS_CUST_MST.RPRS_CUST_CD.asc())
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
