@@ -8,7 +8,6 @@ import com.idrsys.ailis.sales.application.required.repository.contract.ContractC
 import com.idrsys.ailis.sales.application.required.repository.contract.ContractRepository
 import com.idrsys.ailis.sales.application.usecase.contract.ContractUseCase
 import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
-import com.idrsys.ailis.sales.domain.model.Contract
 import com.idrsys.ailis.sales.shared.mapper.ContractMapper
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -48,26 +47,7 @@ class ContractService(
 
     override suspend fun createContract(custMstId: String, command: ContractCommand, adminId: String): ContractResponse {
         val now = LocalDateTime.now()
-        val contract = Contract(
-            custMstId = custMstId,
-            custCd = command.custCd,
-            cntrNo = command.cntrNo,
-            cntrDt = command.cntrDt,
-            cntrStartDt = command.cntrStartDt,
-            cntrEndDt = command.cntrEndDt,
-            cntrType = command.cntrType,
-            recntrMonth = command.recntrMonth,
-            cntrNm = command.cntrNm,
-            cntrCont = command.cntrCont,
-            cntrPicId = command.cntrPicId,
-            atchGrupId = command.atchGrupId,
-            useYn = command.useYn,
-            creator = adminId,
-            createDtime = now,
-            updater = adminId,
-            updateDtime = now
-        ).apply { setAsNew() }
-
+        val contract = contractMapper.toDomain(command, custMstId, adminId, now).apply { setAsNew() }
         val savedContract = contractRepository.save(contract)
         return contractMapper.toResponse(savedContract)
     }

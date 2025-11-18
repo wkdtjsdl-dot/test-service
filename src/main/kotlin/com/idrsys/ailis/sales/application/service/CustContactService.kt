@@ -7,7 +7,6 @@ import com.idrsys.ailis.sales.application.required.repository.custContact.CustCo
 import com.idrsys.ailis.sales.application.required.repository.custContact.CustContactRepository
 import com.idrsys.ailis.sales.application.usecase.custContact.CustContactUseCase
 import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
-import com.idrsys.ailis.sales.domain.model.CustContact
 import com.idrsys.ailis.sales.shared.mapper.CustContactMapper
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -31,7 +30,7 @@ class CustContactService(
 
         val custContacts = custContactCustomRepository.findCustContacts(searchParam, pageable).map { dto ->
             val empNm = dto.creator.let { baseServiceClient.getUser(it)?.userNm }
-            custContactMapper.toResponse(dto.copy(empNm = empNm))
+            custContactMapper.toResponseFromQuery(dto.copy(empNm = empNm))
         }.toList()
 
         return PageImpl(custContacts, pageable, total)
@@ -42,27 +41,12 @@ class CustContactService(
             ?: throw NoSuchElementException("CustContact not found with id: $custContactId")
 
         val empNm = dto.creator.let { baseServiceClient.getUser(it)?.userNm }
-        return custContactMapper.toResponse(dto.copy(empNm = empNm))
+        return custContactMapper.toResponseFromQuery(dto.copy(empNm = empNm))
     }
 
     override suspend fun createCustContact(command: CustContactCommand, adminId: String): CustContactResponse {
         val now = LocalDateTime.now()
-        val custContact = CustContact(
-            custMstId = command.custMstId,
-            custCd = command.custCd,
-            acctChargeNm = command.acctChargeNm,
-            ofpoJbpo = command.ofpoJbpo,
-            telno = command.telno,
-            phno = command.phno,
-            email = command.email,
-            remark = command.remark,
-            useYn = command.useYn,
-            creator = adminId,
-            createDtime = now,
-            updater = adminId,
-            updateDtime = now
-        ).apply { setAsNew() }
-
+        val custContact = custContactMapper.toDomain(command, adminId, now).apply { setAsNew() }
         val savedCustContact = custContactRepository.save(custContact)
         return custContactMapper.toResponse(savedCustContact)
     }

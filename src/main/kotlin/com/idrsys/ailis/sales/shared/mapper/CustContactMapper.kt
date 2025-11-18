@@ -4,26 +4,32 @@ import com.idrsys.ailis.sales.application.dto.query.CustContactQuery
 import com.idrsys.ailis.sales.application.dto.request.custContact.CustContactCommand
 import com.idrsys.ailis.sales.application.dto.response.CustContactResponse
 import com.idrsys.ailis.sales.domain.model.CustContact
-import com.idrsys.ailis.sales.generated.jooq.tables.records.ScsCustContactRecord
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
-import org.mapstruct.Mappings
+import java.time.LocalDateTime
 
 @Mapper(componentModel = "spring")
 interface CustContactMapper {
 
-    fun toResponse(dto: CustContactQuery): CustContactResponse
+    @Mapping(target = "custContactId", ignore = true)
+    @Mapping(target = "custMstId", source = "command.custMstId")
+    @Mapping(target = "custCd", source = "command.custCd")
+    @Mapping(target = "acctChargeNm", source = "command.acctChargeNm")
+    @Mapping(target = "ofpoJbpo", source = "command.ofpoJbpo")
+    @Mapping(target = "telno", source = "command.telno")
+    @Mapping(target = "phno", source = "command.phno")
+    @Mapping(target = "email", source = "command.email")
+    @Mapping(target = "remark", source = "command.remark")
+    @Mapping(target = "useYn", source = "command.useYn")
+    @Mapping(target = "creator", source = "creator")
+    @Mapping(target = "updater", source = "creator")
+    @Mapping(target = "createDtime", source = "now")
+    @Mapping(target = "updateDtime", source = "now")
+    fun toDomain(command: CustContactCommand, creator: String, now: LocalDateTime): CustContact
+
+    @Mapping(target = "empNm", ignore = true)
     fun toResponse(domain: CustContact): CustContactResponse
 
-    @Mappings(
-        Mapping(target = "custContactId", ignore = true),
-        Mapping(target = "creator", ignore = true),
-        Mapping(target = "createDtime", ignore = true),
-        Mapping(target = "updater", ignore = true),
-        Mapping(target = "updateDtime", ignore = true),
-        Mapping(target = "useYn", defaultValue = "true")
-    )
-    fun toRecord(command: CustContactCommand): ScsCustContactRecord
-
-    fun toRecord(domain: CustContact): ScsCustContactRecord
+    @Mapping(target = "empNm", source = "empNm")
+    fun toResponseFromQuery(query: CustContactQuery): CustContactResponse
 }

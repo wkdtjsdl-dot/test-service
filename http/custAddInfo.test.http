@@ -1,0 +1,40 @@
+### 관리자 Login 요청
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {% 
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+### 고객 추가정보(특이사항) 상세 조회
+GET {{api-service}}/api/sals/custs/add-info/36973D74-A010-4975-A5EE-9B8697F28C51
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+
+
+### 고객 추가정보(특이사항) 저장
+POST {{api-service}}/api/sals/custs/add-info
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "custMstId": "DDF7D716-E498-4EE6-8391-F03160FA4E03",
+  "custCd": "G010000",
+  "spnoteDivCd": "SPND_CM",
+  "spnote": "테스트 특이사항입니다.2",
+  "useYn": true
+}
