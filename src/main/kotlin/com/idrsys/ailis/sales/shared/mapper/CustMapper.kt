@@ -21,6 +21,7 @@ import java.time.LocalDateTime
 interface CustMapper {
 
     @Mappings(
+        Mapping(target = "custMstId", ignore = true),
         Mapping(target = "creator", source = "creator"),
         Mapping(target = "createDtime", source = "now"),
         Mapping(target = "updater", source = "creator"),
