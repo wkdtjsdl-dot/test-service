@@ -9,7 +9,6 @@ import com.idrsys.ailis.sales.application.usecase.gcgnSalsPicInfo.GcgnSalsPicInf
 import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
 import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalaPicInfoAutoSearchParam
 import com.idrsys.ailis.sales.application.dto.response.GcgnSalsPicInfoAutoResponse
-import com.idrsys.ailis.sales.domain.model.GcgnSalsPicInfo
 import com.idrsys.ailis.sales.shared.mapper.GcgnSalsPicInfoMapper
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -49,19 +48,7 @@ class GcgnSalsPicInfoService(
 
     override suspend fun createGcgnSalsPicInfo(command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
         val now = LocalDateTime.now()
-        val gcgnSalsPicInfo = GcgnSalsPicInfo(
-            custMstId = command.custMstId,
-            applyStartDt = command.applyStartDt,
-            salsTeamCd = command.salsTeamCd,
-            empUserId = command.empUserId,
-            custCd = command.custCd,
-            applyEndDt = command.applyEndDt,
-            creator = adminId,
-            createDtime = now,
-            updater = adminId,
-            updateDtime = now
-        ).apply { setAsNew() }
-
+        val gcgnSalsPicInfo = gcgnSalsPicInfoMapper.toDomain(command, adminId, now).apply { setAsNew() }
         val savedGcgnSalsPicInfo = gcgnSalsPicInfoRepository.save(gcgnSalsPicInfo)
         val response = gcgnSalsPicInfoMapper.toResponse(savedGcgnSalsPicInfo)
         val empNm = response.empUserId.let { baseServiceClient.getUser(it)?.userNm }
