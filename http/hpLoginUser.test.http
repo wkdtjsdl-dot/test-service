@@ -8,7 +8,7 @@ Accept: application/json
   "passwd": "test1234"
 }
 
-> {% 
+> {%
     client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
         .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
     );
@@ -18,28 +18,59 @@ Accept: application/json
     client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
 %}
 
-### 고객 추가정보(홈페이지 로그인 사용자) 단건 조회
-GET {{api-service}}/api/sals/custs/hp-login-user/USER_ID_PLACEHOLDER
+### 홈페이지 로그인 사용자 목록 조회 (페이징)
+GET {{api-service}}/api/sals/custs/hp-login-user?custMstId=DDF7D716-E498-4EE6-8391-F03160FA4E03&page=0&size=15
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 고객 추가정보(홈페이지 로그인 사용자) 저장
+
+
+### 홈페이지 로그인 사용자 생성
 POST {{api-service}}/api/sals/custs/hp-login-user
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 {
-  "hpLoginUserId": "DDF7D716-E498-4EE6-8391-F03160FA4E03",
+  "hpLoginUserId": "550e8400-e29b-41d4-a716-446655440001",
   "custMstId": "DDF7D716-E498-4EE6-8391-F03160FA4E03",
-  "custCd": "TESTCUST001",
-  "hpCustDiv": "HCD_01",
-  "loginId": "testuser001",
-  "loginPswd": "password123",
+  "custCd": "G010000",
+  "hpCustDiv": "HP_CUST_DIV_01",
+  "loginId": "testuser01",
+  "loginPswd": "testpassword123",
   "loginFailNum": 0,
   "pswdChngDtime": null,
   "lastLoginDtime": null,
-  "loginNm": "테스트사용자",
+  "loginNm": "테스트 사용자",
   "loginPersonContact": "010-1234-5678",
   "useYn": true
 }
+
+
+
+### 홈페이지 로그인 사용자 수정
+PUT {{api-service}}/api/sals/custs/hp-login-user/550e8400-e29b-41d4-a716-446655440001
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "hpLoginUserId": "550e8400-e29b-41d4-a716-446655440001",
+  "custMstId": "DDF7D716-E498-4EE6-8391-F03160FA4E03",
+  "custCd": "G010000",
+  "hpCustDiv": "HP_CUST_DIV_01",
+  "loginId": "testuser01_updated",
+  "loginPswd": "newpassword456",
+  "loginFailNum": 0,
+  "pswdChngDtime": null,
+  "lastLoginDtime": null,
+  "loginNm": "수정된 테스트 사용자",
+  "loginPersonContact": "010-9876-5432",
+  "useYn": true
+}
+
+
+
+### 홈페이지 로그인 사용자 삭제
+DELETE {{api-service}}/api/sals/custs/hp-login-user/550e8400-e29b-41d4-a716-446655440001
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

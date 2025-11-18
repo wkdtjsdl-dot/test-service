@@ -12,8 +12,16 @@ import org.mapstruct.Mappings
 @Mapper(componentModel = "spring")
 interface ContractMapper {
 
+    @Mappings(
+        Mapping(target = "custNm", ignore = true),
+        Mapping(target = "cntrPicNm", ignore = true)
+    )
     fun toResponse(contract: com.idrsys.ailis.sales.domain.model.Contract): ContractResponse
 
+    @Mappings(
+        Mapping(target = "custNm", ignore = true),
+        Mapping(target = "cntrPicNm", ignore = true)
+    )
     fun toResponse(dto: ContractWithDetails): ContractResponse
 
     fun toListResponse(dto: ContractWithDetails): ContractListResponse
@@ -24,7 +32,8 @@ interface ContractMapper {
         Mapping(target = "createDtime", ignore = true),
         Mapping(target = "updater", ignore = true),
         Mapping(target = "updateDtime", ignore = true),
-        Mapping(target = "useYn", defaultValue = "true")
+        Mapping(target = "useYn", defaultValue = "true"),
+        Mapping(target = "custMstId", ignore = true)
     )
     fun toRecord(command: ContractCommand): ScsCustCntrRecord
 

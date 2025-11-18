@@ -20,4 +20,8 @@ class HpLoginUserRepositoryImpl(
     override suspend fun save(hpLoginUser: HpLoginUser): HpLoginUser {
         return dataRepository.save(hpLoginUser)
     }
+
+    override suspend fun deleteById(id: String) {
+        dataRepository.deleteById(id)
+    }
 }

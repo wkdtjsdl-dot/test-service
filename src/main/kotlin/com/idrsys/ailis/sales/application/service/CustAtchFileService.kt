@@ -9,6 +9,7 @@ import com.idrsys.ailis.sales.application.required.repository.custatchfile.CustA
 import com.idrsys.ailis.sales.application.usecase.custatchfile.CustAtchFileUseCase
 import com.idrsys.ailis.sales.shared.mapper.CustAtchFileMapper
 import com.idrsys.web.exception.UserDefinedException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
@@ -25,6 +26,7 @@ class CustAtchFileService(
     private val custAtchFileMapper: CustAtchFileMapper
 ) : CustAtchFileUseCase {
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun getFiles(searchParam: CustAtchFileSearchParam): Flow<CustAtchFileResponse> {
         return flow {
             val custAddInfo = custAddInfoRepository.findById(searchParam.custAddInfoId)

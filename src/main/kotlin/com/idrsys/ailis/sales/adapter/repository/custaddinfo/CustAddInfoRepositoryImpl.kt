@@ -20,4 +20,8 @@ class CustAddInfoRepositoryImpl(
     override suspend fun save(custAddInfo: CustAddInfo): CustAddInfo {
         return dataRepository.save(custAddInfo)
     }
+
+    override suspend fun delete(custAddInfo: CustAddInfo) {
+        dataRepository.delete(custAddInfo)
+    }
 }
