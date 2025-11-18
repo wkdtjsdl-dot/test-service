@@ -30,8 +30,8 @@ data class CustResponse(
     val studyProjNm: String?,            // 연구과제명
     val asrtCd: String?,                 // 종별코드
     val careInstNo: String?,             // 요양기관번호
-                                        // 전화번호
-                                        // 팩스번호
+    val telNo: String?,                 // 전화번호
+    val faxNo: String?,                 // 팩스번호
     val zipcd: String?,                  // 우편번호
     val addr1: String?,                  // 주소1
     val addr2: String?,                  // 주소2
