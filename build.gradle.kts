@@ -29,6 +29,7 @@ configurations.implementation {
 }
 
 dependencies {
+    implementation(files("libs/sapjco3.jar")) // SAP
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
