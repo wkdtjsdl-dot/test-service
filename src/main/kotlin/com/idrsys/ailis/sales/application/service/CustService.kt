@@ -11,6 +11,7 @@ import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteR
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
 import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
+import com.idrsys.ailis.sales.application.required.repository.cust.CustMstHstRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
@@ -30,6 +31,7 @@ import java.time.LocalDateTime
 class CustService(
     private val custCustomRepository: CustCustomRepository,
     private val custRepository: CustRepository,
+    private val custMstHistRepository: CustMstHstRepository,
     private val custMapper: CustMapper,
     private val baseServiceClient: BaseServiceClient
 ) : CustUseCase {
@@ -79,17 +81,28 @@ class CustService(
         }
 
         val newCust = custMapper.toDomain(command, creator, LocalDateTime.now())
+        val savedCust = custRepository.save(newCust)
 
-        return custRepository.save(newCust)
+        // Save history
+        val hist = custMapper.toHistDomain(savedCust)
+        custMstHistRepository.save(hist)
+
+        return savedCust
     }
 
+    @Transactional(readOnly = false)
     override suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust {
         val cust = custRepository.findByCustMstId(custMstId)
             ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
 
         cust.update(command, updater)
+        val updatedCust = custRepository.save(cust)
 
-        return custRepository.save(cust)
+        // Save history
+        val hist = custMapper.toHistDomain(updatedCust)
+        custMstHistRepository.save(hist)
+
+        return updatedCust
     }
 
     override suspend fun isCustCdExists(custCd: String): Boolean {

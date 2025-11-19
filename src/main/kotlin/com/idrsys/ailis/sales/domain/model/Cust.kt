@@ -80,6 +80,8 @@ class Cust(
     sotOutputQnty: Int,             // SOT출력수량
     rstNtcnRecpYn: Boolean = false,          // 결과알림수신여부
     rstNtcnRecpEmailAddr: String?,   // 결과알림수신이메일주소
+    reqMethodCd: String?,           // 의뢰메소드(방법)코드
+    reqIfTypeCd: String?,           // 의뢰연동유형코드
     // 테이블공통
     creator: String,                // 생성자
     createDtime: LocalDateTime,     // 생성일시
@@ -348,6 +350,14 @@ class Cust(
     var rstNtcnRecpEmailAddr: String? = rstNtcnRecpEmailAddr
         private set
 
+    @Column("req_method_cd")
+    var reqMethodCd: String? = reqMethodCd
+        private set
+    
+    @Column("req_if_type_cd")
+    var reqIfTypeCd: String? = reqIfTypeCd
+        private set
+
     // 테이블공통
     @Column("creator")
     var creator: String = creator
@@ -434,6 +444,8 @@ class Cust(
         this.sotOutputQnty = command.sotOutputQnty
         this.rstNtcnRecpYn = command.rstNtcnRecpYn
         this.rstNtcnRecpEmailAddr = command.rstNtcnRecpEmailAddr
+        this.reqMethodCd = command.reqMethodCd
+        this.reqIfTypeCd = command.reqIfTypeCd
         // 테이블공통
         this.updater = updater
         this.updateDtime = LocalDateTime.now()

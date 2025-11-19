@@ -18,7 +18,8 @@ data class CustWithSalsPicInfo(
     val sapCustCd: String?,             // ERP코드
     val salsPicInfo: String?,           // 담당사원 (e.g., "G=홍길동,C=홍길동,H=홍길동")
     val custStatCd: String,             // 고객상태
-    val createDtime: LocalDateTime      // 등록일시
+    val createDtime: LocalDateTime,      // 등록일시
+    val frgnAcctYn: Boolean,             // 해외거래처여부
 )
 
 // 고객 상세
@@ -94,6 +95,8 @@ data class CustDetailInfo(
     val sotOutputQnty: Int,             // SOT출력수량
     val rstNtcnRecpYn: Boolean,          // 결과알림수신여부
     val rstNtcnRecpEmailAddr: String?,   // 결과알림수신이메일주소
+    val reqMethodCd: String?,           // 의뢰메소드(방법)코드
+    val reqIfTypeCd: String?,           // 의뢰연동유형코드
     // 테이블공통
     val creator: String,                // 생성자
     val createDtime: LocalDateTime,     // 생성일시

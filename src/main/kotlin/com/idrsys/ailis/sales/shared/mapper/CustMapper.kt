@@ -12,6 +12,7 @@ import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.dto.response.CustResponse
 import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.domain.model.Cust
+import com.idrsys.ailis.sales.domain.model.CustMstHst
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Mappings
@@ -29,6 +30,14 @@ interface CustMapper {
     )
     fun toDomain(command: CustRegisterCommand, creator: String, now: LocalDateTime) : Cust
 
+    @Mappings(
+        Mapping(target = "custMstHstId", ignore = true),
+    )
+    fun toHistDomain(cust: Cust): CustMstHst
+
+    @Mappings(
+        Mapping(target = "deptNm", ignore = true)
+    )
     fun toListResponse(model: CustWithSalsPicInfo): CustListResponse
 
     fun toDetailResponse(model: CustDetailInfo): CustResponse

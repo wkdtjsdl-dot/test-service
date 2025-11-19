@@ -71,6 +71,8 @@ data class CustCommand(
     val sotOutputQnty: Int,             // SOT출력수량
     val rstNtcnRecpYn: Boolean,          // 결과알림수신여부
     val rstNtcnRecpEmailAddr: String?,   // 결과알림수신이메일주소
+    val reqMethodCd: String?,           // 의뢰메소드(방법)코드
+    val reqIfTypeCd: String?,           // 의뢰연동유형코드
 )
 
 //data class CustUpdateCommand(
