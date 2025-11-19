@@ -30,4 +30,12 @@ data class ChargeResponse(
     val custNm: String? = null,
     val bzoffiCd: String? = null,
     val bzoffiNm: String? = null,
+
+    val salesPics: List<SalesPicInfo>? = null
+)
+
+data class SalesPicInfo(
+    val empUserId: String,
+    val custMstId: String,
+    val empUserNm: String? = null
 )
