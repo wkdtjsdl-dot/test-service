@@ -20,7 +20,7 @@ Accept: application/json
 
 
 ### 고객 수가 목록 조회
-GET {{api-service}}/api/sals/custs/charges/list?page=0&size=20
+GET {{api-service}}/api/sals/custs/charges/list?empUserNm=김&page=0&size=20
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

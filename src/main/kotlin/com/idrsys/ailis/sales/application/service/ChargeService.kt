@@ -25,19 +25,38 @@ class ChargeService(
         searchParam: ChargeSearchParam,
         pageable: Pageable
     ): Page<ChargeResponse> {
-        val total = chargeCustomRepository.countCharge(searchParam)
-        if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val charges: List<ChargeResponse> = chargeCustomRepository.findCharges(searchParam, pageable)
-            .map(chargeMapper::toResponse)
-            .toList()
+        var finalSearchParam = searchParam
+
+        val users = baseServiceClient.getUsers() ?: emptyList()
+        val userMap = users.associateBy { it.userId }
+
+        if (!searchParam.empUserIdNm.isNullOrBlank()) {
+            val keyword = searchParam.empUserIdNm
+            val userIds = userMap.values.filter { it.userNm.contains(keyword, ignoreCase = true) || it.userId.contains(keyword, ignoreCase = true) }
+                .map { it.userId }
+                .toList()
+            finalSearchParam = searchParam.copy(empUserIds = userIds)
+        }
 
         val departments = baseServiceClient.getDepartments() ?: emptyList()
         val deptNameByCd = departments.associate { it.deptCd to it.deptNm }
 
+        val total = chargeCustomRepository.countCharge(finalSearchParam)
+        if (total == 0L) return PageImpl(emptyList(), pageable, 0)
+
+        val charges: List<ChargeResponse> = chargeCustomRepository.findCharges(finalSearchParam, pageable)
+            .map(chargeMapper::toResponse)
+            .toList()
+
         val chargeResponses = charges.map { charge ->
-            val deptName = deptNameByCd[charge.bzoffiCd]
-            if (deptName != null) charge.copy(bzoffiNm = deptName) else charge
+            val updatedSalesPics = charge.salesPics?.map { pic ->
+                pic.copy(empUserNm = userMap[pic.empUserId]?.userNm)
+            }
+            charge.copy(
+                bzoffiNm = deptNameByCd[charge.bzoffiCd],
+                salesPics = updatedSalesPics
+            )
         }
 
         return PageImpl(chargeResponses, pageable, total)

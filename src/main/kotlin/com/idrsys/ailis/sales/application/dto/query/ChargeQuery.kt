@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.application.dto.query
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -29,5 +30,16 @@ data class ChargeWithDetails (
 
     // Joined fields
     val custNm: String? = null,
-    val bzoffiCd: String? = null
+    val bzoffiCd: String? = null,
+
+    // 1:N 영업담당자 리스트
+    @JsonProperty("sales_pics")
+    val salesPics: List<SalesPicInfo> = emptyList()
+)
+
+data class SalesPicInfo(
+    @JsonProperty("emp_user_id")
+    val empUserId: String,
+    @JsonProperty("cust_mst_id")
+    val custMstId: String
 )
