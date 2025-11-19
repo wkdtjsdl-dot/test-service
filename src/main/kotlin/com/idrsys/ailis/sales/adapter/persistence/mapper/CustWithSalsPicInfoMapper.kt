@@ -22,6 +22,7 @@ internal fun Row.toCustWithSalsPicInfo(): CustWithSalsPicInfo {
         sapCustCd = this.get("sap_cust_cd", String::class.java),
         salsPicInfo = this.get("sals_pic_info", String::class.java), // Reads the aggregated string
         custStatCd = this.get("cust_stat_cd", String::class.java)!!,
-        createDtime = this.get("create_dtime", LocalDateTime::class.java)!!
+        createDtime = this.get("create_dtime", LocalDateTime::class.java)!!,
+        frgnAcctYn = this.get("frgn_acct_yn", Boolean::class.java)!!,
     )
 }
