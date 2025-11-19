@@ -74,7 +74,7 @@ fun Row.toCustDetailInfo(): CustDetailInfo {
         rstNtcnRecpYn = this.get("rst_ntcn_recp_yn", Boolean::class.java)!!,
         rstNtcnRecpEmailAddr = this.get("rst_ntcn_recp_email_addr", String::class.java),
         reqMethodCd = this.get("req_method_cd", String::class.java),
-        reqIfTypeCd = this.get("req_if_type_cd", String::class.java)!!,
+        reqIfTypeCd = this.get("req_if_type_cd", String::class.java),
         creator = this.get("creator", String::class.java)!!,
         createDtime = this.get("create_dtime", LocalDateTime::class.java)!!,
         updater = this.get("updater", String::class.java)!!,
