@@ -95,4 +95,9 @@ class TestCodeMappingService(
             .map { savedMapping -> testCodeMappingMapper.toResponse(savedMapping) }
     }
 
+    override suspend fun searchTestCodeMappingList(searchParam: TestCodeMappingSearchParam): Flow<TestCodeMappingResponse> =
+        testCodeMappingCustomRepository.searchTestCodeMappingList(searchParam)
+            .map { testCodeMapping ->
+                testCodeMappingMapper.toResponse(testCodeMapping)
+            }
 }

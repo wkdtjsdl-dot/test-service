@@ -19,7 +19,7 @@ Accept: application/json
 %}
 
 ### 고객 검사 코드 맵핑 목록
-GET {{api-service}}/api/sals/custs/tst-cd-mpgs?custCd=G010000&page=0&size=10
+GET {{api-service}}/api/sals/custs/tst-cd-mpgs?custCd=
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -126,3 +126,9 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
     "tstNm": "지놈검사명테스트"
   }
 ]
+
+### 고객 검사코드맵핑 엑셀 다운로드
+GET {{api-service}}/api/sals/custs/tst-cd-mpgs/excel?custCd=G010000
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

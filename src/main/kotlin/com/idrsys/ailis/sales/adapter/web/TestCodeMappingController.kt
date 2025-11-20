@@ -6,15 +6,19 @@ import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingExcelValid
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingResponse
 import com.idrsys.ailis.sales.application.usecase.testCodeMapping.TestCodeMappingUseCase
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
+import com.idrsys.reactive.excel.ReactiveExcelWriter
 import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import org.springdoc.core.annotations.ParameterObject
+import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.HttpHeaders
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "TestCodeMappingController", description = "고객 검사 코드 맵핑  Controller")
 class TestCodeMappingController(
     private val testCodeMappingUseCase: TestCodeMappingUseCase,
+    private val excelWriter: ReactiveExcelWriter,
 ) {
 
     @GetMapping
@@ -57,5 +62,24 @@ class TestCodeMappingController(
         @JwtAuthorization auth: AuthenticationAdmin,
     ): Flow<TestCodeMappingResponse> {
         return testCodeMappingUseCase.createTestCodeMappingByExcel(commands, auth.adminId)
+    }
+
+    @GetMapping("/excel")
+    @Operation(summary = "downloadBatchJobInfos", description = "고객 검사코드맵핑 엑셀 다운로드")
+    suspend fun downloadBatchJobInfos(
+        @ParameterObject @Parameter(hidden = true) param: TestCodeMappingSearchParam
+    ): ResponseEntity<Flow<DataBuffer>> {
+        val excelInfos = testCodeMappingUseCase.searchTestCodeMappingList(param)
+
+        val excelFlow = excelWriter.generateExcel(
+            excelInfos,
+            TestCodeMappingResponse::class,
+            "test-code-mapping"
+        )
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"test-code-mapping.xlsx\"")
+            .header(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .body(excelFlow)
     }
 }
