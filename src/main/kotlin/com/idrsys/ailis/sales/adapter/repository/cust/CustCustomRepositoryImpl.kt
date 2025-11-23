@@ -1,25 +1,22 @@
 package com.idrsys.ailis.sales.adapter.repository.cust
 
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustCdNmAutoCompleteInfo
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustDetailInfo
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustWithSalsPicInfo
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toDirectAcctCdNmAutoCompleteInfo
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toRprsCustCdNmAutoCompleteInfo
+import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
+import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
+import com.idrsys.ailis.sales.application.dto.query.*
+import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_CNTR
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
-import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustCdNmAutoCompleteInfo
-import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustWithSalsPicInfo
-import com.idrsys.ailis.sales.adapter.persistence.mapper.toRprsCustCdNmAutoCompleteInfo
-import com.idrsys.ailis.sales.adapter.persistence.mapper.toDirectAcctCdNmAutoCompleteInfo
-import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustDetailInfo
-import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
-import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
-import com.idrsys.ailis.sales.application.dto.query.CustCdNmAutoCompleteInfo
-import com.idrsys.ailis.sales.application.dto.query.CustDetailInfo
-import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
-import com.idrsys.ailis.sales.application.dto.query.DirectAcctCdNmAutoCompleteInfo
-import com.idrsys.ailis.sales.application.dto.query.RprsCustCdNmAutoCompleteInfo
-import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.*
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.*
@@ -33,6 +30,16 @@ class CustCustomRepositoryImpl(
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient,
 ) : CustCustomRepository {
+    override suspend fun findCustMstIdByCustCd(custCd: String): String? {
+        val query = dslContext.select(SCS_CUST_MST.CUST_MST_ID)
+            .from(SCS_CUST_MST)
+            .where(SCS_CUST_MST.CUST_CD.eq(custCd))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.get("cust_mst_id", String::class.java) }.one().awaitSingleOrNull()
+    }
 
     override fun findCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable): Flow<CustWithSalsPicInfo> {
         val conditions = buildConditions(searchParam)
@@ -92,7 +99,7 @@ class CustCustomRepositoryImpl(
         val needsSalsPicInfoJoin = !searchParam.empUserId.isNullOrBlank()
 
         var queryPart = if (needsContractJoin || needsSalsPicInfoJoin) {
-            dslContext.select(DSL.countDistinct(SCS_CUST_MST.CUST_MST_ID))
+            dslContext.select(countDistinct(SCS_CUST_MST.CUST_MST_ID))
         } else {
             dslContext.selectCount()
         }.from(SCS_CUST_MST)

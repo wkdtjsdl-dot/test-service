@@ -1,0 +1,134 @@
+### 관리자 Login 요청
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {% 
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+### 고객 검사 코드 맵핑 목록
+GET {{api-service}}/api/sals/custs/tst-cd-mpgs?custCd=
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 검사 코드 맵핑 등록
+POST {{api-service}}/api/sals/custs/tst-cd-mpgs
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "custCd": "G010000",
+  "custTstCd": "고객검사코드",
+  "custSubTstCd": "고객부속검사코드",
+  "custTstNm": "고객검사명테스트",
+  "tstCd": "지놈코드테스트",
+  "tstNm": "지놈검사명테스트"
+}
+
+### 고객 검사코드맵핑 엑셀일괄등록 검증
+POST {{api-service}}/api/sals/custs/tst-cd-mpgs/excel-valid
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+[
+    {
+        "custCd": "G000001",
+        "custTstCd": "JA001",
+        "tstCd": "지놈코드테스트"
+    },
+    {
+        "custCd": "G000002",
+      "custTstCd": "JA001",
+        "tstCd": "지놈코드테스트"
+    },
+    {
+        "custCd": "2131234",
+      "custTstCd": "JA001",
+        "tstCd": "지놈코드테스트"
+    },
+    {
+        "custCd": "G000005",
+      "custTstCd": "JA001",
+        "tstCd": "지놈코드테스트"
+    },
+    {
+        "custCd": "G000007",
+      "custTstCd": "JA001",
+        "tstCd": "지놈코드테스트"
+    },
+    {
+        "custCd": "12213213",
+      "custTstCd": "JA001",
+        "tstCd": "지놈코드테스트"
+    }
+]
+
+### 고객 검사코드맵핑 엑셀일괄등록 저장
+POST {{api-service}}/api/sals/custs/tst-cd-mpgs/excel-save
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+[
+  {
+    "custCd": "G010000",
+    "custTstCd": "TEST1",
+    "custSubTstCd": "고객부속검사코드",
+    "custTstNm": "고객검사명테스트",
+    "tstCd": "지놈TEST1",
+    "tstNm": "지놈검사명테스트"
+  },
+  {
+    "custCd": "G010000",
+    "custTstCd": "TEST2",
+    "custSubTstCd": "고객부속검사코드",
+    "custTstNm": "고객검사명테스트",
+    "tstCd": "지놈TEST2",
+    "tstNm": "지놈검사명테스트"
+  },
+  {
+    "custCd": "G010000",
+    "custTstCd": "TEST3",
+    "custSubTstCd": "고객부속검사코드",
+    "custTstNm": "고객검사명테스트",
+    "tstCd": "지놈TEST3",
+    "tstNm": "지놈검사명테스트"
+  },
+  {
+    "custCd": "G010000",
+    "custTstCd": "TEST4",
+    "custSubTstCd": "고객부속검사코드",
+    "custTstNm": "고객검사명테스트",
+    "tstCd": "지놈TEST4",
+    "tstNm": "지놈검사명테스트"
+  },
+  {
+    "custCd": "G010000",
+    "custTstCd": "TEST5",
+    "custSubTstCd": "고객부속검사코드",
+    "custTstNm": "고객검사명테스트",
+    "tstCd": "지놈TEST5",
+    "tstNm": "지놈검사명테스트"
+  }
+]
+
+### 고객 검사코드맵핑 엑셀 다운로드
+GET {{api-service}}/api/sals/custs/tst-cd-mpgs/excel?custCd=G010000
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
