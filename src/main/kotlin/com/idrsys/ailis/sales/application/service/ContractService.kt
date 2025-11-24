@@ -46,8 +46,20 @@ class ContractService(
     }
 
     override suspend fun createContract(custMstId: String, command: ContractCommand, adminId: String): ContractResponse {
+        // 1. 첨부파일 처리: atchFiles가 있으면 base-service 호출
+        val finalAtchGrupId = if (command.atchFiles != null) {
+            val response = baseServiceClient.saveAttachedFiles(command.atchFiles, adminId)
+            response?.attachedFileGroupId ?: command.atchGrupId
+        } else {
+            command.atchGrupId
+        }
+
+        // 2. atchGrupId를 finalAtchGrupId로 교체한 command 생성
+        val finalCommand = command.copy(atchGrupId = finalAtchGrupId)
+
+        // 3. Contract 생성 및 저장
         val now = LocalDateTime.now()
-        val contract = contractMapper.toDomain(command, custMstId, adminId, now).apply { setAsNew() }
+        val contract = contractMapper.toDomain(finalCommand, custMstId, adminId, now).apply { setAsNew() }
         val savedContract = contractRepository.save(contract)
         return contractMapper.toResponse(savedContract)
     }
@@ -56,7 +68,19 @@ class ContractService(
         val contract = contractCustomRepository.findDomainById(custCntrId)
             ?: throw NoSuchElementException("Contract not found with id: $custCntrId")
 
-        contract.update(command, adminId)
+        // 1. 첨부파일 처리: atchFiles가 있으면 base-service 호출
+        val finalAtchGrupId = if (command.atchFiles != null) {
+            val response = baseServiceClient.saveAttachedFiles(command.atchFiles, adminId)
+            response?.attachedFileGroupId ?: command.atchGrupId
+        } else {
+            command.atchGrupId
+        }
+
+        // 2. atchGrupId를 finalAtchGrupId로 교체한 command 생성
+        val finalCommand = command.copy(atchGrupId = finalAtchGrupId)
+
+        // 3. Contract 업데이트 및 저장
+        contract.update(finalCommand, adminId)
 
         val updatedContract = contractRepository.save(contract)
         return contractMapper.toResponse(updatedContract)

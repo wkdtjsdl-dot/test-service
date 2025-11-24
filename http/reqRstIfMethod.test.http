@@ -19,7 +19,7 @@ Accept: application/json
 %}
 
 ### 고객 추가정보(연동정보) 단건 조회
-GET {{api-service}}/api/sals/custs/rst-if-method/METHOD_ID_PLACEHOLDER
+GET {{api-service}}/api/sals/custs/rst-if-method/36973D74-A010-4975-A5EE-9B8697F28C51
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

@@ -7,6 +7,9 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import com.idrsys.ailis.sales.application.dto.response.inner.BaseUserResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.BaseDepartmentResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseAttachedFileResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseAttachedFileGroupResponse
+import com.idrsys.ailis.sales.application.dto.request.attachedfile.AttachedFileGroupCreateCommand
 
 @Component
 class BaseServiceClient(
@@ -75,5 +78,63 @@ class BaseServiceClient(
             } catch (ex: Exception){
                 null
             }
+    }
+
+    // ========== 첨부파일 관련 메서드 ==========
+
+    /**
+     * 첨부파일 상세 조회
+     */
+    suspend fun getAttachedFile(attachedFileId: String): BaseAttachedFileResponse? {
+        return try {
+            client.get()
+                .uri("/api/inner/attachments/{id}", attachedFileId)
+                .retrieve()
+                .awaitBody<BaseAttachedFileResponse>()
+        } catch (ex: Exception) {
+            null
+        }
+    }
+
+    /**
+     * 여러 첨부파일 조회
+     */
+    suspend fun getAttachedFilesByIds(ids: List<String>): List<BaseAttachedFileResponse>? {
+        return try {
+            client.get()
+                .uri { uriBuilder ->
+                    uriBuilder
+                        .path("/api/inner/attachments/byids")
+                        .queryParam("ids", ids.joinToString(","))
+                        .build()
+                }
+                .retrieve()
+                .awaitBody<List<BaseAttachedFileResponse>>()
+        } catch (ex: Exception) {
+            null
+        }
+    }
+
+    /**
+     * 첨부파일 그룹 생성 (기존 파일 재사용 + 새 파일 추가)
+     */
+    suspend fun saveAttachedFiles(
+        request: AttachedFileGroupCreateCommand,
+        creatorId: String
+    ): BaseAttachedFileGroupResponse? {
+        return try {
+            client.post()
+                .uri { uriBuilder ->
+                    uriBuilder
+                        .path("/api/inner/attachments")
+                        .queryParam("creatorId", creatorId)
+                        .build()
+                }
+                .bodyValue(request)
+                .retrieve()
+                .awaitBody<BaseAttachedFileGroupResponse>()
+        } catch (ex: Exception) {
+            null
+        }
     }
 }

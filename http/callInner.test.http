@@ -19,10 +19,10 @@ Accept: application/json
 %}
 
 ### 내부용 사용자 조회
-GET {{base-service}}/api/inner/users/TEST001
+GET {{sales-service}}/api/inner/users/TEST001
 Content-Type: application/json
 
 
 ### 내부용 부서 상세 조회
-GET {{base-service}}/api/inner/departments/80032785
+GET {{sales-service}}/api/inner/departments/80032785
 Content-Type: application/json
