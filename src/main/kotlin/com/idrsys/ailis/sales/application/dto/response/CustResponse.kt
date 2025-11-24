@@ -18,6 +18,7 @@ data class CustResponse(
     val rprsNm: String?,                 // 대표자명
     val rstOutputCustNm: String?,       // 결과지출력고객명
     val careInstId: String?,             // 요양기관ID  ->  심평원명    scs_hosp_mst
+    val careInstNm: String?,             // 요양기관ID  ->  심평원명    scs_hosp_mst
     val custTypeCd: String,             // 고객유형코드
     val bzoffiCd: String?,               // 영업소코드
     val bzoffiPicId: String?,            // 영업소담당자ID

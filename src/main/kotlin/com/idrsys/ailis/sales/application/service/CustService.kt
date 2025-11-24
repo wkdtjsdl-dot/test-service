@@ -16,6 +16,7 @@ import com.idrsys.ailis.sales.application.required.repository.cust.CustRepositor
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
+import com.idrsys.ailis.sales.application.service.HospitalDataService
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -33,7 +34,8 @@ class CustService(
     private val custRepository: CustRepository,
     private val custMstHistRepository: CustMstHstRepository,
     private val custMapper: CustMapper,
-    private val baseServiceClient: BaseServiceClient
+    private val baseServiceClient: BaseServiceClient,
+    private val hospitalDataService: HospitalDataService
 ) : CustUseCase {
     override suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable): Page<CustListResponse> {
         val total = custCustomRepository.countCusts(searchParam)
@@ -65,10 +67,20 @@ class CustService(
 
     override suspend fun findCustByCustMstId(custMstId: String): CustResponse {
         val cust = custCustomRepository.findCustDetailInfoByCustMstId(custMstId)
-                    ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
 
-        return custMapper.toDetailResponse(cust)
+        val response = custMapper.toDetailResponse(cust)
 
+        if (!response.careInstId.isNullOrBlank()) {
+            try {
+                val hospitalMst = hospitalDataService.getHospitalMstDetail(response.careInstId)
+                return response.copy(careInstNm = hospitalMst.careInstNm)
+            } catch (e: Exception) {
+                e.stackTraceToString()
+            }
+        }
+
+        return response
     }
 
     @Transactional(readOnly = false)
