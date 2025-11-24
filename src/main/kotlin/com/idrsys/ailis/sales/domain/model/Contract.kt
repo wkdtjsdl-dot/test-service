@@ -59,7 +59,7 @@ class Contract(
     var cntrEndDt: LocalDate? = cntrEndDt
         private set
 
-    @Column("cntr_type")
+    @Column("cntr_type_cd")
     var cntrType: String? = cntrType
         private set
 

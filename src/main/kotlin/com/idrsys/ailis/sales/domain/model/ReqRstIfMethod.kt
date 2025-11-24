@@ -84,12 +84,18 @@ class ReqRstIfMethod(
 
     fun update(command: ReqRstIfMethodCommand, updater: String) {
         this.custMstId = command.custMstId
-        this.applyStartDt = command.applyStartDt
+        command.applyStartDt?.let { this.applyStartDt = it }
         this.custCd = command.custCd
         this.applyEndDt = command.applyEndDt
         this.reqMethodCd = command.reqMethodCd
         this.reqIfTypeCd = command.reqIfTypeCd
         this.useYn = command.useYn
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
+
+    fun updateEndDate(endDate: LocalDate, updater: String) {
+        this.applyEndDt = endDate
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }

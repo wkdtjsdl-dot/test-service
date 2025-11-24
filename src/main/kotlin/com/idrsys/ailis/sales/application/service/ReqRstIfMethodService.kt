@@ -31,10 +31,61 @@ class ReqRstIfMethodService(
 
     @Transactional
     override suspend fun save(command: ReqRstIfMethodCommand, creator: String): ReqRstIfMethodResponse {
+        val custMstId = command.custMstId ?: throw IllegalArgumentException("custMstId is required")
+        val today = java.time.LocalDate.now()
+        val yesterday = today.minusDays(1)
         val now = LocalDateTime.now()
-        val domain = mapper.toDomain(command, creator, now)
-        domain.setAsNew()
-        val saved = repository.save(domain)
-        return mapper.toResponse(saved)
+
+        // 1. 현재 유효한 레코드 조회
+        val currentRecord = customRepository.findCurrentByCustMstId(custMstId)
+
+        return if (currentRecord == null) {
+            // 2. 기존 레코드 없으면: 새 레코드 생성
+            val commandWithDates = command.copy(
+                reqRstIfMethodId = command.reqRstIfMethodId ?: java.util.UUID.randomUUID().toString(),
+                applyStartDt = today,
+                applyEndDt = java.time.LocalDate.parse("9999-12-31")
+            )
+            val domain = mapper.toDomain(commandWithDates, creator, now)
+            domain.setAsNew()
+            val saved = repository.save(domain)
+            mapper.toResponse(saved)
+        } else {
+            // 3. 기존 레코드 있으면
+            val isChanged = currentRecord.reqMethodCd != command.reqMethodCd ||
+                           currentRecord.reqIfTypeCd != command.reqIfTypeCd
+
+            if (!isChanged) {
+                // 3-a. 값 안 바뀜: no-op, 기존 레코드 반환
+                mapper.toResponse(currentRecord)
+            } else {
+                // 3-b. 값 바뀜
+                if (currentRecord.applyStartDt == today) {
+                    // 당일 수정: 덮어쓰기 (UPDATE)
+                    currentRecord.update(command.copy(
+                        applyStartDt = today,
+                        applyEndDt = java.time.LocalDate.parse("9999-12-31")
+                    ), creator)
+                    val saved = repository.save(currentRecord)
+                    mapper.toResponse(saved)
+                } else {
+                    // 이전 날짜: 이력 생성
+                    // 기존 레코드 종료일 업데이트
+                    currentRecord.updateEndDate(yesterday, creator)
+                    repository.save(currentRecord)
+
+                    // 새 레코드 생성
+                    val commandWithDates = command.copy(
+                        reqRstIfMethodId = java.util.UUID.randomUUID().toString(),
+                        applyStartDt = today,
+                        applyEndDt = java.time.LocalDate.parse("9999-12-31")
+                    )
+                    val newDomain = mapper.toDomain(commandWithDates, creator, now)
+                    newDomain.setAsNew()
+                    val saved = repository.save(newDomain)
+                    mapper.toResponse(saved)
+                }
+            }
+        }
     }
 }

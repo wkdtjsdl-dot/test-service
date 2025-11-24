@@ -18,8 +18,7 @@ class CustAtchFileCustomRepositoryImpl(
 
     override fun findAllByCustMstId(custMstId: String): Flow<CustAtchFileQuery> {
         val query = dslContext.selectFrom(SCS_CUST_ATCH_FILE)
-            .where(SCS_CUST_ATCH_FILE.CUST_MST_ID.eq(custMstId))
-            .and(SCS_CUST_ATCH_FILE.USE_YN.isTrue)
+            .where(SCS_CUST_ATCH_FILE.USE_YN.isTrue)
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
