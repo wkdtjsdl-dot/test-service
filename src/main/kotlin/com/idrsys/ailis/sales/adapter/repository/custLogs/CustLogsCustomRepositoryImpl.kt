@@ -21,6 +21,7 @@ class CustLogsCustomRepositoryImpl(
     override suspend fun findAllByCustMstId(custMstId: String): Flow<CustMstHst> {
         val query = dslContext.selectFrom(SCS_CUST_MST_HST)
             .where(SCS_CUST_MST_HST.CUST_MST_ID.eq(custMstId))
+            .orderBy(SCS_CUST_MST_HST.CUST_MST_HST_ID.desc())
 
         var statement = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value ->
