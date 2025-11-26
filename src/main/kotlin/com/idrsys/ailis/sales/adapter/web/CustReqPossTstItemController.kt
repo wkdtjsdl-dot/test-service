@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.adapter.web
 
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemCommand
+import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemSearchParam
 import com.idrsys.ailis.sales.application.dto.response.CustReqPossTstItemResponse
 import com.idrsys.ailis.sales.application.usecase.custreqposststitem.CustReqPossTstItemUseCase
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
@@ -8,6 +9,10 @@ import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springdoc.core.annotations.ParameterObject
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -17,6 +22,17 @@ import org.springframework.web.bind.annotation.*
 class CustReqPossTstItemController(
     private val useCase: CustReqPossTstItemUseCase
 ) {
+
+    @GetMapping
+    @Operation(summary = "getCustReqPossTstItemList", description = "의뢰가능검사 목록 조회")
+    suspend fun getCustReqPossTstItemList(
+        @RequestParam custMstId: String,
+        @ParameterObject @Parameter(hidden = true) searchParam: CustReqPossTstItemSearchParam,
+        @PageableDefault(page = 0, size = 15) pageable: Pageable
+    ): Page<CustReqPossTstItemResponse> {
+        val updatedSearchParam = searchParam.copy(custMstId = custMstId)
+        return useCase.getCustReqPossTstItemPage(updatedSearchParam, pageable)
+    }
 
     @GetMapping("/{custReqPossTstItemId}")
     @Operation(summary = "findItemById", description = "의뢰가능검사 단건 조회")
@@ -34,5 +50,14 @@ class CustReqPossTstItemController(
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): CustReqPossTstItemResponse {
         return useCase.saveItem(command, auth.adminId)
+    }
+
+    @DeleteMapping("/{custReqPossTstItemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "deleteCustReqPossTstItem", description = "의뢰가능검사 삭제")
+    suspend fun deleteCustReqPossTstItem(
+        @PathVariable custReqPossTstItemId: Long
+    ) {
+        useCase.deleteCustReqPossTstItem(custReqPossTstItemId)
     }
 }

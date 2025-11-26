@@ -3,7 +3,6 @@ package com.idrsys.ailis.sales.domain.model
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
 import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
-import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDate
@@ -447,6 +446,12 @@ class Cust(
         this.reqMethodCd = command.reqMethodCd
         this.reqIfTypeCd = command.reqIfTypeCd
         // 테이블공통
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
+
+    fun updateReqPossYn(newReqPossYn: Boolean, updater: String) {
+        this.reqPossYn = newReqPossYn
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }

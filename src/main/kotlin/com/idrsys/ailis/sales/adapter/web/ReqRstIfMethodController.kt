@@ -29,12 +29,12 @@ class ReqRstIfMethodController(
         return useCase.findAllByCustMstId(searchParam)
     }
 
-    @GetMapping("/{rstIfMethodId}")
-    @Operation(summary = "findById", description = "연동정보 단건 조회")
-    suspend fun findById(
-        @PathVariable rstIfMethodId: String
+    @GetMapping("/{custMstId}")
+    @Operation(summary = "findCurrentByCustMstId", description = "현재 유효한 연동정보 조회 (custMstId)")
+    suspend fun findCurrentByCustMstId(
+        @PathVariable custMstId: String
     ): ReqRstIfMethodResponse? {
-        return useCase.findById(rstIfMethodId)
+        return useCase.findCurrentByCustMstId(custMstId)
     }
 
     @PostMapping
@@ -45,5 +45,26 @@ class ReqRstIfMethodController(
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): ReqRstIfMethodResponse {
         return useCase.save(command, auth.adminId)
+    }
+
+    @GetMapping("/possYn/{custMstId}")
+    @Operation(summary = "getReqPossYn", description = "의뢰가능여부 조회")
+    suspend fun getReqPossYn(
+        @PathVariable custMstId: String
+    ): Map<String, Boolean> {
+        return useCase.getReqPossYn(custMstId)
+    }
+
+    @PatchMapping("/possYn/{custMstId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "updateReqPossYn", description = "의뢰가능여부 수정")
+    suspend fun updateReqPossYn(
+        @PathVariable custMstId: String,
+        @RequestBody request: Map<String, Boolean>,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Map<String, Boolean> {
+        val reqPossYn = request["reqPossYn"]
+            ?: throw IllegalArgumentException("reqPossYn is required")
+        return useCase.updateReqPossYn(custMstId, reqPossYn, auth.adminId)
     }
 }
