@@ -42,3 +42,10 @@ out/
 
 # Gradle properties file with sensitive credentials
 gradle.properties
+
+# misc
+.DS_Store
+api-list/
+TASK.md
+WALKTHROUGH.md
+API_DOCUMENTATION.md
