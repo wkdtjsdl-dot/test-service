@@ -3,6 +3,7 @@ package com.idrsys.ailis.sales.application.service
 import com.idrsys.ailis.sales.application.dto.request.reqrstifmethod.ReqRstIfMethodCommand
 import com.idrsys.ailis.sales.application.dto.request.reqrstifmethod.ReqRstIfMethodSearchParam
 import com.idrsys.ailis.sales.application.dto.response.ReqRstIfMethodResponse
+import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
 import com.idrsys.ailis.sales.application.required.repository.reqrstifmethod.ReqRstIfMethodCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.reqrstifmethod.ReqRstIfMethodRepository
 import com.idrsys.ailis.sales.application.usecase.reqrstifmethod.ReqRstIfMethodUseCase
@@ -17,11 +18,16 @@ import java.time.LocalDateTime
 class ReqRstIfMethodService(
     private val repository: ReqRstIfMethodRepository,
     private val customRepository: ReqRstIfMethodCustomRepository,
-    private val mapper: ReqRstIfMethodMapper
+    private val mapper: ReqRstIfMethodMapper,
+    private val custRepository: CustRepository
 ) : ReqRstIfMethodUseCase {
 
     override suspend fun findById(rstIfMethodId: String): ReqRstIfMethodResponse? {
         return repository.findById(rstIfMethodId)?.let { mapper.toResponse(it) }
+    }
+
+    override suspend fun findCurrentByCustMstId(custMstId: String): ReqRstIfMethodResponse? {
+        return customRepository.findCurrentByCustMstId(custMstId)?.let { mapper.toResponse(it) }
     }
 
     override fun findAllByCustMstId(searchParam: ReqRstIfMethodSearchParam): Flow<ReqRstIfMethodResponse> {
@@ -87,5 +93,22 @@ class ReqRstIfMethodService(
                 }
             }
         }
+    }
+
+    override suspend fun getReqPossYn(custMstId: String): Map<String, Boolean> {
+        val cust = custRepository.findByCustMstId(custMstId)
+            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+        return mapOf("reqPossYn" to cust.reqPossYn)
+    }
+
+    @Transactional
+    override suspend fun updateReqPossYn(custMstId: String, reqPossYn: Boolean, updater: String): Map<String, Boolean> {
+        val cust = custRepository.findByCustMstId(custMstId)
+            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+
+        cust.updateReqPossYn(reqPossYn, updater)
+        custRepository.save(cust)
+
+        return mapOf("reqPossYn" to reqPossYn)
     }
 }

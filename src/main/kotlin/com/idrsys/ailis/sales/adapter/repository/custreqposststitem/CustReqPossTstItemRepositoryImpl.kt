@@ -6,7 +6,9 @@ import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface CustReqPossTstItemDataRepository : CoroutineCrudRepository<CustReqPossTstItem, Long>
+interface CustReqPossTstItemDataRepository : CoroutineCrudRepository<CustReqPossTstItem, Long> {
+    suspend fun existsByCustMstIdAndTstCd(custMstId: String, tstCd: String): Boolean
+}
 
 @Repository
 class CustReqPossTstItemRepositoryImpl(
@@ -19,5 +21,13 @@ class CustReqPossTstItemRepositoryImpl(
 
     override suspend fun save(custReqPossTstItem: CustReqPossTstItem): CustReqPossTstItem {
         return dataRepository.save(custReqPossTstItem)
+    }
+
+    override suspend fun deleteById(id: Long) {
+        dataRepository.deleteById(id)
+    }
+
+    override suspend fun existsByCustMstIdAndTstCd(custMstId: String, tstCd: String): Boolean {
+        return dataRepository.existsByCustMstIdAndTstCd(custMstId, tstCd)
     }
 }
