@@ -1,0 +1,214 @@
+package com.idrsys.ailis.tst.application.service
+
+import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemMapper
+import com.idrsys.ailis.tst.application.required.DepartmentTestItemRepository
+import com.idrsys.ailis.tst.application.usecase.DepartmentTestItemUseCase
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.util.*
+
+@Service
+@Transactional
+class DepartmentTestItemService(
+    private val repository: DepartmentTestItemRepository,
+    private val mapper: DepartmentTestItemMapper
+) : DepartmentTestItemUseCase {
+
+    // --- DepartmentGroup ---
+
+    override suspend fun registerGroup(request: DepartmentGroupRegisterRequest): DepartmentGroupResponse {
+        val domain = mapper.toDomain(request)
+        val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentGroup(
+            deptGroupId = UUID.randomUUID().toString(),
+            deptCd = domain.deptCd,
+            tstCateCd = domain.tstCateCd,
+            tstCateNm = domain.tstCateNm,
+            updateAuthCd = domain.updateAuthCd,
+            dupAllowYn = domain.dupAllowYn,
+            sortOrder = domain.sortOrder,
+            creator = "system",
+            createDtime = java.time.LocalDateTime.now(),
+            updater = "system",
+            updateDtime = java.time.LocalDateTime.now()
+        )
+        entityWithId.setAsNew()
+        val saved = repository.saveGroup(entityWithId)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun getGroup(id: String): DepartmentGroupResponse {
+        val domain = repository.findGroupById(id) ?: throw RuntimeException("DepartmentGroup not found with id: $id")
+        return mapper.toResponse(domain)
+    }
+
+    override suspend fun updateGroup(id: String, request: DepartmentGroupUpdateRequest): DepartmentGroupResponse {
+        val existing = repository.findGroupById(id) ?: throw RuntimeException("DepartmentGroup not found with id: $id")
+        val updated = com.idrsys.ailis.tst.domain.model.DepartmentGroup(
+            deptGroupId = existing.deptGroupId,
+            deptCd = request.deptCd,
+            tstCateCd = request.tstCateCd,
+            tstCateNm = request.tstCateNm,
+            updateAuthCd = request.updateAuthCd,
+            dupAllowYn = request.dupAllowYn,
+            sortOrder = request.sortOrder,
+            creator = existing.creator,
+            createDtime = existing.createDtime,
+            updater = "system",
+            updateDtime = java.time.LocalDateTime.now()
+        )
+        val saved = repository.saveGroup(updated)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun deleteGroup(id: String) {
+        repository.deleteGroupById(id)
+    }
+
+    override suspend fun getAllGroups(): Flow<DepartmentGroupResponse> {
+        return repository.findAllGroups().map { mapper.toResponse(it) }
+    }
+
+    // --- DepartmentGroupItem ---
+
+    override suspend fun registerGroupItem(request: DepartmentGroupItemRegisterRequest): DepartmentGroupItemResponse {
+        val domain = mapper.toDomain(request)
+        val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentGroupItem(
+            deptGrpItmId = UUID.randomUUID().toString(),
+            deptCd = domain.deptCd,
+            tstCateCd = domain.tstCateCd,
+            tstCateItemCd = domain.tstCateItemCd,
+            tstCateItemNm = domain.tstCateItemNm,
+            sortOrder = domain.sortOrder,
+            creator = "system",
+            createDtime = java.time.LocalDateTime.now(),
+            updater = "system",
+            updateDtime = java.time.LocalDateTime.now()
+        )
+        entityWithId.setAsNew()
+        val saved = repository.saveGroupItem(entityWithId)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun getGroupItem(id: String): DepartmentGroupItemResponse {
+        val domain = repository.findGroupItemById(id) ?: throw RuntimeException("DepartmentGroupItem not found with id: $id")
+        return mapper.toResponse(domain)
+    }
+
+    override suspend fun updateGroupItem(id: String, request: DepartmentGroupItemUpdateRequest): DepartmentGroupItemResponse {
+        val existing = repository.findGroupItemById(id) ?: throw RuntimeException("DepartmentGroupItem not found with id: $id")
+        val updated = com.idrsys.ailis.tst.domain.model.DepartmentGroupItem(
+            deptGrpItmId = existing.deptGrpItmId,
+            deptCd = request.deptCd,
+            tstCateCd = request.tstCateCd,
+            tstCateItemCd = request.tstCateItemCd,
+            tstCateItemNm = request.tstCateItemNm,
+            sortOrder = request.sortOrder,
+            creator = existing.creator,
+            createDtime = existing.createDtime,
+            updater = "system",
+            updateDtime = java.time.LocalDateTime.now()
+        )
+        val saved = repository.saveGroupItem(updated)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun deleteGroupItem(id: String) {
+        repository.deleteGroupItemById(id)
+    }
+
+    override suspend fun getGroupItemsByDept(deptCd: String): Flow<DepartmentGroupItemResponse> {
+        return repository.findGroupItemsByDeptCd(deptCd).map { mapper.toResponse(it) }
+    }
+
+    // --- DepartmentGroupItemTest ---
+
+    override suspend fun registerGroupItemTest(request: DepartmentGroupItemTestRegisterRequest): DepartmentGroupItemTestResponse {
+        val domain = mapper.toDomain(request)
+        val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentGroupItemTest(
+            deptGrpItmTstId = UUID.randomUUID().toString(),
+            deptCd = domain.deptCd,
+            tstCateCd = domain.tstCateCd,
+            tstCateItemCd = domain.tstCateItemCd,
+            tstCd = domain.tstCd,
+            creator = "system",
+            createDtime = java.time.LocalDateTime.now()
+        )
+        entityWithId.setAsNew()
+        val saved = repository.saveGroupItemTest(entityWithId)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun getGroupItemTest(id: String): DepartmentGroupItemTestResponse {
+        val domain = repository.findGroupItemTestById(id) ?: throw RuntimeException("DepartmentGroupItemTest not found with id: $id")
+        return mapper.toResponse(domain)
+    }
+
+    override suspend fun deleteGroupItemTest(id: String) {
+        repository.deleteGroupItemTestById(id)
+    }
+
+    override suspend fun getGroupItemTestsByDept(deptCd: String): Flow<DepartmentGroupItemTestResponse> {
+        return repository.findGroupItemTestsByDeptCd(deptCd).map { mapper.toResponse(it) }
+    }
+
+    // --- DepartmentTestItem ---
+
+    override suspend fun registerTestItem(request: DepartmentTestItemRegisterRequest): DepartmentTestItemResponse {
+        val domain = mapper.toDomain(request)
+        val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentTestItem(
+            deptTstItemId = UUID.randomUUID().toString(),
+            deptCd = domain.deptCd,
+            tstCd = domain.tstCd,
+            tstNm = domain.tstNm,
+            tstAbbrNm = domain.tstAbbrNm,
+            tstEngNm = domain.tstEngNm,
+            tstEngAbbrNm = domain.tstEngAbbrNm,
+            sortOrder = domain.sortOrder,
+            useYn = domain.useYn,
+            creator = "system",
+            createDtime = java.time.LocalDateTime.now(),
+            updater = "system",
+            updateDtime = java.time.LocalDateTime.now()
+        )
+        entityWithId.setAsNew()
+        val saved = repository.saveTestItem(entityWithId)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun getTestItem(id: String): DepartmentTestItemResponse {
+        val domain = repository.findTestItemById(id) ?: throw RuntimeException("DepartmentTestItem not found with id: $id")
+        return mapper.toResponse(domain)
+    }
+
+    override suspend fun updateTestItem(id: String, request: DepartmentTestItemUpdateRequest): DepartmentTestItemResponse {
+        val existing = repository.findTestItemById(id) ?: throw RuntimeException("DepartmentTestItem not found with id: $id")
+        val updated = com.idrsys.ailis.tst.domain.model.DepartmentTestItem(
+            deptTstItemId = existing.deptTstItemId,
+            deptCd = request.deptCd,
+            tstCd = request.tstCd,
+            tstNm = request.tstNm,
+            tstAbbrNm = request.tstAbbrNm,
+            tstEngNm = request.tstEngNm,
+            tstEngAbbrNm = request.tstEngAbbrNm,
+            sortOrder = request.sortOrder,
+            useYn = request.useYn,
+            creator = existing.creator,
+            createDtime = existing.createDtime,
+            updater = "system",
+            updateDtime = java.time.LocalDateTime.now()
+        )
+        val saved = repository.saveTestItem(updated)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun deleteTestItem(id: String) {
+        repository.deleteTestItemById(id)
+    }
+
+    override suspend fun getTestItemsByDept(deptCd: String): Flow<DepartmentTestItemResponse> {
+        return repository.findTestItemsByDeptCd(deptCd).map { mapper.toResponse(it) }
+    }
+}

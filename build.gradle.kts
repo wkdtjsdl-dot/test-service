@@ -34,13 +34,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-jooq")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.cloud:spring-cloud-starter-config")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("com.idrsys.comm-on:ko-r2dbc-lib:0.0.1")
-    implementation("com.idrsys.comm-on:kowebflux-lib:0.0.2")
+    implementation("com.idrsys.comm-on:kowebflux-lib:0.0.3")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
     implementation("org.springdoc:springdoc-openapi-starter-webflux-api:2.8.13")
     implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.13")
@@ -101,7 +102,7 @@ jooq {
                     name = "org.jooq.codegen.DefaultGenerator"
                     database.apply {
                         name = "org.jooq.meta.postgres.PostgresDatabase"
-                        inputSchema = "sales_scm"
+                        inputSchema = "tst_scm"
                         includes = ".*"
                         excludes = ""
                     }
@@ -118,7 +119,7 @@ jooq {
                         isIndexes = false
                     }
                     target.apply {
-                        packageName = "com.idrsys.ailis.sales.generated.jooq"
+                        packageName = "com.idrsys.ailis.tst.generated.jooq"
                         directory = "src/main/generated"
                     }
                     strategy.name = "org.jooq.codegen.DefaultGeneratorStrategy"

@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: tst-service
+  config:
+    import: "configserver:"
+  cloud:
+    config:
+      uri: http://${CONFIG_SERVER}:8888
+      username: configUser
+      password: configPassword
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+  show-actuator: false
