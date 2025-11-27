@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemCommandMapper
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemMapper
 import com.idrsys.ailis.tst.application.required.DepartmentTestItemRepository
 import com.idrsys.ailis.tst.application.usecase.DepartmentTestItemUseCase
@@ -14,29 +15,30 @@ import java.util.*
 @Transactional
 class DepartmentTestItemService(
     private val repository: DepartmentTestItemRepository,
-    private val mapper: DepartmentTestItemMapper
+    private val mapper: DepartmentTestItemMapper,
+    private val commandMapper: DepartmentTestItemCommandMapper
 ) : DepartmentTestItemUseCase {
 
     // --- DepartmentGroup ---
 
     override suspend fun registerGroup(request: DepartmentGroupRegisterRequest, adminId: String): DepartmentGroupResponse {
-        val domain = mapper.toDomain(request)
+        val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentGroup(
+        val domain = com.idrsys.ailis.tst.domain.model.DepartmentGroup(
             deptGroupId = UUID.randomUUID().toString(),
-            deptCd = domain.deptCd,
-            tstCateCd = domain.tstCateCd,
-            tstCateNm = domain.tstCateNm,
-            updateAuthCd = domain.updateAuthCd,
-            dupAllowYn = domain.dupAllowYn,
-            sortOrder = domain.sortOrder,
+            deptCd = command.deptCd,
+            tstCateCd = command.tstCateCd,
+            tstCateNm = command.tstCateNm,
+            updateAuthCd = command.updateAuthCd,
+            dupAllowYn = command.dupAllowYn,
+            sortOrder = command.sortOrder,
             creator = adminId,
             createDtime = now,
             updater = adminId,
             updateDtime = now
         )
-        entityWithId.setAsNew()
-        val saved = repository.saveGroup(entityWithId)
+        domain.setAsNew()
+        val saved = repository.saveGroup(domain)
         return mapper.toResponse(saved)
     }
 
@@ -47,21 +49,10 @@ class DepartmentTestItemService(
 
     override suspend fun updateGroup(id: String, request: DepartmentGroupUpdateRequest, adminId: String): DepartmentGroupResponse {
         val existing = repository.findGroupById(id) ?: throw RuntimeException("DepartmentGroup not found with id: $id")
+        val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val updated = com.idrsys.ailis.tst.domain.model.DepartmentGroup(
-            deptGroupId = existing.deptGroupId,
-            deptCd = request.deptCd,
-            tstCateCd = request.tstCateCd,
-            tstCateNm = request.tstCateNm,
-            updateAuthCd = request.updateAuthCd,
-            dupAllowYn = request.dupAllowYn,
-            sortOrder = request.sortOrder,
-            creator = existing.creator,
-            createDtime = existing.createDtime,
-            updater = adminId,
-            updateDtime = now
-        )
-        val saved = repository.saveGroup(updated)
+        existing.update(command, adminId, now)
+        val saved = repository.saveGroup(existing)
         return mapper.toResponse(saved)
     }
 
@@ -162,25 +153,25 @@ class DepartmentTestItemService(
     // --- DepartmentTestItem ---
 
     override suspend fun registerTestItem(request: DepartmentTestItemRegisterRequest, adminId: String): DepartmentTestItemResponse {
-        val domain = mapper.toDomain(request)
+        val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentTestItem(
+        val domain = com.idrsys.ailis.tst.domain.model.DepartmentTestItem(
             deptTstItemId = UUID.randomUUID().toString(),
-            deptCd = domain.deptCd,
-            tstCd = domain.tstCd,
-            tstNm = domain.tstNm,
-            tstAbbrNm = domain.tstAbbrNm,
-            tstEngNm = domain.tstEngNm,
-            tstEngAbbrNm = domain.tstEngAbbrNm,
-            sortOrder = domain.sortOrder,
-            useYn = domain.useYn,
+            deptCd = command.deptCd,
+            tstCd = command.tstCd,
+            tstNm = command.tstNm,
+            tstAbbrNm = command.tstAbbrNm,
+            tstEngNm = command.tstEngNm,
+            tstEngAbbrNm = command.tstEngAbbrNm,
+            sortOrder = command.sortOrder,
+            useYn = command.useYn,
             creator = adminId,
             createDtime = now,
             updater = adminId,
             updateDtime = now
         )
-        entityWithId.setAsNew()
-        val saved = repository.saveTestItem(entityWithId)
+        domain.setAsNew()
+        val saved = repository.saveTestItem(domain)
         return mapper.toResponse(saved)
     }
 
@@ -191,23 +182,10 @@ class DepartmentTestItemService(
 
     override suspend fun updateTestItem(id: String, request: DepartmentTestItemUpdateRequest, adminId: String): DepartmentTestItemResponse {
         val existing = repository.findTestItemById(id) ?: throw RuntimeException("DepartmentTestItem not found with id: $id")
+        val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val updated = com.idrsys.ailis.tst.domain.model.DepartmentTestItem(
-            deptTstItemId = existing.deptTstItemId,
-            deptCd = request.deptCd,
-            tstCd = request.tstCd,
-            tstNm = request.tstNm,
-            tstAbbrNm = request.tstAbbrNm,
-            tstEngNm = request.tstEngNm,
-            tstEngAbbrNm = request.tstEngAbbrNm,
-            sortOrder = request.sortOrder,
-            useYn = request.useYn,
-            creator = existing.creator,
-            createDtime = existing.createDtime,
-            updater = adminId,
-            updateDtime = now
-        )
-        val saved = repository.saveTestItem(updated)
+        existing.update(command, adminId, now)
+        val saved = repository.saveTestItem(existing)
         return mapper.toResponse(saved)
     }
 

@@ -1,5 +1,7 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.DepartmentGroupUpdateCommand
+import com.idrsys.ailis.tst.domain.command.DepartmentTestItemUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -76,6 +78,17 @@ class DepartmentGroup(
     override fun getId(): String? = deptGroupId
 
     override fun isNew(): Boolean = _isNew
+    
+    fun update(command: DepartmentGroupUpdateCommand, updater: String, updateDtime: LocalDateTime) {
+        this.deptCd = command.deptCd
+        this.tstCateCd = command.tstCateCd
+        this.tstCateNm = command.tstCateNm
+        this.updateAuthCd = command.updateAuthCd
+        this.dupAllowYn = command.dupAllowYn
+        this.sortOrder = command.sortOrder
+        this.updater = updater
+        this.updateDtime = updateDtime
+    }
 }
 
 @Table("tst_scm.bbs_dept_grp_itm")
@@ -277,6 +290,19 @@ class DepartmentTestItem(
 
     fun delete(updater: String, updateDtime: LocalDateTime) {
         this.useYn = false
+        this.updater = updater
+        this.updateDtime = updateDtime
+    }
+    
+    fun update(command: DepartmentTestItemUpdateCommand, updater: String, updateDtime: LocalDateTime) {
+        this.deptCd = command.deptCd
+        this.tstCd = command.tstCd
+        this.tstNm = command.tstNm
+        this.tstAbbrNm = command.tstAbbrNm
+        this.tstEngNm = command.tstEngNm
+        this.tstEngAbbrNm = command.tstEngAbbrNm
+        this.sortOrder = command.sortOrder
+        this.useYn = command.useYn
         this.updater = updater
         this.updateDtime = updateDtime
     }
