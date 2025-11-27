@@ -21,6 +21,7 @@ class TestItemService(
 
     override suspend fun registerItem(request: TestItemRegisterRequest, adminId: String): TestItemResponse {
         val domain = mapper.toDomain(request)
+        val now = java.time.LocalDateTime.now()
         val entityWithId = com.idrsys.ailis.tst.domain.model.TestItem(
             tstCd = UUID.randomUUID().toString(),
             tstLargeCateCd = domain.tstLargeCateCd,
@@ -53,9 +54,9 @@ class TestItemService(
             insuCd = domain.insuCd,
             insuCateNo = domain.insuCateNo,
             creator = adminId,
-            createDtime = java.time.LocalDateTime.now(),
+            createDtime = now,
             updater = adminId,
-            updateDetime = java.time.LocalDateTime.now()
+            updateDetime = now
         )
         entityWithId.setAsNew()
         val saved = repository.save(entityWithId)
@@ -69,6 +70,7 @@ class TestItemService(
 
     override suspend fun updateItem(id: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse {
         val existing = repository.findById(id) ?: throw RuntimeException("TestItem not found with id: $id")
+        val now = java.time.LocalDateTime.now()
         val updated = com.idrsys.ailis.tst.domain.model.TestItem(
             tstCd = existing.tstCd,
             tstLargeCateCd = request.tstLargeCateCd,
@@ -103,7 +105,7 @@ class TestItemService(
             creator = existing.creator,
             createDtime = existing.createDtime,
             updater = adminId,
-            updateDetime = java.time.LocalDateTime.now()
+            updateDetime = now
         )
         val saved = repository.save(updated)
         return mapper.toResponse(saved)
@@ -114,7 +116,8 @@ class TestItemService(
         val item = repository.findById(id)
             ?: throw NoSuchElementException("TestItem not found: $id")
 
-        item.delete(updater = adminId)
+        val now = java.time.LocalDateTime.now()
+        item.delete(updater = adminId, updateDetime = now)
 
         repository.save(item)
     }
@@ -131,6 +134,7 @@ class TestItemService(
 
     override suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse {
         val domain = mapper.toDomain(request)
+        val now = java.time.LocalDateTime.now()
         val entityWithId = com.idrsys.ailis.tst.domain.model.StandardCharge(
             stndChargeId = UUID.randomUUID().toString(),
             tstCd = domain.tstCd,
@@ -150,7 +154,7 @@ class TestItemService(
             supval = domain.supval,
             addtax = domain.addtax,
             creator = adminId,
-            createDtime = java.time.LocalDateTime.now()
+            createDtime = now
         )
         entityWithId.setAsNew()
         val saved = repository.saveCharge(entityWithId)
@@ -174,6 +178,7 @@ class TestItemService(
 
     override suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenResponse {
         val domain = mapper.toDomain(request)
+        val now = java.time.LocalDateTime.now()
         val entityWithId = com.idrsys.ailis.tst.domain.model.TestItemSpecimen(
             spcmId = UUID.randomUUID().toString(),
             tstCd = domain.tstCd,
@@ -195,9 +200,9 @@ class TestItemService(
             engCaution = domain.engCaution,
             spcmCntnCd = domain.spcmCntnCd,
             creator = adminId,
-            createDtime = java.time.LocalDateTime.now(),
+            createDtime = now,
             updater = adminId,
-            updateDetime = java.time.LocalDateTime.now()
+            updateDetime = now
         )
         entityWithId.setAsNew()
         val saved = repository.saveSpecimen(entityWithId)

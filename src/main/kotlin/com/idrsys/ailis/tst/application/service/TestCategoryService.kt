@@ -28,6 +28,7 @@ class TestCategoryService(
 
     @Transactional
     override suspend fun registerCategory(request: TestCategoryRegisterRequest, adminId: String): TestCategoryResponse {
+        val now = LocalDateTime.now()
         val category = TestCategory(
             tstCateId = UUID.randomUUID().toString(),
             tstLargeCateCd = request.tstLargeCateCd,
@@ -39,9 +40,9 @@ class TestCategoryService(
             useYn = request.useYn,
             sortOrder = request.sortOrder,
             creator = adminId,
-            createDtime = LocalDateTime.now(),
+            createDtime = now,
             updater = adminId,
-            updateDetime = LocalDateTime.now()
+            updateDetime = now
         ).apply { setAsNew() }
 
         val saved = testCategoryRepository.save(category)
@@ -53,6 +54,7 @@ class TestCategoryService(
         val category = testCategoryRepository.findById(cateId)
             ?: throw NoSuchElementException("Category not found: $cateId")
 
+        val now = LocalDateTime.now()
         category.update(
             cateNm = request.cateNm,
             cateAbbrNm = request.cateAbbrNm,
@@ -60,7 +62,8 @@ class TestCategoryService(
             cateEngAbbrNm = request.cateEngAbbrNm,
             useYn = request.useYn,
             sortOrder = request.sortOrder,
-            updater = adminId
+            updater = adminId,
+            updateDetime = now
         )
 
         val saved = testCategoryRepository.save(category)
@@ -72,7 +75,8 @@ class TestCategoryService(
         val category = testCategoryRepository.findById(cateId)
             ?: throw NoSuchElementException("Category not found: $cateId")
 
-        category.delete(updater = adminId)
+        val now = LocalDateTime.now()
+        category.delete(updater = adminId, updateDetime = now)
 
         testCategoryRepository.save(category)
     }

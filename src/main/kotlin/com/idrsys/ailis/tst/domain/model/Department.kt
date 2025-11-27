@@ -275,9 +275,9 @@ class DepartmentTestItem(
 
     override fun isNew(): Boolean = _isNew
 
-    fun delete(updater: String) {
+    fun delete(updater: String, updateDtime: LocalDateTime) {
         this.useYn = false
         this.updater = updater
-        this.updateDtime = LocalDateTime.now()
+        this.updateDtime = updateDtime
     }
 }

@@ -21,6 +21,7 @@ class DepartmentTestItemService(
 
     override suspend fun registerGroup(request: DepartmentGroupRegisterRequest, adminId: String): DepartmentGroupResponse {
         val domain = mapper.toDomain(request)
+        val now = java.time.LocalDateTime.now()
         val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentGroup(
             deptGroupId = UUID.randomUUID().toString(),
             deptCd = domain.deptCd,
@@ -30,9 +31,9 @@ class DepartmentTestItemService(
             dupAllowYn = domain.dupAllowYn,
             sortOrder = domain.sortOrder,
             creator = adminId,
-            createDtime = java.time.LocalDateTime.now(),
+            createDtime = now,
             updater = adminId,
-            updateDtime = java.time.LocalDateTime.now()
+            updateDtime = now
         )
         entityWithId.setAsNew()
         val saved = repository.saveGroup(entityWithId)
@@ -46,6 +47,7 @@ class DepartmentTestItemService(
 
     override suspend fun updateGroup(id: String, request: DepartmentGroupUpdateRequest, adminId: String): DepartmentGroupResponse {
         val existing = repository.findGroupById(id) ?: throw RuntimeException("DepartmentGroup not found with id: $id")
+        val now = java.time.LocalDateTime.now()
         val updated = com.idrsys.ailis.tst.domain.model.DepartmentGroup(
             deptGroupId = existing.deptGroupId,
             deptCd = request.deptCd,
@@ -57,7 +59,7 @@ class DepartmentTestItemService(
             creator = existing.creator,
             createDtime = existing.createDtime,
             updater = adminId,
-            updateDtime = java.time.LocalDateTime.now()
+            updateDtime = now
         )
         val saved = repository.saveGroup(updated)
         return mapper.toResponse(saved)
@@ -75,6 +77,7 @@ class DepartmentTestItemService(
 
     override suspend fun registerGroupItem(request: DepartmentGroupItemRegisterRequest, adminId: String): DepartmentGroupItemResponse {
         val domain = mapper.toDomain(request)
+        val now = java.time.LocalDateTime.now()
         val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentGroupItem(
             deptGrpItmId = UUID.randomUUID().toString(),
             deptCd = domain.deptCd,
@@ -83,9 +86,9 @@ class DepartmentTestItemService(
             tstCateItemNm = domain.tstCateItemNm,
             sortOrder = domain.sortOrder,
             creator = adminId,
-            createDtime = java.time.LocalDateTime.now(),
+            createDtime = now,
             updater = adminId,
-            updateDtime = java.time.LocalDateTime.now()
+            updateDtime = now
         )
         entityWithId.setAsNew()
         val saved = repository.saveGroupItem(entityWithId)
@@ -99,6 +102,7 @@ class DepartmentTestItemService(
 
     override suspend fun updateGroupItem(id: String, request: DepartmentGroupItemUpdateRequest, adminId: String): DepartmentGroupItemResponse {
         val existing = repository.findGroupItemById(id) ?: throw RuntimeException("DepartmentGroupItem not found with id: $id")
+        val now = java.time.LocalDateTime.now()
         val updated = com.idrsys.ailis.tst.domain.model.DepartmentGroupItem(
             deptGrpItmId = existing.deptGrpItmId,
             deptCd = request.deptCd,
@@ -109,7 +113,7 @@ class DepartmentTestItemService(
             creator = existing.creator,
             createDtime = existing.createDtime,
             updater = adminId,
-            updateDtime = java.time.LocalDateTime.now()
+            updateDtime = now
         )
         val saved = repository.saveGroupItem(updated)
         return mapper.toResponse(saved)
@@ -127,6 +131,7 @@ class DepartmentTestItemService(
 
     override suspend fun registerGroupItemTest(request: DepartmentGroupItemTestRegisterRequest, adminId: String): DepartmentGroupItemTestResponse {
         val domain = mapper.toDomain(request)
+        val now = java.time.LocalDateTime.now()
         val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentGroupItemTest(
             deptGrpItmTstId = UUID.randomUUID().toString(),
             deptCd = domain.deptCd,
@@ -134,7 +139,7 @@ class DepartmentTestItemService(
             tstCateItemCd = domain.tstCateItemCd,
             tstCd = domain.tstCd,
             creator = adminId,
-            createDtime = java.time.LocalDateTime.now()
+            createDtime = now
         )
         entityWithId.setAsNew()
         val saved = repository.saveGroupItemTest(entityWithId)
@@ -158,6 +163,7 @@ class DepartmentTestItemService(
 
     override suspend fun registerTestItem(request: DepartmentTestItemRegisterRequest, adminId: String): DepartmentTestItemResponse {
         val domain = mapper.toDomain(request)
+        val now = java.time.LocalDateTime.now()
         val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentTestItem(
             deptTstItemId = UUID.randomUUID().toString(),
             deptCd = domain.deptCd,
@@ -169,9 +175,9 @@ class DepartmentTestItemService(
             sortOrder = domain.sortOrder,
             useYn = domain.useYn,
             creator = adminId,
-            createDtime = java.time.LocalDateTime.now(),
+            createDtime = now,
             updater = adminId,
-            updateDtime = java.time.LocalDateTime.now()
+            updateDtime = now
         )
         entityWithId.setAsNew()
         val saved = repository.saveTestItem(entityWithId)
@@ -185,6 +191,7 @@ class DepartmentTestItemService(
 
     override suspend fun updateTestItem(id: String, request: DepartmentTestItemUpdateRequest, adminId: String): DepartmentTestItemResponse {
         val existing = repository.findTestItemById(id) ?: throw RuntimeException("DepartmentTestItem not found with id: $id")
+        val now = java.time.LocalDateTime.now()
         val updated = com.idrsys.ailis.tst.domain.model.DepartmentTestItem(
             deptTstItemId = existing.deptTstItemId,
             deptCd = request.deptCd,
@@ -198,7 +205,7 @@ class DepartmentTestItemService(
             creator = existing.creator,
             createDtime = existing.createDtime,
             updater = adminId,
-            updateDtime = java.time.LocalDateTime.now()
+            updateDtime = now
         )
         val saved = repository.saveTestItem(updated)
         return mapper.toResponse(saved)
@@ -209,7 +216,8 @@ class DepartmentTestItemService(
         val testItem = repository.findTestItemById(id)
             ?: throw NoSuchElementException("DepartmentTestItem not found: $id")
 
-        testItem.delete(updater = adminId)
+        val now = java.time.LocalDateTime.now()
+        testItem.delete(updater = adminId, updateDtime = now)
 
         repository.saveTestItem(testItem)
     }

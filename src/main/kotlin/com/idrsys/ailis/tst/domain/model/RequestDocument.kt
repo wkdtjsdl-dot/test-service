@@ -78,7 +78,8 @@ class RequestDocument(
         docEngNm: String,
         docFileId: String?,
         docEngFileId: String?,
-        updater: String
+        updater: String,
+        updateDetime: LocalDateTime
     ) {
         this.docDivCd = docDivCd
         this.docNm = docNm
@@ -86,6 +87,6 @@ class RequestDocument(
         this.docFileId = docFileId
         this.docEngFileId = docEngFileId
         this.updater = updater
-        this.updateDetime = LocalDateTime.now()
+        this.updateDetime = updateDetime
     }
 }

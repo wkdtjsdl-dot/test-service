@@ -93,7 +93,8 @@ class TestCategory(
         cateEngAbbrNm: String,
         useYn: Boolean,
         sortOrder: Int,
-        updater: String
+        updater: String,
+        updateDetime: LocalDateTime
     ) {
         this.cateNm = cateNm
         this.cateAbbrNm = cateAbbrNm
@@ -102,12 +103,12 @@ class TestCategory(
         this.useYn = useYn
         this.sortOrder = sortOrder
         this.updater = updater
-        this.updateDetime = LocalDateTime.now()
+        this.updateDetime = updateDetime
     }
 
-    fun delete(updater: String) {
+    fun delete(updater: String, updateDetime: LocalDateTime) {
         this.useYn = false
         this.updater = updater
-        this.updateDetime = LocalDateTime.now()
+        this.updateDetime = updateDetime
     }
 }

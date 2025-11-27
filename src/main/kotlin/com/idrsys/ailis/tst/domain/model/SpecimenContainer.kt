@@ -66,12 +66,13 @@ class SpecimenContainer(
         cntnNm: String,
         cntnEngNm: String,
         cntnFileId: String?,
-        updater: String
+        updater: String,
+        updateDetime: LocalDateTime
     ) {
         this.cntnNm = cntnNm
         this.cntnEngNm = cntnEngNm
         this.cntnFileId = cntnFileId
         this.updater = updater
-        this.updateDetime = LocalDateTime.now()
+        this.updateDetime = updateDetime
     }
 }

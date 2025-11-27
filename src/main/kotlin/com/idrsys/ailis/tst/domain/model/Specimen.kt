@@ -144,7 +144,8 @@ class Specimen(
         engCaution: String?,
         ref: String?,
         engRef: String?,
-        updater: String
+        updater: String,
+        updateDetime: LocalDateTime
     ) {
         this.spcmCateCd = spcmCateCd
         this.useYn = useYn
@@ -163,12 +164,12 @@ class Specimen(
         this.ref = ref
         this.engRef = engRef
         this.updater = updater
-        this.updateDetime = LocalDateTime.now()
+        this.updateDetime = updateDetime
     }
 
-    fun delete(updater: String) {
+    fun delete(updater: String, updateDetime: LocalDateTime) {
         this.useYn = false
         this.updater = updater
-        this.updateDetime = LocalDateTime.now()
+        this.updateDetime = updateDetime
     }
 }

@@ -122,10 +122,10 @@ class TestReference(
 
     override fun isNew(): Boolean = _isNew
 
-    fun delete(updater: String) {
+    fun delete(updater: String, updateDetime: LocalDateTime) {
         this.useYn = false
         this.updater = updater
-        this.updateDetime = LocalDateTime.now()
+        this.updateDetime = updateDetime
     }
 }
 

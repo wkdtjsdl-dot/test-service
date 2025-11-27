@@ -34,15 +34,16 @@ class SpecimenContainerService(
 
     @Transactional
     override suspend fun registerContainer(request: SpecimenContainerRegisterRequest, adminId: String): SpecimenContainerResponse {
+        val now = LocalDateTime.now()
         val container = SpecimenContainer(
             spcmCntnCd = request.spcmCntnCd,
             cntnNm = request.cntnNm,
             cntnEngNm = request.cntnEngNm,
             cntnFileId = request.cntnFileId,
             creator = adminId,
-            createDtime = LocalDateTime.now(),
+            createDtime = now,
             updater = adminId,
-            updateDetime = LocalDateTime.now()
+            updateDetime = now
         ).apply { setAsNew() }
         
         val saved = specimenContainerRepository.save(container)
@@ -54,11 +55,13 @@ class SpecimenContainerService(
         val container = specimenContainerRepository.findById(spcmCntnCd)
             ?: throw NoSuchElementException("Container not found: $spcmCntnCd")
         
+        val now = LocalDateTime.now()
         container.update(
             cntnNm = request.cntnNm,
             cntnEngNm = request.cntnEngNm,
             cntnFileId = request.cntnFileId,
-            updater = adminId
+            updater = adminId,
+            updateDetime = now
         )
         
         val saved = specimenContainerRepository.save(container)
