@@ -11,5 +11,4 @@ interface TestCategoryRepository {
 
     // Custom Queries (Implemented with jOOQ)
     suspend fun findByLargeCateCd(largeCateCd: String): Flow<TestCategory>
-    suspend fun deleteByTstMediumCateCd(mediumCateCd: String): Int
 }

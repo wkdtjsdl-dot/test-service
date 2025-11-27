@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono
 
 @Tag(name = "Specimen Container", description = "검사 기준정보 검체용기 API")
 @RestController
-@RequestMapping("/api/tst/bbs/spcm-cntn")
+@RequestMapping("/api/bbs/spcm-cntn")
 class SpecimenContainerController(
     private val specimenContainerUseCase: SpecimenContainerUseCase
 ) {
@@ -74,7 +74,7 @@ class SpecimenContainerController(
 
 @Tag(name = "Specimen", description = "검사 기준정보 검체 API")
 @RestController
-@RequestMapping("/api/tst/bbs/spcm")
+@RequestMapping("/api/bbs/spcm")
 class SpecimenController(
     private val specimenUseCase: SpecimenUseCase
 ) {

@@ -58,24 +58,6 @@ class TestCategoryRepositoryImpl(
             .asFlow()
     }
 
-    override suspend fun deleteByTstMediumCateCd(mediumCateCd: String): Int {
-        val table = BbsTstCate.BBS_TST_CATE
-        val query = dslContext
-            .deleteFrom(table)
-            .where(table.TST_MEDIUM_CATE_CD.eq(mediumCateCd))
-
-        var executeSpec = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { index, value: Any? ->
-            if (value != null) {
-                executeSpec = executeSpec.bind(index, value)
-            } else {
-                executeSpec = executeSpec.bindNull(index, String::class.java)
-            }
-        }
-
-        return executeSpec.fetch().rowsUpdated().awaitSingle().toInt()
-    }
-
     private fun toTestCategory(row: Map<String, Any>): TestCategory {
         return TestCategory(
             tstCateId = row["tst_cate_id"] as String,

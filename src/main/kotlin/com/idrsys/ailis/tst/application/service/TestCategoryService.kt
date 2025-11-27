@@ -43,16 +43,16 @@ class TestCategoryService(
             updater = adminId,
             updateDetime = LocalDateTime.now()
         ).apply { setAsNew() }
-        
+
         val saved = testCategoryRepository.save(category)
         return testCategoryMapper.toResponse(saved)
     }
 
     @Transactional
-    override suspend fun updateCategory(mediumCateCd: String, request: TestCategoryUpdateRequest, adminId: String): TestCategoryResponse {
-        val category = testCategoryRepository.findById(mediumCateCd)
-            ?: throw NoSuchElementException("Category not found: $mediumCateCd")
-        
+    override suspend fun updateCategory(cateId: String, request: TestCategoryUpdateRequest, adminId: String): TestCategoryResponse {
+        val category = testCategoryRepository.findById(cateId)
+            ?: throw NoSuchElementException("Category not found: $cateId")
+
         category.update(
             cateNm = request.cateNm,
             cateAbbrNm = request.cateAbbrNm,
@@ -62,13 +62,18 @@ class TestCategoryService(
             sortOrder = request.sortOrder,
             updater = adminId
         )
-        
+
         val saved = testCategoryRepository.save(category)
         return testCategoryMapper.toResponse(saved)
     }
 
     @Transactional
-    override suspend fun deleteCategory(mediumCateCd: String, adminId: String) {
-        testCategoryRepository.deleteByTstMediumCateCd(mediumCateCd)
+    override suspend fun deleteCategory(cateId: String, adminId: String) {
+        val category = testCategoryRepository.findById(cateId)
+            ?: throw NoSuchElementException("Category not found: $cateId")
+
+        category.delete(updater = adminId)
+
+        testCategoryRepository.save(category)
     }
 }

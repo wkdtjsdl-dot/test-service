@@ -1,0 +1,72 @@
+### 관리자 Login 요청 (테스트용)
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {%
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+### 의뢰서서류 목록 조회 (전체)
+GET {{api-service}}/api/tst/bbs/req-doc
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 의뢰서서류 목록 조회 (서류구분별)
+GET {{api-service}}/api/tst/bbs/req-doc?docDivCd=01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 의뢰서서류 단건 조회
+GET {{api-service}}/api/tst/bbs/req-doc/DOC001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 의뢰서서류 등록
+POST {{api-service}}/api/tst/bbs/req-doc
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "docCd": "TEST_DOC01",
+  "docDivCd": "01",
+  "docNm": "테스트 의뢰서서류",
+  "docEngNm": "Test Request Document",
+  "docFileId": "FILE001",
+  "docEngFileId": "FILE002"
+}
+
+### 의뢰서서류 수정
+PUT {{api-service}}/api/tst/bbs/req-doc/TEST_DOC01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "docDivCd": "02",
+  "docNm": "수정된 의뢰서서류",
+  "docEngNm": "Updated Request Document",
+  "docFileId": "FILE003",
+  "docEngFileId": "FILE004"
+}
+
+### 의뢰서서류 삭제
+DELETE {{api-service}}/api/tst/bbs/req-doc/TEST_DOC01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

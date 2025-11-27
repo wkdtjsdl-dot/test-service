@@ -8,6 +8,6 @@ import kotlinx.coroutines.flow.Flow
 interface TestCategoryUseCase {
     suspend fun getCategoriesByLargeCategory(largeCateCd: String): Flow<TestCategoryResponse>
     suspend fun registerCategory(request: TestCategoryRegisterRequest, adminId: String): TestCategoryResponse
-    suspend fun updateCategory(mediumCateCd: String, request: TestCategoryUpdateRequest, adminId: String): TestCategoryResponse
-    suspend fun deleteCategory(mediumCateCd: String, adminId: String)
+    suspend fun updateCategory(cateId: String, request: TestCategoryUpdateRequest, adminId: String): TestCategoryResponse
+    suspend fun deleteCategory(cateId: String, adminId: String)
 }

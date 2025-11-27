@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono
 
 @Tag(name = "Request Document", description = "검사 기준정보 의뢰서서류 API")
 @RestController
-@RequestMapping("/api/tst/bbs/req-doc")
+@RequestMapping("/api/bbs/req-doc")
 class RequestDocumentController(
     private val requestDocumentUseCase: RequestDocumentUseCase
 ) {

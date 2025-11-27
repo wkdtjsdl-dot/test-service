@@ -14,7 +14,6 @@ import reactor.core.publisher.Mono
 
 @Tag(name = "Test Reference", description = "검사 항목 관리 API")
 @RestController
-@RequestMapping("/tst/ref")
 class TestReferenceController(
     private val useCase: TestReferenceUseCase
 ) {
@@ -22,7 +21,7 @@ class TestReferenceController(
     // --- TestReference ---
 
     @Operation(summary = "검사 항목 등록", description = "새로운 검사 항목을 등록합니다")
-    @PostMapping
+    @PostMapping("/api/bbs/tst-ref")
     fun registerReference(
         @RequestBody request: TestReferenceRegisterRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
@@ -31,13 +30,13 @@ class TestReferenceController(
     }
 
     @Operation(summary = "검사 항목 조회", description = "ID로 검사 항목을 조회합니다")
-    @GetMapping("/{id}")
+    @GetMapping("/api/bbs/tst-ref/{id}")
     fun getReference(@PathVariable id: String): Mono<TestReferenceResponse> = mono {
         useCase.getReference(id)
     }
 
     @Operation(summary = "검사 항목 수정", description = "검사 항목 정보를 수정합니다")
-    @PutMapping("/{id}")
+    @PutMapping("/api/bbs/tst-ref/{id}")
     fun updateReference(
         @PathVariable id: String,
         @RequestBody request: TestReferenceUpdateRequest,
@@ -47,7 +46,7 @@ class TestReferenceController(
     }
 
     @Operation(summary = "검사 항목 삭제", description = "검사 항목을 삭제합니다")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/api/bbs/tst-ref/{id}")
     fun deleteReference(
         @PathVariable id: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
@@ -57,7 +56,7 @@ class TestReferenceController(
     }
 
     @Operation(summary = "검사 항목 전체 조회", description = "모든 검사 항목을 조회합니다")
-    @GetMapping
+    @GetMapping("/api/bbs/tst-ref")
     fun getAllReferences(): Flow<TestReferenceResponse> {
         return kotlinx.coroutines.flow.flow {
             useCase.getAllReferences().collect { emit(it) }
@@ -67,7 +66,7 @@ class TestReferenceController(
     // --- TestReferenceGroup ---
 
     @Operation(summary = "검사 항목 그룹 등록", description = "새로운 검사 항목 그룹을 등록합니다")
-    @PostMapping("/group")
+    @PostMapping("/api/bbs/tst-ref-group")
     fun registerGroup(
         @RequestBody request: TestReferenceGroupRegisterRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
@@ -75,12 +74,14 @@ class TestReferenceController(
         useCase.registerGroup(request, auth.adminId)
     }
 
-    @GetMapping("/group/{id}")
+    @Operation(summary = "검사 항목 그룹 조회")
+    @GetMapping("/api/bbs/tst-ref-group/{id}")
     fun getGroup(@PathVariable id: String): Mono<TestReferenceGroupResponse> = mono {
         useCase.getGroup(id)
     }
 
-    @PutMapping("/group/{id}")
+    @Operation(summary = "검사 항목 그룹 수정")
+    @PutMapping("/api/bbs/tst-ref-group/{id}")
     fun updateGroup(
         @PathVariable id: String,
         @RequestBody request: TestReferenceGroupUpdateRequest,
@@ -89,7 +90,8 @@ class TestReferenceController(
         useCase.updateGroup(id, request, auth.adminId)
     }
 
-    @DeleteMapping("/group/{id}")
+    @Operation(summary = "검사 항목 그룹 삭제")
+    @DeleteMapping("/api/bbs/tst-ref-group/{id}")
     fun deleteGroup(
         @PathVariable id: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
@@ -98,7 +100,8 @@ class TestReferenceController(
         null
     }
 
-    @GetMapping("/group")
+    @Operation(summary = "검사 항목 그룹 전체 조회")
+    @GetMapping("/api/bbs/tst-ref-group")
     fun getAllGroups(): Flow<TestReferenceGroupResponse> {
         return kotlinx.coroutines.flow.flow {
             useCase.getAllGroups().collect { emit(it) }
@@ -107,7 +110,8 @@ class TestReferenceController(
 
     // --- TestReferenceGroupItem ---
 
-    @PostMapping("/group-item")
+    @Operation(summary = "검사 항목 그룹 항목 등록")
+    @PostMapping("/api/bbs/tst-ref-group-item")
     fun registerGroupItem(
         @RequestBody request: TestReferenceGroupItemRegisterRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
@@ -115,12 +119,14 @@ class TestReferenceController(
         useCase.registerGroupItem(request, auth.adminId)
     }
 
-    @GetMapping("/group-item/{id}")
+    @Operation(summary = "검사 항목 그룹 항목 조회")
+    @GetMapping("/api/bbs/tst-ref-group-item/{id}")
     fun getGroupItem(@PathVariable id: String): Mono<TestReferenceGroupItemResponse> = mono {
         useCase.getGroupItem(id)
     }
 
-    @PutMapping("/group-item/{id}")
+    @Operation(summary = "검사 항목 그룹 항목 수정")
+    @PutMapping("/api/bbs/tst-ref-group-item/{id}")
     fun updateGroupItem(
         @PathVariable id: String,
         @RequestBody request: TestReferenceGroupItemUpdateRequest,
@@ -129,7 +135,8 @@ class TestReferenceController(
         useCase.updateGroupItem(id, request, auth.adminId)
     }
 
-    @DeleteMapping("/group-item/{id}")
+    @Operation(summary = "검사 항목 그룹 항목 삭제")
+    @DeleteMapping("/api/bbs/tst-ref-group-item/{id}")
     fun deleteGroupItem(
         @PathVariable id: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
@@ -138,7 +145,8 @@ class TestReferenceController(
         null
     }
 
-    @GetMapping("/group-item/by-group/{groupCd}")
+    @Operation(summary = "검사 항목 그룹 항목 목록 조회 (그룹코드별)")
+    @GetMapping("/api/bbs/tst-ref-group-item/by-group/{groupCd}")
     fun getGroupItemsByGroup(@PathVariable groupCd: String): Flow<TestReferenceGroupItemResponse> {
         return kotlinx.coroutines.flow.flow {
             useCase.getGroupItemsByGroup(groupCd).collect { emit(it) }

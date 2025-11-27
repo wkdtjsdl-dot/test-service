@@ -1,0 +1,175 @@
+### 관리자 Login 요청 (테스트용)
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {%
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+###########################
+# 검사항목 (Test Item)
+###########################
+
+### 검사항목 목록 조회 (전체)
+GET {{api-service}}/api/bts/item
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사항목 목록 조회 (대분류별)
+GET {{api-service}}/api/bts/item/by-large-cate/01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사항목 단건 조회
+GET {{api-service}}/api/bts/item/base/TST001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사항목 등록
+POST {{api-service}}/api/bts/item/base
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstCd": "TEST_ITEM01",
+  "tstLargeCateCd": "01",
+  "tstMediumCateCd": "01",
+  "useTypeFlag": true,
+  "tstNm": "테스트 검사항목",
+  "tstAbbrNm": "테스트항목",
+  "tstEngNm": "Test Item",
+  "tstEngAbbrNm": "TestItem",
+  "sortOrder": 1,
+  "sameJudge": "N",
+  "tstGroupCd": "GRP01",
+  "tstSubsidyCd": "SUB01",
+  "tstMaterialCd": "MAT01",
+  "printOrder": 1,
+  "deleteYn": false,
+  "externalYn": false,
+  "sendYn": false,
+  "autoInputYn": false,
+  "resultInputTimeLimit": 24
+}
+
+### 검사항목 수정
+PUT {{api-service}}/api/bts/item/base/TEST_ITEM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstLargeCateCd": "02",
+  "tstMediumCateCd": "02",
+  "useTypeFlag": false,
+  "tstNm": "수정된 검사항목",
+  "tstAbbrNm": "수정항목",
+  "tstEngNm": "Updated Test Item",
+  "tstEngAbbrNm": "UpdItem",
+  "sortOrder": 2,
+  "sameJudge": "Y",
+  "tstGroupCd": "GRP02",
+  "tstSubsidyCd": "SUB02",
+  "tstMaterialCd": "MAT02",
+  "printOrder": 2,
+  "deleteYn": false,
+  "externalYn": true,
+  "sendYn": true,
+  "autoInputYn": true,
+  "resultInputTimeLimit": 48
+}
+
+### 검사항목 삭제
+DELETE {{api-service}}/api/bts/item/base/TEST_ITEM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+###########################
+# 표준수가 (Standard Charge)
+###########################
+
+### 표준수가 단건 조회
+GET {{api-service}}/api/bbs/tst-item/charge/CHARGE001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 표준수가 목록 조회 (검사코드별)
+GET {{api-service}}/api/bbs/tst-item/charge/by-test/TST001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 표준수가 등록
+POST {{api-service}}/api/bbs/tst-item/charge
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstCd": "TST001",
+  "stndChargeCd": "CHG001",
+  "applyStartDt": "2024-01-01",
+  "applyEndDt": "2024-12-31",
+  "charge": 50000,
+  "sortOrder": 1
+}
+
+### 표준수가 삭제
+DELETE {{api-service}}/api/bbs/tst-item/charge/TEST_CHARGE01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+###########################
+# 검사항목별 검체 (Test Item Specimen)
+###########################
+
+### 검사항목별 검체 단건 조회
+GET {{api-service}}/api/bbs/tst-item/specimen/SPCM001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사항목별 검체 목록 조회 (검사코드별)
+GET {{api-service}}/api/bbs/tst-item/specimen/by-test/TST001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사항목별 검체 등록
+POST {{api-service}}/api/bbs/tst-item/specimen
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstCd": "TST001",
+  "spcmCd": "SPCM001",
+  "reqVol": "5ml",
+  "dftYn": true,
+  "sortOrder": 1
+}
+
+### 검사항목별 검체 삭제
+DELETE {{api-service}}/api/bbs/tst-item/specimen/TEST_SPCM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

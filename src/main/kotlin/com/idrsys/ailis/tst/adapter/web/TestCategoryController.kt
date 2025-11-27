@@ -9,7 +9,6 @@ import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asPublisher
 import kotlinx.coroutines.reactor.mono
 import org.springframework.web.bind.annotation.*
@@ -18,7 +17,7 @@ import reactor.core.publisher.Mono
 
 @Tag(name = "Test Category", description = "검사 기준정보 검사분류 API")
 @RestController
-@RequestMapping("/api/tst/bbs/tst-cate")
+@RequestMapping("/api/bbs/tst-cate")
 class TestCategoryController(
     private val testCategoryUseCase: TestCategoryUseCase
 ) {
@@ -43,25 +42,25 @@ class TestCategoryController(
     }
 
     @Operation(summary = "검사분류 수정")
-    @PutMapping("/{mediumCateCd}")
+    @PutMapping("/{cateId}")
     fun updateCategory(
-        @PathVariable mediumCateCd: String,
+        @PathVariable cateId: String,
         @RequestBody request: TestCategoryUpdateRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<TestCategoryResponse> {
         return mono {
-            testCategoryUseCase.updateCategory(mediumCateCd, request, auth.adminId)
+            testCategoryUseCase.updateCategory(cateId, request, auth.adminId)
         }
     }
 
     @Operation(summary = "검사분류 삭제")
-    @DeleteMapping("/{mediumCateCd}")
+    @DeleteMapping("/{cateId}")
     fun deleteCategory(
-        @PathVariable mediumCateCd: String,
+        @PathVariable cateId: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<Void> {
         return mono {
-            testCategoryUseCase.deleteCategory(mediumCateCd, auth.adminId)
+            testCategoryUseCase.deleteCategory(cateId, auth.adminId)
         }.then()
     }
 }

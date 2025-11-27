@@ -104,4 +104,10 @@ class TestCategory(
         this.updater = updater
         this.updateDetime = LocalDateTime.now()
     }
+
+    fun delete(updater: String) {
+        this.useYn = false
+        this.updater = updater
+        this.updateDetime = LocalDateTime.now()
+    }
 }
