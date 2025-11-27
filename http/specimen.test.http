@@ -23,25 +23,25 @@ Accept: application/json
 ###########################
 
 ### 검체용기 목록 조회 (전체)
-GET {{api-service}}/api/tst/bbs/spcm-cntn
+GET {{api-service}}/api/bbs/spcm-cntn
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검체용기 목록 조회 (이름으로 검색)
-GET {{api-service}}/api/tst/bbs/spcm-cntn?cntnNm=test
+GET {{api-service}}/api/bbs/spcm-cntn?cntnNm=test
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검체용기 단건 조회
-GET {{api-service}}/api/tst/bbs/spcm-cntn/CNTN001
+GET {{api-service}}/api/bbs/spcm-cntn/CNTN001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검체용기 등록
-POST {{api-service}}/api/tst/bbs/spcm-cntn
+POST {{api-service}}/api/bbs/spcm-cntn
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -54,7 +54,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 검체용기 수정
-PUT {{api-service}}/api/tst/bbs/spcm-cntn/TEST_CNTN01
+PUT {{api-service}}/api/bbs/spcm-cntn/TEST_CNTN01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -66,7 +66,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 검체용기 삭제
-DELETE {{api-service}}/api/tst/bbs/spcm-cntn/TEST_CNTN01
+DELETE {{api-service}}/api/bbs/spcm-cntn/TEST_CNTN01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -76,25 +76,25 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 ###########################
 
 ### 검체 목록 조회 (전체)
-GET {{api-service}}/api/tst/bbs/spcm
+GET {{api-service}}/api/bbs/spcm
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검체 목록 조회 (검색: 이름 + 카테고리)
-GET {{api-service}}/api/tst/bbs/spcm?spcmNm=test&spcmCateCd=01
+GET {{api-service}}/api/bbs/spcm?spcmNm=test&spcmCateCd=01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검체 단건 조회
-GET {{api-service}}/api/tst/bbs/spcm/SPCM001
+GET {{api-service}}/api/bbs/spcm/SPCM001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검체 등록
-POST {{api-service}}/api/tst/bbs/spcm
+POST {{api-service}}/api/bbs/spcm
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -120,7 +120,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 검체 수정
-PUT {{api-service}}/api/tst/bbs/spcm/TEST_SPCM01
+PUT {{api-service}}/api/bbs/spcm/TEST_SPCM01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -145,7 +145,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 검체 삭제
-DELETE {{api-service}}/api/tst/bbs/spcm/TEST_SPCM01
+DELETE {{api-service}}/api/bbs/spcm/TEST_SPCM01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
