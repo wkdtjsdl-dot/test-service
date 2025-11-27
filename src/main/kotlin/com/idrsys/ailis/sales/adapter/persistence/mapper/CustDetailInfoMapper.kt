@@ -34,7 +34,7 @@ fun Row.toCustDetailInfo(): CustDetailInfo {
         zipcd = this.get("zipcd", String::class.java),
         addr1 = this.get("addr1", String::class.java),
         addr2 = this.get("addr2", String::class.java),
-        qcCustYn = this.get("qc_cust_yn", Boolean::class.java)!!,
+//        qcCustYn = this.get("qc_cust_yn", Boolean::class.java)!!,
         bizrno = this.get("bizrno", String::class.java),
         sapCustCd = this.get("sap_cust_cd", String::class.java),
         corpNo = this.get("corp_no", String::class.java),

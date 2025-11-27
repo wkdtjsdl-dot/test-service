@@ -10,6 +10,7 @@ data class ChargeSearchParam(
     val lastApprStatCd: String? = null,
     val includeHistory: Boolean? = false,
     val searchDate: LocalDate? = LocalDate.now(),
+    val refDt: LocalDate? = null,
     val dateSearchType: String? = null,
     val startDt: LocalDate? = null,
     val endDt: LocalDate? = null,
@@ -17,5 +18,6 @@ data class ChargeSearchParam(
     val empUserId: String? = null,
     val empUserNm: String? = null,
     val empUserIdNm: String? = null,
-    val empUserIds: List<String> = emptyList()
+    val empUserIds: List<String> = emptyList(),
+    val custMstId: String? = null
 )

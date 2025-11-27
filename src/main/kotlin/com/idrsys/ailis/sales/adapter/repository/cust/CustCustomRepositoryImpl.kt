@@ -256,6 +256,7 @@ class CustCustomRepositoryImpl(
         conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
 
         val selectFields = arrayOf(
+            SCS_CUST_MST.CUST_MST_ID,
             SCS_CUST_MST.CUST_CD,
             SCS_CUST_MST.CUST_NM
         )

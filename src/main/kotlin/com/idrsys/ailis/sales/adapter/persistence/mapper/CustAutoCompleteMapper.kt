@@ -7,6 +7,7 @@ import io.r2dbc.spi.Row
 
 fun Row.toCustCdNmAutoCompleteInfo(): CustCdNmAutoCompleteInfo {
     return CustCdNmAutoCompleteInfo(
+        custMstId = this.get("cust_mst_id", String::class.java),
         custCd = this.get("cust_cd", String::class.java),
         custNm = this.get("cust_nm", String::class.java)
     )
