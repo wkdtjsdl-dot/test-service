@@ -19,25 +19,25 @@ Accept: application/json
 %}
 
 ### 의뢰서서류 목록 조회 (전체)
-GET {{api-service}}/api/bbs/req-doc
+GET {{api-service}}/api/tst/bbs/req-doc
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 의뢰서서류 목록 조회 (서류구분별)
-GET {{api-service}}/api/bbs/req-doc?docDivCd=01
+GET {{api-service}}/api/tst/bbs/req-doc?docDivCd=01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 의뢰서서류 단건 조회
-GET {{api-service}}/api/bbs/req-doc/DOC001
+GET {{api-service}}/api/tst/bbs/req-doc/DOC001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 의뢰서서류 등록
-POST {{api-service}}/api/bbs/req-doc
+POST {{api-service}}/api/tst/bbs/req-doc
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -52,7 +52,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 의뢰서서류 수정
-PUT {{api-service}}/api/bbs/req-doc/TEST_DOC01
+PUT {{api-service}}/api/tst/bbs/req-doc/TEST_DOC01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -66,7 +66,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 의뢰서서류 삭제
-DELETE {{api-service}}/api/bbs/req-doc/TEST_DOC01
+DELETE {{api-service}}/api/tst/bbs/req-doc/TEST_DOC01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

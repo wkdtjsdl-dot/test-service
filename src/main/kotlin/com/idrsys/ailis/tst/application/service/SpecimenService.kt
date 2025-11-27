@@ -93,6 +93,11 @@ class SpecimenService(
 
     @Transactional
     override suspend fun deleteSpecimen(spcmCd: String, adminId: String) {
-        specimenRepository.deleteById(spcmCd)
+        val specimen = specimenRepository.findById(spcmCd)
+            ?: throw NoSuchElementException("Specimen not found: $spcmCd")
+
+        specimen.delete(updater = adminId)
+
+        specimenRepository.save(specimen)
     }
 }

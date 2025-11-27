@@ -23,19 +23,19 @@ Accept: application/json
 ###########################
 
 ### 부서별 그룹 목록 조회
-GET {{api-service}}/api/bbs/dept-group
+GET {{api-service}}/api/tst/bbs/dept-group
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 부서별 그룹 단건 조회
-GET {{api-service}}/api/bbs/dept-group/GRP001
+GET {{api-service}}/api/tst/bbs/dept-group/GRP001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 부서별 그룹 등록
-POST {{api-service}}/api/bbs/dept-group
+POST {{api-service}}/api/tst/bbs/dept-group
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -48,7 +48,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 부서별 그룹 수정
-PUT {{api-service}}/api/bbs/dept-group/TEST_GRP01
+PUT {{api-service}}/api/tst/bbs/dept-group/TEST_GRP01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -61,7 +61,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 부서별 그룹 삭제
-DELETE {{api-service}}/api/bbs/dept-group/TEST_GRP01
+DELETE {{api-service}}/api/tst/bbs/dept-group/TEST_GRP01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -71,19 +71,19 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 ###########################
 
 ### 부서별 그룹항목 단건 조회
-GET {{api-service}}/api/bbs/dept-group-item/ITEM001
+GET {{api-service}}/api/tst/bbs/dept-group-item/ITEM001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 부서별 그룹항목 목록 조회 (부서별)
-GET {{api-service}}/api/bbs/dept-group-item/by-dept/DEPT01
+GET {{api-service}}/api/tst/bbs/dept-group-item/by-dept/DEPT01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 부서별 그룹항목 등록
-POST {{api-service}}/api/bbs/dept-group-item
+POST {{api-service}}/api/tst/bbs/dept-group-item
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -95,7 +95,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 부서별 그룹항목 수정
-PUT {{api-service}}/api/bbs/dept-group-item/TEST_ITEM01
+PUT {{api-service}}/api/tst/bbs/dept-group-item/TEST_ITEM01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -107,7 +107,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 부서별 그룹항목 삭제
-DELETE {{api-service}}/api/bbs/dept-group-item/TEST_ITEM01
+DELETE {{api-service}}/api/tst/bbs/dept-group-item/TEST_ITEM01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -117,19 +117,19 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 ###########################
 
 ### 부서별 그룹항목 검사 단건 조회
-GET {{api-service}}/api/bts/dept-group-item-tst/TEST001
+GET {{api-service}}/api/tst/bts/dept-group-item-tst/TEST001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 부서별 그룹항목 검사 목록 조회 (부서별)
-GET {{api-service}}/api/bts/dept-group-item-tst/by-dept/DEPT01
+GET {{api-service}}/api/tst/bts/dept-group-item-tst/by-dept/DEPT01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 부서별 그룹항목 검사 등록
-POST {{api-service}}/api/bts/dept-group-item-tst
+POST {{api-service}}/api/tst/bts/dept-group-item-tst
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -141,7 +141,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 부서별 그룹항목 검사 삭제
-DELETE {{api-service}}/api/bts/dept-group-item-tst/TEST_TEST01
+DELETE {{api-service}}/api/tst/bts/dept-group-item-tst/TEST_TEST01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -151,19 +151,19 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 ###########################
 
 ### 부서별 검사항목 단건 조회
-GET {{api-service}}/api/bbs/dept-tst-item/DEPTITEM001
+GET {{api-service}}/api/tst/bbs/dept-tst-item/DEPTITEM001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 부서별 검사항목 목록 조회 (부서별)
-GET {{api-service}}/api/bbs/dept-tst-item/by-dept/DEPT01
+GET {{api-service}}/api/tst/bbs/dept-tst-item/by-dept/DEPT01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 부서별 검사항목 등록
-POST {{api-service}}/api/bbs/dept-tst-item
+POST {{api-service}}/api/tst/bbs/dept-tst-item
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -176,7 +176,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 부서별 검사항목 수정
-PUT {{api-service}}/api/bbs/dept-tst-item/TEST_DEPTITEM01
+PUT {{api-service}}/api/tst/bbs/dept-tst-item/TEST_DEPTITEM01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -189,7 +189,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 부서별 검사항목 삭제
-DELETE {{api-service}}/api/bbs/dept-tst-item/TEST_DEPTITEM01
+DELETE {{api-service}}/api/tst/bbs/dept-tst-item/TEST_DEPTITEM01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

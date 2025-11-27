@@ -109,8 +109,14 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional
     override suspend fun deleteItem(id: String, adminId: String) {
-        repository.deleteById(id)
+        val item = repository.findById(id)
+            ?: throw NoSuchElementException("TestItem not found: $id")
+
+        item.delete(updater = adminId)
+
+        repository.save(item)
     }
 
     override suspend fun getAllItems(): Flow<TestItemResponse> {

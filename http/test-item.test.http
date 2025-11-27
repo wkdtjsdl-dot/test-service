@@ -23,25 +23,25 @@ Accept: application/json
 ###########################
 
 ### 검사항목 목록 조회 (전체)
-GET {{api-service}}/api/bts/item
+GET {{api-service}}/api/tst/bts/item
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검사항목 목록 조회 (대분류별)
-GET {{api-service}}/api/bts/item/by-large-cate/01
+GET {{api-service}}/api/tst/bts/item/by-large-cate/01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검사항목 단건 조회
-GET {{api-service}}/api/bts/item/base/TST001
+GET {{api-service}}/api/tst/bts/item/base/TST001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검사항목 등록
-POST {{api-service}}/api/bts/item/base
+POST {{api-service}}/api/tst/bts/item/base
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -69,7 +69,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 검사항목 수정
-PUT {{api-service}}/api/bts/item/base/TEST_ITEM01
+PUT {{api-service}}/api/tst/bts/item/base/TEST_ITEM01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -96,7 +96,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 검사항목 삭제
-DELETE {{api-service}}/api/bts/item/base/TEST_ITEM01
+DELETE {{api-service}}/api/tst/bts/item/base/TEST_ITEM01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -106,19 +106,19 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 ###########################
 
 ### 표준수가 단건 조회
-GET {{api-service}}/api/bts/item/stnd-charge/CHARGE001
+GET {{api-service}}/api/tst/bts/item/stnd-charge/CHARGE001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 표준수가 목록 조회 (검사코드별)
-GET {{api-service}}/api/bts/item/stnd-charge/by-test/TST001
+GET {{api-service}}/api/tst/bts/item/stnd-charge/by-test/TST001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 표준수가 등록
-POST {{api-service}}/api/bts/item/stnd-charge
+POST {{api-service}}/api/tst/bts/item/stnd-charge
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -133,7 +133,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 표준수가 삭제
-DELETE {{api-service}}/api/bts/item/stnd-charge/TEST_CHARGE01
+DELETE {{api-service}}/api/tst/bts/item/stnd-charge/TEST_CHARGE01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -143,19 +143,19 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 ###########################
 
 ### 검사항목별 검체 단건 조회
-GET {{api-service}}/api/bts/spcm/SPCM001
+GET {{api-service}}/api/tst/bts/spcm/SPCM001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검사항목별 검체 목록 조회 (검사코드별)
-GET {{api-service}}/api/bts/spcm/by-test/TST001
+GET {{api-service}}/api/tst/bts/spcm/by-test/TST001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검사항목별 검체 등록
-POST {{api-service}}/api/bts/spcm
+POST {{api-service}}/api/tst/bts/spcm
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -169,7 +169,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 }
 
 ### 검사항목별 검체 삭제
-DELETE {{api-service}}/api/bts/spcm/TEST_SPCM01
+DELETE {{api-service}}/api/tst/bts/spcm/TEST_SPCM01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

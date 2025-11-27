@@ -192,6 +192,12 @@ class TestItem(
     override fun getId(): String? = tstCd
 
     override fun isNew(): Boolean = _isNew
+
+    fun delete(updater: String) {
+        this.useYn = false
+        this.updater = updater
+        this.updateDetime = LocalDateTime.now()
+    }
 }
 
 @Table("tst_scm.bts_stnd_charge")

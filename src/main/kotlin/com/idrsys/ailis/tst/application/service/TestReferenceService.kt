@@ -93,8 +93,14 @@ class TestReferenceService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional
     override suspend fun deleteReference(id: String, adminId: String) {
-        repository.deleteById(id)
+        val reference = repository.findById(id)
+            ?: throw NoSuchElementException("TestReference not found: $id")
+
+        reference.delete(updater = adminId)
+
+        repository.save(reference)
     }
 
     override suspend fun getAllReferences(): Flow<TestReferenceResponse> {

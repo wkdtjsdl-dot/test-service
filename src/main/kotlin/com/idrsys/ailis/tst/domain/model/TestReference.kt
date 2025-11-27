@@ -121,6 +121,12 @@ class TestReference(
     override fun getId(): String? = refCd
 
     override fun isNew(): Boolean = _isNew
+
+    fun delete(updater: String) {
+        this.useYn = false
+        this.updater = updater
+        this.updateDetime = LocalDateTime.now()
+    }
 }
 
 @Table("tst_scm.bbs_tst_ref_group")
