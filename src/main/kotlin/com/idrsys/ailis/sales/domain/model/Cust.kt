@@ -195,14 +195,6 @@ class Cust(
     var reqDivCd: String? = reqDivCd
         private set
 
-    @Column("atch_file_grup_id")
-    var atchFileGrupId: String? = atchFileGrupId
-        private set
-
-    @Column("req_poss_tst_limit_yn")
-    var reqPossTstLimitYn: Boolean? = reqPossTstLimitYn
-        private set
-
     // 사업자등록정보
     @Column("bizrno")
     var bizrno: String? = bizrno
@@ -367,6 +359,14 @@ class Cust(
     var reqIfTypeCd: String? = reqIfTypeCd
         private set
 
+    @Column("atch_file_grup_id")
+    var atchFileGrupId: String? = atchFileGrupId
+        private set
+
+    @Column("req_poss_tst_limit_yn")
+    var reqPossTstLimitYn: Boolean? = reqPossTstLimitYn
+        private set
+
     // 테이블공통
     @Column("creator")
     var creator: String = creator
@@ -411,8 +411,6 @@ class Cust(
         this.addr1 = command.addr1
         this.addr2 = command.addr2
         this.reqDivCd = command.reqDivCd
-        this.atchFileGrupId = command.atchFileGrupId
-        this.reqPossTstLimitYn = command.reqPossTstLimitYn
         // 사업자등록정보
         this.bizrno = command.bizrno
         this.sapCustCd = command.sapCustCd
@@ -457,6 +455,8 @@ class Cust(
         this.rstNtcnRecpEmailAddr = command.rstNtcnRecpEmailAddr
         this.reqMethodCd = command.reqMethodCd
         this.reqIfTypeCd = command.reqIfTypeCd
+        this.atchFileGrupId = command.atchFileGrupId
+        this.reqPossTstLimitYn = command.reqPossTstLimitYn
         // 테이블공통
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
