@@ -2,7 +2,10 @@ package com.idrsys.ailis.tst.adapter.web
 
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.usecase.TestReferenceUseCase
+import com.idrsys.ailis.tst.shared.vo.AuthenticationAdmin
+import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactor.mono
@@ -18,30 +21,44 @@ class TestReferenceController(
 
     // --- TestReference ---
 
+    @Operation(summary = "검사 항목 등록", description = "새로운 검사 항목을 등록합니다")
     @PostMapping
-    fun registerReference(@RequestBody request: TestReferenceRegisterRequest): Mono<TestReferenceResponse> = mono {
-        useCase.registerReference(request)
+    fun registerReference(
+        @RequestBody request: TestReferenceRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestReferenceResponse> = mono {
+        useCase.registerReference(request, auth.adminId)
     }
 
+    @Operation(summary = "검사 항목 조회", description = "ID로 검사 항목을 조회합니다")
     @GetMapping("/{id}")
     fun getReference(@PathVariable id: String): Mono<TestReferenceResponse> = mono {
         useCase.getReference(id)
     }
 
+    @Operation(summary = "검사 항목 수정", description = "검사 항목 정보를 수정합니다")
     @PutMapping("/{id}")
-    fun updateReference(@PathVariable id: String, @RequestBody request: TestReferenceUpdateRequest): Mono<TestReferenceResponse> = mono {
-        useCase.updateReference(id, request)
+    fun updateReference(
+        @PathVariable id: String,
+        @RequestBody request: TestReferenceUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestReferenceResponse> = mono {
+        useCase.updateReference(id, request, auth.adminId)
     }
 
+    @Operation(summary = "검사 항목 삭제", description = "검사 항목을 삭제합니다")
     @DeleteMapping("/{id}")
-    fun deleteReference(@PathVariable id: String): Mono<Void> = mono {
-        useCase.deleteReference(id)
+    fun deleteReference(
+        @PathVariable id: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteReference(id, auth.adminId)
         null
     }
 
+    @Operation(summary = "검사 항목 전체 조회", description = "모든 검사 항목을 조회합니다")
     @GetMapping
     fun getAllReferences(): Flow<TestReferenceResponse> {
-        // Flow is natively supported by WebFlux, no need to wrap in Mono
         return kotlinx.coroutines.flow.flow {
             useCase.getAllReferences().collect { emit(it) }
         }
@@ -49,9 +66,13 @@ class TestReferenceController(
 
     // --- TestReferenceGroup ---
 
+    @Operation(summary = "검사 항목 그룹 등록", description = "새로운 검사 항목 그룹을 등록합니다")
     @PostMapping("/group")
-    fun registerGroup(@RequestBody request: TestReferenceGroupRegisterRequest): Mono<TestReferenceGroupResponse> = mono {
-        useCase.registerGroup(request)
+    fun registerGroup(
+        @RequestBody request: TestReferenceGroupRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestReferenceGroupResponse> = mono {
+        useCase.registerGroup(request, auth.adminId)
     }
 
     @GetMapping("/group/{id}")
@@ -60,13 +81,20 @@ class TestReferenceController(
     }
 
     @PutMapping("/group/{id}")
-    fun updateGroup(@PathVariable id: String, @RequestBody request: TestReferenceGroupUpdateRequest): Mono<TestReferenceGroupResponse> = mono {
-        useCase.updateGroup(id, request)
+    fun updateGroup(
+        @PathVariable id: String,
+        @RequestBody request: TestReferenceGroupUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestReferenceGroupResponse> = mono {
+        useCase.updateGroup(id, request, auth.adminId)
     }
 
     @DeleteMapping("/group/{id}")
-    fun deleteGroup(@PathVariable id: String): Mono<Void> = mono {
-        useCase.deleteGroup(id)
+    fun deleteGroup(
+        @PathVariable id: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteGroup(id, auth.adminId)
         null
     }
 
@@ -80,8 +108,11 @@ class TestReferenceController(
     // --- TestReferenceGroupItem ---
 
     @PostMapping("/group-item")
-    fun registerGroupItem(@RequestBody request: TestReferenceGroupItemRegisterRequest): Mono<TestReferenceGroupItemResponse> = mono {
-        useCase.registerGroupItem(request)
+    fun registerGroupItem(
+        @RequestBody request: TestReferenceGroupItemRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestReferenceGroupItemResponse> = mono {
+        useCase.registerGroupItem(request, auth.adminId)
     }
 
     @GetMapping("/group-item/{id}")
@@ -90,13 +121,20 @@ class TestReferenceController(
     }
 
     @PutMapping("/group-item/{id}")
-    fun updateGroupItem(@PathVariable id: String, @RequestBody request: TestReferenceGroupItemUpdateRequest): Mono<TestReferenceGroupItemResponse> = mono {
-        useCase.updateGroupItem(id, request)
+    fun updateGroupItem(
+        @PathVariable id: String,
+        @RequestBody request: TestReferenceGroupItemUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestReferenceGroupItemResponse> = mono {
+        useCase.updateGroupItem(id, request, auth.adminId)
     }
 
     @DeleteMapping("/group-item/{id}")
-    fun deleteGroupItem(@PathVariable id: String): Mono<Void> = mono {
-        useCase.deleteGroupItem(id)
+    fun deleteGroupItem(
+        @PathVariable id: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteGroupItem(id, auth.adminId)
         null
     }
 

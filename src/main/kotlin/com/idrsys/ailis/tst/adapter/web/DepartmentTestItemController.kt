@@ -2,6 +2,9 @@ package com.idrsys.ailis.tst.adapter.web
 
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.usecase.DepartmentTestItemUseCase
+import com.idrsys.ailis.tst.shared.vo.AuthenticationAdmin
+import com.idrsys.web.annotation.JwtAuthorization
+import io.swagger.v3.oas.annotations.Parameter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactor.mono
 import org.springframework.web.bind.annotation.*
@@ -16,8 +19,11 @@ class DepartmentTestItemController(
     // --- DepartmentGroup ---
 
     @PostMapping("/group")
-    fun registerGroup(@RequestBody request: DepartmentGroupRegisterRequest): Mono<DepartmentGroupResponse> = mono {
-        useCase.registerGroup(request)
+    fun registerGroup(
+        @RequestBody request: DepartmentGroupRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<DepartmentGroupResponse> = mono {
+        useCase.registerGroup(request, auth.adminId)
     }
 
     @GetMapping("/group/{id}")
@@ -26,13 +32,20 @@ class DepartmentTestItemController(
     }
 
     @PutMapping("/group/{id}")
-    fun updateGroup(@PathVariable id: String, @RequestBody request: DepartmentGroupUpdateRequest): Mono<DepartmentGroupResponse> = mono {
-        useCase.updateGroup(id, request)
+    fun updateGroup(
+        @PathVariable id: String,
+        @RequestBody request: DepartmentGroupUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<DepartmentGroupResponse> = mono {
+        useCase.updateGroup(id, request, auth.adminId)
     }
 
     @DeleteMapping("/group/{id}")
-    fun deleteGroup(@PathVariable id: String): Mono<Void> = mono {
-        useCase.deleteGroup(id)
+    fun deleteGroup(
+        @PathVariable id: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteGroup(id, auth.adminId)
         null
     }
 
@@ -46,8 +59,11 @@ class DepartmentTestItemController(
     // --- DepartmentGroupItem ---
 
     @PostMapping("/group-item")
-    fun registerGroupItem(@RequestBody request: DepartmentGroupItemRegisterRequest): Mono<DepartmentGroupItemResponse> = mono {
-        useCase.registerGroupItem(request)
+    fun registerGroupItem(
+        @RequestBody request: DepartmentGroupItemRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<DepartmentGroupItemResponse> = mono {
+        useCase.registerGroupItem(request, auth.adminId)
     }
 
     @GetMapping("/group-item/{id}")
@@ -56,13 +72,20 @@ class DepartmentTestItemController(
     }
 
     @PutMapping("/group-item/{id}")
-    fun updateGroupItem(@PathVariable id: String, @RequestBody request: DepartmentGroupItemUpdateRequest): Mono<DepartmentGroupItemResponse> = mono {
-        useCase.updateGroupItem(id, request)
+    fun updateGroupItem(
+        @PathVariable id: String,
+        @RequestBody request: DepartmentGroupItemUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<DepartmentGroupItemResponse> = mono {
+        useCase.updateGroupItem(id, request, auth.adminId)
     }
 
     @DeleteMapping("/group-item/{id}")
-    fun deleteGroupItem(@PathVariable id: String): Mono<Void> = mono {
-        useCase.deleteGroupItem(id)
+    fun deleteGroupItem(
+        @PathVariable id: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteGroupItem(id, auth.adminId)
         null
     }
 
@@ -76,8 +99,11 @@ class DepartmentTestItemController(
     // --- DepartmentGroupItemTest ---
 
     @PostMapping("/group-item-test")
-    fun registerGroupItemTest(@RequestBody request: DepartmentGroupItemTestRegisterRequest): Mono<DepartmentGroupItemTestResponse> = mono {
-        useCase.registerGroupItemTest(request)
+    fun registerGroupItemTest(
+        @RequestBody request: DepartmentGroupItemTestRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<DepartmentGroupItemTestResponse> = mono {
+        useCase.registerGroupItemTest(request, auth.adminId)
     }
 
     @GetMapping("/group-item-test/{id}")
@@ -86,8 +112,11 @@ class DepartmentTestItemController(
     }
 
     @DeleteMapping("/group-item-test/{id}")
-    fun deleteGroupItemTest(@PathVariable id: String): Mono<Void> = mono {
-        useCase.deleteGroupItemTest(id)
+    fun deleteGroupItemTest(
+        @PathVariable id: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteGroupItemTest(id, auth.adminId)
         null
     }
 
@@ -101,8 +130,11 @@ class DepartmentTestItemController(
     // --- DepartmentTestItem ---
 
     @PostMapping("/test-item")
-    fun registerTestItem(@RequestBody request: DepartmentTestItemRegisterRequest): Mono<DepartmentTestItemResponse> = mono {
-        useCase.registerTestItem(request)
+    fun registerTestItem(
+        @RequestBody request: DepartmentTestItemRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<DepartmentTestItemResponse> = mono {
+        useCase.registerTestItem(request, auth.adminId)
     }
 
     @GetMapping("/test-item/{id}")
@@ -111,13 +143,20 @@ class DepartmentTestItemController(
     }
 
     @PutMapping("/test-item/{id}")
-    fun updateTestItem(@PathVariable id: String, @RequestBody request: DepartmentTestItemUpdateRequest): Mono<DepartmentTestItemResponse> = mono {
-        useCase.updateTestItem(id, request)
+    fun updateTestItem(
+        @PathVariable id: String,
+        @RequestBody request: DepartmentTestItemUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<DepartmentTestItemResponse> = mono {
+        useCase.updateTestItem(id, request, auth.adminId)
     }
 
     @DeleteMapping("/test-item/{id}")
-    fun deleteTestItem(@PathVariable id: String): Mono<Void> = mono {
-        useCase.deleteTestItem(id)
+    fun deleteTestItem(
+        @PathVariable id: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteTestItem(id, auth.adminId)
         null
     }
 

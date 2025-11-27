@@ -33,7 +33,7 @@ class SpecimenService(
     }
 
     @Transactional
-    override suspend fun registerSpecimen(request: SpecimenRegisterRequest): SpecimenResponse {
+    override suspend fun registerSpecimen(request: SpecimenRegisterRequest, adminId: String): SpecimenResponse {
         val specimen = Specimen(
             spcmCd = request.spcmCd,
             spcmCateCd = request.spcmCateCd,
@@ -52,9 +52,9 @@ class SpecimenService(
             engCaution = request.engCaution,
             ref = request.ref,
             engRef = request.engRef,
-            creator = "system",
+            creator = adminId,
             createDtime = LocalDateTime.now(),
-            updater = "system",
+            updater = adminId,
             updateDetime = LocalDateTime.now()
         ).apply { setAsNew() }
         
@@ -63,7 +63,7 @@ class SpecimenService(
     }
 
     @Transactional
-    override suspend fun updateSpecimen(spcmCd: String, request: SpecimenUpdateRequest): SpecimenResponse {
+    override suspend fun updateSpecimen(spcmCd: String, request: SpecimenUpdateRequest, adminId: String): SpecimenResponse {
         val specimen = specimenRepository.findById(spcmCd)
             ?: throw NoSuchElementException("Specimen not found: $spcmCd")
         
@@ -84,7 +84,7 @@ class SpecimenService(
             engCaution = request.engCaution,
             ref = request.ref,
             engRef = request.engRef,
-            updater = "system"
+            updater = adminId
         )
         
         val saved = specimenRepository.save(specimen)
@@ -92,7 +92,7 @@ class SpecimenService(
     }
 
     @Transactional
-    override suspend fun deleteSpecimen(spcmCd: String) {
+    override suspend fun deleteSpecimen(spcmCd: String, adminId: String) {
         specimenRepository.deleteById(spcmCd)
     }
 }

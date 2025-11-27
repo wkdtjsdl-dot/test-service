@@ -27,7 +27,7 @@ class TestCategoryService(
     }
 
     @Transactional
-    override suspend fun registerCategory(request: TestCategoryRegisterRequest): TestCategoryResponse {
+    override suspend fun registerCategory(request: TestCategoryRegisterRequest, adminId: String): TestCategoryResponse {
         val category = TestCategory(
             tstCateId = UUID.randomUUID().toString(),
             tstLargeCateCd = request.tstLargeCateCd,
@@ -38,9 +38,9 @@ class TestCategoryService(
             cateEngAbbrNm = request.cateEngAbbrNm,
             useYn = request.useYn,
             sortOrder = request.sortOrder,
-            creator = "system",
+            creator = adminId,
             createDtime = LocalDateTime.now(),
-            updater = "system",
+            updater = adminId,
             updateDetime = LocalDateTime.now()
         ).apply { setAsNew() }
         
@@ -49,7 +49,7 @@ class TestCategoryService(
     }
 
     @Transactional
-    override suspend fun updateCategory(mediumCateCd: String, request: TestCategoryUpdateRequest): TestCategoryResponse {
+    override suspend fun updateCategory(mediumCateCd: String, request: TestCategoryUpdateRequest, adminId: String): TestCategoryResponse {
         val category = testCategoryRepository.findById(mediumCateCd)
             ?: throw NoSuchElementException("Category not found: $mediumCateCd")
         
@@ -60,7 +60,7 @@ class TestCategoryService(
             cateEngAbbrNm = request.cateEngAbbrNm,
             useYn = request.useYn,
             sortOrder = request.sortOrder,
-            updater = "system"
+            updater = adminId
         )
         
         val saved = testCategoryRepository.save(category)
@@ -68,7 +68,7 @@ class TestCategoryService(
     }
 
     @Transactional
-    override suspend fun deleteCategory(mediumCateCd: String) {
+    override suspend fun deleteCategory(mediumCateCd: String, adminId: String) {
         testCategoryRepository.deleteByTstMediumCateCd(mediumCateCd)
     }
 }

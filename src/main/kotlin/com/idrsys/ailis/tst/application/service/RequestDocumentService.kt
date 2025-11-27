@@ -33,7 +33,7 @@ class RequestDocumentService(
     }
 
     @Transactional
-    override suspend fun registerDocument(request: RequestDocumentRegisterRequest): RequestDocumentResponse {
+    override suspend fun registerDocument(request: RequestDocumentRegisterRequest, adminId: String): RequestDocumentResponse {
         val document = RequestDocument(
             docCd = request.docCd,
             docDivCd = request.docDivCd,
@@ -41,9 +41,9 @@ class RequestDocumentService(
             docEngNm = request.docEngNm,
             docFileId = request.docFileId,
             docEngFileId = request.docEngFileId,
-            creator = "system",
+            creator = adminId,
             createDtime = LocalDateTime.now(),
-            updater = "system",
+            updater = adminId,
             updateDetime = LocalDateTime.now()
         ).apply { setAsNew() }
         
@@ -52,7 +52,7 @@ class RequestDocumentService(
     }
 
     @Transactional
-    override suspend fun updateDocument(docCd: String, request: RequestDocumentUpdateRequest): RequestDocumentResponse {
+    override suspend fun updateDocument(docCd: String, request: RequestDocumentUpdateRequest, adminId: String): RequestDocumentResponse {
         val document = requestDocumentRepository.findById(docCd)
             ?: throw NoSuchElementException("Document not found: $docCd")
         
@@ -62,7 +62,7 @@ class RequestDocumentService(
             docEngNm = request.docEngNm,
             docFileId = request.docFileId,
             docEngFileId = request.docEngFileId,
-            updater = "system"
+            updater = adminId
         )
         
         val saved = requestDocumentRepository.save(document)
@@ -70,7 +70,7 @@ class RequestDocumentService(
     }
 
     @Transactional
-    override suspend fun deleteDocument(docCd: String) {
+    override suspend fun deleteDocument(docCd: String, adminId: String) {
         requestDocumentRepository.deleteById(docCd)
     }
 }

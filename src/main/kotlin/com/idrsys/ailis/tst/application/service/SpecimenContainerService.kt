@@ -33,15 +33,15 @@ class SpecimenContainerService(
     }
 
     @Transactional
-    override suspend fun registerContainer(request: SpecimenContainerRegisterRequest): SpecimenContainerResponse {
+    override suspend fun registerContainer(request: SpecimenContainerRegisterRequest, adminId: String): SpecimenContainerResponse {
         val container = SpecimenContainer(
             spcmCntnCd = request.spcmCntnCd,
             cntnNm = request.cntnNm,
             cntnEngNm = request.cntnEngNm,
             cntnFileId = request.cntnFileId,
-            creator = "system",
+            creator = adminId,
             createDtime = LocalDateTime.now(),
-            updater = "system",
+            updater = adminId,
             updateDetime = LocalDateTime.now()
         ).apply { setAsNew() }
         
@@ -50,7 +50,7 @@ class SpecimenContainerService(
     }
 
     @Transactional
-    override suspend fun updateContainer(spcmCntnCd: String, request: SpecimenContainerUpdateRequest): SpecimenContainerResponse {
+    override suspend fun updateContainer(spcmCntnCd: String, request: SpecimenContainerUpdateRequest, adminId: String): SpecimenContainerResponse {
         val container = specimenContainerRepository.findById(spcmCntnCd)
             ?: throw NoSuchElementException("Container not found: $spcmCntnCd")
         
@@ -58,7 +58,7 @@ class SpecimenContainerService(
             cntnNm = request.cntnNm,
             cntnEngNm = request.cntnEngNm,
             cntnFileId = request.cntnFileId,
-            updater = "system"
+            updater = adminId
         )
         
         val saved = specimenContainerRepository.save(container)
@@ -66,7 +66,7 @@ class SpecimenContainerService(
     }
 
     @Transactional
-    override suspend fun deleteContainer(spcmCntnCd: String) {
+    override suspend fun deleteContainer(spcmCntnCd: String, adminId: String) {
         specimenContainerRepository.deleteById(spcmCntnCd)
     }
 }

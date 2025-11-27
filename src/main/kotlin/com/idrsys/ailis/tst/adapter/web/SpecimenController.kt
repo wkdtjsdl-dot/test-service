@@ -3,7 +3,10 @@ package com.idrsys.ailis.tst.adapter.web
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.usecase.SpecimenContainerUseCase
 import com.idrsys.ailis.tst.application.usecase.SpecimenUseCase
+import com.idrsys.ailis.tst.shared.vo.AuthenticationAdmin
+import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.reactive.asPublisher
 import kotlinx.coroutines.reactor.mono
@@ -36,9 +39,12 @@ class SpecimenContainerController(
 
     @Operation(summary = "검체용기 등록")
     @PostMapping
-    fun registerContainer(@RequestBody request: SpecimenContainerRegisterRequest): Mono<SpecimenContainerResponse> {
+    fun registerContainer(
+        @RequestBody request: SpecimenContainerRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<SpecimenContainerResponse> {
         return mono {
-            specimenContainerUseCase.registerContainer(request)
+            specimenContainerUseCase.registerContainer(request, auth.adminId)
         }
     }
 
@@ -46,18 +52,22 @@ class SpecimenContainerController(
     @PutMapping("/{spcmCntnCd}")
     fun updateContainer(
         @PathVariable spcmCntnCd: String,
-        @RequestBody request: SpecimenContainerUpdateRequest
+        @RequestBody request: SpecimenContainerUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<SpecimenContainerResponse> {
         return mono {
-            specimenContainerUseCase.updateContainer(spcmCntnCd, request)
+            specimenContainerUseCase.updateContainer(spcmCntnCd, request, auth.adminId)
         }
     }
 
     @Operation(summary = "검체용기 삭제")
     @DeleteMapping("/{spcmCntnCd}")
-    fun deleteContainer(@PathVariable spcmCntnCd: String): Mono<Void> {
+    fun deleteContainer(
+        @PathVariable spcmCntnCd: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> {
         return mono {
-            specimenContainerUseCase.deleteContainer(spcmCntnCd)
+            specimenContainerUseCase.deleteContainer(spcmCntnCd, auth.adminId)
         }.then()
     }
 }
@@ -90,9 +100,12 @@ class SpecimenController(
 
     @Operation(summary = "검체 등록")
     @PostMapping
-    fun registerSpecimen(@RequestBody request: SpecimenRegisterRequest): Mono<SpecimenResponse> {
+    fun registerSpecimen(
+        @RequestBody request: SpecimenRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<SpecimenResponse> {
         return mono {
-            specimenUseCase.registerSpecimen(request)
+            specimenUseCase.registerSpecimen(request, auth.adminId)
         }
     }
 
@@ -100,18 +113,22 @@ class SpecimenController(
     @PutMapping("/{spcmCd}")
     fun updateSpecimen(
         @PathVariable spcmCd: String,
-        @RequestBody request: SpecimenUpdateRequest
+        @RequestBody request: SpecimenUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<SpecimenResponse> {
         return mono {
-            specimenUseCase.updateSpecimen(spcmCd, request)
+            specimenUseCase.updateSpecimen(spcmCd, request, auth.adminId)
         }
     }
 
     @Operation(summary = "검체 삭제")
     @DeleteMapping("/{spcmCd}")
-    fun deleteSpecimen(@PathVariable spcmCd: String): Mono<Void> {
+    fun deleteSpecimen(
+        @PathVariable spcmCd: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> {
         return mono {
-            specimenUseCase.deleteSpecimen(spcmCd)
+            specimenUseCase.deleteSpecimen(spcmCd, auth.adminId)
         }.then()
     }
 }

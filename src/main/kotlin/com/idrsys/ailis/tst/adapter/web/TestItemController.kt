@@ -2,7 +2,10 @@ package com.idrsys.ailis.tst.adapter.web
 
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.usecase.TestItemUseCase
+import com.idrsys.ailis.tst.shared.vo.AuthenticationAdmin
+import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactor.mono
@@ -19,8 +22,11 @@ class TestItemController(
     // --- TestItem ---
 
     @PostMapping
-    fun registerItem(@RequestBody request: TestItemRegisterRequest): Mono<TestItemResponse> = mono {
-        useCase.registerItem(request)
+    fun registerItem(
+        @RequestBody request: TestItemRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemResponse> = mono {
+        useCase.registerItem(request, auth.adminId)
     }
 
     @GetMapping("/{id}")
@@ -29,13 +35,20 @@ class TestItemController(
     }
 
     @PutMapping("/{id}")
-    fun updateItem(@PathVariable id: String, @RequestBody request: TestItemUpdateRequest): Mono<TestItemResponse> = mono {
-        useCase.updateItem(id, request)
+    fun updateItem(
+        @PathVariable id: String,
+        @RequestBody request: TestItemUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemResponse> = mono {
+        useCase.updateItem(id, request, auth.adminId)
     }
 
     @DeleteMapping("/{id}")
-    fun deleteItem(@PathVariable id: String): Mono<Void> = mono {
-        useCase.deleteItem(id)
+    fun deleteItem(
+        @PathVariable id: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteItem(id, auth.adminId)
         null
     }
 
@@ -56,8 +69,11 @@ class TestItemController(
     // --- StandardCharge ---
 
     @PostMapping("/charge")
-    fun registerCharge(@RequestBody request: StandardChargeRegisterRequest): Mono<StandardChargeResponse> = mono {
-        useCase.registerCharge(request)
+    fun registerCharge(
+        @RequestBody request: StandardChargeRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<StandardChargeResponse> = mono {
+        useCase.registerCharge(request, auth.adminId)
     }
 
     @GetMapping("/charge/{id}")
@@ -66,8 +82,11 @@ class TestItemController(
     }
 
     @DeleteMapping("/charge/{id}")
-    fun deleteCharge(@PathVariable id: String): Mono<Void> = mono {
-        useCase.deleteCharge(id)
+    fun deleteCharge(
+        @PathVariable id: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteCharge(id, auth.adminId)
         null
     }
 
@@ -81,8 +100,11 @@ class TestItemController(
     // --- TestItemSpecimen ---
 
     @PostMapping("/specimen")
-    fun registerSpecimen(@RequestBody request: TestItemSpecimenRegisterRequest): Mono<TestItemSpecimenResponse> = mono {
-        useCase.registerSpecimen(request)
+    fun registerSpecimen(
+        @RequestBody request: TestItemSpecimenRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemSpecimenResponse> = mono {
+        useCase.registerSpecimen(request, auth.adminId)
     }
 
     @GetMapping("/specimen/{id}")
@@ -91,8 +113,11 @@ class TestItemController(
     }
 
     @DeleteMapping("/specimen/{id}")
-    fun deleteSpecimen(@PathVariable id: String): Mono<Void> = mono {
-        useCase.deleteSpecimen(id)
+    fun deleteSpecimen(
+        @PathVariable id: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteSpecimen(id, auth.adminId)
         null
     }
 

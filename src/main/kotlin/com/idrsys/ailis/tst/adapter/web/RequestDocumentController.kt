@@ -4,7 +4,10 @@ import com.idrsys.ailis.tst.application.dto.RequestDocumentRegisterRequest
 import com.idrsys.ailis.tst.application.dto.RequestDocumentResponse
 import com.idrsys.ailis.tst.application.dto.RequestDocumentUpdateRequest
 import com.idrsys.ailis.tst.application.usecase.RequestDocumentUseCase
+import com.idrsys.ailis.tst.shared.vo.AuthenticationAdmin
+import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.reactive.asPublisher
 import kotlinx.coroutines.reactor.mono
@@ -37,9 +40,12 @@ class RequestDocumentController(
 
     @Operation(summary = "의뢰서서류 등록")
     @PostMapping
-    fun registerDocument(@RequestBody request: RequestDocumentRegisterRequest): Mono<RequestDocumentResponse> {
+    fun registerDocument(
+        @RequestBody request: RequestDocumentRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<RequestDocumentResponse> {
         return mono {
-            requestDocumentUseCase.registerDocument(request)
+            requestDocumentUseCase.registerDocument(request, auth.adminId)
         }
     }
 
@@ -47,18 +53,22 @@ class RequestDocumentController(
     @PutMapping("/{docCd}")
     fun updateDocument(
         @PathVariable docCd: String,
-        @RequestBody request: RequestDocumentUpdateRequest
+        @RequestBody request: RequestDocumentUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<RequestDocumentResponse> {
         return mono {
-            requestDocumentUseCase.updateDocument(docCd, request)
+            requestDocumentUseCase.updateDocument(docCd, request, auth.adminId)
         }
     }
 
     @Operation(summary = "의뢰서서류 삭제")
     @DeleteMapping("/{docCd}")
-    fun deleteDocument(@PathVariable docCd: String): Mono<Void> {
+    fun deleteDocument(
+        @PathVariable docCd: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> {
         return mono {
-            requestDocumentUseCase.deleteDocument(docCd)
+            requestDocumentUseCase.deleteDocument(docCd, auth.adminId)
         }.then()
     }
 }

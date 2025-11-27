@@ -19,7 +19,7 @@ class TestItemService(
 
     // --- TestItem ---
 
-    override suspend fun registerItem(request: TestItemRegisterRequest): TestItemResponse {
+    override suspend fun registerItem(request: TestItemRegisterRequest, adminId: String): TestItemResponse {
         val domain = mapper.toDomain(request)
         val entityWithId = com.idrsys.ailis.tst.domain.model.TestItem(
             tstCd = UUID.randomUUID().toString(),
@@ -52,9 +52,9 @@ class TestItemService(
             insuApplyCd = domain.insuApplyCd,
             insuCd = domain.insuCd,
             insuCateNo = domain.insuCateNo,
-            creator = "system",
+            creator = adminId,
             createDtime = java.time.LocalDateTime.now(),
-            updater = "system",
+            updater = adminId,
             updateDetime = java.time.LocalDateTime.now()
         )
         entityWithId.setAsNew()
@@ -67,7 +67,7 @@ class TestItemService(
         return mapper.toResponse(domain)
     }
 
-    override suspend fun updateItem(id: String, request: TestItemUpdateRequest): TestItemResponse {
+    override suspend fun updateItem(id: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse {
         val existing = repository.findById(id) ?: throw RuntimeException("TestItem not found with id: $id")
         val updated = com.idrsys.ailis.tst.domain.model.TestItem(
             tstCd = existing.tstCd,
@@ -102,14 +102,14 @@ class TestItemService(
             insuCateNo = request.insuCateNo,
             creator = existing.creator,
             createDtime = existing.createDtime,
-            updater = "system",
+            updater = adminId,
             updateDetime = java.time.LocalDateTime.now()
         )
         val saved = repository.save(updated)
         return mapper.toResponse(saved)
     }
 
-    override suspend fun deleteItem(id: String) {
+    override suspend fun deleteItem(id: String, adminId: String) {
         repository.deleteById(id)
     }
 
@@ -123,7 +123,7 @@ class TestItemService(
 
     // --- StandardCharge ---
 
-    override suspend fun registerCharge(request: StandardChargeRegisterRequest): StandardChargeResponse {
+    override suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse {
         val domain = mapper.toDomain(request)
         val entityWithId = com.idrsys.ailis.tst.domain.model.StandardCharge(
             stndChargeId = UUID.randomUUID().toString(),
@@ -143,7 +143,7 @@ class TestItemService(
             totalQladCharge = domain.totalQladCharge,
             supval = domain.supval,
             addtax = domain.addtax,
-            creator = "system",
+            creator = adminId,
             createDtime = java.time.LocalDateTime.now()
         )
         entityWithId.setAsNew()
@@ -156,7 +156,7 @@ class TestItemService(
         return mapper.toResponse(domain)
     }
 
-    override suspend fun deleteCharge(id: String) {
+    override suspend fun deleteCharge(id: String, adminId: String) {
         repository.deleteChargeById(id)
     }
 
@@ -166,7 +166,7 @@ class TestItemService(
 
     // --- TestItemSpecimen ---
 
-    override suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest): TestItemSpecimenResponse {
+    override suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenResponse {
         val domain = mapper.toDomain(request)
         val entityWithId = com.idrsys.ailis.tst.domain.model.TestItemSpecimen(
             spcmId = UUID.randomUUID().toString(),
@@ -188,9 +188,9 @@ class TestItemService(
             caution = domain.caution,
             engCaution = domain.engCaution,
             spcmCntnCd = domain.spcmCntnCd,
-            creator = "system",
+            creator = adminId,
             createDtime = java.time.LocalDateTime.now(),
-            updater = "system",
+            updater = adminId,
             updateDetime = java.time.LocalDateTime.now()
         )
         entityWithId.setAsNew()
@@ -203,7 +203,7 @@ class TestItemService(
         return mapper.toResponse(domain)
     }
 
-    override suspend fun deleteSpecimen(id: String) {
+    override suspend fun deleteSpecimen(id: String, adminId: String) {
         repository.deleteSpecimenById(id)
     }
 

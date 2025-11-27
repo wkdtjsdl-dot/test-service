@@ -19,7 +19,7 @@ class TestReferenceService(
 
     // --- TestReference ---
 
-    override suspend fun registerReference(request: TestReferenceRegisterRequest): TestReferenceResponse {
+    override suspend fun registerReference(request: TestReferenceRegisterRequest, adminId: String): TestReferenceResponse {
         val domain = mapper.toDomain(request)
         // ID generation or handling if needed, assuming UUID for now or DB generated if configured
         // But since we are using manual ID assignment in other services, let's generate UUID here if not present
@@ -42,9 +42,9 @@ class TestReferenceService(
             dataFormat = domain.dataFormat,
             dftData = domain.dftData,
             dftEngData = domain.dftEngData,
-            creator = "system", // TODO: Get from context
+            creator = adminId, // TODO: Get from context
             createDtime = java.time.LocalDateTime.now(),
-            updater = "system",
+            updater = adminId,
             updateDetime = java.time.LocalDateTime.now()
         )
         entityWithId.setAsNew()
@@ -57,7 +57,7 @@ class TestReferenceService(
         return mapper.toResponse(domain)
     }
 
-    override suspend fun updateReference(id: String, request: TestReferenceUpdateRequest): TestReferenceResponse {
+    override suspend fun updateReference(id: String, request: TestReferenceUpdateRequest, adminId: String): TestReferenceResponse {
         val existing = repository.findById(id) ?: throw RuntimeException("TestReference not found with id: $id")
         // Update logic - creating new instance with updated fields
         // Since domain models are immutable-ish (val constructor params), we might need a copy or manual update
@@ -85,7 +85,7 @@ class TestReferenceService(
             dftEngData = request.dftEngData,
             creator = existing.creator,
             createDtime = existing.createDtime,
-            updater = "system", // TODO: context
+            updater = adminId, // TODO: context
             updateDetime = java.time.LocalDateTime.now()
         )
         // Not setting as new, so it will be an update
@@ -93,7 +93,7 @@ class TestReferenceService(
         return mapper.toResponse(saved)
     }
 
-    override suspend fun deleteReference(id: String) {
+    override suspend fun deleteReference(id: String, adminId: String) {
         repository.deleteById(id)
     }
 
@@ -103,7 +103,7 @@ class TestReferenceService(
 
     // --- TestReferenceGroup ---
 
-    override suspend fun registerGroup(request: TestReferenceGroupRegisterRequest): TestReferenceGroupResponse {
+    override suspend fun registerGroup(request: TestReferenceGroupRegisterRequest, adminId: String): TestReferenceGroupResponse {
         val domain = mapper.toDomain(request)
         val entityWithId = com.idrsys.ailis.tst.domain.model.TestReferenceGroup(
             refGroupCd = UUID.randomUUID().toString(),
@@ -112,9 +112,9 @@ class TestReferenceService(
             refEngNm = domain.refEngNm,
             refEngAbbrNm = domain.refEngAbbrNm,
             sortOrder = domain.sortOrder,
-            creator = "system",
+            creator = adminId,
             createDtime = java.time.LocalDateTime.now(),
-            updater = "system",
+            updater = adminId,
             updateDetime = java.time.LocalDateTime.now()
         )
         entityWithId.setAsNew()
@@ -127,7 +127,7 @@ class TestReferenceService(
         return mapper.toResponse(domain)
     }
 
-    override suspend fun updateGroup(id: String, request: TestReferenceGroupUpdateRequest): TestReferenceGroupResponse {
+    override suspend fun updateGroup(id: String, request: TestReferenceGroupUpdateRequest, adminId: String): TestReferenceGroupResponse {
         val existing = repository.findGroupById(id) ?: throw RuntimeException("TestReferenceGroup not found with id: $id")
         val updated = com.idrsys.ailis.tst.domain.model.TestReferenceGroup(
             refGroupCd = existing.refGroupCd,
@@ -138,14 +138,14 @@ class TestReferenceService(
             sortOrder = request.sortOrder,
             creator = existing.creator,
             createDtime = existing.createDtime,
-            updater = "system",
+            updater = adminId,
             updateDetime = java.time.LocalDateTime.now()
         )
         val saved = repository.saveGroup(updated)
         return mapper.toResponse(saved)
     }
 
-    override suspend fun deleteGroup(id: String) {
+    override suspend fun deleteGroup(id: String, adminId: String) {
         repository.deleteGroupById(id)
     }
 
@@ -155,16 +155,16 @@ class TestReferenceService(
 
     // --- TestReferenceGroupItem ---
 
-    override suspend fun registerGroupItem(request: TestReferenceGroupItemRegisterRequest): TestReferenceGroupItemResponse {
+    override suspend fun registerGroupItem(request: TestReferenceGroupItemRegisterRequest, adminId: String): TestReferenceGroupItemResponse {
         val domain = mapper.toDomain(request)
         val entityWithId = com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem(
             tstRefGroupItemId = UUID.randomUUID().toString(),
             refGroupCd = domain.refGroupCd,
             refCd = domain.refCd,
             sortOrder = domain.sortOrder,
-            creator = "system",
+            creator = adminId,
             createDtime = java.time.LocalDateTime.now(),
-            updater = "system",
+            updater = adminId,
             updateDetime = java.time.LocalDateTime.now()
         )
         entityWithId.setAsNew()
@@ -177,7 +177,7 @@ class TestReferenceService(
         return mapper.toResponse(domain)
     }
 
-    override suspend fun updateGroupItem(id: String, request: TestReferenceGroupItemUpdateRequest): TestReferenceGroupItemResponse {
+    override suspend fun updateGroupItem(id: String, request: TestReferenceGroupItemUpdateRequest, adminId: String): TestReferenceGroupItemResponse {
         val existing = repository.findGroupItemById(id) ?: throw RuntimeException("TestReferenceGroupItem not found with id: $id")
         val updated = com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem(
             tstRefGroupItemId = existing.tstRefGroupItemId,
@@ -186,14 +186,14 @@ class TestReferenceService(
             sortOrder = request.sortOrder,
             creator = existing.creator,
             createDtime = existing.createDtime,
-            updater = "system",
+            updater = adminId,
             updateDetime = java.time.LocalDateTime.now()
         )
         val saved = repository.saveGroupItem(updated)
         return mapper.toResponse(saved)
     }
 
-    override suspend fun deleteGroupItem(id: String) {
+    override suspend fun deleteGroupItem(id: String, adminId: String) {
         repository.deleteGroupItemById(id)
     }
 

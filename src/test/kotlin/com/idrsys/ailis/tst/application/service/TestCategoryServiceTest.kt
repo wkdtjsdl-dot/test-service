@@ -79,7 +79,7 @@ class TestCategoryServiceTest {
         `when`(testCategoryMapper.toResponse(savedDomain)).thenReturn(response)
 
         // When
-        val result = testCategoryService.registerCategory(request)
+        val result = testCategoryService.registerCategory(request, "test-admin")
 
         // Then
         assertEquals(response, result)
