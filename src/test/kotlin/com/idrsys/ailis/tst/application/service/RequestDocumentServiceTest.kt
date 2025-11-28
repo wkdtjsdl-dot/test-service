@@ -1,8 +1,11 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.mapper.RequestDocumentCommandMapper
 import com.idrsys.ailis.tst.application.mapper.RequestDocumentMapper
 import com.idrsys.ailis.tst.application.required.RequestDocumentRepository
+import com.idrsys.ailis.tst.domain.command.RequestDocumentCreateCommand
+import com.idrsys.ailis.tst.domain.command.RequestDocumentUpdateCommand
 import com.idrsys.ailis.tst.domain.model.RequestDocument
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -25,6 +28,9 @@ class RequestDocumentServiceTest {
 
     @Mock
     lateinit var mapper: RequestDocumentMapper
+
+    @Mock
+    lateinit var commandMapper: RequestDocumentCommandMapper
 
     @InjectMocks
     lateinit var service: RequestDocumentService
@@ -67,6 +73,16 @@ class RequestDocumentServiceTest {
             updateDetime = LocalDateTime.now()
         )
 
+        val command = RequestDocumentCreateCommand(
+            docCd = "DOC01",
+            docDivCd = "DIV01",
+            docNm = "Document Name",
+            docEngNm = "Document Eng",
+            docFileId = "FILE01",
+            docEngFileId = "FILE_ENG01"
+        )
+
+        `when`(commandMapper.toCreateCommand(request)).thenReturn(command)
         `when`(repository.save(any())).thenReturn(domain)
         `when`(mapper.toResponse(domain)).thenReturn(response)
 
@@ -125,9 +141,18 @@ class RequestDocumentServiceTest {
             updateDetime = LocalDateTime.now()
         )
 
+        val command = RequestDocumentUpdateCommand(
+            docDivCd = "DIV02",
+            docNm = "Updated Name",
+            docEngNm = "Updated Eng",
+            docFileId = "FILE02",
+            docEngFileId = "FILE_ENG02"
+        )
+
         `when`(repository.findById(id)).thenReturn(existing)
-        `when`(repository.save(any())).thenReturn(updated)
-        `when`(mapper.toResponse(updated)).thenReturn(response)
+        `when`(commandMapper.toUpdateCommand(request)).thenReturn(command)
+        `when`(repository.save(any())).thenReturn(existing)
+        `when`(mapper.toResponse(existing)).thenReturn(response)
 
         // When
         val result = service.updateDocument(id, request, "admin")

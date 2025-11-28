@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.SpecimenUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -128,41 +129,26 @@ class Specimen(
     override fun isNew(): Boolean = _isNew
 
     fun update(
-        spcmCateCd: String?,
-        useYn: Boolean,
-        spcmNm: String,
-        spcmAbbrNm: String?,
-        spcmEngNm: String,
-        spcmEngAbbrNm: String?,
-        collAmt: String?,
-        engCollAmt: String?,
-        spcmStrg: String?,
-        engSpcmStrg: String?,
-        spcmSafe: String?,
-        engSpcmSafe: String?,
-        caution: String?,
-        engCaution: String?,
-        ref: String?,
-        engRef: String?,
+        command: SpecimenUpdateCommand,
         updater: String,
         updateDetime: LocalDateTime
     ) {
-        this.spcmCateCd = spcmCateCd
-        this.useYn = useYn
-        this.spcmNm = spcmNm
-        this.spcmAbbrNm = spcmAbbrNm
-        this.spcmEngNm = spcmEngNm
-        this.spcmEngAbbrNm = spcmEngAbbrNm
-        this.collAmt = collAmt
-        this.engCollAmt = engCollAmt
-        this.spcmStrg = spcmStrg
-        this.engSpcmStrg = engSpcmStrg
-        this.spcmSafe = spcmSafe
-        this.engSpcmSafe = engSpcmSafe
-        this.caution = caution
-        this.engCaution = engCaution
-        this.ref = ref
-        this.engRef = engRef
+        this.spcmCateCd = command.spcmCateCd
+        this.useYn = command.useYn
+        this.spcmNm = command.spcmNm
+        this.spcmAbbrNm = command.spcmAbbrNm
+        this.spcmEngNm = command.spcmEngNm
+        this.spcmEngAbbrNm = command.spcmEngAbbrNm
+        this.collAmt = command.collAmt
+        this.engCollAmt = command.engCollAmt
+        this.spcmStrg = command.spcmStrg
+        this.engSpcmStrg = command.engSpcmStrg
+        this.spcmSafe = command.spcmSafe
+        this.engSpcmSafe = command.engSpcmSafe
+        this.caution = command.caution
+        this.engCaution = command.engCaution
+        this.ref = command.ref
+        this.engRef = command.engRef
         this.updater = updater
         this.updateDetime = updateDetime
     }

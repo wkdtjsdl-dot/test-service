@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.TestItemUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -195,6 +196,40 @@ class TestItem(
 
     fun delete(updater: String, updateDetime: LocalDateTime) {
         this.useYn = false
+        this.updater = updater
+        this.updateDetime = updateDetime
+    }
+
+    fun update(command: TestItemUpdateCommand, updater: String, updateDetime: LocalDateTime) {
+        this.tstLargeCateCd = command.tstLargeCateCd
+        this.tstMediumCateCd = command.tstMediumCateCd
+        this.startDt = command.startDt
+        this.endDt = command.endDt
+        this.useYn = command.useYn
+        this.reqPossYn = command.reqPossYn
+        this.webYn = command.webYn
+        this.tstNm = command.tstNm
+        this.tstAbbrNm = command.tstAbbrNm
+        this.tstEngNm = command.tstEngNm
+        this.tstEngAbbrNm = command.tstEngAbbrNm
+        this.tstIntNm = command.tstIntNm
+        this.rstTypeShortYn = command.rstTypeShortYn
+        this.rstTypeLongYn = command.rstTypeLongYn
+        this.rstTypeFileYn = command.rstTypeFileYn
+        this.rstTypeUrlYn = command.rstTypeUrlYn
+        this.diseaseCd = command.diseaseCd
+        this.tstMethodCd = command.tstMethodCd
+        this.refVal = command.refVal
+        this.engRefVal = command.engRefVal
+        this.clncSgnf = command.clncSgnf
+        this.engClncSgnf = command.engClncSgnf
+        this.tstDesc = command.tstDesc
+        this.tstEngDesc = command.tstEngDesc
+        this.tstDayweek = command.tstDayweek
+        this.tstTatday = command.tstTatday
+        this.insuApplyCd = command.insuApplyCd
+        this.insuCd = command.insuCd
+        this.insuCateNo = command.insuCateNo
         this.updater = updater
         this.updateDetime = updateDetime
     }

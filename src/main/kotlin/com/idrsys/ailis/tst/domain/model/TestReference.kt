@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.TestReferenceUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -124,6 +125,26 @@ class TestReference(
 
     fun delete(updater: String, updateDetime: LocalDateTime) {
         this.useYn = false
+        this.updater = updater
+        this.updateDetime = updateDetime
+    }
+
+    fun update(command: TestReferenceUpdateCommand, updater: String, updateDetime: LocalDateTime) {
+        this.refCateCd = command.refCateCd
+        this.useYn = command.useYn
+        this.refNm = command.refNm
+        this.refAbbrNm = command.refAbbrNm
+        this.refEngNm = command.refEngNm
+        this.refEngAbbrNm = command.refEngAbbrNm
+        this.sortOrder = command.sortOrder
+        this.refType = command.refType
+        this.refSize = command.refSize
+        this.rangeChkYn = command.rangeChkYn
+        this.refMinVal = command.refMinVal
+        this.refMaxVal = command.refMaxVal
+        this.dataFormat = command.dataFormat
+        this.dftData = command.dftData
+        this.dftEngData = command.dftEngData
         this.updater = updater
         this.updateDetime = updateDetime
     }

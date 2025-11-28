@@ -3,6 +3,7 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.RequestDocumentRegisterRequest
 import com.idrsys.ailis.tst.application.dto.RequestDocumentResponse
 import com.idrsys.ailis.tst.application.dto.RequestDocumentUpdateRequest
+import com.idrsys.ailis.tst.application.mapper.RequestDocumentCommandMapper
 import com.idrsys.ailis.tst.application.mapper.RequestDocumentMapper
 import com.idrsys.ailis.tst.application.required.RequestDocumentRepository
 import com.idrsys.ailis.tst.application.usecase.RequestDocumentUseCase
@@ -16,7 +17,8 @@ import java.time.LocalDateTime
 @Service
 class RequestDocumentService(
     private val requestDocumentRepository: RequestDocumentRepository,
-    private val requestDocumentMapper: RequestDocumentMapper
+    private val requestDocumentMapper: RequestDocumentMapper,
+    private val commandMapper: RequestDocumentCommandMapper
 ) : RequestDocumentUseCase {
 
     @Transactional(readOnly = true)
@@ -34,14 +36,15 @@ class RequestDocumentService(
 
     @Transactional
     override suspend fun registerDocument(request: RequestDocumentRegisterRequest, adminId: String): RequestDocumentResponse {
+        val command = commandMapper.toCreateCommand(request)
         val now = LocalDateTime.now()
         val document = RequestDocument(
-            docCd = request.docCd,
-            docDivCd = request.docDivCd,
-            docNm = request.docNm,
-            docEngNm = request.docEngNm,
-            docFileId = request.docFileId,
-            docEngFileId = request.docEngFileId,
+            docCd = command.docCd,
+            docDivCd = command.docDivCd,
+            docNm = command.docNm,
+            docEngNm = command.docEngNm,
+            docFileId = command.docFileId,
+            docEngFileId = command.docEngFileId,
             creator = adminId,
             createDtime = now,
             updater = adminId,
@@ -57,16 +60,9 @@ class RequestDocumentService(
         val document = requestDocumentRepository.findById(docCd)
             ?: throw NoSuchElementException("Document not found: $docCd")
         
+        val command = commandMapper.toUpdateCommand(request)
         val now = LocalDateTime.now()
-        document.update(
-            docDivCd = request.docDivCd,
-            docNm = request.docNm,
-            docEngNm = request.docEngNm,
-            docFileId = request.docFileId,
-            docEngFileId = request.docEngFileId,
-            updater = adminId,
-            updateDetime = now
-        )
+        document.update(command, adminId, now)
         
         val saved = requestDocumentRepository.save(document)
         return requestDocumentMapper.toResponse(saved)

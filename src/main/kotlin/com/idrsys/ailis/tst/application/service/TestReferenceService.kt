@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.mapper.TestReferenceCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestReferenceMapper
 import com.idrsys.ailis.tst.application.required.TestReferenceRepository
 import com.idrsys.ailis.tst.application.usecase.TestReferenceUseCase
@@ -14,42 +15,39 @@ import java.util.*
 @Transactional
 class TestReferenceService(
     private val repository: TestReferenceRepository,
-    private val mapper: TestReferenceMapper
+    private val mapper: TestReferenceMapper,
+    private val commandMapper: TestReferenceCommandMapper
 ) : TestReferenceUseCase {
 
     // --- TestReference ---
 
     override suspend fun registerReference(request: TestReferenceRegisterRequest, adminId: String): TestReferenceResponse {
-        val domain = mapper.toDomain(request)
-        // ID generation or handling if needed, assuming UUID for now or DB generated if configured
-        // But since we are using manual ID assignment in other services, let's generate UUID here if not present
-        // However, looking at other services, we might need to set ID manually.
-        // Let's use UUID for now as per previous patterns.
+        val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val entityWithId = com.idrsys.ailis.tst.domain.model.TestReference(
+        val domain = com.idrsys.ailis.tst.domain.model.TestReference(
             refCd = UUID.randomUUID().toString(),
-            refCateCd = domain.refCateCd,
-            useYn = domain.useYn,
-            refNm = domain.refNm,
-            refAbbrNm = domain.refAbbrNm,
-            refEngNm = domain.refEngNm,
-            refEngAbbrNm = domain.refEngAbbrNm,
-            sortOrder = domain.sortOrder,
-            refType = domain.refType,
-            refSize = domain.refSize,
-            rangeChkYn = domain.rangeChkYn,
-            refMinVal = domain.refMinVal,
-            refMaxVal = domain.refMaxVal,
-            dataFormat = domain.dataFormat,
-            dftData = domain.dftData,
-            dftEngData = domain.dftEngData,
-            creator = adminId, // TODO: Get from context
+            refCateCd = command.refCateCd,
+            useYn = command.useYn,
+            refNm = command.refNm,
+            refAbbrNm = command.refAbbrNm,
+            refEngNm = command.refEngNm,
+            refEngAbbrNm = command.refEngAbbrNm,
+            sortOrder = command.sortOrder,
+            refType = command.refType,
+            refSize = command.refSize,
+            rangeChkYn = command.rangeChkYn,
+            refMinVal = command.refMinVal,
+            refMaxVal = command.refMaxVal,
+            dataFormat = command.dataFormat,
+            dftData = command.dftData,
+            dftEngData = command.dftEngData,
+            creator = adminId,
             createDtime = now,
             updater = adminId,
             updateDetime = now
         )
-        entityWithId.setAsNew()
-        val saved = repository.save(entityWithId)
+        domain.setAsNew()
+        val saved = repository.save(domain)
         return mapper.toResponse(saved)
     }
 
@@ -60,38 +58,10 @@ class TestReferenceService(
 
     override suspend fun updateReference(id: String, request: TestReferenceUpdateRequest, adminId: String): TestReferenceResponse {
         val existing = repository.findById(id) ?: throw RuntimeException("TestReference not found with id: $id")
-        // Update logic - creating new instance with updated fields
-        // Since domain models are immutable-ish (val constructor params), we might need a copy or manual update
-        // But wait, the domain models have vars for properties and an update method?
-        // Let's check TestReference.kt... It doesn't have an update method yet.
-        // I should have added update method in domain model refactoring step.
-        // For now, I will construct a new object with updated values and same ID.
-        
+        val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val updated = com.idrsys.ailis.tst.domain.model.TestReference(
-            refCd = existing.refCd,
-            refCateCd = request.refCateCd,
-            useYn = request.useYn,
-            refNm = request.refNm,
-            refAbbrNm = request.refAbbrNm,
-            refEngNm = request.refEngNm,
-            refEngAbbrNm = request.refEngAbbrNm,
-            sortOrder = request.sortOrder,
-            refType = request.refType,
-            refSize = request.refSize,
-            rangeChkYn = request.rangeChkYn,
-            refMinVal = request.refMinVal,
-            refMaxVal = request.refMaxVal,
-            dataFormat = request.dataFormat,
-            dftData = request.dftData,
-            dftEngData = request.dftEngData,
-            creator = existing.creator,
-            createDtime = existing.createDtime,
-            updater = adminId, // TODO: context
-            updateDetime = now
-        )
-        // Not setting as new, so it will be an update
-        val saved = repository.save(updated)
+        existing.update(command, adminId, now)
+        val saved = repository.save(existing)
         return mapper.toResponse(saved)
     }
 
@@ -113,22 +83,22 @@ class TestReferenceService(
     // --- TestReferenceGroup ---
 
     override suspend fun registerGroup(request: TestReferenceGroupRegisterRequest, adminId: String): TestReferenceGroupResponse {
-        val domain = mapper.toDomain(request)
+        val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val entityWithId = com.idrsys.ailis.tst.domain.model.TestReferenceGroup(
+        val domain = com.idrsys.ailis.tst.domain.model.TestReferenceGroup(
             refGroupCd = UUID.randomUUID().toString(),
-            refNm = domain.refNm,
-            refAbbrNm = domain.refAbbrNm,
-            refEngNm = domain.refEngNm,
-            refEngAbbrNm = domain.refEngAbbrNm,
-            sortOrder = domain.sortOrder,
+            refNm = command.refNm,
+            refAbbrNm = command.refAbbrNm,
+            refEngNm = command.refEngNm,
+            refEngAbbrNm = command.refEngAbbrNm,
+            sortOrder = command.sortOrder,
             creator = adminId,
             createDtime = now,
             updater = adminId,
             updateDetime = now
         )
-        entityWithId.setAsNew()
-        val saved = repository.saveGroup(entityWithId)
+        domain.setAsNew()
+        val saved = repository.saveGroup(domain)
         return mapper.toResponse(saved)
     }
 
@@ -167,20 +137,20 @@ class TestReferenceService(
     // --- TestReferenceGroupItem ---
 
     override suspend fun registerGroupItem(request: TestReferenceGroupItemRegisterRequest, adminId: String): TestReferenceGroupItemResponse {
-        val domain = mapper.toDomain(request)
+        val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val entityWithId = com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem(
+        val domain = com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem(
             tstRefGroupItemId = UUID.randomUUID().toString(),
-            refGroupCd = domain.refGroupCd,
-            refCd = domain.refCd,
-            sortOrder = domain.sortOrder,
+            refGroupCd = command.refGroupCd,
+            refCd = command.refCd,
+            sortOrder = command.sortOrder,
             creator = adminId,
             createDtime = now,
             updater = adminId,
             updateDetime = now
         )
-        entityWithId.setAsNew()
-        val saved = repository.saveGroupItem(entityWithId)
+        domain.setAsNew()
+        val saved = repository.saveGroupItem(domain)
         return mapper.toResponse(saved)
     }
 

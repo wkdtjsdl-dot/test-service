@@ -1,8 +1,11 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.mapper.TestReferenceCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestReferenceMapper
 import com.idrsys.ailis.tst.application.required.TestReferenceRepository
+import com.idrsys.ailis.tst.domain.command.TestReferenceCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestReferenceUpdateCommand
 import com.idrsys.ailis.tst.domain.model.TestReference
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -25,6 +28,9 @@ class TestReferenceServiceTest {
 
     @Mock
     lateinit var mapper: TestReferenceMapper
+
+    @Mock
+    lateinit var commandMapper: TestReferenceCommandMapper
 
     @InjectMocks
     lateinit var service: TestReferenceService
@@ -96,7 +102,25 @@ class TestReferenceServiceTest {
             updateDetime = LocalDateTime.now()
         )
 
-        `when`(mapper.toDomain(request)).thenReturn(domain)
+        val command = TestReferenceCreateCommand(
+            refCateCd = "CATE01",
+            useYn = true,
+            refNm = "Reference Name",
+            refAbbrNm = "Ref",
+            refEngNm = "Reference Eng",
+            refEngAbbrNm = "Ref Eng",
+            sortOrder = 1,
+            refType = "TYPE01",
+            refSize = 10,
+            rangeChkYn = true,
+            refMinVal = 1,
+            refMaxVal = 10,
+            dataFormat = "FORMAT01",
+            dftData = "Default",
+            dftEngData = "Default Eng"
+        )
+
+        `when`(commandMapper.toCreateCommand(request)).thenReturn(command)
         `when`(repository.save(any())).thenReturn(domain)
         `when`(mapper.toResponse(domain)).thenReturn(response)
 
@@ -195,9 +219,28 @@ class TestReferenceServiceTest {
             updateDetime = LocalDateTime.now()
         )
 
+        val command = TestReferenceUpdateCommand(
+            refCateCd = "CATE02",
+            useYn = false,
+            refNm = "Updated Name",
+            refAbbrNm = "Updated",
+            refEngNm = "Updated Eng",
+            refEngAbbrNm = "Updated Eng",
+            sortOrder = 2,
+            refType = "TYPE02",
+            refSize = 20,
+            rangeChkYn = false,
+            refMinVal = 2,
+            refMaxVal = 20,
+            dataFormat = "FORMAT02",
+            dftData = "Updated Default",
+            dftEngData = "Updated Default Eng"
+        )
+
         `when`(repository.findById(id)).thenReturn(existing)
-        `when`(repository.save(any())).thenReturn(updated)
-        `when`(mapper.toResponse(updated)).thenReturn(response)
+        `when`(commandMapper.toUpdateCommand(request)).thenReturn(command)
+        `when`(repository.save(any())).thenReturn(existing)
+        `when`(mapper.toResponse(existing)).thenReturn(response)
 
         // When
         val result = service.updateReference(id, request, "admin")

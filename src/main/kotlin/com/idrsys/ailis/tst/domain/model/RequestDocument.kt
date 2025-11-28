@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.RequestDocumentUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -73,19 +74,15 @@ class RequestDocument(
     override fun isNew(): Boolean = _isNew
 
     fun update(
-        docDivCd: String,
-        docNm: String,
-        docEngNm: String,
-        docFileId: String?,
-        docEngFileId: String?,
+        command: RequestDocumentUpdateCommand,
         updater: String,
         updateDetime: LocalDateTime
     ) {
-        this.docDivCd = docDivCd
-        this.docNm = docNm
-        this.docEngNm = docEngNm
-        this.docFileId = docFileId
-        this.docEngFileId = docEngFileId
+        this.docDivCd = command.docDivCd
+        this.docNm = command.docNm
+        this.docEngNm = command.docEngNm
+        this.docFileId = command.docFileId
+        this.docEngFileId = command.docEngFileId
         this.updater = updater
         this.updateDetime = updateDetime
     }

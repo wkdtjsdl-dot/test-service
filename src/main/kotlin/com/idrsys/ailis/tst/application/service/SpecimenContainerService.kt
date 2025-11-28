@@ -3,6 +3,7 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.SpecimenContainerRegisterRequest
 import com.idrsys.ailis.tst.application.dto.SpecimenContainerResponse
 import com.idrsys.ailis.tst.application.dto.SpecimenContainerUpdateRequest
+import com.idrsys.ailis.tst.application.mapper.SpecimenContainerCommandMapper
 import com.idrsys.ailis.tst.application.mapper.SpecimenContainerMapper
 import com.idrsys.ailis.tst.application.required.SpecimenContainerRepository
 import com.idrsys.ailis.tst.application.usecase.SpecimenContainerUseCase
@@ -16,7 +17,8 @@ import java.time.LocalDateTime
 @Service
 class SpecimenContainerService(
     private val specimenContainerRepository: SpecimenContainerRepository,
-    private val specimenContainerMapper: SpecimenContainerMapper
+    private val specimenContainerMapper: SpecimenContainerMapper,
+    private val commandMapper: SpecimenContainerCommandMapper
 ) : SpecimenContainerUseCase {
 
     @Transactional(readOnly = true)
@@ -34,12 +36,13 @@ class SpecimenContainerService(
 
     @Transactional
     override suspend fun registerContainer(request: SpecimenContainerRegisterRequest, adminId: String): SpecimenContainerResponse {
+        val command = commandMapper.toCreateCommand(request)
         val now = LocalDateTime.now()
         val container = SpecimenContainer(
-            spcmCntnCd = request.spcmCntnCd,
-            cntnNm = request.cntnNm,
-            cntnEngNm = request.cntnEngNm,
-            cntnFileId = request.cntnFileId,
+            spcmCntnCd = command.spcmCntnCd,
+            cntnNm = command.cntnNm,
+            cntnEngNm = command.cntnEngNm,
+            cntnFileId = command.cntnFileId,
             creator = adminId,
             createDtime = now,
             updater = adminId,
@@ -55,14 +58,9 @@ class SpecimenContainerService(
         val container = specimenContainerRepository.findById(spcmCntnCd)
             ?: throw NoSuchElementException("Container not found: $spcmCntnCd")
         
+        val command = commandMapper.toUpdateCommand(request)
         val now = LocalDateTime.now()
-        container.update(
-            cntnNm = request.cntnNm,
-            cntnEngNm = request.cntnEngNm,
-            cntnFileId = request.cntnFileId,
-            updater = adminId,
-            updateDetime = now
-        )
+        container.update(command, adminId, now)
         
         val saved = specimenContainerRepository.save(container)
         return specimenContainerMapper.toResponse(saved)

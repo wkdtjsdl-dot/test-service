@@ -1,8 +1,11 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.mapper.SpecimenContainerCommandMapper
 import com.idrsys.ailis.tst.application.mapper.SpecimenContainerMapper
 import com.idrsys.ailis.tst.application.required.SpecimenContainerRepository
+import com.idrsys.ailis.tst.domain.command.SpecimenContainerCreateCommand
+import com.idrsys.ailis.tst.domain.command.SpecimenContainerUpdateCommand
 import com.idrsys.ailis.tst.domain.model.SpecimenContainer
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -25,6 +28,9 @@ class SpecimenContainerServiceTest {
 
     @Mock
     lateinit var mapper: SpecimenContainerMapper
+
+    @Mock
+    lateinit var commandMapper: SpecimenContainerCommandMapper
 
     @InjectMocks
     lateinit var service: SpecimenContainerService
@@ -61,6 +67,14 @@ class SpecimenContainerServiceTest {
             updateDetime = LocalDateTime.now()
         )
 
+        val command = SpecimenContainerCreateCommand(
+            spcmCntnCd = "CNTN01",
+            cntnNm = "Container Name",
+            cntnEngNm = "Container Eng",
+            cntnFileId = "FILE01"
+        )
+
+        `when`(commandMapper.toCreateCommand(request)).thenReturn(command)
         `when`(repository.save(any())).thenReturn(domain)
         `when`(mapper.toResponse(domain)).thenReturn(response)
 
@@ -111,9 +125,16 @@ class SpecimenContainerServiceTest {
             updateDetime = LocalDateTime.now()
         )
 
+        val command = SpecimenContainerUpdateCommand(
+            cntnNm = "Updated Name",
+            cntnEngNm = "Updated Eng",
+            cntnFileId = "FILE02"
+        )
+
         `when`(repository.findById(id)).thenReturn(existing)
-        `when`(repository.save(any())).thenReturn(updated)
-        `when`(mapper.toResponse(updated)).thenReturn(response)
+        `when`(commandMapper.toUpdateCommand(request)).thenReturn(command)
+        `when`(repository.save(any())).thenReturn(existing)
+        `when`(mapper.toResponse(existing)).thenReturn(response)
 
         // When
         val result = service.updateContainer(id, request, "admin")

@@ -1,8 +1,11 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.mapper.SpecimenCommandMapper
 import com.idrsys.ailis.tst.application.mapper.SpecimenMapper
 import com.idrsys.ailis.tst.application.required.SpecimenRepository
+import com.idrsys.ailis.tst.domain.command.SpecimenCreateCommand
+import com.idrsys.ailis.tst.domain.command.SpecimenUpdateCommand
 import com.idrsys.ailis.tst.domain.model.Specimen
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -25,6 +28,9 @@ class SpecimenServiceTest {
 
     @Mock
     lateinit var mapper: SpecimenMapper
+
+    @Mock
+    lateinit var commandMapper: SpecimenCommandMapper
 
     @InjectMocks
     lateinit var service: SpecimenService
@@ -100,6 +106,27 @@ class SpecimenServiceTest {
             updateDetime = LocalDateTime.now()
         )
 
+        val command = SpecimenCreateCommand(
+            spcmCd = "SPCM01",
+            spcmCateCd = "CATE01",
+            useYn = true,
+            spcmNm = "Specimen Name",
+            spcmAbbrNm = "Specimen",
+            spcmEngNm = "Specimen Eng",
+            spcmEngAbbrNm = "Specimen Eng",
+            collAmt = "10ml",
+            engCollAmt = "10ml Eng",
+            spcmStrg = "Storage",
+            engSpcmStrg = "Storage Eng",
+            spcmSafe = "Safe",
+            engSpcmSafe = "Safe Eng",
+            caution = "Caution",
+            engCaution = "Caution Eng",
+            ref = "Ref",
+            engRef = "Ref Eng"
+        )
+
+        `when`(commandMapper.toCreateCommand(request)).thenReturn(command)
         `when`(repository.save(any())).thenReturn(domain)
         `when`(mapper.toResponse(domain)).thenReturn(response)
 
@@ -202,9 +229,29 @@ class SpecimenServiceTest {
             updateDetime = LocalDateTime.now()
         )
 
+        val command = SpecimenUpdateCommand(
+            spcmCateCd = "CATE02",
+            useYn = false,
+            spcmNm = "Updated Name",
+            spcmAbbrNm = "Updated",
+            spcmEngNm = "Updated Eng",
+            spcmEngAbbrNm = "Updated Eng",
+            collAmt = "20ml",
+            engCollAmt = "20ml Eng",
+            spcmStrg = "Updated Storage",
+            engSpcmStrg = "Updated Storage Eng",
+            spcmSafe = "Updated Safe",
+            engSpcmSafe = "Updated Safe Eng",
+            caution = "Updated Caution",
+            engCaution = "Updated Caution Eng",
+            ref = "Updated Ref",
+            engRef = "Updated Ref Eng"
+        )
+
         `when`(repository.findById(id)).thenReturn(existing)
-        `when`(repository.save(any())).thenReturn(updated)
-        `when`(mapper.toResponse(updated)).thenReturn(response)
+        `when`(commandMapper.toUpdateCommand(request)).thenReturn(command)
+        `when`(repository.save(any())).thenReturn(existing)
+        `when`(mapper.toResponse(existing)).thenReturn(response)
 
         // When
         val result = service.updateSpecimen(id, request, "admin")

@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.SpecimenContainerUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -63,15 +64,13 @@ class SpecimenContainer(
     override fun isNew(): Boolean = _isNew
 
     fun update(
-        cntnNm: String,
-        cntnEngNm: String,
-        cntnFileId: String?,
+        command: SpecimenContainerUpdateCommand,
         updater: String,
         updateDetime: LocalDateTime
     ) {
-        this.cntnNm = cntnNm
-        this.cntnEngNm = cntnEngNm
-        this.cntnFileId = cntnFileId
+        this.cntnNm = command.cntnNm
+        this.cntnEngNm = command.cntnEngNm
+        this.cntnFileId = command.cntnFileId
         this.updater = updater
         this.updateDetime = updateDetime
     }

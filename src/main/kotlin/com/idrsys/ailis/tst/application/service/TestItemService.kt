@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.mapper.TestItemCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestItemMapper
 import com.idrsys.ailis.tst.application.required.TestItemRepository
 import com.idrsys.ailis.tst.application.usecase.TestItemUseCase
@@ -14,52 +15,53 @@ import java.util.*
 @Transactional
 class TestItemService(
     private val repository: TestItemRepository,
-    private val mapper: TestItemMapper
+    private val mapper: TestItemMapper,
+    private val commandMapper: TestItemCommandMapper
 ) : TestItemUseCase {
 
     // --- TestItem ---
 
     override suspend fun registerItem(request: TestItemRegisterRequest, adminId: String): TestItemResponse {
-        val domain = mapper.toDomain(request)
+        val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val entityWithId = com.idrsys.ailis.tst.domain.model.TestItem(
+        val domain = com.idrsys.ailis.tst.domain.model.TestItem(
             tstCd = UUID.randomUUID().toString(),
-            tstLargeCateCd = domain.tstLargeCateCd,
-            tstMediumCateCd = domain.tstMediumCateCd,
-            startDt = domain.startDt,
-            endDt = domain.endDt,
-            useYn = domain.useYn,
-            reqPossYn = domain.reqPossYn,
-            webYn = domain.webYn,
-            tstNm = domain.tstNm,
-            tstAbbrNm = domain.tstAbbrNm,
-            tstEngNm = domain.tstEngNm,
-            tstEngAbbrNm = domain.tstEngAbbrNm,
-            tstIntNm = domain.tstIntNm,
-            rstTypeShortYn = domain.rstTypeShortYn,
-            rstTypeLongYn = domain.rstTypeLongYn,
-            rstTypeFileYn = domain.rstTypeFileYn,
-            rstTypeUrlYn = domain.rstTypeUrlYn,
-            diseaseCd = domain.diseaseCd,
-            tstMethodCd = domain.tstMethodCd,
-            refVal = domain.refVal,
-            engRefVal = domain.engRefVal,
-            clncSgnf = domain.clncSgnf,
-            engClncSgnf = domain.engClncSgnf,
-            tstDesc = domain.tstDesc,
-            tstEngDesc = domain.tstEngDesc,
-            tstDayweek = domain.tstDayweek,
-            tstTatday = domain.tstTatday,
-            insuApplyCd = domain.insuApplyCd,
-            insuCd = domain.insuCd,
-            insuCateNo = domain.insuCateNo,
+            tstLargeCateCd = command.tstLargeCateCd,
+            tstMediumCateCd = command.tstMediumCateCd,
+            startDt = command.startDt,
+            endDt = command.endDt,
+            useYn = command.useYn,
+            reqPossYn = command.reqPossYn,
+            webYn = command.webYn,
+            tstNm = command.tstNm,
+            tstAbbrNm = command.tstAbbrNm,
+            tstEngNm = command.tstEngNm,
+            tstEngAbbrNm = command.tstEngAbbrNm,
+            tstIntNm = command.tstIntNm,
+            rstTypeShortYn = command.rstTypeShortYn,
+            rstTypeLongYn = command.rstTypeLongYn,
+            rstTypeFileYn = command.rstTypeFileYn,
+            rstTypeUrlYn = command.rstTypeUrlYn,
+            diseaseCd = command.diseaseCd,
+            tstMethodCd = command.tstMethodCd,
+            refVal = command.refVal,
+            engRefVal = command.engRefVal,
+            clncSgnf = command.clncSgnf,
+            engClncSgnf = command.engClncSgnf,
+            tstDesc = command.tstDesc,
+            tstEngDesc = command.tstEngDesc,
+            tstDayweek = command.tstDayweek,
+            tstTatday = command.tstTatday,
+            insuApplyCd = command.insuApplyCd,
+            insuCd = command.insuCd,
+            insuCateNo = command.insuCateNo,
             creator = adminId,
             createDtime = now,
             updater = adminId,
             updateDetime = now
         )
-        entityWithId.setAsNew()
-        val saved = repository.save(entityWithId)
+        domain.setAsNew()
+        val saved = repository.save(domain)
         return mapper.toResponse(saved)
     }
 
@@ -70,44 +72,10 @@ class TestItemService(
 
     override suspend fun updateItem(id: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse {
         val existing = repository.findById(id) ?: throw RuntimeException("TestItem not found with id: $id")
+        val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val updated = com.idrsys.ailis.tst.domain.model.TestItem(
-            tstCd = existing.tstCd,
-            tstLargeCateCd = request.tstLargeCateCd,
-            tstMediumCateCd = request.tstMediumCateCd,
-            startDt = request.startDt,
-            endDt = request.endDt,
-            useYn = request.useYn,
-            reqPossYn = request.reqPossYn,
-            webYn = request.webYn,
-            tstNm = request.tstNm,
-            tstAbbrNm = request.tstAbbrNm,
-            tstEngNm = request.tstEngNm,
-            tstEngAbbrNm = request.tstEngAbbrNm,
-            tstIntNm = request.tstIntNm,
-            rstTypeShortYn = request.rstTypeShortYn,
-            rstTypeLongYn = request.rstTypeLongYn,
-            rstTypeFileYn = request.rstTypeFileYn,
-            rstTypeUrlYn = request.rstTypeUrlYn,
-            diseaseCd = request.diseaseCd,
-            tstMethodCd = request.tstMethodCd,
-            refVal = request.refVal,
-            engRefVal = request.engRefVal,
-            clncSgnf = request.clncSgnf,
-            engClncSgnf = request.engClncSgnf,
-            tstDesc = request.tstDesc,
-            tstEngDesc = request.tstEngDesc,
-            tstDayweek = request.tstDayweek,
-            tstTatday = request.tstTatday,
-            insuApplyCd = request.insuApplyCd,
-            insuCd = request.insuCd,
-            insuCateNo = request.insuCateNo,
-            creator = existing.creator,
-            createDtime = existing.createDtime,
-            updater = adminId,
-            updateDetime = now
-        )
-        val saved = repository.save(updated)
+        existing.update(command, adminId, now)
+        val saved = repository.save(existing)
         return mapper.toResponse(saved)
     }
 
@@ -133,31 +101,31 @@ class TestItemService(
     // --- StandardCharge ---
 
     override suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse {
-        val domain = mapper.toDomain(request)
+        val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val entityWithId = com.idrsys.ailis.tst.domain.model.StandardCharge(
+        val domain = com.idrsys.ailis.tst.domain.model.StandardCharge(
             stndChargeId = UUID.randomUUID().toString(),
-            tstCd = domain.tstCd,
-            applyStartDt = domain.applyStartDt,
-            applyEndDt = domain.applyEndDt,
-            insuCd = domain.insuCd,
-            insuCateNo = domain.insuCateNo,
-            relatValuePoint = domain.relatValuePoint,
-            insuCharge = domain.insuCharge,
-            qladCharge = domain.qladCharge,
-            stndCharge = domain.stndCharge,
-            lowestCharge = domain.lowestCharge,
-            qladCd = domain.qladCd,
-            relatValueQladPoint = domain.relatValueQladPoint,
-            outputInsuCd = domain.outputInsuCd,
-            totalQladCharge = domain.totalQladCharge,
-            supval = domain.supval,
-            addtax = domain.addtax,
+            tstCd = command.tstCd,
+            applyStartDt = command.applyStartDt,
+            applyEndDt = command.applyEndDt,
+            insuCd = command.insuCd,
+            insuCateNo = command.insuCateNo,
+            relatValuePoint = command.relatValuePoint,
+            insuCharge = command.insuCharge,
+            qladCharge = command.qladCharge,
+            stndCharge = command.stndCharge,
+            lowestCharge = command.lowestCharge,
+            qladCd = command.qladCd,
+            relatValueQladPoint = command.relatValueQladPoint,
+            outputInsuCd = command.outputInsuCd,
+            totalQladCharge = command.totalQladCharge,
+            supval = command.supval,
+            addtax = command.addtax,
             creator = adminId,
             createDtime = now
         )
-        entityWithId.setAsNew()
-        val saved = repository.saveCharge(entityWithId)
+        domain.setAsNew()
+        val saved = repository.saveCharge(domain)
         return mapper.toResponse(saved)
     }
 
@@ -177,35 +145,35 @@ class TestItemService(
     // --- TestItemSpecimen ---
 
     override suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenResponse {
-        val domain = mapper.toDomain(request)
+        val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val entityWithId = com.idrsys.ailis.tst.domain.model.TestItemSpecimen(
+        val domain = com.idrsys.ailis.tst.domain.model.TestItemSpecimen(
             spcmId = UUID.randomUUID().toString(),
-            tstCd = domain.tstCd,
-            spcmCd = domain.spcmCd,
-            sortOrder = domain.sortOrder,
-            estlYn = domain.estlYn,
-            takeQnty = domain.takeQnty,
-            engTakeQnty = domain.engTakeQnty,
-            useQnty = domain.useQnty,
-            engUseQnty = domain.engUseQnty,
-            strgMethodCd = domain.strgMethodCd,
-            spcmStbl = domain.spcmStbl,
-            engSpcmStbl = domain.engSpcmStbl,
-            takeMethod = domain.takeMethod,
-            engTakeMethod = domain.engTakeMethod,
-            spcmDesc = domain.spcmDesc,
-            engDesc = domain.engDesc,
-            caution = domain.caution,
-            engCaution = domain.engCaution,
-            spcmCntnCd = domain.spcmCntnCd,
+            tstCd = command.tstCd,
+            spcmCd = command.spcmCd,
+            sortOrder = command.sortOrder,
+            estlYn = command.estlYn,
+            takeQnty = command.takeQnty,
+            engTakeQnty = command.engTakeQnty,
+            useQnty = command.useQnty,
+            engUseQnty = command.engUseQnty,
+            strgMethodCd = command.strgMethodCd,
+            spcmStbl = command.spcmStbl,
+            engSpcmStbl = command.engSpcmStbl,
+            takeMethod = command.takeMethod,
+            engTakeMethod = command.engTakeMethod,
+            spcmDesc = command.spcmDesc,
+            engDesc = command.engDesc,
+            caution = command.caution,
+            engCaution = command.engCaution,
+            spcmCntnCd = command.spcmCntnCd,
             creator = adminId,
             createDtime = now,
             updater = adminId,
             updateDetime = now
         )
-        entityWithId.setAsNew()
-        val saved = repository.saveSpecimen(entityWithId)
+        domain.setAsNew()
+        val saved = repository.saveSpecimen(domain)
         return mapper.toResponse(saved)
     }
 

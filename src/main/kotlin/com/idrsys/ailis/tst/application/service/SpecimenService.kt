@@ -3,6 +3,7 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.SpecimenRegisterRequest
 import com.idrsys.ailis.tst.application.dto.SpecimenResponse
 import com.idrsys.ailis.tst.application.dto.SpecimenUpdateRequest
+import com.idrsys.ailis.tst.application.mapper.SpecimenCommandMapper
 import com.idrsys.ailis.tst.application.mapper.SpecimenMapper
 import com.idrsys.ailis.tst.application.required.SpecimenRepository
 import com.idrsys.ailis.tst.application.usecase.SpecimenUseCase
@@ -16,7 +17,8 @@ import java.time.LocalDateTime
 @Service
 class SpecimenService(
     private val specimenRepository: SpecimenRepository,
-    private val specimenMapper: SpecimenMapper
+    private val specimenMapper: SpecimenMapper,
+    private val commandMapper: SpecimenCommandMapper
 ) : SpecimenUseCase {
 
     @Transactional(readOnly = true)
@@ -34,25 +36,26 @@ class SpecimenService(
 
     @Transactional
     override suspend fun registerSpecimen(request: SpecimenRegisterRequest, adminId: String): SpecimenResponse {
+        val command = commandMapper.toCreateCommand(request)
         val now = LocalDateTime.now()
         val specimen = Specimen(
-            spcmCd = request.spcmCd,
-            spcmCateCd = request.spcmCateCd,
-            useYn = request.useYn,
-            spcmNm = request.spcmNm,
-            spcmAbbrNm = request.spcmAbbrNm,
-            spcmEngNm = request.spcmEngNm,
-            spcmEngAbbrNm = request.spcmEngAbbrNm,
-            collAmt = request.collAmt,
-            engCollAmt = request.engCollAmt,
-            spcmStrg = request.spcmStrg,
-            engSpcmStrg = request.engSpcmStrg,
-            spcmSafe = request.spcmSafe,
-            engSpcmSafe = request.engSpcmSafe,
-            caution = request.caution,
-            engCaution = request.engCaution,
-            ref = request.ref,
-            engRef = request.engRef,
+            spcmCd = command.spcmCd,
+            spcmCateCd = command.spcmCateCd,
+            useYn = command.useYn,
+            spcmNm = command.spcmNm,
+            spcmAbbrNm = command.spcmAbbrNm,
+            spcmEngNm = command.spcmEngNm,
+            spcmEngAbbrNm = command.spcmEngAbbrNm,
+            collAmt = command.collAmt,
+            engCollAmt = command.engCollAmt,
+            spcmStrg = command.spcmStrg,
+            engSpcmStrg = command.engSpcmStrg,
+            spcmSafe = command.spcmSafe,
+            engSpcmSafe = command.engSpcmSafe,
+            caution = command.caution,
+            engCaution = command.engCaution,
+            ref = command.ref,
+            engRef = command.engRef,
             creator = adminId,
             createDtime = now,
             updater = adminId,
@@ -68,27 +71,9 @@ class SpecimenService(
         val specimen = specimenRepository.findById(spcmCd)
             ?: throw NoSuchElementException("Specimen not found: $spcmCd")
         
+        val command = commandMapper.toUpdateCommand(request)
         val now = LocalDateTime.now()
-        specimen.update(
-            spcmCateCd = request.spcmCateCd,
-            useYn = request.useYn,
-            spcmNm = request.spcmNm,
-            spcmAbbrNm = request.spcmAbbrNm,
-            spcmEngNm = request.spcmEngNm,
-            spcmEngAbbrNm = request.spcmEngAbbrNm,
-            collAmt = request.collAmt,
-            engCollAmt = request.engCollAmt,
-            spcmStrg = request.spcmStrg,
-            engSpcmStrg = request.engSpcmStrg,
-            spcmSafe = request.spcmSafe,
-            engSpcmSafe = request.engSpcmSafe,
-            caution = request.caution,
-            engCaution = request.engCaution,
-            ref = request.ref,
-            engRef = request.engRef,
-            updater = adminId,
-            updateDetime = now
-        )
+        specimen.update(command, adminId, now)
         
         val saved = specimenRepository.save(specimen)
         return specimenMapper.toResponse(saved)
