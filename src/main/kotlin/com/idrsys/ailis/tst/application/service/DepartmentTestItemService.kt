@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import com.idrsys.ailis.tst.domain.model.DepartmentGroup
+import com.idrsys.ailis.tst.domain.model.DepartmentGroupItem
+import com.idrsys.ailis.tst.domain.model.DepartmentGroupItemTest
+import com.idrsys.ailis.tst.domain.model.DepartmentTestItem
 import java.util.*
 
 @Service
@@ -24,7 +28,7 @@ class DepartmentTestItemService(
     override suspend fun registerGroup(request: DepartmentGroupRegisterRequest, adminId: String): DepartmentGroupResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = com.idrsys.ailis.tst.domain.model.DepartmentGroup(
+        val domain = DepartmentGroup(
             deptGroupId = UUID.randomUUID().toString(),
             deptCd = command.deptCd,
             tstCateCd = command.tstCateCd,
@@ -69,7 +73,7 @@ class DepartmentTestItemService(
     override suspend fun registerGroupItem(request: DepartmentGroupItemRegisterRequest, adminId: String): DepartmentGroupItemResponse {
         val domain = mapper.toDomain(request)
         val now = java.time.LocalDateTime.now()
-        val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentGroupItem(
+        val entityWithId = DepartmentGroupItem(
             deptGrpItmId = UUID.randomUUID().toString(),
             deptCd = domain.deptCd,
             tstCateCd = domain.tstCateCd,
@@ -94,7 +98,7 @@ class DepartmentTestItemService(
     override suspend fun updateGroupItem(id: String, request: DepartmentGroupItemUpdateRequest, adminId: String): DepartmentGroupItemResponse {
         val existing = repository.findGroupItemById(id) ?: throw RuntimeException("DepartmentGroupItem not found with id: $id")
         val now = java.time.LocalDateTime.now()
-        val updated = com.idrsys.ailis.tst.domain.model.DepartmentGroupItem(
+        val updated = DepartmentGroupItem(
             deptGrpItmId = existing.deptGrpItmId,
             deptCd = request.deptCd,
             tstCateCd = request.tstCateCd,
@@ -123,7 +127,7 @@ class DepartmentTestItemService(
     override suspend fun registerGroupItemTest(request: DepartmentGroupItemTestRegisterRequest, adminId: String): DepartmentGroupItemTestResponse {
         val domain = mapper.toDomain(request)
         val now = java.time.LocalDateTime.now()
-        val entityWithId = com.idrsys.ailis.tst.domain.model.DepartmentGroupItemTest(
+        val entityWithId = DepartmentGroupItemTest(
             deptGrpItmTstId = UUID.randomUUID().toString(),
             deptCd = domain.deptCd,
             tstCateCd = domain.tstCateCd,
@@ -155,7 +159,7 @@ class DepartmentTestItemService(
     override suspend fun registerTestItem(request: DepartmentTestItemRegisterRequest, adminId: String): DepartmentTestItemResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = com.idrsys.ailis.tst.domain.model.DepartmentTestItem(
+        val domain = DepartmentTestItem(
             deptTstItemId = UUID.randomUUID().toString(),
             deptCd = command.deptCd,
             tstCd = command.tstCd,

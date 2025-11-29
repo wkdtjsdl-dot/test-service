@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import com.idrsys.ailis.tst.domain.model.StandardCharge
+import com.idrsys.ailis.tst.domain.model.TestItem
+import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import java.util.*
 
 @Service
@@ -24,7 +27,7 @@ class TestItemService(
     override suspend fun registerItem(request: TestItemRegisterRequest, adminId: String): TestItemResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = com.idrsys.ailis.tst.domain.model.TestItem(
+        val domain = TestItem(
             tstCd = UUID.randomUUID().toString(),
             tstLargeCateCd = command.tstLargeCateCd,
             tstMediumCateCd = command.tstMediumCateCd,
@@ -103,7 +106,7 @@ class TestItemService(
     override suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = com.idrsys.ailis.tst.domain.model.StandardCharge(
+        val domain = StandardCharge(
             stndChargeId = UUID.randomUUID().toString(),
             tstCd = command.tstCd,
             applyStartDt = command.applyStartDt,
@@ -147,7 +150,7 @@ class TestItemService(
     override suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = com.idrsys.ailis.tst.domain.model.TestItemSpecimen(
+        val domain = TestItemSpecimen(
             spcmId = UUID.randomUUID().toString(),
             tstCd = command.tstCd,
             spcmCd = command.spcmCd,

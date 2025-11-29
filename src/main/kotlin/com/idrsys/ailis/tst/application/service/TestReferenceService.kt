@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import com.idrsys.ailis.tst.domain.model.TestReference
+import com.idrsys.ailis.tst.domain.model.TestReferenceGroup
+import com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem
 import java.util.*
 
 @Service
@@ -24,7 +27,7 @@ class TestReferenceService(
     override suspend fun registerReference(request: TestReferenceRegisterRequest, adminId: String): TestReferenceResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = com.idrsys.ailis.tst.domain.model.TestReference(
+        val domain = TestReference(
             refCd = UUID.randomUUID().toString(),
             refCateCd = command.refCateCd,
             useYn = command.useYn,
@@ -85,7 +88,7 @@ class TestReferenceService(
     override suspend fun registerGroup(request: TestReferenceGroupRegisterRequest, adminId: String): TestReferenceGroupResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = com.idrsys.ailis.tst.domain.model.TestReferenceGroup(
+        val domain = TestReferenceGroup(
             refGroupCd = UUID.randomUUID().toString(),
             refNm = command.refNm,
             refAbbrNm = command.refAbbrNm,
@@ -110,7 +113,7 @@ class TestReferenceService(
     override suspend fun updateGroup(id: String, request: TestReferenceGroupUpdateRequest, adminId: String): TestReferenceGroupResponse {
         val existing = repository.findGroupById(id) ?: throw RuntimeException("TestReferenceGroup not found with id: $id")
         val now = java.time.LocalDateTime.now()
-        val updated = com.idrsys.ailis.tst.domain.model.TestReferenceGroup(
+        val updated = TestReferenceGroup(
             refGroupCd = existing.refGroupCd,
             refNm = request.refNm,
             refAbbrNm = request.refAbbrNm,
@@ -139,7 +142,7 @@ class TestReferenceService(
     override suspend fun registerGroupItem(request: TestReferenceGroupItemRegisterRequest, adminId: String): TestReferenceGroupItemResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem(
+        val domain = TestReferenceGroupItem(
             tstRefGroupItemId = UUID.randomUUID().toString(),
             refGroupCd = command.refGroupCd,
             refCd = command.refCd,
@@ -162,7 +165,7 @@ class TestReferenceService(
     override suspend fun updateGroupItem(id: String, request: TestReferenceGroupItemUpdateRequest, adminId: String): TestReferenceGroupItemResponse {
         val existing = repository.findGroupItemById(id) ?: throw RuntimeException("TestReferenceGroupItem not found with id: $id")
         val now = java.time.LocalDateTime.now()
-        val updated = com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem(
+        val updated = TestReferenceGroupItem(
             tstRefGroupItemId = existing.tstRefGroupItemId,
             refGroupCd = request.refGroupCd,
             refCd = request.refCd,

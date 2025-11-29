@@ -54,7 +54,7 @@ class TestCategoryRepositoryImpl(
         return executeSpec
             .fetch()
             .all()
-            .map { row -> toTestCategory(row) }
+            .map { row: Map<String, Any> -> toTestCategory(row) }
             .asFlow()
     }
 
