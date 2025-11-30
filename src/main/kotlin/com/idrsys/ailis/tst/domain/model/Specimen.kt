@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.SpecimenCreateCommand
 import com.idrsys.ailis.tst.domain.command.SpecimenUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
@@ -157,5 +158,37 @@ class Specimen(
         this.useYn = false
         this.updater = updater
         this.updateDetime = updateDetime
+    }
+
+    companion object {
+        fun create(
+            command: SpecimenCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): Specimen {
+            return Specimen(
+                spcmCd = command.spcmCd,
+                spcmCateCd = command.spcmCateCd,
+                useYn = command.useYn,
+                spcmNm = command.spcmNm,
+                spcmAbbrNm = command.spcmAbbrNm,
+                spcmEngNm = command.spcmEngNm,
+                spcmEngAbbrNm = command.spcmEngAbbrNm,
+                collAmt = command.collAmt,
+                engCollAmt = command.engCollAmt,
+                spcmStrg = command.spcmStrg,
+                engSpcmStrg = command.engSpcmStrg,
+                spcmSafe = command.spcmSafe,
+                engSpcmSafe = command.engSpcmSafe,
+                caution = command.caution,
+                engCaution = command.engCaution,
+                ref = command.ref,
+                engRef = command.engRef,
+                creator = creator,
+                createDtime = now,
+                updater = creator,
+                updateDetime = now
+            ).apply { setAsNew() }
+        }
     }
 }

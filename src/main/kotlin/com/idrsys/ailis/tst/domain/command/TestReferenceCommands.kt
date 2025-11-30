@@ -49,3 +49,17 @@ data class TestReferenceGroupItemCreateCommand(
     val refCd: String,
     val sortOrder: Int
 )
+
+data class TestReferenceGroupUpdateCommand(
+    val refNm: String,
+    val refAbbrNm: String,
+    val refEngNm: String,
+    val refEngAbbrNm: String,
+    val sortOrder: Int
+)
+
+data class TestReferenceGroupItemUpdateCommand(
+    val refGroupCd: String,
+    val refCd: String,
+    val sortOrder: Int
+)

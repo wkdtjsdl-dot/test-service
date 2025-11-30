@@ -174,28 +174,6 @@ class TestReferenceServiceTest {
             updater = "admin",
             updateDetime = LocalDateTime.now()
         )
-        val updated = TestReference(
-            refCd = id,
-            refCateCd = "CATE02",
-            useYn = false,
-            refNm = "Updated Name",
-            refAbbrNm = "Updated",
-            refEngNm = "Updated Eng",
-            refEngAbbrNm = "Updated Eng",
-            sortOrder = 2,
-            refType = "TYPE02",
-            refSize = 20,
-            rangeChkYn = false,
-            refMinVal = 2,
-            refMaxVal = 20,
-            dataFormat = "FORMAT02",
-            dftData = "Updated Default",
-            dftEngData = "Updated Default Eng",
-            creator = "admin",
-            createDtime = existing.createDtime,
-            updater = "admin",
-            updateDetime = LocalDateTime.now()
-        )
         val response = TestReferenceResponse(
             refCd = id,
             refCateCd = "CATE02",

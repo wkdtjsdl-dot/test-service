@@ -1,5 +1,8 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.StandardChargeCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemSpecimenCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
@@ -233,6 +236,51 @@ class TestItem(
         this.updater = updater
         this.updateDetime = updateDetime
     }
+
+    companion object {
+        fun create(
+            command: TestItemCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): TestItem {
+            return TestItem(
+                tstCd = null,
+                tstLargeCateCd = command.tstLargeCateCd,
+                tstMediumCateCd = command.tstMediumCateCd,
+                startDt = command.startDt,
+                endDt = command.endDt,
+                useYn = command.useYn,
+                reqPossYn = command.reqPossYn,
+                webYn = command.webYn,
+                tstNm = command.tstNm,
+                tstAbbrNm = command.tstAbbrNm,
+                tstEngNm = command.tstEngNm,
+                tstEngAbbrNm = command.tstEngAbbrNm,
+                tstIntNm = command.tstIntNm,
+                rstTypeShortYn = command.rstTypeShortYn,
+                rstTypeLongYn = command.rstTypeLongYn,
+                rstTypeFileYn = command.rstTypeFileYn,
+                rstTypeUrlYn = command.rstTypeUrlYn,
+                diseaseCd = command.diseaseCd,
+                tstMethodCd = command.tstMethodCd,
+                refVal = command.refVal,
+                engRefVal = command.engRefVal,
+                clncSgnf = command.clncSgnf,
+                engClncSgnf = command.engClncSgnf,
+                tstDesc = command.tstDesc,
+                tstEngDesc = command.tstEngDesc,
+                tstDayweek = command.tstDayweek,
+                tstTatday = command.tstTatday,
+                insuApplyCd = command.insuApplyCd,
+                insuCd = command.insuCd,
+                insuCateNo = command.insuCateNo,
+                creator = creator,
+                createDtime = now,
+                updater = null,
+                updateDetime = null
+            ).apply { setAsNew() }
+        }
+    }
 }
 
 @Table("tst_scm.bts_stnd_charge")
@@ -344,6 +392,36 @@ class StandardCharge(
     override fun getId(): String? = stndChargeId
 
     override fun isNew(): Boolean = _isNew
+
+    companion object {
+        fun create(
+            command: StandardChargeCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): StandardCharge {
+            return StandardCharge(
+                stndChargeId = null,
+                tstCd = command.tstCd,
+                applyStartDt = command.applyStartDt,
+                applyEndDt = command.applyEndDt,
+                insuCd = command.insuCd,
+                insuCateNo = command.insuCateNo,
+                relatValuePoint = command.relatValuePoint,
+                insuCharge = command.insuCharge,
+                qladCharge = command.qladCharge,
+                stndCharge = command.stndCharge,
+                lowestCharge = command.lowestCharge,
+                qladCd = command.qladCd,
+                relatValueQladPoint = command.relatValueQladPoint,
+                outputInsuCd = command.outputInsuCd,
+                totalQladCharge = command.totalQladCharge,
+                supval = command.supval,
+                addtax = command.addtax,
+                creator = creator,
+                createDtime = now
+            ).apply { setAsNew() }
+        }
+    }
 }
 
 @Table("tst_scm.bts_spcm")
@@ -475,6 +553,40 @@ class TestItemSpecimen(
     override fun getId(): String? = spcmId
 
     override fun isNew(): Boolean = _isNew
+
+    companion object {
+        fun create(
+            command: TestItemSpecimenCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): TestItemSpecimen {
+            return TestItemSpecimen(
+                spcmId = null,
+                tstCd = command.tstCd,
+                spcmCd = command.spcmCd,
+                sortOrder = command.sortOrder,
+                estlYn = command.estlYn,
+                takeQnty = command.takeQnty,
+                engTakeQnty = command.engTakeQnty,
+                useQnty = command.useQnty,
+                engUseQnty = command.engUseQnty,
+                strgMethodCd = command.strgMethodCd,
+                spcmStbl = command.spcmStbl,
+                engSpcmStbl = command.engSpcmStbl,
+                takeMethod = command.takeMethod,
+                engTakeMethod = command.engTakeMethod,
+                spcmDesc = command.spcmDesc,
+                engDesc = command.engDesc,
+                caution = command.caution,
+                engCaution = command.engCaution,
+                spcmCntnCd = command.spcmCntnCd,
+                creator = creator,
+                createDtime = now,
+                updater = null,
+                updateDetime = null
+            ).apply { setAsNew() }
+        }
+    }
 }
 
 @Table("tst_scm.bts_ref_item")

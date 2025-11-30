@@ -120,19 +120,6 @@ class DepartmentTestItemServiceTest {
             updater = "admin",
             updateDtime = LocalDateTime.now()
         )
-        val updated = DepartmentGroup(
-            deptGroupId = id,
-            deptCd = "DEPT02",
-            tstCateCd = "CATE02",
-            tstCateNm = "Updated Name",
-            updateAuthCd = "AUTH02",
-            dupAllowYn = false,
-            sortOrder = 2,
-            creator = "admin",
-            createDtime = existing.createDtime,
-            updater = "admin",
-            updateDtime = LocalDateTime.now()
-        )
         val response = DepartmentGroupResponse(
             deptGroupId = id,
             deptCd = "DEPT02",

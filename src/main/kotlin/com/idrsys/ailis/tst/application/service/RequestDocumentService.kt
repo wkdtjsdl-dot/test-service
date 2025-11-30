@@ -38,19 +38,8 @@ class RequestDocumentService(
     override suspend fun registerDocument(request: RequestDocumentRegisterRequest, adminId: String): RequestDocumentResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = LocalDateTime.now()
-        val document = RequestDocument(
-            docCd = command.docCd,
-            docDivCd = command.docDivCd,
-            docNm = command.docNm,
-            docEngNm = command.docEngNm,
-            docFileId = command.docFileId,
-            docEngFileId = command.docEngFileId,
-            creator = adminId,
-            createDtime = now,
-            updater = adminId,
-            updateDetime = now
-        ).apply { setAsNew() }
-        
+        val document = RequestDocument.create(command, adminId, now)
+
         val saved = requestDocumentRepository.save(document)
         return requestDocumentMapper.toResponse(saved)
     }

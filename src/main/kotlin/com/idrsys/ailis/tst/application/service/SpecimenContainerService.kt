@@ -38,17 +38,8 @@ class SpecimenContainerService(
     override suspend fun registerContainer(request: SpecimenContainerRegisterRequest, adminId: String): SpecimenContainerResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = LocalDateTime.now()
-        val container = SpecimenContainer(
-            spcmCntnCd = command.spcmCntnCd,
-            cntnNm = command.cntnNm,
-            cntnEngNm = command.cntnEngNm,
-            cntnFileId = command.cntnFileId,
-            creator = adminId,
-            createDtime = now,
-            updater = adminId,
-            updateDetime = now
-        ).apply { setAsNew() }
-        
+        val container = SpecimenContainer.create(command, adminId, now)
+
         val saved = specimenContainerRepository.save(container)
         return specimenContainerMapper.toResponse(saved)
     }

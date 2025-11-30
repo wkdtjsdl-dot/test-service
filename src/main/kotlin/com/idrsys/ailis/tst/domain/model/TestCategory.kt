@@ -1,5 +1,7 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.TestCategoryCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestCategoryUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -86,22 +88,13 @@ class TestCategory(
 
     override fun isNew(): Boolean = _isNew
 
-    fun update(
-        cateNm: String,
-        cateAbbrNm: String,
-        cateEngNm: String,
-        cateEngAbbrNm: String,
-        useYn: Boolean,
-        sortOrder: Int,
-        updater: String,
-        updateDetime: LocalDateTime
-    ) {
-        this.cateNm = cateNm
-        this.cateAbbrNm = cateAbbrNm
-        this.cateEngNm = cateEngNm
-        this.cateEngAbbrNm = cateEngAbbrNm
-        this.useYn = useYn
-        this.sortOrder = sortOrder
+    fun update(command: TestCategoryUpdateCommand, updater: String, updateDetime: LocalDateTime) {
+        this.cateNm = command.cateNm
+        this.cateAbbrNm = command.cateAbbrNm
+        this.cateEngNm = command.cateEngNm
+        this.cateEngAbbrNm = command.cateEngAbbrNm
+        this.useYn = command.useYn
+        this.sortOrder = command.sortOrder
         this.updater = updater
         this.updateDetime = updateDetime
     }
@@ -110,5 +103,29 @@ class TestCategory(
         this.useYn = false
         this.updater = updater
         this.updateDetime = updateDetime
+    }
+
+    companion object {
+        fun create(
+            command: TestCategoryCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): TestCategory {
+            return TestCategory(
+                tstCateId = null,
+                tstLargeCateCd = command.tstLargeCateCd,
+                tstMediumCateCd = command.tstMediumCateCd,
+                cateNm = command.cateNm,
+                cateAbbrNm = command.cateAbbrNm,
+                cateEngNm = command.cateEngNm,
+                cateEngAbbrNm = command.cateEngAbbrNm,
+                useYn = command.useYn,
+                sortOrder = command.sortOrder,
+                creator = creator,
+                createDtime = now,
+                updater = creator,
+                updateDetime = now
+            ).apply { setAsNew() }
+        }
     }
 }

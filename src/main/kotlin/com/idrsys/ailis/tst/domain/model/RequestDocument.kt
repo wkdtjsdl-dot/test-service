@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.RequestDocumentCreateCommand
 import com.idrsys.ailis.tst.domain.command.RequestDocumentUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
@@ -85,5 +86,26 @@ class RequestDocument(
         this.docEngFileId = command.docEngFileId
         this.updater = updater
         this.updateDetime = updateDetime
+    }
+
+    companion object {
+        fun create(
+            command: RequestDocumentCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): RequestDocument {
+            return RequestDocument(
+                docCd = command.docCd,
+                docDivCd = command.docDivCd,
+                docNm = command.docNm,
+                docEngNm = command.docEngNm,
+                docFileId = command.docFileId,
+                docEngFileId = command.docEngFileId,
+                creator = creator,
+                createDtime = now,
+                updater = creator,
+                updateDetime = now
+            ).apply { setAsNew() }
+        }
     }
 }

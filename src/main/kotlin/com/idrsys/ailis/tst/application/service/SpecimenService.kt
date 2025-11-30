@@ -38,30 +38,8 @@ class SpecimenService(
     override suspend fun registerSpecimen(request: SpecimenRegisterRequest, adminId: String): SpecimenResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = LocalDateTime.now()
-        val specimen = Specimen(
-            spcmCd = command.spcmCd,
-            spcmCateCd = command.spcmCateCd,
-            useYn = command.useYn,
-            spcmNm = command.spcmNm,
-            spcmAbbrNm = command.spcmAbbrNm,
-            spcmEngNm = command.spcmEngNm,
-            spcmEngAbbrNm = command.spcmEngAbbrNm,
-            collAmt = command.collAmt,
-            engCollAmt = command.engCollAmt,
-            spcmStrg = command.spcmStrg,
-            engSpcmStrg = command.engSpcmStrg,
-            spcmSafe = command.spcmSafe,
-            engSpcmSafe = command.engSpcmSafe,
-            caution = command.caution,
-            engCaution = command.engCaution,
-            ref = command.ref,
-            engRef = command.engRef,
-            creator = adminId,
-            createDtime = now,
-            updater = adminId,
-            updateDetime = now
-        ).apply { setAsNew() }
-        
+        val specimen = Specimen.create(command, adminId, now)
+
         val saved = specimenRepository.save(specimen)
         return specimenMapper.toResponse(saved)
     }

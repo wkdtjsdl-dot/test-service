@@ -2,8 +2,10 @@ package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.TestCategoryRegisterRequest
 import com.idrsys.ailis.tst.application.dto.TestCategoryResponse
+import com.idrsys.ailis.tst.application.mapper.TestCategoryCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestCategoryMapper
 import com.idrsys.ailis.tst.application.required.TestCategoryRepository
+import com.idrsys.ailis.tst.domain.command.TestCategoryCreateCommand
 import com.idrsys.ailis.tst.domain.model.TestCategory
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -25,6 +27,9 @@ class TestCategoryServiceTest {
     @Mock
     lateinit var testCategoryMapper: TestCategoryMapper
 
+    @Mock
+    lateinit var commandMapper: TestCategoryCommandMapper
+
     @InjectMocks
     lateinit var testCategoryService: TestCategoryService
 
@@ -32,6 +37,17 @@ class TestCategoryServiceTest {
     fun `registerCategory should save and return response`() = runTest {
         // Given
         val request = TestCategoryRegisterRequest(
+            tstLargeCateCd = "L01",
+            tstMediumCateCd = "M01",
+            cateNm = "Test Category",
+            cateAbbrNm = "Test",
+            cateEngNm = "Test Category Eng",
+            cateEngAbbrNm = "Test Eng",
+            useYn = true,
+            sortOrder = 1
+        )
+
+        val command = TestCategoryCreateCommand(
             tstLargeCateCd = "L01",
             tstMediumCateCd = "M01",
             cateNm = "Test Category",
@@ -57,7 +73,7 @@ class TestCategoryServiceTest {
             updater = "system",
             updateDetime = LocalDateTime.now()
         )
-        
+
         val response = TestCategoryResponse(
             tstCateId = "uuid",
             tstLargeCateCd = "L01",
@@ -75,6 +91,7 @@ class TestCategoryServiceTest {
         )
 
         // Use helper to avoid NPE with Mockito.any() in Kotlin
+        `when`(commandMapper.toCreateCommand(request)).thenReturn(command)
         `when`(testCategoryRepository.save(any())).thenReturn(savedDomain)
         `when`(testCategoryMapper.toResponse(savedDomain)).thenReturn(response)
 

@@ -104,16 +104,6 @@ class SpecimenContainerServiceTest {
             updater = "admin",
             updateDetime = LocalDateTime.now()
         )
-        val updated = SpecimenContainer(
-            spcmCntnCd = id,
-            cntnNm = "Updated Name",
-            cntnEngNm = "Updated Eng",
-            cntnFileId = "FILE02",
-            creator = "admin",
-            createDtime = existing.createDtime,
-            updater = "admin",
-            updateDetime = LocalDateTime.now()
-        )
         val response = SpecimenContainerResponse(
             spcmCntnCd = id,
             cntnNm = "Updated Name",

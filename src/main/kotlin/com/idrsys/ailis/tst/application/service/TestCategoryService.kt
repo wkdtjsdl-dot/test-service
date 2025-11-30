@@ -3,6 +3,7 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.TestCategoryRegisterRequest
 import com.idrsys.ailis.tst.application.dto.TestCategoryResponse
 import com.idrsys.ailis.tst.application.dto.TestCategoryUpdateRequest
+import com.idrsys.ailis.tst.application.mapper.TestCategoryCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestCategoryMapper
 import com.idrsys.ailis.tst.application.required.TestCategoryRepository
 import com.idrsys.ailis.tst.application.usecase.TestCategoryUseCase
@@ -12,12 +13,12 @@ import kotlinx.coroutines.flow.map
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.util.UUID
 
 @Service
 class TestCategoryService(
     private val testCategoryRepository: TestCategoryRepository,
-    private val testCategoryMapper: TestCategoryMapper
+    private val testCategoryMapper: TestCategoryMapper,
+    private val commandMapper: TestCategoryCommandMapper
 ) : TestCategoryUseCase {
 
     @Transactional(readOnly = true)
@@ -28,23 +29,9 @@ class TestCategoryService(
 
     @Transactional
     override suspend fun registerCategory(request: TestCategoryRegisterRequest, adminId: String): TestCategoryResponse {
+        val command = commandMapper.toCreateCommand(request)
         val now = LocalDateTime.now()
-        val category = TestCategory(
-            tstCateId = UUID.randomUUID().toString(),
-            tstLargeCateCd = request.tstLargeCateCd,
-            tstMediumCateCd = request.tstMediumCateCd,
-            cateNm = request.cateNm,
-            cateAbbrNm = request.cateAbbrNm,
-            cateEngNm = request.cateEngNm,
-            cateEngAbbrNm = request.cateEngAbbrNm,
-            useYn = request.useYn,
-            sortOrder = request.sortOrder,
-            creator = adminId,
-            createDtime = now,
-            updater = adminId,
-            updateDetime = now
-        ).apply { setAsNew() }
-
+        val category = TestCategory.create(command, adminId, now)
         val saved = testCategoryRepository.save(category)
         return testCategoryMapper.toResponse(saved)
     }
@@ -54,17 +41,9 @@ class TestCategoryService(
         val category = testCategoryRepository.findById(cateId)
             ?: throw NoSuchElementException("Category not found: $cateId")
 
+        val command = commandMapper.toUpdateCommand(request)
         val now = LocalDateTime.now()
-        category.update(
-            cateNm = request.cateNm,
-            cateAbbrNm = request.cateAbbrNm,
-            cateEngNm = request.cateEngNm,
-            cateEngAbbrNm = request.cateEngAbbrNm,
-            useYn = request.useYn,
-            sortOrder = request.sortOrder,
-            updater = adminId,
-            updateDetime = now
-        )
+        category.update(command, adminId, now)
 
         val saved = testCategoryRepository.save(category)
         return testCategoryMapper.toResponse(saved)

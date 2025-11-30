@@ -1,5 +1,10 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.TestReferenceCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestReferenceGroupCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestReferenceGroupItemCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestReferenceGroupItemUpdateCommand
+import com.idrsys.ailis.tst.domain.command.TestReferenceGroupUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestReferenceUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
@@ -148,6 +153,37 @@ class TestReference(
         this.updater = updater
         this.updateDetime = updateDetime
     }
+
+    companion object {
+        fun create(
+            command: TestReferenceCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): TestReference {
+            return TestReference(
+                refCd = null,
+                refCateCd = command.refCateCd,
+                useYn = command.useYn,
+                refNm = command.refNm,
+                refAbbrNm = command.refAbbrNm,
+                refEngNm = command.refEngNm,
+                refEngAbbrNm = command.refEngAbbrNm,
+                sortOrder = command.sortOrder,
+                refType = command.refType,
+                refSize = command.refSize,
+                rangeChkYn = command.rangeChkYn,
+                refMinVal = command.refMinVal,
+                refMaxVal = command.refMaxVal,
+                dataFormat = command.dataFormat,
+                dftData = command.dftData,
+                dftEngData = command.dftEngData,
+                creator = creator,
+                createDtime = now,
+                updater = creator,
+                updateDetime = now
+            ).apply { setAsNew() }
+        }
+    }
 }
 
 @Table("tst_scm.bbs_tst_ref_group")
@@ -214,6 +250,37 @@ class TestReferenceGroup(
     override fun getId(): String? = refGroupCd
 
     override fun isNew(): Boolean = _isNew
+
+    fun update(command: TestReferenceGroupUpdateCommand, updater: String, updateDetime: LocalDateTime) {
+        this.refNm = command.refNm
+        this.refAbbrNm = command.refAbbrNm
+        this.refEngNm = command.refEngNm
+        this.refEngAbbrNm = command.refEngAbbrNm
+        this.sortOrder = command.sortOrder
+        this.updater = updater
+        this.updateDetime = updateDetime
+    }
+
+    companion object {
+        fun create(
+            command: TestReferenceGroupCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): TestReferenceGroup {
+            return TestReferenceGroup(
+                refGroupCd = null,
+                refNm = command.refNm,
+                refAbbrNm = command.refAbbrNm,
+                refEngNm = command.refEngNm,
+                refEngAbbrNm = command.refEngAbbrNm,
+                sortOrder = command.sortOrder,
+                creator = creator,
+                createDtime = now,
+                updater = creator,
+                updateDetime = now
+            ).apply { setAsNew() }
+        }
+    }
 }
 
 @Table("tst_scm.bbs_tst_ref_group_item")
@@ -270,4 +337,31 @@ class TestReferenceGroupItem(
     override fun getId(): String? = tstRefGroupItemId
 
     override fun isNew(): Boolean = _isNew
+
+    fun update(command: TestReferenceGroupItemUpdateCommand, updater: String, updateDetime: LocalDateTime) {
+        this.refGroupCd = command.refGroupCd
+        this.refCd = command.refCd
+        this.sortOrder = command.sortOrder
+        this.updater = updater
+        this.updateDetime = updateDetime
+    }
+
+    companion object {
+        fun create(
+            command: TestReferenceGroupItemCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): TestReferenceGroupItem {
+            return TestReferenceGroupItem(
+                tstRefGroupItemId = null,
+                refGroupCd = command.refGroupCd,
+                refCd = command.refCd,
+                sortOrder = command.sortOrder,
+                creator = creator,
+                createDtime = now,
+                updater = creator,
+                updateDetime = now
+            ).apply { setAsNew() }
+        }
+    }
 }

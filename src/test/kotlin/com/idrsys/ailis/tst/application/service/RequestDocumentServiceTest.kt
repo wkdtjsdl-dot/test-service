@@ -116,18 +116,6 @@ class RequestDocumentServiceTest {
             updater = "admin",
             updateDetime = LocalDateTime.now()
         )
-        val updated = RequestDocument(
-            docCd = id,
-            docDivCd = "DIV02",
-            docNm = "Updated Name",
-            docEngNm = "Updated Eng",
-            docFileId = "FILE02",
-            docEngFileId = "FILE_ENG02",
-            creator = "admin",
-            createDtime = existing.createDtime,
-            updater = "admin",
-            updateDetime = LocalDateTime.now()
-        )
         val response = RequestDocumentResponse(
             docCd = id,
             docDivCd = "DIV02",

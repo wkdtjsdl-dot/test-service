@@ -1,7 +1,10 @@
 package com.idrsys.ailis.tst.domain.model
 
+import com.idrsys.ailis.tst.domain.command.DepartmentGroupCreateCommand
 import com.idrsys.ailis.tst.domain.command.DepartmentGroupUpdateCommand
+import com.idrsys.ailis.tst.domain.command.DepartmentTestItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.DepartmentTestItemUpdateCommand
+import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -25,6 +28,7 @@ class DepartmentGroup(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "deptGroupId")
     @Column("dept_group_id")
     val deptGroupId: String? = deptGroupId
 
@@ -89,6 +93,28 @@ class DepartmentGroup(
         this.updater = updater
         this.updateDtime = updateDtime
     }
+
+    companion object {
+        fun create(
+            command: DepartmentGroupCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): DepartmentGroup {
+            return DepartmentGroup(
+                deptGroupId = null,
+                deptCd = command.deptCd,
+                tstCateCd = command.tstCateCd,
+                tstCateNm = command.tstCateNm,
+                updateAuthCd = command.updateAuthCd,
+                dupAllowYn = command.dupAllowYn,
+                sortOrder = command.sortOrder,
+                creator = creator,
+                createDtime = now,
+                updater = creator,
+                updateDtime = now
+            ).apply { setAsNew() }
+        }
+    }
 }
 
 @Table("tst_scm.bbs_dept_grp_itm")
@@ -106,6 +132,7 @@ class DepartmentGroupItem(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "deptGrpItmId")
     @Column("dept_grp_itm_id")
     val deptGrpItmId: String? = deptGrpItmId
 
@@ -155,6 +182,16 @@ class DepartmentGroupItem(
     override fun getId(): String? = deptGrpItmId
 
     override fun isNew(): Boolean = _isNew
+
+    fun update(request: com.idrsys.ailis.tst.application.dto.DepartmentGroupItemUpdateRequest, updater: String, updateDtime: LocalDateTime) {
+        this.deptCd = request.deptCd
+        this.tstCateCd = request.tstCateCd
+        this.tstCateItemCd = request.tstCateItemCd
+        this.tstCateItemNm = request.tstCateItemNm
+        this.sortOrder = request.sortOrder
+        this.updater = updater
+        this.updateDtime = updateDtime
+    }
 }
 
 @Table("tst_scm.bbs_dept_grp_itm_tst")
@@ -169,6 +206,7 @@ class DepartmentGroupItemTest(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "deptGrpItmTstId")
     @Column("dept_grp_itm_tst_id")
     val deptGrpItmTstId: String? = deptGrpItmTstId
 
@@ -226,6 +264,7 @@ class DepartmentTestItem(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "deptTstItemId")
     @Column("dept_tst_item_id")
     val deptTstItemId: String? = deptTstItemId
 
@@ -305,5 +344,29 @@ class DepartmentTestItem(
         this.useYn = command.useYn
         this.updater = updater
         this.updateDtime = updateDtime
+    }
+
+    companion object {
+        fun create(
+            command: DepartmentTestItemCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): DepartmentTestItem {
+            return DepartmentTestItem(
+                deptTstItemId = null,
+                deptCd = command.deptCd,
+                tstCd = command.tstCd,
+                tstNm = command.tstNm,
+                tstAbbrNm = command.tstAbbrNm,
+                tstEngNm = command.tstEngNm,
+                tstEngAbbrNm = command.tstEngAbbrNm,
+                sortOrder = command.sortOrder,
+                useYn = command.useYn,
+                creator = creator,
+                createDtime = now,
+                updater = creator,
+                updateDtime = now
+            ).apply { setAsNew() }
+        }
     }
 }

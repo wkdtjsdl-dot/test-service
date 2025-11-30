@@ -182,29 +182,6 @@ class SpecimenServiceTest {
             updater = "admin",
             updateDetime = LocalDateTime.now()
         )
-        val updated = Specimen(
-            spcmCd = id,
-            spcmCateCd = "CATE02",
-            useYn = false,
-            spcmNm = "Updated Name",
-            spcmAbbrNm = "Updated",
-            spcmEngNm = "Updated Eng",
-            spcmEngAbbrNm = "Updated Eng",
-            collAmt = "20ml",
-            engCollAmt = "20ml Eng",
-            spcmStrg = "Updated Storage",
-            engSpcmStrg = "Updated Storage Eng",
-            spcmSafe = "Updated Safe",
-            engSpcmSafe = "Updated Safe Eng",
-            caution = "Updated Caution",
-            engCaution = "Updated Caution Eng",
-            ref = "Updated Ref",
-            engRef = "Updated Ref Eng",
-            creator = "admin",
-            createDtime = existing.createDtime,
-            updater = "admin",
-            updateDetime = LocalDateTime.now()
-        )
         val response = SpecimenResponse(
             spcmCd = id,
             spcmCateCd = "CATE02",

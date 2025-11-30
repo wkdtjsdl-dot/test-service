@@ -27,29 +27,7 @@ class TestReferenceService(
     override suspend fun registerReference(request: TestReferenceRegisterRequest, adminId: String): TestReferenceResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = TestReference(
-            refCd = UUID.randomUUID().toString(),
-            refCateCd = command.refCateCd,
-            useYn = command.useYn,
-            refNm = command.refNm,
-            refAbbrNm = command.refAbbrNm,
-            refEngNm = command.refEngNm,
-            refEngAbbrNm = command.refEngAbbrNm,
-            sortOrder = command.sortOrder,
-            refType = command.refType,
-            refSize = command.refSize,
-            rangeChkYn = command.rangeChkYn,
-            refMinVal = command.refMinVal,
-            refMaxVal = command.refMaxVal,
-            dataFormat = command.dataFormat,
-            dftData = command.dftData,
-            dftEngData = command.dftEngData,
-            creator = adminId,
-            createDtime = now,
-            updater = adminId,
-            updateDetime = now
-        )
-        domain.setAsNew()
+        val domain = TestReference.create(command, adminId, now)
         val saved = repository.save(domain)
         return mapper.toResponse(saved)
     }
@@ -88,19 +66,7 @@ class TestReferenceService(
     override suspend fun registerGroup(request: TestReferenceGroupRegisterRequest, adminId: String): TestReferenceGroupResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = TestReferenceGroup(
-            refGroupCd = UUID.randomUUID().toString(),
-            refNm = command.refNm,
-            refAbbrNm = command.refAbbrNm,
-            refEngNm = command.refEngNm,
-            refEngAbbrNm = command.refEngAbbrNm,
-            sortOrder = command.sortOrder,
-            creator = adminId,
-            createDtime = now,
-            updater = adminId,
-            updateDetime = now
-        )
-        domain.setAsNew()
+        val domain = TestReferenceGroup.create(command, adminId, now)
         val saved = repository.saveGroup(domain)
         return mapper.toResponse(saved)
     }
@@ -112,20 +78,10 @@ class TestReferenceService(
 
     override suspend fun updateGroup(id: String, request: TestReferenceGroupUpdateRequest, adminId: String): TestReferenceGroupResponse {
         val existing = repository.findGroupById(id) ?: throw RuntimeException("TestReferenceGroup not found with id: $id")
+        val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val updated = TestReferenceGroup(
-            refGroupCd = existing.refGroupCd,
-            refNm = request.refNm,
-            refAbbrNm = request.refAbbrNm,
-            refEngNm = request.refEngNm,
-            refEngAbbrNm = request.refEngAbbrNm,
-            sortOrder = request.sortOrder,
-            creator = existing.creator,
-            createDtime = existing.createDtime,
-            updater = adminId,
-            updateDetime = now
-        )
-        val saved = repository.saveGroup(updated)
+        existing.update(command, adminId, now)
+        val saved = repository.saveGroup(existing)
         return mapper.toResponse(saved)
     }
 
@@ -142,17 +98,7 @@ class TestReferenceService(
     override suspend fun registerGroupItem(request: TestReferenceGroupItemRegisterRequest, adminId: String): TestReferenceGroupItemResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = TestReferenceGroupItem(
-            tstRefGroupItemId = UUID.randomUUID().toString(),
-            refGroupCd = command.refGroupCd,
-            refCd = command.refCd,
-            sortOrder = command.sortOrder,
-            creator = adminId,
-            createDtime = now,
-            updater = adminId,
-            updateDetime = now
-        )
-        domain.setAsNew()
+        val domain = TestReferenceGroupItem.create(command, adminId, now)
         val saved = repository.saveGroupItem(domain)
         return mapper.toResponse(saved)
     }
@@ -164,18 +110,10 @@ class TestReferenceService(
 
     override suspend fun updateGroupItem(id: String, request: TestReferenceGroupItemUpdateRequest, adminId: String): TestReferenceGroupItemResponse {
         val existing = repository.findGroupItemById(id) ?: throw RuntimeException("TestReferenceGroupItem not found with id: $id")
+        val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val updated = TestReferenceGroupItem(
-            tstRefGroupItemId = existing.tstRefGroupItemId,
-            refGroupCd = request.refGroupCd,
-            refCd = request.refCd,
-            sortOrder = request.sortOrder,
-            creator = existing.creator,
-            createDtime = existing.createDtime,
-            updater = adminId,
-            updateDetime = now
-        )
-        val saved = repository.saveGroupItem(updated)
+        existing.update(command, adminId, now)
+        val saved = repository.saveGroupItem(existing)
         return mapper.toResponse(saved)
     }
 
