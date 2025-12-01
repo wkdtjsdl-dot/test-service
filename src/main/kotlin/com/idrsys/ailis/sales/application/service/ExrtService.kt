@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.application.service
 
 import com.idrsys.ailis.sales.application.dto.request.exrt.ExrtBatchCommand
+import com.idrsys.ailis.sales.application.dto.request.exrt.ExrtCommand
 import com.idrsys.ailis.sales.application.dto.request.exrt.ExrtSearchParam
 import com.idrsys.ailis.sales.application.dto.request.exrt.ExrtUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.ExrtBatchResponse
@@ -9,6 +10,7 @@ import com.idrsys.ailis.sales.application.dto.response.ExrtResponse
 import com.idrsys.ailis.sales.application.required.repository.exrt.ExrtCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.exrt.ExrtRepository
 import com.idrsys.ailis.sales.application.usecase.exrt.ExrtUseCase
+import com.idrsys.ailis.sales.domain.model.Exrt
 import com.idrsys.ailis.sales.shared.mapper.ExrtMapper
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class ExrtService(
@@ -71,5 +74,36 @@ class ExrtService(
 
         val updatedExrt = exrtRepository.save(exrt)
         return exrtMapper.toResponse(updatedExrt)
+    }
+
+    override suspend fun createExrt(command: ExrtCommand, adminId: String): ExrtResponse {
+        // 중복 체크
+        val exists = exrtRepository.existsByStndDtAndCrcyCd(command.stndDt, command.crcyCd)
+        if (exists) {
+            throw IllegalArgumentException("기준일자 ${command.stndDt}, 통화코드 ${command.crcyCd}는 이미 등록되어 있습니다.")
+        }
+
+        val now = LocalDateTime.now()
+        val exrt = Exrt(
+            exrtId = null,
+            stndDt = command.stndDt,
+            crcyCd = command.crcyCd,
+            stndExrt = command.stndExrt,
+            creator = adminId,
+            createDtime = now,
+            updater = adminId,
+            updateDtime = now
+        ).apply { setAsNew() }
+
+        val saved = exrtRepository.save(exrt)
+        return exrtMapper.toResponse(saved)
+    }
+
+    override suspend fun deleteExrt(exrtId: Long) {
+        // 존재 여부 확인
+        val exrt = exrtCustomRepository.findExrtById(exrtId)
+            ?: throw NoSuchElementException("Exrt not found with id: $exrtId")
+
+        exrtRepository.deleteById(exrtId)
     }
 }

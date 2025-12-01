@@ -4,9 +4,12 @@ import com.idrsys.ailis.sales.application.required.repository.exrt.ExrtRepositor
 import com.idrsys.ailis.sales.domain.model.Exrt
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 
 @Repository
-interface ExrtDataRepository : CoroutineCrudRepository<Exrt, Long>
+interface ExrtDataRepository : CoroutineCrudRepository<Exrt, Long> {
+    suspend fun existsByStndDtAndCrcyCd(stndDt: LocalDate, crcyCd: String): Boolean
+}
 
 @Repository
 class ExrtRepositoryImpl(
@@ -19,5 +22,13 @@ class ExrtRepositoryImpl(
 
     override suspend fun findById(id: Long): Exrt? {
         return dataRepository.findById(id)
+    }
+
+    override suspend fun deleteById(id: Long) {
+        dataRepository.deleteById(id)
+    }
+
+    override suspend fun existsByStndDtAndCrcyCd(stndDt: LocalDate, crcyCd: String): Boolean {
+        return dataRepository.existsByStndDtAndCrcyCd(stndDt, crcyCd)
     }
 }

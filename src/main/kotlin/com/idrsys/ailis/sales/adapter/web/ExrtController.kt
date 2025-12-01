@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.adapter.web
 
+import com.idrsys.ailis.sales.application.dto.request.exrt.ExrtCommand
 import com.idrsys.ailis.sales.application.dto.request.exrt.ExrtSearchParam
 import com.idrsys.ailis.sales.application.dto.request.exrt.ExrtUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.ExrtListResponse
@@ -40,6 +41,15 @@ class ExrtController(
         return exrtUseCase.getExrtDetail(exrtId)
     }
 
+    @PostMapping
+    @Operation(summary = "createExrt", description = "환율 등록")
+    suspend fun createExrt(
+        @RequestBody command: ExrtCommand,
+        @JwtAuthorization auth: AuthenticationAdmin,
+    ): ExrtResponse {
+        return exrtUseCase.createExrt(command, auth.adminId)
+    }
+
     @PutMapping("/{exrtId}")
     @Operation(summary = "updateExrt", description = "환율 수정")
     suspend fun updateExrt(
@@ -48,5 +58,14 @@ class ExrtController(
         @JwtAuthorization auth: AuthenticationAdmin,
     ): ExrtResponse {
         return exrtUseCase.updateExrt(exrtId, command, auth.adminId)
+    }
+
+    @DeleteMapping("/{exrtId}")
+    @Operation(summary = "deleteExrt", description = "환율 삭제")
+    suspend fun deleteExrt(
+        @PathVariable exrtId: Long,
+        @JwtAuthorization auth: AuthenticationAdmin,
+    ) {
+        exrtUseCase.deleteExrt(exrtId)
     }
 }

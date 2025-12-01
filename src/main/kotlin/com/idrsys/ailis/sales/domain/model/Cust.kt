@@ -462,8 +462,8 @@ class Cust(
         this.updateDtime = LocalDateTime.now()
     }
 
-    fun updateReqPossYn(newReqPossYn: Boolean, updater: String) {
-        this.reqPossYn = newReqPossYn
+    fun updateReqPossTstLimitYn(newReqPossTstLimitYn: Boolean?, updater: String) {
+        this.reqPossTstLimitYn = newReqPossTstLimitYn
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }
