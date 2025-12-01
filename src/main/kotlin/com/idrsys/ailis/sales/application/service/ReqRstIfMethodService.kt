@@ -98,7 +98,7 @@ class ReqRstIfMethodService(
     override suspend fun getReqPossYn(custMstId: String): Map<String, Boolean> {
         val cust = custRepository.findByCustMstId(custMstId)
             ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
-        return mapOf("reqPossYn" to cust.reqPossYn)
+        return mapOf("reqPossYn" to (cust.reqPossTstLimitYn ?: false))
     }
 
     @Transactional
@@ -106,7 +106,7 @@ class ReqRstIfMethodService(
         val cust = custRepository.findByCustMstId(custMstId)
             ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
 
-        cust.updateReqPossYn(reqPossYn, updater)
+        cust.updateReqPossTstLimitYn(reqPossYn, updater)
         custRepository.save(cust)
 
         return mapOf("reqPossYn" to reqPossYn)
