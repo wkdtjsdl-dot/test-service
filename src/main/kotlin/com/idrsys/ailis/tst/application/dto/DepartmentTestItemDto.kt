@@ -91,35 +91,29 @@ data class DepartmentGroupItemTestResponse(
 data class DepartmentTestItemRegisterRequest(
     val deptCd: String,
     val tstCd: String,
-    val tstNm: String,
-    val tstAbbrNm: String,
-    val tstEngNm: String,
-    val tstEngAbbrNm: String,
-    val sortOrder: Int,
-    val useYn: Boolean
+    val danDivCd: String = "D",
+    val tstDayweek: String = "YYYYYNN",
+    val tstTatday: Int,
+    val deptTstDesc: String? = null
 )
 
 data class DepartmentTestItemUpdateRequest(
     val deptCd: String,
     val tstCd: String,
-    val tstNm: String,
-    val tstAbbrNm: String,
-    val tstEngNm: String,
-    val tstEngAbbrNm: String,
-    val sortOrder: Int,
-    val useYn: Boolean
+    val danDivCd: String,
+    val tstDayweek: String,
+    val tstTatday: Int,
+    val deptTstDesc: String?
 )
 
 data class DepartmentTestItemResponse(
     val deptTstItemId: String,
     val deptCd: String,
     val tstCd: String,
-    val tstNm: String,
-    val tstAbbrNm: String,
-    val tstEngNm: String,
-    val tstEngAbbrNm: String,
-    val sortOrder: Int,
-    val useYn: Boolean,
+    val danDivCd: String,
+    val tstDayweek: String,
+    val tstTatday: Int,
+    val deptTstDesc: String?,
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,

@@ -251,12 +251,10 @@ class DepartmentTestItem(
     deptTstItemId: String? = null,
     deptCd: String,
     tstCd: String,
-    tstNm: String,
-    tstAbbrNm: String,
-    tstEngNm: String,
-    tstEngAbbrNm: String,
-    sortOrder: Int,
-    useYn: Boolean,
+    danDivCd: String,
+    tstDayweek: String,
+    tstTatday: Int,
+    deptTstDesc: String?,
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
@@ -276,28 +274,20 @@ class DepartmentTestItem(
     var tstCd: String = tstCd
         private set
 
-    @Column("tst_nm")
-    var tstNm: String = tstNm
+    @Column("dan_div_cd")
+    var danDivCd: String = danDivCd
         private set
 
-    @Column("tst_abbr_nm")
-    var tstAbbrNm: String = tstAbbrNm
+    @Column("tst_dayweek")
+    var tstDayweek: String = tstDayweek
         private set
 
-    @Column("tst_eng_nm")
-    var tstEngNm: String = tstEngNm
+    @Column("tst_tatday")
+    var tstTatday: Int = tstTatday
         private set
 
-    @Column("tst_eng_abbr_nm")
-    var tstEngAbbrNm: String = tstEngAbbrNm
-        private set
-
-    @Column("sort_order")
-    var sortOrder: Int = sortOrder
-        private set
-
-    @Column("use_yn")
-    var useYn: Boolean = useYn
+    @Column("dept_tst_desc")
+    var deptTstDesc: String? = deptTstDesc
         private set
 
     @Column("creator")
@@ -327,21 +317,13 @@ class DepartmentTestItem(
 
     override fun isNew(): Boolean = _isNew
 
-    fun delete(updater: String, updateDtime: LocalDateTime) {
-        this.useYn = false
-        this.updater = updater
-        this.updateDtime = updateDtime
-    }
-    
     fun update(command: DepartmentTestItemUpdateCommand, updater: String, updateDtime: LocalDateTime) {
         this.deptCd = command.deptCd
         this.tstCd = command.tstCd
-        this.tstNm = command.tstNm
-        this.tstAbbrNm = command.tstAbbrNm
-        this.tstEngNm = command.tstEngNm
-        this.tstEngAbbrNm = command.tstEngAbbrNm
-        this.sortOrder = command.sortOrder
-        this.useYn = command.useYn
+        this.danDivCd = command.danDivCd
+        this.tstDayweek = command.tstDayweek
+        this.tstTatday = command.tstTatday
+        this.deptTstDesc = command.deptTstDesc
         this.updater = updater
         this.updateDtime = updateDtime
     }
@@ -356,12 +338,10 @@ class DepartmentTestItem(
                 deptTstItemId = null,
                 deptCd = command.deptCd,
                 tstCd = command.tstCd,
-                tstNm = command.tstNm,
-                tstAbbrNm = command.tstAbbrNm,
-                tstEngNm = command.tstEngNm,
-                tstEngAbbrNm = command.tstEngAbbrNm,
-                sortOrder = command.sortOrder,
-                useYn = command.useYn,
+                danDivCd = command.danDivCd,
+                tstDayweek = command.tstDayweek,
+                tstTatday = command.tstTatday,
+                deptTstDesc = command.deptTstDesc,
                 creator = creator,
                 createDtime = now,
                 updater = creator,

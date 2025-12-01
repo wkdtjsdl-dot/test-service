@@ -135,13 +135,7 @@ class DepartmentTestItemService(
 
     @Transactional
     override suspend fun deleteTestItem(id: String, adminId: String) {
-        val testItem = repository.findTestItemById(id)
-            ?: throw NoSuchElementException("DepartmentTestItem not found: $id")
-
-        val now = java.time.LocalDateTime.now()
-        testItem.delete(updater = adminId, updateDtime = now)
-
-        repository.saveTestItem(testItem)
+        repository.deleteTestItemById(id)
     }
 
     override suspend fun getTestItemsByDept(deptCd: String): Flow<DepartmentTestItemResponse> {
