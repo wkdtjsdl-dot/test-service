@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemCommandMapper
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemMapper
 import com.idrsys.ailis.tst.application.required.DepartmentTestItemRepository
@@ -138,7 +139,7 @@ class DepartmentTestItemService(
         repository.deleteTestItemById(id)
     }
 
-    override suspend fun getTestItemsByDept(deptCd: String): Flow<DepartmentTestItemResponse> {
-        return repository.findTestItemsByDeptCd(deptCd).map { mapper.toResponse(it) }
+    override suspend fun getTestItemsByDept(searchParam: DepartmentTestItemSearchParam): Flow<DepartmentTestItemResponse> {
+        return repository.findTestItemsByDeptCd(searchParam).map { mapper.toResponse(it) }
     }
 }

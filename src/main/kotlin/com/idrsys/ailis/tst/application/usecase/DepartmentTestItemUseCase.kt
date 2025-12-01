@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.application.usecase
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import kotlinx.coroutines.flow.Flow
 
 interface DepartmentTestItemUseCase {
@@ -29,5 +30,5 @@ interface DepartmentTestItemUseCase {
     suspend fun getTestItem(id: String): DepartmentTestItemResponse
     suspend fun updateTestItem(id: String, request: DepartmentTestItemUpdateRequest, adminId: String): DepartmentTestItemResponse
     suspend fun deleteTestItem(id: String, adminId: String)
-    suspend fun getTestItemsByDept(deptCd: String): Flow<DepartmentTestItemResponse>
+    suspend fun getTestItemsByDept(searchParam: DepartmentTestItemSearchParam): Flow<DepartmentTestItemResponse>
 }

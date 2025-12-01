@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.adapter.web
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.usecase.DepartmentTestItemUseCase
 import com.idrsys.ailis.tst.shared.vo.AuthenticationAdmin
 import com.idrsys.web.annotation.JwtAuthorization
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactor.mono
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
@@ -181,10 +183,10 @@ class DepartmentTestItemController(
     }
 
     @Operation(summary = "부서별 검사 항목 목록 조회 (부서코드별)")
-    @GetMapping("/api/bbs/dept-tst-item/by-dept/{deptCd}")
-    fun getTestItemsByDept(@PathVariable deptCd: String): Flow<DepartmentTestItemResponse> {
+    @GetMapping("/api/bbs/dept-tst-item")
+    fun getTestItemsByDept(@ParameterObject searchParam: DepartmentTestItemSearchParam): Flow<DepartmentTestItemResponse> {
         return kotlinx.coroutines.flow.flow {
-            useCase.getTestItemsByDept(deptCd).collect { emit(it) }
+            useCase.getTestItemsByDept(searchParam).collect { emit(it) }
         }
     }
 }

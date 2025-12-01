@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.application.required
 
+import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.domain.model.DepartmentGroup
 import com.idrsys.ailis.tst.domain.model.DepartmentGroupItem
 import com.idrsys.ailis.tst.domain.model.DepartmentGroupItemTest
@@ -29,5 +30,5 @@ interface DepartmentTestItemRepository {
     suspend fun saveTestItem(entity: DepartmentTestItem): DepartmentTestItem
     suspend fun findTestItemById(id: String): DepartmentTestItem?
     suspend fun deleteTestItemById(id: String)
-    suspend fun findTestItemsByDeptCd(deptCd: String): Flow<DepartmentTestItem>
+    suspend fun findTestItemsByDeptCd(searchParam: DepartmentTestItemSearchParam): Flow<DepartmentTestItem>
 }
