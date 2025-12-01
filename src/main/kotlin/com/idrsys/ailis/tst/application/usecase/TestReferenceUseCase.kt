@@ -23,5 +23,5 @@ interface TestReferenceUseCase {
     suspend fun getGroupItem(id: String): TestReferenceGroupItemResponse
     suspend fun updateGroupItem(id: String, request: TestReferenceGroupItemUpdateRequest, adminId: String): TestReferenceGroupItemResponse
     suspend fun deleteGroupItem(id: String, adminId: String)
-    suspend fun getGroupItemsByGroup(groupCd: String): Flow<TestReferenceGroupItemResponse>
+    fun getGroupItemsByGroup(groupCd: String): Flow<TestReferenceGroupItemResponse>
 }

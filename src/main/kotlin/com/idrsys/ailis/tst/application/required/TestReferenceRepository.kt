@@ -22,5 +22,5 @@ interface TestReferenceRepository {
     suspend fun saveGroupItem(entity: TestReferenceGroupItem): TestReferenceGroupItem
     suspend fun findGroupItemById(id: String): TestReferenceGroupItem?
     suspend fun deleteGroupItemById(id: String)
-    suspend fun findGroupItemsByGroupCd(groupCd: String): Flow<TestReferenceGroupItem>
+    fun findGroupItemsByGroupCd(groupCd: String): Flow<TestReferenceGroupItem>
 }

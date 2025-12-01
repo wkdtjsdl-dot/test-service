@@ -13,9 +13,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
-import org.jooq.Record
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 interface DepartmentGroupDataRepository : CoroutineCrudRepository<DepartmentGroup, String>
@@ -35,7 +36,8 @@ class DepartmentTestItemRepositoryImpl(
     private val groupItemDataRepo: DepartmentGroupItemDataRepository,
     private val groupItemTestDataRepo: DepartmentGroupItemTestDataRepository,
     private val testItemDataRepo: DepartmentTestItemDataRepository,
-    private val dslContext: DSLContext
+    private val dslContext: DSLContext,
+    private val databaseClient: DatabaseClient
 ) : DepartmentTestItemRepository {
 
     // --- DepartmentGroup ---
@@ -51,11 +53,25 @@ class DepartmentTestItemRepositoryImpl(
 
     override suspend fun findGroupItemsByDeptCd(deptCd: String): Flow<DepartmentGroupItem> {
         val table = BbsDeptGrpItm.BBS_DEPT_GRP_ITM
-        return dslContext.select(table.fields().toList())
+        val query = dslContext
+            .select(table.fields().toList())
             .from(table)
             .where(table.DEPT_CD.eq(deptCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toDepartmentGroupItem(row) }
             .asFlow()
-            .map { r: Record -> r.into(DepartmentGroupItem::class.java) }
     }
 
     // --- DepartmentGroupItemTest ---
@@ -65,11 +81,25 @@ class DepartmentTestItemRepositoryImpl(
 
     override suspend fun findGroupItemTestsByDeptCd(deptCd: String): Flow<DepartmentGroupItemTest> {
         val table = BbsDeptGrpItmTst.BBS_DEPT_GRP_ITM_TST
-        return dslContext.select(table.fields().toList())
+        val query = dslContext
+            .select(table.fields().toList())
             .from(table)
             .where(table.DEPT_CD.eq(deptCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toDepartmentGroupItemTest(row) }
             .asFlow()
-            .map { r: Record -> r.into(DepartmentGroupItemTest::class.java) }
     }
 
     // --- DepartmentTestItem ---
@@ -79,10 +109,67 @@ class DepartmentTestItemRepositoryImpl(
 
     override suspend fun findTestItemsByDeptCd(searchParam: DepartmentTestItemSearchParam): Flow<DepartmentTestItem> {
         val table = BbsDeptTstItem.BBS_DEPT_TST_ITEM
-        return dslContext.select(table.fields().toList())
+        val query = dslContext
+            .select(table.fields().toList())
             .from(table)
             .where(table.DEPT_CD.eq(searchParam.deptCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toDepartmentTestItem(row) }
             .asFlow()
-            .map { r: Record -> r.into(DepartmentTestItem::class.java) }
+    }
+
+    private fun toDepartmentGroupItem(row: Map<String, Any>): DepartmentGroupItem {
+        return DepartmentGroupItem(
+            deptGrpItmId = row["dept_grp_itm_id"] as String?,
+            deptCd = row["dept_cd"] as String,
+            tstCateCd = row["tst_cate_cd"] as String,
+            tstCateItemCd = row["tst_cate_item_cd"] as String,
+            tstCateItemNm = row["tst_cate_item_nm"] as String,
+            sortOrder = (row["sort_order"] as Number).toInt(),
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDtime = row["update_detime"] as LocalDateTime
+        )
+    }
+
+    private fun toDepartmentGroupItemTest(row: Map<String, Any>): DepartmentGroupItemTest {
+        return DepartmentGroupItemTest(
+            deptGrpItmTstId = row["dept_grp_itm_tst_id"] as String?,
+            deptCd = row["dept_cd"] as String,
+            tstCateCd = row["tst_cate_cd"] as String,
+            tstCateItemCd = row["tst_cate_item_cd"] as String,
+            tstCd = row["tst_cd"] as String,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime
+        )
+    }
+
+    private fun toDepartmentTestItem(row: Map<String, Any>): DepartmentTestItem {
+        return DepartmentTestItem(
+            deptTstItemId = row["dept_tst_item_id"] as String?,
+            deptCd = row["dept_cd"] as String,
+            tstCd = row["tst_cd"] as String,
+            danDivCd = row["dan_div_cd"] as String,
+            tstDayweek = row["tst_dayweek"] as String,
+            tstTatday = (row["tst_tatday"] as Number).toInt(),
+            deptTstDesc = row["dept_tst_desc"] as String?,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDtime = row["update_detime"] as LocalDateTime
+        )
     }
 }
