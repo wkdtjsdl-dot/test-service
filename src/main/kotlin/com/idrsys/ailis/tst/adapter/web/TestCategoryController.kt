@@ -21,8 +21,8 @@ class TestCategoryController(
 
     @Operation(summary = "검사분류 목록")
     @GetMapping("/{largeCateCd}")
-    fun getCategoriesByLargeCategory(@PathVariable largeCateCd: String): Flow<TestCategoryResponse> {
-        return testCategoryUseCase.getCategoriesByLargeCategory(largeCateCd)
+    fun getCategoriesByLargeCategory(@PathVariable largeCateCd: String, @RequestParam(required = false) useYn: Boolean?): Flow<TestCategoryResponse> {
+        return testCategoryUseCase.getCategoriesByLargeCategory(largeCateCd, useYn)
     }
 
     @Operation(summary = "검사분류 등록")
