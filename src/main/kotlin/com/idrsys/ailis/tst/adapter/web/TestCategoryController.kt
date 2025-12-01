@@ -9,11 +9,8 @@ import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
-import kotlinx.coroutines.reactive.asPublisher
-import kotlinx.coroutines.reactor.mono
+import kotlinx.coroutines.flow.Flow
 import org.springframework.web.bind.annotation.*
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 
 @Tag(name = "Test Category", description = "검사 기준정보 검사분류 API")
 @RestController
@@ -24,43 +21,35 @@ class TestCategoryController(
 
     @Operation(summary = "검사분류 목록")
     @GetMapping("/{largeCateCd}")
-    fun getCategoriesByLargeCategory(@PathVariable largeCateCd: String): Flux<TestCategoryResponse> {
-        return mono {
-            testCategoryUseCase.getCategoriesByLargeCategory(largeCateCd)
-        }.flatMapMany { flow -> Flux.from(flow.asPublisher()) }
+    fun getCategoriesByLargeCategory(@PathVariable largeCateCd: String): Flow<TestCategoryResponse> {
+        return testCategoryUseCase.getCategoriesByLargeCategory(largeCateCd)
     }
 
     @Operation(summary = "검사분류 등록")
     @PostMapping
-    fun registerCategory(
+    suspend fun registerCategory(
         @RequestBody request: TestCategoryRegisterRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
-    ): Mono<TestCategoryResponse> {
-        return mono {
-            testCategoryUseCase.registerCategory(request, auth.adminId)
-        }
+    ): TestCategoryResponse {
+        return testCategoryUseCase.registerCategory(request, auth.adminId)
     }
 
     @Operation(summary = "검사분류 수정")
     @PutMapping("/{cateId}")
-    fun updateCategory(
+    suspend fun updateCategory(
         @PathVariable cateId: String,
         @RequestBody request: TestCategoryUpdateRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
-    ): Mono<TestCategoryResponse> {
-        return mono {
-            testCategoryUseCase.updateCategory(cateId, request, auth.adminId)
-        }
+    ): TestCategoryResponse {
+        return testCategoryUseCase.updateCategory(cateId, request, auth.adminId)
     }
 
     @Operation(summary = "검사분류 삭제")
     @DeleteMapping("/{cateId}")
-    fun deleteCategory(
+    suspend fun deleteCategory(
         @PathVariable cateId: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
-    ): Mono<Void> {
-        return mono {
-            testCategoryUseCase.deleteCategory(cateId, auth.adminId)
-        }.then()
+    ) {
+        testCategoryUseCase.deleteCategory(cateId, auth.adminId)
     }
 }

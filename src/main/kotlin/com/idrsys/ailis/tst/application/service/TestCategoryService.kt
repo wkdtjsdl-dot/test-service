@@ -22,7 +22,7 @@ class TestCategoryService(
 ) : TestCategoryUseCase {
 
     @Transactional(readOnly = true)
-    override suspend fun getCategoriesByLargeCategory(largeCateCd: String): Flow<TestCategoryResponse> {
+    override fun getCategoriesByLargeCategory(largeCateCd: String): Flow<TestCategoryResponse> {
         return testCategoryRepository.findByLargeCateCd(largeCateCd)
             .map { testCategoryMapper.toResponse(it) }
     }

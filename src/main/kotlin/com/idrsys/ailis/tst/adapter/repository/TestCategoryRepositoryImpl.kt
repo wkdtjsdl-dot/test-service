@@ -34,7 +34,7 @@ class TestCategoryRepositoryImpl(
         testCategoryDataRepository.deleteById(id)
     }
 
-    override suspend fun findByLargeCateCd(largeCateCd: String): Flow<TestCategory> {
+    override fun findByLargeCateCd(largeCateCd: String): Flow<TestCategory> {
         val table = BbsTstCate.BBS_TST_CATE
         val query = dslContext
             .select(table.fields().toList())
