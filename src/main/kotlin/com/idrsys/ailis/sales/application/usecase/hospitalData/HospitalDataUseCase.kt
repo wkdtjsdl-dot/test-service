@@ -14,7 +14,9 @@ interface HospitalDataUseCase {
 
     suspend fun getHospitalMstDetail(careInstId: String): HospitalMst?
 
-    suspend fun getHospitalDevice(careInstId: String): Flow<HospitalDevice>?
+    suspend fun getHospitalDevice(careInstId: String): Flow<HospitalDevice>
 
-    suspend fun getHospitalMediSbjt(careInstId: String): Flow<HospitalMediSbjt>?
+    suspend fun getHospitalMediSbjt(careInstId: String): Flow<HospitalMediSbjt>
+
+    fun executeHospitalDataSynchronization(): Boolean
 }

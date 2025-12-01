@@ -91,7 +91,9 @@ class CustLogsService(
         "createDtime" to "생성일시",
         "updater" to "수정자",
         "updateDtime" to "수정일시",
-        "qcCustYn" to "QC고객여부",
+        "reqDivCd" to "의뢰구분코드",
+        "atchFileGrupId" to "첨부파일그룹아이디",
+        "reqPossTstLimitYn" to "의뢰가능검사제한여부",
         "telNo" to "전화번호",
         "faxNo" to "팩스번호"
     )

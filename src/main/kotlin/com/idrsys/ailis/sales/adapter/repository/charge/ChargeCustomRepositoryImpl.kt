@@ -21,6 +21,7 @@ import org.jooq.impl.DSL.jsonbArrayAgg
 import org.jooq.impl.DSL.jsonbObject
 import org.jooq.impl.DSL.key
 import org.springframework.data.domain.Pageable
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 
@@ -41,7 +42,7 @@ class ChargeCustomRepositoryImpl(
         ).from(SCS_CUST_CHARGE)
             .leftJoin(SCS_CUST_MST).on(SCS_CUST_CHARGE.CUST_MST_ID.eq(SCS_CUST_MST.CUST_MST_ID))
             .where(conditions)
-            .orderBy(SCS_CUST_CHARGE.CREATE_DTIME.desc())
+            .orderBy(SCS_CUST_CHARGE.CUST_CD.asc())
             .let { applyPaging(it, pageable) }
 
         var sql = databaseClient.sql(query.sql)
@@ -61,6 +62,26 @@ class ChargeCustomRepositoryImpl(
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
         return sql.map { row, _ -> row.get(0, java.lang.Long::class.java)!!.toLong() }.one().awaitSingle()
+    }
+
+    override suspend fun findChargeWithDetailsById(custChargeId: String): ChargeWithDetails? {
+        val salesPicsField = salesPicsFieldForCharge()
+        val query = dslContext.select(
+            SCS_CUST_CHARGE.asterisk(),
+            SCS_CUST_MST.CUST_NM,
+            SCS_CUST_MST.BZOFFI_CD,
+            salesPicsField
+        ).from(SCS_CUST_CHARGE)
+            .leftJoin(SCS_CUST_MST).on(SCS_CUST_CHARGE.CUST_MST_ID.eq(SCS_CUST_MST.CUST_MST_ID))
+            .where(SCS_CUST_CHARGE.CUST_CHARGE_ID.eq(custChargeId))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toChargeWithDetail() }
+            .one()
+            .awaitSingleOrNull()
     }
 
     private fun salesPicsFieldForCharge(): Field<*> {
@@ -83,9 +104,11 @@ class ChargeCustomRepositoryImpl(
 
     private fun buildConditions(searchParam: ChargeSearchParam): List<Condition> {
         val conds = mutableListOf<Condition>()
+        searchParam.custMstId?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_MST_ID.likeIgnoreCase("%$it%") }
         searchParam.bzoffiCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.BZOFFI_CD.eq(it) }
         searchParam.tstCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_CHARGE.TST_CD.likeIgnoreCase("%$it%") }
         searchParam.lastApprStatCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq(it) }
+        searchParam.refDt?.let { conds += SCS_CUST_CHARGE.APPLY_START_DT.le(it).and(SCS_CUST_CHARGE.APPLY_END_DT.ge(it)) }
 
         if (!searchParam.custCdNm.isNullOrBlank()) {
             conds += SCS_CUST_MST.CUST_CD.likeIgnoreCase("%${searchParam.custCdNm}%")

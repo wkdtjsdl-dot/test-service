@@ -24,4 +24,8 @@ class HospitalMstRepositoryImpl(
     override suspend fun existsById(careInstId: String): Boolean {
         return hospitalMstRepository.existsById(careInstId)
     }
+
+    override suspend fun deleteAll() {
+        hospitalMstRepository.deleteAll()
+    }
 }

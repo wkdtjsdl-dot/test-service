@@ -36,7 +36,7 @@ data class CustResponse(
     val zipcd: String?,                  // 우편번호
     val addr1: String?,                  // 주소1
     val addr2: String?,                  // 주소2
-    val qcCustYn: Boolean,              // QC고객여부
+    val reqDivCd: String?,               // 의뢰구분코드 (공통코드 RQDV)
     // 사업자등록정보
     val bizrno: String?,                 // 사업자번호
     val sapCustCd: String?,              // SAP고객코드
@@ -79,6 +79,8 @@ data class CustResponse(
     val sotOutputQnty: Int,             // SOT출력수량
     val rstNtcnRecpYn: Boolean,          // 결과알림수신여부
     val rstNtcnRecpEmailAddr: String?,   // 결과알림수신이메일주소
+    val atchFileGrupId: String?,         // 첨부파일그룹아이디
+    val reqPossTstLimitYn: Boolean?,     // 의뢰가능검사제한여부
     // 테이블공통
     val creator: String,                // 생성자
     val createDtime: LocalDateTime,     // 생성일시
@@ -121,6 +123,7 @@ data class CustListResponse(
 )
 
 data class CustCdNmAutoCompleteResponse(
+    val custMstId: String?,
     val custCd: String?,
     val custNm: String?
 )

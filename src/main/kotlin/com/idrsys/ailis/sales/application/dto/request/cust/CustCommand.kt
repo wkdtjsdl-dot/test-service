@@ -28,7 +28,7 @@ data class CustCommand(
     val zipcd: String?,                  // 우편번호
     val addr1: String?,                  // 주소1
     val addr2: String?,                  // 주소2
-    val qcCustYn: Boolean,              // QC고객여부
+    val reqDivCd: String?,               // 의뢰구분코드 (공통코드 RQDV)
     // 사업자등록정보
     val bizrno: String?,                 // 사업자번호
     val sapCustCd: String?,              // SAP고객코드
@@ -73,6 +73,8 @@ data class CustCommand(
     val rstNtcnRecpEmailAddr: String?,   // 결과알림수신이메일주소
     val reqMethodCd: String?,           // 의뢰메소드(방법)코드
     val reqIfTypeCd: String?,           // 의뢰연동유형코드
+    val atchFileGrupId: String?,         // 첨부파일그룹아이디
+    val reqPossTstLimitYn: Boolean?,     // 의뢰가능검사제한여부
 )
 
 //data class CustUpdateCommand(

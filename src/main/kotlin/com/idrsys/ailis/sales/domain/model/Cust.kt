@@ -36,7 +36,9 @@ class Cust(
     zipcd: String?,                  // 우편번호
     addr1: String?,                  // 주소1
     addr2: String?,                  // 주소2
-    qcCustYn: Boolean = false,              // QC고객여부
+    reqDivCd: String?,               // 의뢰구분코드 (공통코드 RQDV)
+    atchFileGrupId: String?,         // 첨부파일그룹아이디
+    reqPossTstLimitYn: Boolean? = null,     // 의뢰가능검사제한여부
     // 사업자등록정보
     bizrno: String?,                 // 사업자번호
     sapCustCd: String?,              // SAP고객코드
@@ -189,8 +191,8 @@ class Cust(
     var addr2: String? = addr2
         private set
 
-    @Column("qc_cust_yn")
-    var qcCustYn: Boolean = qcCustYn
+    @Column("req_div_cd")
+    var reqDivCd: String? = reqDivCd
         private set
 
     // 사업자등록정보
@@ -357,6 +359,14 @@ class Cust(
     var reqIfTypeCd: String? = reqIfTypeCd
         private set
 
+    @Column("atch_file_grup_id")
+    var atchFileGrupId: String? = atchFileGrupId
+        private set
+
+    @Column("req_poss_tst_limit_yn")
+    var reqPossTstLimitYn: Boolean? = reqPossTstLimitYn
+        private set
+
     // 테이블공통
     @Column("creator")
     var creator: String = creator
@@ -400,7 +410,7 @@ class Cust(
         this.zipcd = command.zipcd
         this.addr1 = command.addr1
         this.addr2 = command.addr2
-        this.qcCustYn = command.qcCustYn
+        this.reqDivCd = command.reqDivCd
         // 사업자등록정보
         this.bizrno = command.bizrno
         this.sapCustCd = command.sapCustCd
@@ -445,6 +455,8 @@ class Cust(
         this.rstNtcnRecpEmailAddr = command.rstNtcnRecpEmailAddr
         this.reqMethodCd = command.reqMethodCd
         this.reqIfTypeCd = command.reqIfTypeCd
+        this.atchFileGrupId = command.atchFileGrupId
+        this.reqPossTstLimitYn = command.reqPossTstLimitYn
         // 테이블공통
         this.updater = updater
         this.updateDtime = LocalDateTime.now()

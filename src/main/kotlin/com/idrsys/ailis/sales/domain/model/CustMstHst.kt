@@ -67,8 +67,12 @@ class CustMstHst(
     val addr1: String?,
     @Column("addr2")
     val addr2: String?,
-    @Column("qc_cust_yn")
-    val qcCustYn: Boolean,
+    @Column("req_div_cd")
+    val reqDivCd: String?,
+    @Column("atch_file_grup_id")
+    val atchFileGrupId: String?,
+    @Column("req_poss_tst_limit_yn")
+    val reqPossTstLimitYn: Boolean?,
     @Column("bizrno")
     val bizrno: String?,
     @Column("sap_cust_cd")

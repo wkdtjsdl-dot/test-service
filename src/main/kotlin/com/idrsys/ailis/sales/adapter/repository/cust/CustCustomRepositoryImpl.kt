@@ -1,24 +1,17 @@
 package com.idrsys.ailis.sales.adapter.repository.cust
 
-import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustCdNmAutoCompleteInfo
-import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustDetailInfo
-import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustWithSalsPicInfo
-import com.idrsys.ailis.sales.adapter.persistence.mapper.toDirectAcctCdNmAutoCompleteInfo
-import com.idrsys.ailis.sales.adapter.persistence.mapper.toRprsCustCdNmAutoCompleteInfo
+import com.idrsys.ailis.sales.adapter.persistence.mapper.*
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.*
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
-import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_CNTR
-import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
-import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
+import com.idrsys.ailis.sales.generated.jooq.Tables.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.*
-import org.jooq.impl.DSL
 import org.jooq.impl.DSL.*
 import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
@@ -249,6 +242,24 @@ class CustCustomRepositoryImpl(
             .asFlow()
     }
 
+    override fun findAllWithCareInstId(): Flow<CustCareInstId> {
+        val query = dslContext.select(
+            SCS_CUST_MST.CUST_MST_ID,
+            SCS_CUST_MST.CARE_INST_ID
+        )
+            .from(SCS_CUST_MST)
+            .where(SCS_CUST_MST.CARE_INST_ID.isNotNull)
+            .orderBy(SCS_CUST_MST.CUST_MST_ID.asc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustCareInstId() }
+            .all()
+            .asFlow()
+    }
+
     override fun findCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteInfo> {
         val conditions = mutableListOf<Condition>()
         val keyword = searchParam.custCdNm?.takeIf { it.isNotBlank() } ?: return flowOf()
@@ -256,6 +267,7 @@ class CustCustomRepositoryImpl(
         conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
 
         val selectFields = arrayOf(
+            SCS_CUST_MST.CUST_MST_ID,
             SCS_CUST_MST.CUST_CD,
             SCS_CUST_MST.CUST_NM
         )

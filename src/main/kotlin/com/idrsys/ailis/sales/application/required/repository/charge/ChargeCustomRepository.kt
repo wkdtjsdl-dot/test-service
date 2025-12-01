@@ -8,4 +8,5 @@ import org.springframework.data.domain.Pageable
 interface ChargeCustomRepository {
     fun findCharges(searchParam: ChargeSearchParam, pageable: Pageable): Flow<ChargeWithDetails>
     suspend fun countCharge(searchParam: ChargeSearchParam): Long
+    suspend fun findChargeWithDetailsById(custChargeId: String): ChargeWithDetails?
 }

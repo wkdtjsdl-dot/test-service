@@ -10,15 +10,11 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/custs")
@@ -35,27 +31,34 @@ class HospitalDataController(
         return hospitalDataUseCase.getHospitalMstListPage(searchParam, pageable)
     }
 
-    @GetMapping("/hosp-mst/{custMstId}")
+    @GetMapping("/hosp-mst/{careInstId}")
     @Operation(summary = "hospitalDetail" ,description = "고객 병원정보 요양기관 기본정보 상세 조회")
     suspend fun getHospitalDetail(
-        @PathVariable custMstId: String
+        @PathVariable careInstId: String
     ): HospitalMst? {
-        return hospitalDataUseCase.getHospitalMstDetail(custMstId)
+        return hospitalDataUseCase.getHospitalMstDetail(careInstId)
     }
 
-    @GetMapping("/hosp-device/{custMstId}")
+    @GetMapping("/hosp-device/{careInstId}")
     @Operation(summary = "hospitalDevice" ,description = "고객 병원정보 요양기관 장비정보 목록")
     suspend fun getHospitalDevice(
-        @PathVariable custMstId: String
+        @PathVariable careInstId: String
     ): Flow<HospitalDevice> {
-        return hospitalDataUseCase.getHospitalDevice(custMstId) ?: emptyFlow()
+        return hospitalDataUseCase.getHospitalDevice(careInstId)
     }
 
-    @GetMapping("/hosp-medi-sbjt/{custMstId}")
+    @GetMapping("/hosp-medi-sbjt/{careInstId}")
     @Operation(summary = "hospitalMediSbjt" ,description = "고객 병원정보 요양기관 진료과목 목록")
     suspend fun getHospitalMediSbjt(
-        @PathVariable custMstId: String
+        @PathVariable careInstId: String
     ): Flow<HospitalMediSbjt> {
-        return hospitalDataUseCase.getHospitalMediSbjt(custMstId) ?: emptyFlow()
+        return hospitalDataUseCase.getHospitalMediSbjt(careInstId)
+    }
+
+    @PutMapping("/hosp-sync")
+    @Operation(summary = "hospitalSync" ,description = "고객 병원정보 심평원 데이터 연동")
+    suspend fun syncHospitalData(
+    ): Boolean {
+        return hospitalDataUseCase.executeHospitalDataSynchronization()
     }
 }
