@@ -1,7 +1,6 @@
 package com.idrsys.ailis.sales.domain.model
 
 import org.springframework.data.annotation.Id
-import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -19,31 +18,27 @@ class HospitalDevice(
     createDtime: LocalDateTime,
     updater: String,
     updateDtime: LocalDateTime
-) : Persistable<Long> {
+) : Persistable<Long?> {
 
     @Id
     @Column("hosp_device_id")
-    val hospDeviceId: Long? = hospDeviceId
+    var hospDeviceId: Long? = hospDeviceId
+        private set
 
     @Column("care_inst_id")
     var careInstId: String? = careInstId
-        private set
 
     @Column("device_cd")
     var deviceCd: String = deviceCd
-        private set
 
     @Column("device_nm")
     var deviceNm: String? = deviceNm
-        private set
 
     @Column("device_cnt")
     var deviceCnt: Int? = deviceCnt
-        private set
 
     @Column("use_yn")
     var useYn: Boolean = useYn
-        private set
 
     @Column("creator")
     var creator: String = creator
@@ -55,20 +50,11 @@ class HospitalDevice(
 
     @Column("updater")
     var updater: String = updater
-        private set
 
     @Column("update_dtime")
     var updateDtime: LocalDateTime = updateDtime
-        private set
 
-    @Transient
-    private var _isNew: Boolean = false
+    override fun getId(): Long? = hospDeviceId
 
-    fun setAsNew() {
-        this._isNew = true
-    }
-
-    override fun getId(): Long = hospDeviceId!!
-
-    override fun isNew(): Boolean = _isNew
+    override fun isNew(): Boolean = hospDeviceId == null
 }

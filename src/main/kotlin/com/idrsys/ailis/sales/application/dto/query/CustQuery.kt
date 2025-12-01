@@ -127,3 +127,8 @@ data class PicInfo (
     val id: String,
     val name: String
 )
+
+data class CustCareInstId (
+    val custMstId: String,
+    val careInstId: String
+)

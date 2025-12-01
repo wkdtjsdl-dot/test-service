@@ -28,8 +28,8 @@ class HospitalMst(
     closeDt: String?,
     drCnt: Int?,
     sickbedCnt: Int?,
-    mapCodnX: Int?,
-    mapCodnY: Int?,
+    mapCodnX: Double?,
+    mapCodnY: Double?,
     useYn: Boolean,
     creator: String,
     createDtime: LocalDateTime,
@@ -43,103 +43,78 @@ class HospitalMst(
 
     @Column("encp_care_inst_no")
     var encpCareInstNo: String = encpCareInstNo
-        private set
 
     @Column("care_inst_no")
     var careInstNo: String? = careInstNo
-        private set
 
     @Column("care_inst_nm")
     var careInstNm: String = careInstNm
-        private set
 
     @Column("asrt_cd")
     var asrtCd: String? = asrtCd
-        private set
 
     @Column("estb_div_nm")
     var estbDivNm: String? = estbDivNm
-        private set
 
     @Column("sido_cd")
     var sidoCd: String? = sidoCd
-        private set
 
     @Column("sido_nm")
     var sidoNm: String? = sidoNm
-        private set
 
     @Column("sggu_cd")
     var sgguCd: String? = sgguCd
-        private set
 
     @Column("sggu_nm")
     var sgguNm: String? = sgguNm
-        private set
 
     @Column("emd")
     var emd: String? = emd
-        private set
 
     @Column("zipcd")
     var zipcd: String? = zipcd
-        private set
 
     @Column("addr")
     var addr: String? = addr
-        private set
 
     @Column("telno")
     var telno: String? = telno
-        private set
 
     @Column("hp_url")
     var hpUrl: String? = hpUrl
-        private set
 
     @Column("open_dt")
     var openDt: String? = openDt
-        private set
 
     @Column("close_dt")
     var closeDt: String? = closeDt
-        private set
 
     @Column("dr_cnt")
     var drCnt: Int? = drCnt
-        private set
 
     @Column("sickbed_cnt")
     var sickbedCnt: Int? = sickbedCnt
-        private set
 
     @Column("map_codn_x")
-    var mapCodnX: Int? = mapCodnX
-        private set
+    var mapCodnX: Double? = mapCodnX
 
     @Column("map_codn_y")
-    var mapCodnY: Int? = mapCodnY
-        private set
+    var mapCodnY: Double? = mapCodnY
 
     @Column("use_yn")
     var useYn: Boolean = useYn
-        private set
 
     @Column("creator")
     var creator: String = creator
-        private set
 
     @Column("create_dtime")
     var createDtime: LocalDateTime = createDtime
-        private set
 
     @Column("updater")
     var updater: String = updater
-        private set
 
     @Column("update_dtime")
     var updateDtime: LocalDateTime = updateDtime
-        private set
 
     @Transient
     private var _isNew: Boolean = false

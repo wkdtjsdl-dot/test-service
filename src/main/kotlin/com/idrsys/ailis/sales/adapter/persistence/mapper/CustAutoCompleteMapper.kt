@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.adapter.persistence.mapper
 
+import com.idrsys.ailis.sales.application.dto.query.CustCareInstId
 import com.idrsys.ailis.sales.application.dto.query.CustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.query.DirectAcctCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.query.RprsCustCdNmAutoCompleteInfo
@@ -24,5 +25,12 @@ fun Row.toDirectAcctCdNmAutoCompleteInfo(): DirectAcctCdNmAutoCompleteInfo {
     return DirectAcctCdNmAutoCompleteInfo(
         directAcctCd = this.get("direct_acct_cd", String::class.java),
         directAcctNm = this.get("direct_acct_nm", String::class.java)
+    )
+}
+
+fun Row.toCustCareInstId(): CustCareInstId {
+    return CustCareInstId(
+        custMstId = this.get("cust_mst_id", String::class.java)!!,
+        careInstId = this.get("care_inst_id", String::class.java)!!
     )
 }

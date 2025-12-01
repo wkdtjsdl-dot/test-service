@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable
 
 interface HospitalMstCustomRepository {
     suspend fun countHospitalMstList(searchParam: HospitalDataSearchParam): Long
-
+    suspend fun findByEncpCareInstNo(encpCareInstNo: String): HospitalMst?
+    fun findAllEncpCareInstNo(): Flow<String>
     fun findHospitalMstList(searchParam: HospitalDataSearchParam, pageable: Pageable?): Flow<HospitalMst>
+    suspend fun findByCareInstId(careInstId: String): HospitalMst?
 }

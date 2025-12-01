@@ -10,18 +10,18 @@ interface HospitalMediSbjtDataImpl : CoroutineCrudRepository<HospitalMediSbjt, L
 
 @Repository
 class HospitalMediSbjtRepositoryImpl(
-    private val hospitalMstRepository: HospitalMediSbjtDataImpl,
+    private val hospitalMediSbjtRepository: HospitalMediSbjtDataImpl,
 ) : HospitalMediSbjtRepository {
 
     override suspend fun save(hospitalMediSbjt: HospitalMediSbjt): HospitalMediSbjt {
-        return hospitalMstRepository.save(hospitalMediSbjt)
+        return hospitalMediSbjtRepository.save(hospitalMediSbjt)
     }
 
     override suspend fun findById(hospMediSbjtId: Long): HospitalMediSbjt? {
-        return hospitalMstRepository.findById(hospMediSbjtId)
+        return hospitalMediSbjtRepository.findById(hospMediSbjtId)
     }
 
     override suspend fun existsById(hospMediSbjtId: Long): Boolean {
-        return hospitalMstRepository.existsById(hospMediSbjtId)
+        return hospitalMediSbjtRepository.existsById(hospMediSbjtId)
     }
 }

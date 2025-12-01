@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
 import org.jooq.Condition
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.DSLContext
 import org.jooq.Query
 import org.jooq.SelectLimitStep
@@ -50,6 +51,28 @@ class HospitalMstCustomRepositoryImpl(
         return sql.map { row, _ -> row.toHospitalMst() }.all().asFlow()
     }
 
+    override suspend fun findByEncpCareInstNo(encpCareInstNo: String): HospitalMst? {
+        val query = dslContext.selectFrom(SCS_HOSP_MST)
+            .where(SCS_HOSP_MST.ENCP_CARE_INST_NO.eq(encpCareInstNo))
+
+        return databaseClient.sql(query.sql)
+            .bind(0, encpCareInstNo)
+            .map { row, _ -> row.toHospitalMst() }
+            .first()
+            .awaitSingleOrNull()
+    }
+
+    override fun findAllEncpCareInstNo(): Flow<String> {
+        val query = dslContext.select(SCS_HOSP_MST.ENCP_CARE_INST_NO)
+            .from(SCS_HOSP_MST)
+            .where(SCS_HOSP_MST.USE_YN.isTrue)
+
+        return databaseClient.sql(query.sql)
+            .map { row -> row.get(SCS_HOSP_MST.ENCP_CARE_INST_NO.name) as String }
+            .all()
+            .asFlow()
+    }
+
     private fun applyPaging(q: SelectLimitStep<*>, pageable: Pageable?): Query {
         if (pageable == null || pageable.isUnpaged) return q
         else return q.limit(pageable.pageSize).offset(pageable.offset)
@@ -61,5 +84,16 @@ class HospitalMstCustomRepositoryImpl(
             conds += SCS_HOSP_MST.CARE_INST_NM.like("%$it%")
         }
         return conds
+    }
+
+    override suspend fun findByCareInstId(careInstId: String): HospitalMst? {
+        val query = dslContext.selectFrom(SCS_HOSP_MST)
+            .where(SCS_HOSP_MST.CARE_INST_ID.eq(careInstId))
+
+        return databaseClient.sql(query.sql)
+            .bind(0, careInstId)
+            .map { row, _ -> row.toHospitalMst() }
+            .first()
+            .awaitSingleOrNull()
     }
 }
