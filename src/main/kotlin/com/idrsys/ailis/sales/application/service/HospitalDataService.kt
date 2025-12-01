@@ -158,7 +158,8 @@ class HospitalDataService(
                             val hospitalMst = hospitalMstCustomRepository.findByEncpCareInstNo(closureInfo.ykiho)
                             if (hospitalMst != null) {
                                 val closureDate = closureInfo.cnclDd?.toString()?.let {
-                                    LocalDate.parse(it, DateTimeFormatter.ofPattern("yyyyMMdd")).toString()
+                                    LocalDate.parse(it, DateTimeFormatter.ofPattern("yyyyMMdd"))
+                                        .format(DateTimeFormatter.ofPattern("yyyyMMdd"))
                                 }
                                 hospitalMst.apply {
                                     this.closeDt = closureDate
