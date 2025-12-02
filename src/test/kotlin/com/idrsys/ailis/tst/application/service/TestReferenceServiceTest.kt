@@ -134,7 +134,7 @@ class TestReferenceServiceTest {
     @Test
     fun `updateReference should update and return response`() = runTest {
         // Given
-        val id = "uuid"
+        val refCd = "uuid"
         val request = TestReferenceUpdateRequest(
             refCateCd = "CATE02",
             useYn = false,
@@ -153,7 +153,7 @@ class TestReferenceServiceTest {
             dftEngData = "Updated Default Eng"
         )
         val existing = TestReference(
-            refCd = id,
+            refCd = refCd,
             refCateCd = "CATE01",
             useYn = true,
             refNm = "Reference Name",
@@ -175,7 +175,7 @@ class TestReferenceServiceTest {
             updateDetime = LocalDateTime.now()
         )
         val response = TestReferenceResponse(
-            refCd = id,
+            refCd = refCd,
             refCateCd = "CATE02",
             useYn = false,
             refNm = "Updated Name",
@@ -215,13 +215,13 @@ class TestReferenceServiceTest {
             dftEngData = "Updated Default Eng"
         )
 
-        `when`(repository.findById(id)).thenReturn(existing)
+        `when`(repository.findById(refCd)).thenReturn(existing)
         `when`(commandMapper.toUpdateCommand(request)).thenReturn(command)
         `when`(repository.save(any())).thenReturn(existing)
         `when`(mapper.toResponse(existing)).thenReturn(response)
 
         // When
-        val result = service.updateReference(id, request, "admin")
+        val result = service.updateReference(refCd, request, "admin")
 
         // Then
         assertEquals(response, result)
@@ -230,9 +230,9 @@ class TestReferenceServiceTest {
     @Test
     fun `getReference should return response`() = runTest {
         // Given
-        val id = "uuid"
+        val refCd = "uuid"
         val domain = TestReference(
-            refCd = id,
+            refCd = refCd,
             refCateCd = "CATE01",
             useYn = true,
             refNm = "Reference Name",
@@ -254,7 +254,7 @@ class TestReferenceServiceTest {
             updateDetime = LocalDateTime.now()
         )
         val response = TestReferenceResponse(
-            refCd = id,
+            refCd = refCd,
             refCateCd = "CATE01",
             useYn = true,
             refNm = "Reference Name",
@@ -276,11 +276,11 @@ class TestReferenceServiceTest {
             updateDetime = LocalDateTime.now()
         )
 
-        `when`(repository.findById(id)).thenReturn(domain)
+        `when`(repository.findById(refCd)).thenReturn(domain)
         `when`(mapper.toResponse(domain)).thenReturn(response)
 
         // When
-        val result = service.getReference(id)
+        val result = service.getReference(refCd)
 
         // Then
         assertEquals(response, result)
@@ -289,9 +289,9 @@ class TestReferenceServiceTest {
     @Test
     fun `deleteReference should call repository delete`() = runTest {
         // Given
-        val id = "uuid"
+        val refCd = "uuid"
         val domain = TestReference(
-            refCd = id,
+            refCd = refCd,
             refCateCd = "CATE01",
             useYn = true,
             refNm = "Reference Name",
@@ -313,10 +313,10 @@ class TestReferenceServiceTest {
             updateDetime = LocalDateTime.now()
         )
 
-        `when`(repository.findById(id)).thenReturn(domain)
+        `when`(repository.findById(refCd)).thenReturn(domain)
 
         // When
-        service.deleteReference(id, "admin")
+        service.deleteReference(refCd, "admin")
 
         // Then
         Mockito.verify(repository).save(domain)

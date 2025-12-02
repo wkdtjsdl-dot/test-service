@@ -197,12 +197,6 @@ class TestItem(
 
     override fun isNew(): Boolean = _isNew
 
-    fun delete(updater: String, updateDetime: LocalDateTime) {
-        this.useYn = false
-        this.updater = updater
-        this.updateDetime = updateDetime
-    }
-
     fun update(command: TestItemUpdateCommand, updater: String, updateDetime: LocalDateTime) {
         this.tstLargeCateCd = command.tstLargeCateCd
         this.tstMediumCateCd = command.tstMediumCateCd

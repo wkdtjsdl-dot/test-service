@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactor.mono
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
@@ -30,45 +31,25 @@ class TestItemController(
     }
 
     @Operation(summary = "검사 항목 조회")
-    @GetMapping("/api/bts/item/base/{id}")
-    fun getItem(@PathVariable id: String): Mono<TestItemResponse> = mono {
-        useCase.getItem(id)
+    @GetMapping("/api/bts/item/base/{tstCd}")
+    fun getItem(@PathVariable tstCd: String): Mono<TestItemResponse> = mono {
+        useCase.getItem(tstCd)
     }
 
     @Operation(summary = "검사 항목 수정")
-    @PutMapping("/api/bts/item/base/{id}")
+    @PutMapping("/api/bts/item/base/{tstCd}")
     fun updateItem(
-        @PathVariable id: String,
+        @PathVariable tstCd: String,
         @RequestBody request: TestItemUpdateRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<TestItemResponse> = mono {
-        useCase.updateItem(id, request, auth.adminId)
-    }
-
-    @Operation(summary = "검사 항목 삭제")
-    @DeleteMapping("/api/bts/item/base/{id}")
-    fun deleteItem(
-        @PathVariable id: String,
-        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
-    ): Mono<Void> = mono {
-        useCase.deleteItem(id, auth.adminId)
-        null
+        useCase.updateItem(tstCd, request, auth.adminId)
     }
 
     @Operation(summary = "검사 항목 전체 조회")
     @GetMapping("/api/bts/item")
-    fun getAllItems(): Flow<TestItemResponse> {
-        return kotlinx.coroutines.flow.flow {
-            useCase.getAllItems().collect { emit(it) }
-        }
-    }
-
-    @Operation(summary = "검사 항목 목록 조회 (대분류코드별)")
-    @GetMapping("/api/bts/item/by-large-cate/{code}")
-    fun getItemsByLargeCate(@PathVariable code: String): Flow<TestItemResponse> {
-        return kotlinx.coroutines.flow.flow {
-            useCase.getItemsByLargeCate(code).collect { emit(it) }
-        }
+    fun getItems(@ParameterObject searchParam: TestItemSearchParam): Flow<TestItemResponse> {
+        return useCase.getItems(searchParam)
     }
 
     // --- StandardCharge ---
@@ -83,9 +64,9 @@ class TestItemController(
     }
 
     @Operation(summary = "표준 수가 조회")
-    @GetMapping("/api/bts/item/stnd-charge/{id}")
-    fun getCharge(@PathVariable id: String): Mono<StandardChargeResponse> = mono {
-        useCase.getCharge(id)
+    @GetMapping("/api/bts/item/stnd-charge/{stndChargeId}")
+    fun getCharge(@PathVariable stndChargeId: String): Mono<StandardChargeResponse> = mono {
+        useCase.getCharge(stndChargeId)
     }
 
     @Operation(summary = "표준 수가 삭제")
@@ -99,8 +80,8 @@ class TestItemController(
     }
 
     @Operation(summary = "표준 수가 목록 조회 (검사코드별)")
-    @GetMapping("/api/bts/item/stnd-charge/by-test/{tstCd}")
-    fun getChargesByTest(@PathVariable tstCd: String): Flow<StandardChargeResponse> {
+    @GetMapping("/api/bts/item/stnd-charge")
+    fun getChargesByTest(@RequestParam tstCd: String): Flow<StandardChargeResponse> {
         return kotlinx.coroutines.flow.flow {
             useCase.getChargesByTest(tstCd).collect { emit(it) }
         }
@@ -118,9 +99,9 @@ class TestItemController(
     }
 
     @Operation(summary = "검사 항목별 검체 조회")
-    @GetMapping("/api/bts/spcm/{id}")
-    fun getSpecimen(@PathVariable id: String): Mono<TestItemSpecimenResponse> = mono {
-        useCase.getSpecimen(id)
+    @GetMapping("/api/bts/spcm/{spcmId}")
+    fun getSpecimen(@PathVariable spcmId: String): Mono<TestItemSpecimenResponse> = mono {
+        useCase.getSpecimen(spcmId)
     }
 
     @Operation(summary = "검사 항목별 검체 삭제")
@@ -134,10 +115,7 @@ class TestItemController(
     }
 
     @Operation(summary = "검사 항목별 검체 목록 조회 (검사코드별)")
-    @GetMapping("/api/bts/spcm/by-test/{tstCd}")
-    fun getSpecimensByTest(@PathVariable tstCd: String): Flow<TestItemSpecimenResponse> {
-        return kotlinx.coroutines.flow.flow {
-            useCase.getSpecimensByTest(tstCd).collect { emit(it) }
-        }
-    }
+    @GetMapping("/api/bts/spcm")
+    fun getSpecimensByTest(@RequestParam tstCd: String): Flow<TestItemSpecimenResponse> =
+        useCase.getSpecimensByTest(tstCd)
 }

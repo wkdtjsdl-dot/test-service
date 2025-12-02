@@ -5,6 +5,13 @@ import java.time.LocalDateTime
 
 // --- Test Item ---
 
+data class TestItemSearchParam(
+    val deptCd: String?,
+    val tstLargeCateCd: String?,
+    val tstMediumCateCd: String?,
+    val useYn: Boolean?
+)
+
 data class TestItemRegisterRequest(
     val tstLargeCateCd: String,
     val tstMediumCateCd: String,

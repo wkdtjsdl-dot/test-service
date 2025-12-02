@@ -6,7 +6,6 @@ import com.idrsys.ailis.tst.domain.model.TestReferenceGroup
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRefGroupItem
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
@@ -34,26 +33,25 @@ class TestReferenceRepositoryImpl(
 
     // --- TestReference ---
     override suspend fun save(entity: TestReference): TestReference = refDataRepo.save(entity)
-    override suspend fun findById(id: String): TestReference? = refDataRepo.findById(id)
-    override suspend fun deleteById(id: String) = refDataRepo.deleteById(id)
+    override suspend fun findById(refCd: String): TestReference? = refDataRepo.findById(refCd)
     override suspend fun findAll(): Flow<TestReference> = refDataRepo.findAll()
 
     // --- TestReferenceGroup ---
     override suspend fun saveGroup(entity: TestReferenceGroup): TestReferenceGroup = groupDataRepo.save(entity)
-    override suspend fun findGroupById(id: String): TestReferenceGroup? = groupDataRepo.findById(id)
-    override suspend fun deleteGroupById(id: String) = groupDataRepo.deleteById(id)
+    override suspend fun findGroupById(refGroupCd: String): TestReferenceGroup? = groupDataRepo.findById(refGroupCd)
+    override suspend fun deleteGroupById(refGroupCd: String) = groupDataRepo.deleteById(refGroupCd)
     override suspend fun findAllGroups(): Flow<TestReferenceGroup> = groupDataRepo.findAll()
 
     // --- TestReferenceGroupItem ---
     override suspend fun saveGroupItem(entity: TestReferenceGroupItem): TestReferenceGroupItem = groupItemDataRepo.save(entity)
-    override suspend fun findGroupItemById(id: String): TestReferenceGroupItem? = groupItemDataRepo.findById(id)
-    override suspend fun deleteGroupItemById(id: String) = groupItemDataRepo.deleteById(id)
+    override suspend fun findGroupItemById(tstRefGroupItemId: String): TestReferenceGroupItem? = groupItemDataRepo.findById(tstRefGroupItemId)
+    override suspend fun deleteGroupItemById(tstRefGroupItemId: String) = groupItemDataRepo.deleteById(tstRefGroupItemId)
 
-    override fun findGroupItemsByGroupCd(groupCd: String): Flow<TestReferenceGroupItem> {
+    override fun findGroupItemsByGroupCd(refGroupCd: String): Flow<TestReferenceGroupItem> {
         val table = BbsTstRefGroupItem.BBS_TST_REF_GROUP_ITEM
         val query = dslContext.select(table.fields().toList())
             .from(table)
-            .where(table.REF_GROUP_CD.eq(groupCd))
+            .where(table.REF_GROUP_CD.eq(refGroupCd))
 
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value: Any? ->

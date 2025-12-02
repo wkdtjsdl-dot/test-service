@@ -32,13 +32,13 @@ class TestReferenceService(
         return mapper.toResponse(saved)
     }
 
-    override suspend fun getReference(id: String): TestReferenceResponse {
-        val domain = repository.findById(id) ?: throw RuntimeException("TestReference not found with id: $id")
+    override suspend fun getReference(refCd: String): TestReferenceResponse {
+        val domain = repository.findById(refCd) ?: throw RuntimeException("TestReference not found with id: $refCd")
         return mapper.toResponse(domain)
     }
 
-    override suspend fun updateReference(id: String, request: TestReferenceUpdateRequest, adminId: String): TestReferenceResponse {
-        val existing = repository.findById(id) ?: throw RuntimeException("TestReference not found with id: $id")
+    override suspend fun updateReference(refCd: String, request: TestReferenceUpdateRequest, adminId: String): TestReferenceResponse {
+        val existing = repository.findById(refCd) ?: throw RuntimeException("TestReference not found with id: $refCd")
         val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
         existing.update(command, adminId, now)
@@ -47,9 +47,9 @@ class TestReferenceService(
     }
 
     @Transactional
-    override suspend fun deleteReference(id: String, adminId: String) {
-        val reference = repository.findById(id)
-            ?: throw NoSuchElementException("TestReference not found: $id")
+    override suspend fun deleteReference(refCd: String, adminId: String) {
+        val reference = repository.findById(refCd)
+            ?: throw NoSuchElementException("TestReference not found: $refCd")
 
         val now = java.time.LocalDateTime.now()
         reference.delete(updater = adminId, updateDetime = now)
@@ -71,13 +71,13 @@ class TestReferenceService(
         return mapper.toResponse(saved)
     }
 
-    override suspend fun getGroup(id: String): TestReferenceGroupResponse {
-        val domain = repository.findGroupById(id) ?: throw RuntimeException("TestReferenceGroup not found with id: $id")
+    override suspend fun getGroup(refGroupCd: String): TestReferenceGroupResponse {
+        val domain = repository.findGroupById(refGroupCd) ?: throw RuntimeException("TestReferenceGroup not found with id: $refGroupCd")
         return mapper.toResponse(domain)
     }
 
-    override suspend fun updateGroup(id: String, request: TestReferenceGroupUpdateRequest, adminId: String): TestReferenceGroupResponse {
-        val existing = repository.findGroupById(id) ?: throw RuntimeException("TestReferenceGroup not found with id: $id")
+    override suspend fun updateGroup(refGroupCd: String, request: TestReferenceGroupUpdateRequest, adminId: String): TestReferenceGroupResponse {
+        val existing = repository.findGroupById(refGroupCd) ?: throw RuntimeException("TestReferenceGroup not found with id: $refGroupCd")
         val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
         existing.update(command, adminId, now)
@@ -85,8 +85,8 @@ class TestReferenceService(
         return mapper.toResponse(saved)
     }
 
-    override suspend fun deleteGroup(id: String, adminId: String) {
-        repository.deleteGroupById(id)
+    override suspend fun deleteGroup(refGroupCd: String, adminId: String) {
+        repository.deleteGroupById(refGroupCd)
     }
 
     override suspend fun getAllGroups(): Flow<TestReferenceGroupResponse> {
@@ -103,13 +103,13 @@ class TestReferenceService(
         return mapper.toResponse(saved)
     }
 
-    override suspend fun getGroupItem(id: String): TestReferenceGroupItemResponse {
-        val domain = repository.findGroupItemById(id) ?: throw RuntimeException("TestReferenceGroupItem not found with id: $id")
+    override suspend fun getGroupItem(tstRefGroupItemId: String): TestReferenceGroupItemResponse {
+        val domain = repository.findGroupItemById(tstRefGroupItemId) ?: throw RuntimeException("TestReferenceGroupItem not found with id: $tstRefGroupItemId")
         return mapper.toResponse(domain)
     }
 
-    override suspend fun updateGroupItem(id: String, request: TestReferenceGroupItemUpdateRequest, adminId: String): TestReferenceGroupItemResponse {
-        val existing = repository.findGroupItemById(id) ?: throw RuntimeException("TestReferenceGroupItem not found with id: $id")
+    override suspend fun updateGroupItem(tstRefGroupItemId: String, request: TestReferenceGroupItemUpdateRequest, adminId: String): TestReferenceGroupItemResponse {
+        val existing = repository.findGroupItemById(tstRefGroupItemId) ?: throw RuntimeException("TestReferenceGroupItem not found with id: $tstRefGroupItemId")
         val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
         existing.update(command, adminId, now)
@@ -117,11 +117,11 @@ class TestReferenceService(
         return mapper.toResponse(saved)
     }
 
-    override suspend fun deleteGroupItem(id: String, adminId: String) {
-        repository.deleteGroupItemById(id)
+    override suspend fun deleteGroupItem(tstRefGroupItemId: String, adminId: String) {
+        repository.deleteGroupItemById(tstRefGroupItemId)
     }
 
-    override fun getGroupItemsByGroup(groupCd: String): Flow<TestReferenceGroupItemResponse> {
-        return repository.findGroupItemsByGroupCd(groupCd).map { mapper.toResponse(it) }
+    override fun getGroupItemsByGroup(refGroupCd: String): Flow<TestReferenceGroupItemResponse> {
+        return repository.findGroupItemsByGroupCd(refGroupCd).map { mapper.toResponse(it) }
     }
 }

@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
-import java.util.*
 
 @Service
 @Transactional
@@ -32,13 +31,13 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
-    override suspend fun getItem(id: String): TestItemResponse {
-        val domain = repository.findById(id) ?: throw RuntimeException("TestItem not found with id: $id")
+    override suspend fun getItem(tstCd: String): TestItemResponse {
+        val domain = repository.findById(tstCd) ?: throw RuntimeException("TestItem not found with id: $tstCd")
         return mapper.toResponse(domain)
     }
 
-    override suspend fun updateItem(id: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse {
-        val existing = repository.findById(id) ?: throw RuntimeException("TestItem not found with id: $id")
+    override suspend fun updateItem(tstCd: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse {
+        val existing = repository.findById(tstCd) ?: throw RuntimeException("TestItem not found with id: $tstCd")
         val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
         existing.update(command, adminId, now)
@@ -46,23 +45,8 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
-    @Transactional
-    override suspend fun deleteItem(id: String, adminId: String) {
-        val item = repository.findById(id)
-            ?: throw NoSuchElementException("TestItem not found: $id")
-
-        val now = java.time.LocalDateTime.now()
-        item.delete(updater = adminId, updateDetime = now)
-
-        repository.save(item)
-    }
-
-    override suspend fun getAllItems(): Flow<TestItemResponse> {
-        return repository.findAll().map { mapper.toResponse(it) }
-    }
-
-    override suspend fun getItemsByLargeCate(code: String): Flow<TestItemResponse> {
-        return repository.findByLargeCateCd(code).map { mapper.toResponse(it) }
+    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItemResponse> {
+        return repository.getItems(searchParam).map { mapper.toResponse(it) }
     }
 
     // --- StandardCharge ---
@@ -98,8 +82,8 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
-    override suspend fun getSpecimen(id: String): TestItemSpecimenResponse {
-        val domain = repository.findSpecimenById(id) ?: throw RuntimeException("TestItemSpecimen not found with id: $id")
+    override suspend fun getSpecimen(spcmId: String): TestItemSpecimenResponse {
+        val domain = repository.findSpecimenById(spcmId) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
         return mapper.toResponse(domain)
     }
 
@@ -107,7 +91,7 @@ class TestItemService(
         repository.deleteSpecimenById(id)
     }
 
-    override suspend fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenResponse> {
+    override fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenResponse> {
         return repository.findSpecimensByTestCd(tstCd).map { mapper.toResponse(it) }
     }
 }

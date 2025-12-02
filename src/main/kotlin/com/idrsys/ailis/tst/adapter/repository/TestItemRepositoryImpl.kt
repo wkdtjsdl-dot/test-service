@@ -1,16 +1,18 @@
 package com.idrsys.ailis.tst.adapter.repository
 
+import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
 import com.idrsys.ailis.tst.application.required.TestItemRepository
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsStndCharge
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsSpcm
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
+import org.jooq.impl.DSL.noCondition
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -37,16 +39,32 @@ class TestItemRepositoryImpl(
 
     // --- TestItem ---
     override suspend fun save(entity: TestItem): TestItem = itemDataRepo.save(entity)
-    override suspend fun findById(id: String): TestItem? = itemDataRepo.findById(id)
-    override suspend fun deleteById(id: String) = itemDataRepo.deleteById(id)
-    override suspend fun findAll(): Flow<TestItem> = itemDataRepo.findAll()
+    override suspend fun findById(tstCd: String): TestItem? = itemDataRepo.findById(tstCd)
 
-    override suspend fun findByLargeCateCd(code: String): Flow<TestItem> {
-        val table = BtsItem.BTS_ITEM
+    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItem> {
+        val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
+        val tstItem = BtsItem.BTS_ITEM
+
+        var condition = noCondition()
+
+        searchParam.tstLargeCateCd?.let {
+            condition = condition.and(tstItem.TST_LARGE_CATE_CD.eq(it))
+        }
+        searchParam.tstMediumCateCd?.let {
+            condition = condition.and(tstItem.TST_MEDIUM_CATE_CD.eq(it))
+        }
+        searchParam.useYn?.let {
+            condition = condition.and(tstItem.USE_YN.eq(it))
+        }
+        searchParam.deptCd?.let {
+            condition = condition.and(deptTestItem.DEPT_CD.eq(it))
+        }
+
         val query = dslContext
-            .select(table.fields().toList())
-            .from(table)
-            .where(table.TST_LARGE_CATE_CD.eq(code))
+            .select(tstItem.fields().toList())
+            .from(tstItem)
+            .join(deptTestItem).on(tstItem.TST_CD.eq(deptTestItem.TST_CD))
+            .where(condition)
 
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value: Any? ->
@@ -94,10 +112,10 @@ class TestItemRepositoryImpl(
 
     // --- TestItemSpecimen ---
     override suspend fun saveSpecimen(entity: TestItemSpecimen): TestItemSpecimen = specimenDataRepo.save(entity)
-    override suspend fun findSpecimenById(id: String): TestItemSpecimen? = specimenDataRepo.findById(id)
+    override suspend fun findSpecimenById(spcmId: String): TestItemSpecimen? = specimenDataRepo.findById(spcmId)
     override suspend fun deleteSpecimenById(id: String) = specimenDataRepo.deleteById(id)
 
-    override suspend fun findSpecimensByTestCd(tstCd: String): Flow<TestItemSpecimen> {
+    override fun findSpecimensByTestCd(tstCd: String): Flow<TestItemSpecimen> {
         val table = BtsSpcm.BTS_SPCM
         val query = dslContext
             .select(table.fields().toList())

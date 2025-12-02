@@ -30,28 +30,28 @@ class TestReferenceController(
     }
 
     @Operation(summary = "검사 항목 조회", description = "ID로 검사 항목을 조회합니다")
-    @GetMapping("/api/bbs/tst-ref/{id}")
-    fun getReference(@PathVariable id: String): Mono<TestReferenceResponse> = mono {
-        useCase.getReference(id)
+    @GetMapping("/api/bbs/tst-ref/{refCd}")
+    fun getReference(@PathVariable refCd: String): Mono<TestReferenceResponse> = mono {
+        useCase.getReference(refCd)
     }
 
     @Operation(summary = "검사 항목 수정", description = "검사 항목 정보를 수정합니다")
-    @PutMapping("/api/bbs/tst-ref/{id}")
+    @PutMapping("/api/bbs/tst-ref/{refCd}")
     fun updateReference(
-        @PathVariable id: String,
+        @PathVariable refCd: String,
         @RequestBody request: TestReferenceUpdateRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<TestReferenceResponse> = mono {
-        useCase.updateReference(id, request, auth.adminId)
+        useCase.updateReference(refCd, request, auth.adminId)
     }
 
     @Operation(summary = "검사 항목 삭제", description = "검사 항목을 삭제합니다")
-    @DeleteMapping("/api/bbs/tst-ref/{id}")
+    @DeleteMapping("/api/bbs/tst-ref/{refCd}")
     fun deleteReference(
-        @PathVariable id: String,
+        @PathVariable refCd: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<Void> = mono {
-        useCase.deleteReference(id, auth.adminId)
+        useCase.deleteReference(refCd, auth.adminId)
         null
     }
 
@@ -75,28 +75,28 @@ class TestReferenceController(
     }
 
     @Operation(summary = "검사 항목 그룹 조회")
-    @GetMapping("/api/bbs/tst-ref-group/{id}")
-    fun getGroup(@PathVariable id: String): Mono<TestReferenceGroupResponse> = mono {
-        useCase.getGroup(id)
+    @GetMapping("/api/bbs/tst-ref-group/{refGroupCd}")
+    fun getGroup(@PathVariable refGroupCd: String): Mono<TestReferenceGroupResponse> = mono {
+        useCase.getGroup(refGroupCd)
     }
 
     @Operation(summary = "검사 항목 그룹 수정")
-    @PutMapping("/api/bbs/tst-ref-group/{id}")
+    @PutMapping("/api/bbs/tst-ref-group/{refGroupCd}")
     fun updateGroup(
-        @PathVariable id: String,
+        @PathVariable refGroupCd: String,
         @RequestBody request: TestReferenceGroupUpdateRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<TestReferenceGroupResponse> = mono {
-        useCase.updateGroup(id, request, auth.adminId)
+        useCase.updateGroup(refGroupCd, request, auth.adminId)
     }
 
     @Operation(summary = "검사 항목 그룹 삭제")
-    @DeleteMapping("/api/bbs/tst-ref-group/{id}")
+    @DeleteMapping("/api/bbs/tst-ref-group/{refGroupCd}")
     fun deleteGroup(
-        @PathVariable id: String,
+        @PathVariable refGroupCd: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<Void> = mono {
-        useCase.deleteGroup(id, auth.adminId)
+        useCase.deleteGroup(refGroupCd, auth.adminId)
         null
     }
 
@@ -120,36 +120,33 @@ class TestReferenceController(
     }
 
     @Operation(summary = "검사 항목 그룹 항목 조회")
-    @GetMapping("/api/bbs/tst-ref-group-item/{id}")
-    fun getGroupItem(@PathVariable id: String): Mono<TestReferenceGroupItemResponse> = mono {
-        useCase.getGroupItem(id)
+    @GetMapping("/api/bbs/tst-ref-group-item/{tstRefGroupItemId}")
+    fun getGroupItem(@PathVariable tstRefGroupItemId: String): Mono<TestReferenceGroupItemResponse> = mono {
+        useCase.getGroupItem(tstRefGroupItemId)
     }
 
     @Operation(summary = "검사 항목 그룹 항목 수정")
-    @PutMapping("/api/bbs/tst-ref-group-item/{id}")
+    @PutMapping("/api/bbs/tst-ref-group-item/{tstRefGroupItemId}")
     fun updateGroupItem(
-        @PathVariable id: String,
+        @PathVariable tstRefGroupItemId: String,
         @RequestBody request: TestReferenceGroupItemUpdateRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<TestReferenceGroupItemResponse> = mono {
-        useCase.updateGroupItem(id, request, auth.adminId)
+        useCase.updateGroupItem(tstRefGroupItemId, request, auth.adminId)
     }
 
     @Operation(summary = "검사 항목 그룹 항목 삭제")
-    @DeleteMapping("/api/bbs/tst-ref-group-item/{id}")
+    @DeleteMapping("/api/bbs/tst-ref-group-item/{tstRefGroupItemId}")
     fun deleteGroupItem(
-        @PathVariable id: String,
+        @PathVariable tstRefGroupItemId: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<Void> = mono {
-        useCase.deleteGroupItem(id, auth.adminId)
+        useCase.deleteGroupItem(tstRefGroupItemId, auth.adminId)
         null
     }
 
     @Operation(summary = "검사 항목 그룹 항목 목록 조회 (그룹코드별)")
-    @GetMapping("/api/bbs/tst-ref-group-item/by-group/{groupCd}")
-    fun getGroupItemsByGroup(@PathVariable groupCd: String): Flow<TestReferenceGroupItemResponse> {
-        return kotlinx.coroutines.flow.flow {
-            useCase.getGroupItemsByGroup(groupCd).collect { emit(it) }
-        }
-    }
+    @GetMapping("/api/bbs/tst-ref-group-item")
+    fun getGroupItemsByGroup(@RequestParam refGroupCd: String): Flow<TestReferenceGroupItemResponse> =
+        useCase.getGroupItemsByGroup(refGroupCd)
 }
