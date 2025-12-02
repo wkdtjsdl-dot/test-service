@@ -2,6 +2,7 @@ package com.idrsys.ailis.tst.domain.model
 
 import com.idrsys.ailis.tst.domain.command.StandardChargeCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemGeneCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemSpecimenCreateCommand
@@ -716,6 +717,22 @@ class TestItemGene(
     override fun getId(): String? = itemGeneId
 
     override fun isNew(): Boolean = _isNew
+
+    companion object {
+        fun create(
+            command: TestItemGeneCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): TestItemGene {
+            return TestItemGene(
+                itemGeneId = null,
+                tstCd = command.tstCd,
+                geneCd = command.geneCd,
+                creator = creator,
+                createDtime = now
+            ).apply { setAsNew() }
+        }
+    }
 }
 
 @Table("tst_scm.bts_item_estl_doc")

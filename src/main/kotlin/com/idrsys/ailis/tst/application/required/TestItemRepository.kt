@@ -5,6 +5,7 @@ import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
+import com.idrsys.ailis.tst.domain.model.TestItemGene
 import kotlinx.coroutines.flow.Flow
 
 interface TestItemRepository {
@@ -30,4 +31,9 @@ interface TestItemRepository {
     suspend fun findRefItemById(refItemId: String): TestItemRefItem?
     suspend fun deleteRefItemById(refItemId: String)
     fun findRefItemsByTstCd(tstCd: String): Flow<TestItemRefItem>
+
+    // --- TestItemGene ---
+    suspend fun saveGene(entity: TestItemGene): TestItemGene
+    suspend fun deleteGeneById(itemGeneId: String)
+    fun findGenesByTestCd(tstCd: String): Flow<TestItemGene>
 }

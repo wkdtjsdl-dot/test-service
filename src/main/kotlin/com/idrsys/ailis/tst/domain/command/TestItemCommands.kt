@@ -65,3 +65,8 @@ data class TestItemUpdateCommand(
     val insuCd: String,
     val insuCateNo: String
 )
+
+data class TestItemGeneCreateCommand(
+    val tstCd: String,
+    val geneCd: String
+)

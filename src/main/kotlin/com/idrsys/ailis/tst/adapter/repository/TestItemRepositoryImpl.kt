@@ -6,11 +6,13 @@ import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
+import com.idrsys.ailis.tst.domain.model.TestItemGene
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsStndCharge
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsSpcm
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsRefItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemGene
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
@@ -34,11 +36,15 @@ interface TestItemSpecimenDataRepository : CoroutineCrudRepository<TestItemSpeci
 interface TestItemRefItemDataRepository : CoroutineCrudRepository<TestItemRefItem, String>
 
 @Repository
+interface TestItemGeneDataRepository : CoroutineCrudRepository<TestItemGene, String>
+
+@Repository
 class TestItemRepositoryImpl(
     private val itemDataRepo: TestItemDataRepository,
     private val chargeDataRepo: StandardChargeDataRepository,
     private val specimenDataRepo: TestItemSpecimenDataRepository,
     private val refItemDataRepo: TestItemRefItemDataRepository,
+    private val geneDataRepo: TestItemGeneDataRepository,
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient
 ) : TestItemRepository {
@@ -274,6 +280,43 @@ class TestItemRepositoryImpl(
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String?,
             updateDetime = row["update_detime"] as LocalDateTime?
+        )
+    }
+
+    // --- TestItemGene ---
+    override suspend fun saveGene(entity: TestItemGene): TestItemGene = geneDataRepo.save(entity)
+    override suspend fun deleteGeneById(itemGeneId: String) = geneDataRepo.deleteById(itemGeneId)
+
+    override fun findGenesByTestCd(tstCd: String): Flow<TestItemGene> {
+        val table = BtsItemGene.BTS_ITEM_GENE
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(table.TST_CD.eq(tstCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestItemGene(row) }
+            .asFlow()
+    }
+
+    private fun toTestItemGene(row: Map<String, Any>): TestItemGene {
+        return TestItemGene(
+            itemGeneId = row["item_gene_id"] as String?,
+            tstCd = row["tst_cd"] as String,
+            geneCd = row["gene_cd"] as String,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime
         )
     }
 }

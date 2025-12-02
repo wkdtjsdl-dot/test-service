@@ -13,6 +13,7 @@ import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
+import com.idrsys.ailis.tst.domain.model.TestItemGene
 
 @Service
 @Transactional
@@ -126,5 +127,23 @@ class TestItemService(
 
     override fun getRefItemsByTstCd(tstCd: String): Flow<TestItemRefItemResponse> {
         return repository.findRefItemsByTstCd(tstCd).map { mapper.toResponse(it) }
+    }
+
+    // --- TestItemGene ---
+
+    override suspend fun registerGene(request: TestItemGeneRegisterRequest, adminId: String): TestItemGeneResponse {
+        val command = commandMapper.toCreateCommand(request)
+        val now = java.time.LocalDateTime.now()
+        val domain = TestItemGene.create(command, adminId, now)
+        val saved = repository.saveGene(domain)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun deleteGene(itemGeneId: String, adminId: String) {
+        repository.deleteGeneById(itemGeneId)
+    }
+
+    override fun getGenesByTest(tstCd: String): Flow<TestItemGeneResponse> {
+        return repository.findGenesByTestCd(tstCd).map { mapper.toResponse(it) }
     }
 }

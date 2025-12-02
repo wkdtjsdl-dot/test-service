@@ -160,4 +160,30 @@ class TestItemController(
     @GetMapping("/api/bts/ref-item")
     fun getRefItemsByTstCd(@RequestParam tstCd: String): Flow<TestItemRefItemResponse> =
         useCase.getRefItemsByTstCd(tstCd)
+
+    // --- TestItemGene ---
+
+    @Operation(summary = "검사 항목 유전자 등록")
+    @PostMapping("/api/bts/item-gene")
+    fun registerGene(
+        @RequestBody request: TestItemGeneRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemGeneResponse> = mono {
+        useCase.registerGene(request, auth.adminId)
+    }
+
+    @Operation(summary = "검사 항목 유전자 삭제")
+    @DeleteMapping("/api/bts/item-gene/{itemGeneId}")
+    fun deleteGene(
+        @PathVariable itemGeneId: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteGene(itemGeneId, auth.adminId)
+        null
+    }
+
+    @Operation(summary = "검사 항목 유전자 목록 조회 (검사코드별)")
+    @GetMapping("/api/bts/item-gene")
+    fun getGenesByTest(@RequestParam tstCd: String): Flow<TestItemGeneResponse> =
+        useCase.getGenesByTest(tstCd)
 }

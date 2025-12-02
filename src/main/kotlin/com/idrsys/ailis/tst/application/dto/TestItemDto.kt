@@ -230,3 +230,18 @@ data class TestItemRefItemResponse(
     val updater: String?,
     val updateDetime: LocalDateTime?
 )
+
+// --- Test Item Gene ---
+
+data class TestItemGeneRegisterRequest(
+    val tstCd: String,
+    val geneCd: String
+)
+
+data class TestItemGeneResponse(
+    val itemGeneId: String,
+    val tstCd: String,
+    val geneCd: String,
+    val creator: String,
+    val createDtime: LocalDateTime
+)

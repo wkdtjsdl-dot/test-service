@@ -28,4 +28,9 @@ interface TestItemUseCase {
     suspend fun updateRefItem(refItemId: String, request: TestItemRefItemUpdateRequest, adminId: String): TestItemRefItemResponse
     suspend fun deleteRefItem(refItemId: String, adminId: String)
     fun getRefItemsByTstCd(tstCd: String): Flow<TestItemRefItemResponse>
+
+    // --- TestItemGene ---
+    suspend fun registerGene(request: TestItemGeneRegisterRequest, adminId: String): TestItemGeneResponse
+    suspend fun deleteGene(itemGeneId: String, adminId: String)
+    fun getGenesByTest(tstCd: String): Flow<TestItemGeneResponse>
 }
