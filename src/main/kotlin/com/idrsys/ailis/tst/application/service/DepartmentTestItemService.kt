@@ -139,7 +139,7 @@ class DepartmentTestItemService(
         repository.deleteTestItemById(id)
     }
 
-    override suspend fun getTestItemsByDept(searchParam: DepartmentTestItemSearchParam): Flow<DepartmentTestItemResponse> {
-        return repository.findTestItemsByDeptCd(searchParam).map { mapper.toResponse(it) }
+    override suspend fun getTestItemsByDept(searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse> {
+        return repository.findTestItemsByDeptCd(searchParam)
     }
 }

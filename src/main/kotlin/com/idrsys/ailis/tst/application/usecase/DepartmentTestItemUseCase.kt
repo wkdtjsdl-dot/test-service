@@ -30,5 +30,5 @@ interface DepartmentTestItemUseCase {
     suspend fun getTestItem(id: String): DepartmentTestItemResponse
     suspend fun updateTestItem(id: String, request: DepartmentTestItemUpdateRequest, adminId: String): DepartmentTestItemResponse
     suspend fun deleteTestItem(id: String, adminId: String)
-    suspend fun getTestItemsByDept(searchParam: DepartmentTestItemSearchParam): Flow<DepartmentTestItemResponse>
+    suspend fun getTestItemsByDept(searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse>
 }
