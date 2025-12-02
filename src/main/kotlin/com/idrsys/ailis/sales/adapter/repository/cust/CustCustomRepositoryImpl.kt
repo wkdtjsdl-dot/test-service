@@ -89,7 +89,7 @@ class CustCustomRepositoryImpl(
                 !searchParam.cntrEndEndDt.isNullOrBlank() ||
                 !searchParam.recntrMonth.isNullOrBlank()
 
-        val needsSalsPicInfoJoin = !searchParam.empUserId.isNullOrBlank()
+        val needsSalsPicInfoJoin = !searchParam.empUserId.isNullOrBlank() || searchParam.empUserIds.isNotEmpty()
 
         var queryPart = if (needsContractJoin || needsSalsPicInfoJoin) {
             dslContext.select(countDistinct(SCS_CUST_MST.CUST_MST_ID))
@@ -173,6 +173,7 @@ class CustCustomRepositoryImpl(
         }
 
         searchParam.empUserId?.takeIf { it.isNotBlank() }?.let { conds += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(it) }
+        searchParam.empUserIds.takeIf { it.isNotEmpty() }?.let { conds += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.`in`(it) }
 
         return conds
     }

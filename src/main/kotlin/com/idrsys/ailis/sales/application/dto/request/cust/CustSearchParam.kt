@@ -9,7 +9,9 @@ data class CustSearchParam(
     val custStatCd: String? = null, // 고객상태코드
     val regStartDt: String? = null, // 등록일시 시작일
     val regEndDt: String? = null, // 등록일시 종료일
-    val empUserId: String? = null, // 자동완성 선택만 받음, 담당사원 ID
+    val empUserIdNm: String? = null, // 담당사원 ID/명 사용자 입력값 or 자동완성 선택시 담당사원명
+    val empUserId: String? = null, // 자동완성 선택시 담당사원 ID
+    val empUserIds: List<String> = emptyList(),
     val custDivCd: String? = null, // 고객구분코드
     val asrtCd: String? = null,
     val medicalSubj: String? = null,

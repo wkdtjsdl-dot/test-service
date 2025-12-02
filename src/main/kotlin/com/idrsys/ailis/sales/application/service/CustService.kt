@@ -38,12 +38,22 @@ class CustService(
     private val hospitalDataService: HospitalDataService
 ) : CustUseCase {
     override suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable): Page<CustListResponse> {
-        val total = custCustomRepository.countCusts(searchParam)
+
+        var finalSearchParam = searchParam
+        val (deptNameById, userNameById) = fetchLookupMaps()
+
+        if (!searchParam.empUserIdNm.isNullOrBlank()) {
+            val keyword = searchParam.empUserIdNm
+            val userIds = userNameById.entries
+                .filter { it.value.contains(keyword, ignoreCase = true) || it.key.contains(keyword, ignoreCase = true) }
+                .map { it.key }
+            finalSearchParam = searchParam.copy(empUserIds = userIds)
+        }
+
+        val total = custCustomRepository.countCusts(finalSearchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(searchParam, pageable).toList()
-
-        val (deptNameById, userNameById) = fetchLookupMaps()
+        val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(finalSearchParam, pageable).toList()
 
         val responses = custsFromRepo.map { custWithSalsPicInfo ->
             val initialResponse = custMapper.toListResponse(custWithSalsPicInfo)
@@ -53,10 +63,20 @@ class CustService(
         return PageImpl(responses, pageable, total)
     }
 
-    override suspend fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> { // Make it suspend
-        val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(searchParam,Pageable.unpaged())
+    override suspend fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> {
+        var finalSearchParam = searchParam
 
         val (deptNameById, userNameById) = fetchLookupMaps()
+
+        if (!searchParam.empUserIdNm.isNullOrBlank()) {
+            val keyword = searchParam.empUserIdNm
+            val userIds = userNameById.entries
+                .filter { it.value.contains(keyword, ignoreCase = true) || it.key.contains(keyword, ignoreCase = true) }
+                .map { it.key }
+            finalSearchParam = searchParam.copy(empUserIds = userIds)
+        }
+
+        val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(finalSearchParam, Pageable.unpaged())
 
         return custsFromRepo
             .map(custMapper::toListResponse) // Map to CustListResponse first
