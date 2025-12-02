@@ -75,7 +75,6 @@ class DepartmentTestItemRepositoryImpl(
             .all()
             .map { row -> toDepartmentGroupItem(row) }
             .asFlow()
-            .map { r: Record -> r.into(DepartmentGroupItem::class.java) }
     }
 
     // --- DepartmentGroupItemTest ---
@@ -104,7 +103,6 @@ class DepartmentTestItemRepositoryImpl(
             .all()
             .map { row -> toDepartmentGroupItemTest(row) }
             .asFlow()
-            .map { r: Record -> r.into(DepartmentGroupItemTest::class.java) }
     }
 
     // --- DepartmentTestItem ---
