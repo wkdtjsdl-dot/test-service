@@ -119,3 +119,15 @@ data class DepartmentTestItemResponse(
     val updater: String,
     val updateDtime: LocalDateTime
 )
+
+data class DeptTestItemCategoryResponse(
+    val tstLargeCateCd: String,
+    val tstMediumCateCd: String,
+    val deptTstItemId: String,
+    val deptCd: String,
+    val tstCd: String,
+    val danDivCd: String,
+    val tstDayweek: String,
+    val tstTatday: Int,
+    val deptTstDesc: String?,
+)

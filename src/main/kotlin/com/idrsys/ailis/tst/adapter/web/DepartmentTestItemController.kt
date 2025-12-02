@@ -184,7 +184,7 @@ class DepartmentTestItemController(
 
     @Operation(summary = "부서별 검사 항목 목록 조회 (부서코드별)")
     @GetMapping("/api/bbs/dept-tst-item")
-    fun getTestItemsByDept(@ParameterObject searchParam: DepartmentTestItemSearchParam): Flow<DepartmentTestItemResponse> {
+    fun getTestItemsByDept(@ParameterObject searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse> {
         return kotlinx.coroutines.flow.flow {
             useCase.getTestItemsByDept(searchParam).collect { emit(it) }
         }
