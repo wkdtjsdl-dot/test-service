@@ -118,4 +118,46 @@ class TestItemController(
     @GetMapping("/api/bts/spcm")
     fun getSpecimensByTest(@RequestParam tstCd: String): Flow<TestItemSpecimenResponse> =
         useCase.getSpecimensByTest(tstCd)
+
+    // --- TestItemRefItem ---
+
+    @Operation(summary = "검사 항목 참조항목 등록")
+    @PostMapping("/api/bts/ref-item")
+    fun registerRefItem(
+        @RequestBody request: TestItemRefItemRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemRefItemResponse> = mono {
+        useCase.registerRefItem(request, auth.adminId)
+    }
+
+    @Operation(summary = "검사 항목 참조항목 조회")
+    @GetMapping("/api/bts/ref-item/{refItemId}")
+    fun getRefItem(@PathVariable refItemId: String): Mono<TestItemRefItemResponse> = mono {
+        useCase.getRefItem(refItemId)
+    }
+
+    @Operation(summary = "검사 항목 참조항목 수정")
+    @PutMapping("/api/bts/ref-item/{refItemId}")
+    fun updateRefItem(
+        @PathVariable refItemId: String,
+        @RequestBody request: TestItemRefItemUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemRefItemResponse> = mono {
+        useCase.updateRefItem(refItemId, request, auth.adminId)
+    }
+
+    @Operation(summary = "검사 항목 참조항목 삭제")
+    @DeleteMapping("/api/bts/ref-item/{refItemId}")
+    fun deleteRefItem(
+        @PathVariable refItemId: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteRefItem(refItemId, auth.adminId)
+        null
+    }
+
+    @Operation(summary = "검사 항목 참조항목 목록 조회 (검사코드별)")
+    @GetMapping("/api/bts/ref-item")
+    fun getRefItemsByTstCd(@RequestParam tstCd: String): Flow<TestItemRefItemResponse> =
+        useCase.getRefItemsByTstCd(tstCd)
 }

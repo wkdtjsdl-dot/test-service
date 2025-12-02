@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
+import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 
 @Service
 @Transactional
@@ -93,5 +94,37 @@ class TestItemService(
 
     override fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenResponse> {
         return repository.findSpecimensByTestCd(tstCd).map { mapper.toResponse(it) }
+    }
+
+    // --- TestItemRefItem ---
+
+    override suspend fun registerRefItem(request: TestItemRefItemRegisterRequest, adminId: String): TestItemRefItemResponse {
+        val command = commandMapper.toCreateCommand(request)
+        val now = java.time.LocalDateTime.now()
+        val domain = TestItemRefItem.create(command, adminId, now)
+        val saved = repository.saveRefItem(domain)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun getRefItem(refItemId: String): TestItemRefItemResponse {
+        val domain = repository.findRefItemById(refItemId) ?: throw RuntimeException("TestItemRefItem not found with id: $refItemId")
+        return mapper.toResponse(domain)
+    }
+
+    override suspend fun updateRefItem(refItemId: String, request: TestItemRefItemUpdateRequest, adminId: String): TestItemRefItemResponse {
+        val existing = repository.findRefItemById(refItemId) ?: throw RuntimeException("TestItemRefItem not found with id: $refItemId")
+        val command = commandMapper.toUpdateCommand(request)
+        val now = java.time.LocalDateTime.now()
+        existing.update(command, adminId, now)
+        val saved = repository.saveRefItem(existing)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun deleteRefItem(refItemId: String, adminId: String) {
+        repository.deleteRefItemById(refItemId)
+    }
+
+    override fun getRefItemsByTstCd(tstCd: String): Flow<TestItemRefItemResponse> {
+        return repository.findRefItemsByTstCd(tstCd).map { mapper.toResponse(it) }
     }
 }

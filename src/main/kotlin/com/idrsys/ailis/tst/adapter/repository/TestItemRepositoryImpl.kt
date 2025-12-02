@@ -5,10 +5,12 @@ import com.idrsys.ailis.tst.application.required.TestItemRepository
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
+import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsStndCharge
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsSpcm
+import com.idrsys.ailis.tst.generated.jooq.tables.BtsRefItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
@@ -29,10 +31,14 @@ interface StandardChargeDataRepository : CoroutineCrudRepository<StandardCharge,
 interface TestItemSpecimenDataRepository : CoroutineCrudRepository<TestItemSpecimen, String>
 
 @Repository
+interface TestItemRefItemDataRepository : CoroutineCrudRepository<TestItemRefItem, String>
+
+@Repository
 class TestItemRepositoryImpl(
     private val itemDataRepo: TestItemDataRepository,
     private val chargeDataRepo: StandardChargeDataRepository,
     private val specimenDataRepo: TestItemSpecimenDataRepository,
+    private val refItemDataRepo: TestItemRefItemDataRepository,
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient
 ) : TestItemRepository {
@@ -222,6 +228,48 @@ class TestItemRepositoryImpl(
             caution = row["caution"] as String,
             engCaution = row["eng_caution"] as String,
             spcmCntnCd = row["spcm_cntn_cd"] as String,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String?,
+            updateDetime = row["update_detime"] as LocalDateTime?
+        )
+    }
+
+    // --- TestItemRefItem ---
+    override suspend fun saveRefItem(entity: TestItemRefItem): TestItemRefItem = refItemDataRepo.save(entity)
+    override suspend fun findRefItemById(refItemId: String): TestItemRefItem? = refItemDataRepo.findById(refItemId)
+    override suspend fun deleteRefItemById(refItemId: String) = refItemDataRepo.deleteById(refItemId)
+
+    override fun findRefItemsByTstCd(tstCd: String): Flow<TestItemRefItem> {
+        val table = BtsRefItem.BTS_REF_ITEM
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(table.TST_CD.eq(tstCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestItemRefItem(row) }
+            .asFlow()
+    }
+
+    private fun toTestItemRefItem(row: Map<String, Any>): TestItemRefItem {
+        return TestItemRefItem(
+            refItemId = row["ref_item_id"] as String?,
+            tstCd = row["tst_cd"] as String,
+            refCd = row["ref_cd"] as String,
+            estlYn = row["estl_yn"] as Boolean,
+            sortOrder = (row["sort_order"] as Number).toInt(),
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String?,

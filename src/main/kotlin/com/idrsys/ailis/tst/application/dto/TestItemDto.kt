@@ -204,3 +204,29 @@ data class TestItemSpecimenResponse(
     val updater: String?,
     val updateDetime: LocalDateTime?
 )
+
+// --- Test Item Ref Item ---
+
+data class TestItemRefItemRegisterRequest(
+    val tstCd: String,
+    val refCd: String,
+    val estlYn: Boolean,
+    val sortOrder: Int
+)
+
+data class TestItemRefItemUpdateRequest(
+    val estlYn: Boolean,
+    val sortOrder: Int
+)
+
+data class TestItemRefItemResponse(
+    val refItemId: String,
+    val tstCd: String,
+    val refCd: String,
+    val estlYn: Boolean,
+    val sortOrder: Int,
+    val creator: String,
+    val createDtime: LocalDateTime,
+    val updater: String?,
+    val updateDetime: LocalDateTime?
+)

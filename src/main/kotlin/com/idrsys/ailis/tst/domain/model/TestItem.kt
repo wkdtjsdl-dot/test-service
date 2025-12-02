@@ -2,6 +2,8 @@ package com.idrsys.ailis.tst.domain.model
 
 import com.idrsys.ailis.tst.domain.command.StandardChargeCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemRefItemCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemRefItemUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemSpecimenCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemUpdateCommand
 import org.springframework.data.annotation.Id
@@ -642,6 +644,37 @@ class TestItemRefItem(
     override fun getId(): String? = refItemId
 
     override fun isNew(): Boolean = _isNew
+
+    fun update(
+        command: TestItemRefItemUpdateCommand,
+        updater: String,
+        updateDetime: LocalDateTime
+    ) {
+        this.estlYn = command.estlYn
+        this.sortOrder = command.sortOrder
+        this.updater = updater
+        this.updateDetime = updateDetime
+    }
+
+    companion object {
+        fun create(
+            command: TestItemRefItemCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): TestItemRefItem {
+            return TestItemRefItem(
+                refItemId = null,
+                tstCd = command.tstCd,
+                refCd = command.refCd,
+                estlYn = command.estlYn,
+                sortOrder = command.sortOrder,
+                creator = creator,
+                createDtime = now,
+                updater = null,
+                updateDetime = null
+            ).apply { setAsNew() }
+        }
+    }
 }
 
 @Table("tst_scm.bts_item_gene")
