@@ -105,7 +105,7 @@ class CustLogsService(
             return emptyList()
         }
 
-        return logs.windowed(size = 2, step = 1).map { (oldLog, newLog) ->
+        return logs.windowed(size = 2, step = 1).map { (newLog, oldLog) ->
             val diffString = generateDiffString(oldLog, newLog)
             custLogsMapper.toEditResponse(oldLog, newLog, diffString)
         }
