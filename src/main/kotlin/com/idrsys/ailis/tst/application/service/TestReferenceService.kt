@@ -121,7 +121,7 @@ class TestReferenceService(
         repository.deleteGroupItemById(id)
     }
 
-    override suspend fun getGroupItemsByGroup(groupCd: String): Flow<TestReferenceGroupItemResponse> {
+    override fun getGroupItemsByGroup(groupCd: String): Flow<TestReferenceGroupItemResponse> {
         return repository.findGroupItemsByGroupCd(groupCd).map { mapper.toResponse(it) }
     }
 }

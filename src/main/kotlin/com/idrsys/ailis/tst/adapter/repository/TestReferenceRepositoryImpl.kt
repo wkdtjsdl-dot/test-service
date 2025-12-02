@@ -9,9 +9,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
-import org.jooq.Record
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 interface TestReferenceDataRepository : CoroutineCrudRepository<TestReference, String>
@@ -27,7 +28,8 @@ class TestReferenceRepositoryImpl(
     private val refDataRepo: TestReferenceDataRepository,
     private val groupDataRepo: TestReferenceGroupDataRepository,
     private val groupItemDataRepo: TestReferenceGroupItemDataRepository,
-    private val dslContext: DSLContext
+    private val dslContext: DSLContext,
+    private val databaseClient: DatabaseClient
 ) : TestReferenceRepository {
 
     // --- TestReference ---
@@ -46,15 +48,39 @@ class TestReferenceRepositoryImpl(
     override suspend fun saveGroupItem(entity: TestReferenceGroupItem): TestReferenceGroupItem = groupItemDataRepo.save(entity)
     override suspend fun findGroupItemById(id: String): TestReferenceGroupItem? = groupItemDataRepo.findById(id)
     override suspend fun deleteGroupItemById(id: String) = groupItemDataRepo.deleteById(id)
-    
-    override suspend fun findGroupItemsByGroupCd(groupCd: String): Flow<TestReferenceGroupItem> {
-        // Using jOOQ for custom query example, though simple findBy could be done with Spring Data too.
-        // Keeping consistent with established pattern of using jOOQ for non-PK lookups in this refactoring.
+
+    override fun findGroupItemsByGroupCd(groupCd: String): Flow<TestReferenceGroupItem> {
         val table = BbsTstRefGroupItem.BBS_TST_REF_GROUP_ITEM
-        return dslContext.select(table.fields().toList())
+        val query = dslContext.select(table.fields().toList())
             .from(table)
             .where(table.REF_GROUP_CD.eq(groupCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestReferenceGroupItem(row) }
             .asFlow()
-            .map { r: org.jooq.Record -> r.into(TestReferenceGroupItem::class.java) }
+    }
+
+    private fun toTestReferenceGroupItem(row: Map<String, Any>): TestReferenceGroupItem {
+        return TestReferenceGroupItem(
+            tstRefGroupItemId = row["tst_ref_group_item_id"] as String?,
+            refGroupCd = row["ref_group_cd"] as String,
+            refCd = row["ref_cd"] as String,
+            sortOrder = (row["sort_order"] as Number).toInt(),
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDetime = row["update_detime"] as LocalDateTime
+        )
     }
 }

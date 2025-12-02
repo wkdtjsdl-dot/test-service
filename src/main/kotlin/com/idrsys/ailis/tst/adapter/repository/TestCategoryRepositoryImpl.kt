@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -34,12 +35,17 @@ class TestCategoryRepositoryImpl(
         testCategoryDataRepository.deleteById(id)
     }
 
-    override fun findByLargeCateCd(largeCateCd: String): Flow<TestCategory> {
+    override fun findByLargeCateCd(largeCateCd: String, useYn: Boolean?): Flow<TestCategory> {
         val table = BbsTstCate.BBS_TST_CATE
+        val condition = if (useYn != null){
+            table.USE_YN.eq(useYn)
+        } else {
+            DSL.noCondition()
+        }
         val query = dslContext
             .select(table.fields().toList())
             .from(table)
-            .where(table.TST_LARGE_CATE_CD.eq(largeCateCd))
+            .where(table.TST_LARGE_CATE_CD.eq(largeCateCd)).and(condition)
             .orderBy(table.SORT_ORDER)
 
         var executeSpec = databaseClient.sql(query.sql)

@@ -10,5 +10,5 @@ interface TestCategoryRepository {
     suspend fun deleteById(id: String)
 
     // Custom Queries (Implemented with jOOQ)
-    fun findByLargeCateCd(largeCateCd: String): Flow<TestCategory>
+    fun findByLargeCateCd(largeCateCd: String, useYn: Boolean?): Flow<TestCategory>
 }

@@ -22,8 +22,8 @@ class TestCategoryService(
 ) : TestCategoryUseCase {
 
     @Transactional(readOnly = true)
-    override fun getCategoriesByLargeCategory(largeCateCd: String): Flow<TestCategoryResponse> {
-        return testCategoryRepository.findByLargeCateCd(largeCateCd)
+    override fun getCategoriesByLargeCategory(largeCateCd: String, useYn: Boolean?): Flow<TestCategoryResponse> {
+        return testCategoryRepository.findByLargeCateCd(largeCateCd, useYn)
             .map { testCategoryMapper.toResponse(it) }
     }
 
