@@ -126,6 +126,7 @@ data class DeptTestItemCategoryResponse(
     val deptTstItemId: String,
     val deptCd: String,
     val tstCd: String,
+    val tstNm: String,
     val danDivCd: String,
     val tstDayweek: String,
     val tstTatday: Int,
