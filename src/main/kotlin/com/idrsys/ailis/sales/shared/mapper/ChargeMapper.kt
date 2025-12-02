@@ -30,5 +30,11 @@ interface ChargeMapper {
     )
     fun toDomain(command: ChargeRegisterCommand, custChargeId: String, creator: String, now: LocalDateTime): Charge
 
+    @Mappings(
+        Mapping(target = "salesPics", ignore = true),
+        Mapping(target = "custNm", ignore = true),
+        Mapping(target = "bzoffiNm", ignore = true),
+        Mapping(target = "bzoffiCd", ignore = true)
+    )
     fun toResponse(charge: Charge): ChargeResponse
 }

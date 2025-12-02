@@ -11,8 +11,10 @@ import java.time.LocalDateTime
 @Mapper(componentModel = "spring")
 interface TestCodeMappingMapper {
 
+    @Mapping(target = "custNm", ignore = true)
     fun toResponse(dto: TestCodeMappingQuery): TestCodeMappingResponse
 
+    @Mapping(target = "custNm", ignore = true)
     fun toResponse(domain: CustTestCodeMapping): TestCodeMappingResponse
 
     @Mapping(target = "creator", source = "creator")

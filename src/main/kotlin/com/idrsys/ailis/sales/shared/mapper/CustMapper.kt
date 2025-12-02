@@ -36,10 +36,14 @@ interface CustMapper {
     fun toHistDomain(cust: Cust): CustMstHst
 
     @Mappings(
-        Mapping(target = "deptNm", ignore = true)
+        Mapping(target = "deptNm", ignore = true),
+        Mapping(target = "cntr", ignore = true)
     )
     fun toListResponse(model: CustWithSalsPicInfo): CustListResponse
 
+    @Mappings(
+        Mapping(target = "careInstNm", ignore = true)
+    )
     fun toDetailResponse(model: CustDetailInfo): CustResponse
 
     fun toCustCdNmAutoCompleteResponse(model: CustCdNmAutoCompleteInfo): CustCdNmAutoCompleteResponse
