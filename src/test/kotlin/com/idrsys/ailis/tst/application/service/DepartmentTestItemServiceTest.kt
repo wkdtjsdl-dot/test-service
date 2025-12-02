@@ -98,7 +98,7 @@ class DepartmentTestItemServiceTest {
     @Test
     fun `updateGroup should update and return response`() = runTest {
         // Given
-        val id = "uuid"
+        val deptGroupId = "uuid"
         val request = DepartmentGroupUpdateRequest(
             deptCd = "DEPT02",
             tstCateCd = "CATE02",
@@ -108,7 +108,7 @@ class DepartmentTestItemServiceTest {
             sortOrder = 2
         )
         val existing = DepartmentGroup(
-            deptGroupId = id,
+            deptGroupId = deptGroupId,
             deptCd = "DEPT01",
             tstCateCd = "CATE01",
             tstCateNm = "Category Name",
@@ -121,7 +121,7 @@ class DepartmentTestItemServiceTest {
             updateDtime = LocalDateTime.now()
         )
         val response = DepartmentGroupResponse(
-            deptGroupId = id,
+            deptGroupId = deptGroupId,
             deptCd = "DEPT02",
             tstCateCd = "CATE02",
             tstCateNm = "Updated Name",
@@ -143,13 +143,13 @@ class DepartmentTestItemServiceTest {
             sortOrder = 2
         )
 
-        `when`(repository.findGroupById(id)).thenReturn(existing)
+        `when`(repository.findGroupById(deptGroupId)).thenReturn(existing)
         `when`(commandMapper.toUpdateCommand(request)).thenReturn(command)
         `when`(repository.saveGroup(any())).thenReturn(existing)
         `when`(mapper.toResponse(existing)).thenReturn(response)
 
         // When
-        val result = service.updateGroup(id, request, "admin")
+        val result = service.updateGroup(deptGroupId, request, "admin")
 
         // Then
         assertEquals(response, result)
@@ -158,9 +158,9 @@ class DepartmentTestItemServiceTest {
     @Test
     fun `getGroup should return response`() = runTest {
         // Given
-        val id = "uuid"
+        val deptGroupId = "uuid"
         val domain = DepartmentGroup(
-            deptGroupId = id,
+            deptGroupId = deptGroupId,
             deptCd = "DEPT01",
             tstCateCd = "CATE01",
             tstCateNm = "Category Name",
@@ -173,7 +173,7 @@ class DepartmentTestItemServiceTest {
             updateDtime = LocalDateTime.now()
         )
         val response = DepartmentGroupResponse(
-            deptGroupId = id,
+            deptGroupId = deptGroupId,
             deptCd = "DEPT01",
             tstCateCd = "CATE01",
             tstCateNm = "Category Name",
@@ -186,11 +186,11 @@ class DepartmentTestItemServiceTest {
             updateDtime = LocalDateTime.now()
         )
 
-        `when`(repository.findGroupById(id)).thenReturn(domain)
+        `when`(repository.findGroupById(deptGroupId)).thenReturn(domain)
         `when`(mapper.toResponse(domain)).thenReturn(response)
 
         // When
-        val result = service.getGroup(id)
+        val result = service.getGroup(deptGroupId)
 
         // Then
         assertEquals(response, result)
@@ -199,13 +199,13 @@ class DepartmentTestItemServiceTest {
     @Test
     fun `deleteGroup should call repository delete`() = runTest {
         // Given
-        val id = "uuid"
+        val deptGroupId = "uuid"
 
         // When
-        service.deleteGroup(id, "admin")
+        service.deleteGroup(deptGroupId, "admin")
 
         // Then
-        Mockito.verify(repository).deleteGroupById(id)
+        Mockito.verify(repository).deleteGroupById(deptGroupId)
     }
 
     @Test

@@ -12,10 +12,8 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptGrpItmTst
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
-import org.jooq.Record
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -45,14 +43,14 @@ class DepartmentTestItemRepositoryImpl(
 
     // --- DepartmentGroup ---
     override suspend fun saveGroup(entity: DepartmentGroup): DepartmentGroup = groupDataRepo.save(entity)
-    override suspend fun findGroupById(id: String): DepartmentGroup? = groupDataRepo.findById(id)
-    override suspend fun deleteGroupById(id: String) = groupDataRepo.deleteById(id)
+    override suspend fun findGroupById(deptGroupId: String): DepartmentGroup? = groupDataRepo.findById(deptGroupId)
+    override suspend fun deleteGroupById(deptGroupId: String) = groupDataRepo.deleteById(deptGroupId)
     override suspend fun findAllGroups(): Flow<DepartmentGroup> = groupDataRepo.findAll()
 
     // --- DepartmentGroupItem ---
     override suspend fun saveGroupItem(entity: DepartmentGroupItem): DepartmentGroupItem = groupItemDataRepo.save(entity)
-    override suspend fun findGroupItemById(id: String): DepartmentGroupItem? = groupItemDataRepo.findById(id)
-    override suspend fun deleteGroupItemById(id: String) = groupItemDataRepo.deleteById(id)
+    override suspend fun findGroupItemById(deptGrpItmId: String): DepartmentGroupItem? = groupItemDataRepo.findById(deptGrpItmId)
+    override suspend fun deleteGroupItemById(deptGrpItmId: String) = groupItemDataRepo.deleteById(deptGrpItmId)
 
     override suspend fun findGroupItemsByDeptCd(deptCd: String): Flow<DepartmentGroupItem> {
         val table = BbsDeptGrpItm.BBS_DEPT_GRP_ITM
@@ -79,8 +77,7 @@ class DepartmentTestItemRepositoryImpl(
 
     // --- DepartmentGroupItemTest ---
     override suspend fun saveGroupItemTest(entity: DepartmentGroupItemTest): DepartmentGroupItemTest = groupItemTestDataRepo.save(entity)
-    override suspend fun findGroupItemTestById(id: String): DepartmentGroupItemTest? = groupItemTestDataRepo.findById(id)
-    override suspend fun deleteGroupItemTestById(id: String) = groupItemTestDataRepo.deleteById(id)
+    override suspend fun deleteGroupItemTestById(deptGrpItmTstId: String) = groupItemTestDataRepo.deleteById(deptGrpItmTstId)
 
     override suspend fun findGroupItemTestsByDeptCd(deptCd: String): Flow<DepartmentGroupItemTest> {
         val table = BbsDeptGrpItmTst.BBS_DEPT_GRP_ITM_TST
@@ -107,8 +104,8 @@ class DepartmentTestItemRepositoryImpl(
 
     // --- DepartmentTestItem ---
     override suspend fun saveTestItem(entity: DepartmentTestItem): DepartmentTestItem = testItemDataRepo.save(entity)
-    override suspend fun findTestItemById(id: String): DepartmentTestItem? = testItemDataRepo.findById(id)
-    override suspend fun deleteTestItemById(id: String) = testItemDataRepo.deleteById(id)
+    override suspend fun findTestItemById(deptTstItemId: String): DepartmentTestItem? = testItemDataRepo.findById(deptTstItemId)
+    override suspend fun deleteTestItemById(deptTstItemId: String) = testItemDataRepo.deleteById(deptTstItemId)
 
     override suspend fun findTestItemsByDeptCd(searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse> {
         val testItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM

@@ -32,28 +32,28 @@ class DepartmentTestItemController(
     }
 
     @Operation(summary = "부서별 그룹 조회")
-    @GetMapping("/api/bbs/dept-group/{id}")
-    fun getGroup(@PathVariable id: String): Mono<DepartmentGroupResponse> = mono {
-        useCase.getGroup(id)
+    @GetMapping("/api/bbs/dept-group/{deptGroupId}")
+    fun getGroup(@PathVariable deptGroupId: String): Mono<DepartmentGroupResponse> = mono {
+        useCase.getGroup(deptGroupId)
     }
 
     @Operation(summary = "부서별 그룹 수정")
-    @PutMapping("/api/bbs/dept-group/{id}")
+    @PutMapping("/api/bbs/dept-group/{deptGroupId}")
     fun updateGroup(
-        @PathVariable id: String,
+        @PathVariable deptGroupId: String,
         @RequestBody request: DepartmentGroupUpdateRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<DepartmentGroupResponse> = mono {
-        useCase.updateGroup(id, request, auth.adminId)
+        useCase.updateGroup(deptGroupId, request, auth.adminId)
     }
 
     @Operation(summary = "부서별 그룹 삭제")
-    @DeleteMapping("/api/bbs/dept-group/{id}")
+    @DeleteMapping("/api/bbs/dept-group/{deptGroupId}")
     fun deleteGroup(
-        @PathVariable id: String,
+        @PathVariable deptGroupId: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<Void> = mono {
-        useCase.deleteGroup(id, auth.adminId)
+        useCase.deleteGroup(deptGroupId, auth.adminId)
         null
     }
 
@@ -77,28 +77,28 @@ class DepartmentTestItemController(
     }
 
     @Operation(summary = "부서별 그룹 항목 조회")
-    @GetMapping("/api/bbs/dept-group-item/{id}")
-    fun getGroupItem(@PathVariable id: String): Mono<DepartmentGroupItemResponse> = mono {
-        useCase.getGroupItem(id)
+    @GetMapping("/api/bbs/dept-group-item/{deptGrpItmId}")
+    fun getGroupItem(@PathVariable deptGrpItmId: String): Mono<DepartmentGroupItemResponse> = mono {
+        useCase.getGroupItem(deptGrpItmId)
     }
 
     @Operation(summary = "부서별 그룹 항목 수정")
-    @PutMapping("/api/bbs/dept-group-item/{id}")
+    @PutMapping("/api/bbs/dept-group-item/{deptGrpItmId}")
     fun updateGroupItem(
-        @PathVariable id: String,
+        @PathVariable deptGrpItmId: String,
         @RequestBody request: DepartmentGroupItemUpdateRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<DepartmentGroupItemResponse> = mono {
-        useCase.updateGroupItem(id, request, auth.adminId)
+        useCase.updateGroupItem(deptGrpItmId, request, auth.adminId)
     }
 
     @Operation(summary = "부서별 그룹 항목 삭제")
-    @DeleteMapping("/api/bbs/dept-group-item/{id}")
+    @DeleteMapping("/api/bbs/dept-group-item/{deptGrpItmId}")
     fun deleteGroupItem(
-        @PathVariable id: String,
+        @PathVariable deptGrpItmId: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<Void> = mono {
-        useCase.deleteGroupItem(id, auth.adminId)
+        useCase.deleteGroupItem(deptGrpItmId, auth.adminId)
         null
     }
 
@@ -121,19 +121,13 @@ class DepartmentTestItemController(
         useCase.registerGroupItemTest(request, auth.adminId)
     }
 
-    @Operation(summary = "부서별 그룹 항목 검사 조회")
-    @GetMapping("/api/bts/dept-group-item-tst/{id}")
-    fun getGroupItemTest(@PathVariable id: String): Mono<DepartmentGroupItemTestResponse> = mono {
-        useCase.getGroupItemTest(id)
-    }
-
     @Operation(summary = "부서별 그룹 항목 검사 삭제")
-    @DeleteMapping("/api/bts/dept-group-item-tst/{id}")
+    @DeleteMapping("/api/bts/dept-group-item-tst/{deptGrpItmTstId}")
     fun deleteGroupItemTest(
-        @PathVariable id: String,
+        @PathVariable deptGrpItmTstId: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<Void> = mono {
-        useCase.deleteGroupItemTest(id, auth.adminId)
+        useCase.deleteGroupItemTest(deptGrpItmTstId, auth.adminId)
         null
     }
 
@@ -156,29 +150,23 @@ class DepartmentTestItemController(
         useCase.registerTestItem(request, auth.adminId)
     }
 
-    @Operation(summary = "부서별 검사 항목 조회")
-    @GetMapping("/api/bbs/dept-tst-item/{id}")
-    fun getTestItem(@PathVariable id: String): Mono<DepartmentTestItemResponse> = mono {
-        useCase.getTestItem(id)
-    }
-
     @Operation(summary = "부서별 검사 항목 수정")
-    @PutMapping("/api/bbs/dept-tst-item/{id}")
+    @PutMapping("/api/bbs/dept-tst-item/{deptTstItemId}")
     fun updateTestItem(
-        @PathVariable id: String,
+        @PathVariable deptTstItemId: String,
         @RequestBody request: DepartmentTestItemUpdateRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<DepartmentTestItemResponse> = mono {
-        useCase.updateTestItem(id, request, auth.adminId)
+        useCase.updateTestItem(deptTstItemId, request, auth.adminId)
     }
 
     @Operation(summary = "부서별 검사 항목 삭제")
-    @DeleteMapping("/api/bbs/dept-tst-item/{id}")
+    @DeleteMapping("/api/bbs/dept-tst-item/{deptTstItemId}")
     fun deleteTestItem(
-        @PathVariable id: String,
+        @PathVariable deptTstItemId: String,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Mono<Void> = mono {
-        useCase.deleteTestItem(id, auth.adminId)
+        useCase.deleteTestItem(deptTstItemId, auth.adminId)
         null
     }
 
