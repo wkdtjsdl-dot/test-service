@@ -2,6 +2,8 @@ package com.idrsys.ailis.tst.domain.model
 
 import com.idrsys.ailis.tst.domain.command.StandardChargeCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemEssentialDocCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemEssentialDocUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemGeneCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemUpdateCommand
@@ -741,7 +743,9 @@ class TestItemEssentialDoc(
     tstCd: String,
     docCd: String,
     creator: String,
-    createDtime: LocalDateTime
+    createDtime: LocalDateTime,
+    updater: String? = null,
+    updateDetime: LocalDateTime? = null
 ) : Persistable<String> {
 
     @Id
@@ -764,6 +768,14 @@ class TestItemEssentialDoc(
     var createDtime: LocalDateTime = createDtime
         private set
 
+    @Column("updater")
+    var updater: String? = updater
+        private set
+
+    @Column("update_detime")
+    var updateDetime: LocalDateTime? = updateDetime
+        private set
+
     @Transient
     private var _isNew: Boolean = false
 
@@ -771,7 +783,33 @@ class TestItemEssentialDoc(
         this._isNew = true
     }
 
+    fun update(
+        command: TestItemEssentialDocUpdateCommand,
+        updater: String,
+        now: LocalDateTime
+    ) {
+        this.docCd = command.docCd
+        this.updater = updater
+        this.updateDetime = now
+    }
+
     override fun getId(): String? = itemEstlDocId
 
     override fun isNew(): Boolean = _isNew
+
+    companion object {
+        fun create(
+            command: TestItemEssentialDocCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): TestItemEssentialDoc {
+            return TestItemEssentialDoc(
+                itemEstlDocId = null,
+                tstCd = command.tstCd,
+                docCd = command.docCd,
+                creator = creator,
+                createDtime = now
+            ).apply { setAsNew() }
+        }
+    }
 }

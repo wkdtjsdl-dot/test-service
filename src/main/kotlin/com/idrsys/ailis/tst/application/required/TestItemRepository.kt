@@ -3,6 +3,7 @@ package com.idrsys.ailis.tst.application.required
 import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
+import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
@@ -36,4 +37,10 @@ interface TestItemRepository {
     suspend fun saveGene(entity: TestItemGene): TestItemGene
     suspend fun deleteGeneById(itemGeneId: String)
     fun findGenesByTestCd(tstCd: String): Flow<TestItemGene>
+
+    // --- TestItemEssentialDoc ---
+    suspend fun saveEssentialDoc(entity: TestItemEssentialDoc): TestItemEssentialDoc
+    suspend fun findEssentialDocById(itemEstlDocId: String): TestItemEssentialDoc?
+    suspend fun deleteEssentialDocById(itemEstlDocId: String)
+    fun findEssentialDocsByTstCd(tstCd: String): Flow<TestItemEssentialDoc>
 }

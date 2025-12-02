@@ -4,11 +4,13 @@ import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
 import com.idrsys.ailis.tst.application.required.TestItemRepository
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
+import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemEstlDoc
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsStndCharge
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsSpcm
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsRefItem
@@ -39,12 +41,16 @@ interface TestItemRefItemDataRepository : CoroutineCrudRepository<TestItemRefIte
 interface TestItemGeneDataRepository : CoroutineCrudRepository<TestItemGene, String>
 
 @Repository
+interface TestItemEssentialDocDataRepository : CoroutineCrudRepository<TestItemEssentialDoc, String>
+
+@Repository
 class TestItemRepositoryImpl(
     private val itemDataRepo: TestItemDataRepository,
     private val chargeDataRepo: StandardChargeDataRepository,
     private val specimenDataRepo: TestItemSpecimenDataRepository,
     private val refItemDataRepo: TestItemRefItemDataRepository,
     private val geneDataRepo: TestItemGeneDataRepository,
+    private val essentialDocDataRepo: TestItemEssentialDocDataRepository,
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient
 ) : TestItemRepository {
@@ -317,6 +323,46 @@ class TestItemRepositoryImpl(
             geneCd = row["gene_cd"] as String,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime
+        )
+    }
+
+    // --- TestItemEssentialDoc ---
+    override suspend fun saveEssentialDoc(entity: TestItemEssentialDoc): TestItemEssentialDoc = essentialDocDataRepo.save(entity)
+    override suspend fun findEssentialDocById(itemEstlDocId: String): TestItemEssentialDoc? = essentialDocDataRepo.findById(itemEstlDocId)
+    override suspend fun deleteEssentialDocById(itemEstlDocId: String) = essentialDocDataRepo.deleteById(itemEstlDocId)
+
+    override fun findEssentialDocsByTstCd(tstCd: String): Flow<TestItemEssentialDoc> {
+        val table = BtsItemEstlDoc.BTS_ITEM_ESTL_DOC
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(table.TST_CD.eq(tstCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestItemEssentialDoc(row) }
+            .asFlow()
+    }
+
+    private fun toTestItemEssentialDoc(row: Map<String, Any>): TestItemEssentialDoc {
+        return TestItemEssentialDoc(
+            itemEstlDocId = row["item_estl_doc_id"] as String?,
+            tstCd = row["tst_cd"] as String,
+            docCd = row["doc_cd"] as String,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String?,
+            updateDetime = row["update_detime"] as LocalDateTime?
         )
     }
 }

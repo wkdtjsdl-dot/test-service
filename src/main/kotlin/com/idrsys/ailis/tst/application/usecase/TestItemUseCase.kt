@@ -33,4 +33,11 @@ interface TestItemUseCase {
     suspend fun registerGene(request: TestItemGeneRegisterRequest, adminId: String): TestItemGeneResponse
     suspend fun deleteGene(itemGeneId: String, adminId: String)
     fun getGenesByTest(tstCd: String): Flow<TestItemGeneResponse>
+
+    // --- TestItemEssentialDoc ---
+    suspend fun registerEssentialDoc(request: TestItemEssentialDocRegisterRequest, adminId: String): TestItemEssentialDocResponse
+    suspend fun getEssentialDoc(itemEstlDocId: String): TestItemEssentialDocResponse
+    suspend fun updateEssentialDoc(itemEstlDocId: String, request: TestItemEssentialDocUpdateRequest, adminId: String): TestItemEssentialDocResponse
+    suspend fun deleteEssentialDoc(itemEstlDocId: String, adminId: String)
+    fun getEssentialDocsByTest(tstCd: String): Flow<TestItemEssentialDocResponse>
 }

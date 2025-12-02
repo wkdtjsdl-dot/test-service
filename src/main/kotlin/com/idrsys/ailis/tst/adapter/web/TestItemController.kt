@@ -186,4 +186,46 @@ class TestItemController(
     @GetMapping("/api/bts/item-gene")
     fun getGenesByTest(@RequestParam tstCd: String): Flow<TestItemGeneResponse> =
         useCase.getGenesByTest(tstCd)
+
+    // --- TestItemEssentialDoc ---
+
+    @Operation(summary = "검사 항목 필수서류 등록")
+    @PostMapping("/api/bts/item-estl-doc")
+    fun registerEssentialDoc(
+        @RequestBody request: TestItemEssentialDocRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemEssentialDocResponse> = mono {
+        useCase.registerEssentialDoc(request, auth.adminId)
+    }
+
+    @Operation(summary = "검사 항목 필수서류 조회")
+    @GetMapping("/api/bts/item-estl-doc/{itemEstlDocId}")
+    fun getEssentialDoc(@PathVariable itemEstlDocId: String): Mono<TestItemEssentialDocResponse> = mono {
+        useCase.getEssentialDoc(itemEstlDocId)
+    }
+
+    @Operation(summary = "검사 항목 필수서류 수정")
+    @PutMapping("/api/bts/item-estl-doc/{itemEstlDocId}")
+    fun updateEssentialDoc(
+        @PathVariable itemEstlDocId: String,
+        @RequestBody request: TestItemEssentialDocUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemEssentialDocResponse> = mono {
+        useCase.updateEssentialDoc(itemEstlDocId, request, auth.adminId)
+    }
+
+    @Operation(summary = "검사 항목 필수서류 삭제")
+    @DeleteMapping("/api/bts/item-estl-doc/{itemEstlDocId}")
+    fun deleteEssentialDoc(
+        @PathVariable itemEstlDocId: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> = mono {
+        useCase.deleteEssentialDoc(itemEstlDocId, auth.adminId)
+        null
+    }
+
+    @Operation(summary = "검사 항목 필수서류 목록 조회 (검사코드별)")
+    @GetMapping("/api/bts/item-estl-doc")
+    fun getEssentialDocsByTest(@RequestParam tstCd: String): Flow<TestItemEssentialDocResponse> =
+        useCase.getEssentialDocsByTest(tstCd)
 }

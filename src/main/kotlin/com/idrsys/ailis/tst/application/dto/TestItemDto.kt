@@ -245,3 +245,24 @@ data class TestItemGeneResponse(
     val creator: String,
     val createDtime: LocalDateTime
 )
+
+// --- Test Item Essential Doc ---
+
+data class TestItemEssentialDocRegisterRequest(
+    val tstCd: String,
+    val docCd: String
+)
+
+data class TestItemEssentialDocUpdateRequest(
+    val docCd: String
+)
+
+data class TestItemEssentialDocResponse(
+    val itemEstlDocId: String,
+    val tstCd: String,
+    val docCd: String,
+    val creator: String,
+    val createDtime: LocalDateTime,
+    val updater: String?,
+    val updateDetime: LocalDateTime?
+)

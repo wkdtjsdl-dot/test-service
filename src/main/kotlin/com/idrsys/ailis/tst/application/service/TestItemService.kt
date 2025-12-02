@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
+import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
@@ -145,5 +146,39 @@ class TestItemService(
 
     override fun getGenesByTest(tstCd: String): Flow<TestItemGeneResponse> {
         return repository.findGenesByTestCd(tstCd).map { mapper.toResponse(it) }
+    }
+
+    // --- TestItemEssentialDoc ---
+
+    override suspend fun registerEssentialDoc(request: TestItemEssentialDocRegisterRequest, adminId: String): TestItemEssentialDocResponse {
+        val command = commandMapper.toCreateCommand(request)
+        val now = java.time.LocalDateTime.now()
+        val domain = TestItemEssentialDoc.create(command, adminId, now)
+        val saved = repository.saveEssentialDoc(domain)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun getEssentialDoc(itemEstlDocId: String): TestItemEssentialDocResponse {
+        val domain = repository.findEssentialDocById(itemEstlDocId)
+            ?: throw IllegalArgumentException("TestItemEssentialDoc not found: $itemEstlDocId")
+        return mapper.toResponse(domain)
+    }
+
+    override suspend fun updateEssentialDoc(itemEstlDocId: String, request: TestItemEssentialDocUpdateRequest, adminId: String): TestItemEssentialDocResponse {
+        val domain = repository.findEssentialDocById(itemEstlDocId)
+            ?: throw IllegalArgumentException("TestItemEssentialDoc not found: $itemEstlDocId")
+        val command = commandMapper.toUpdateCommand(request)
+        val now = java.time.LocalDateTime.now()
+        domain.update(command, adminId, now)
+        val saved = repository.saveEssentialDoc(domain)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun deleteEssentialDoc(itemEstlDocId: String, adminId: String) {
+        repository.deleteEssentialDocById(itemEstlDocId)
+    }
+
+    override fun getEssentialDocsByTest(tstCd: String): Flow<TestItemEssentialDocResponse> {
+        return repository.findEssentialDocsByTstCd(tstCd).map { mapper.toResponse(it) }
     }
 }
