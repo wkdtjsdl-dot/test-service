@@ -11,9 +11,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
-import org.jooq.Record
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Repository
 interface TestItemDataRepository : CoroutineCrudRepository<TestItem, String>
@@ -29,7 +31,8 @@ class TestItemRepositoryImpl(
     private val itemDataRepo: TestItemDataRepository,
     private val chargeDataRepo: StandardChargeDataRepository,
     private val specimenDataRepo: TestItemSpecimenDataRepository,
-    private val dslContext: DSLContext
+    private val dslContext: DSLContext,
+    private val databaseClient: DatabaseClient
 ) : TestItemRepository {
 
     // --- TestItem ---
@@ -40,11 +43,25 @@ class TestItemRepositoryImpl(
 
     override suspend fun findByLargeCateCd(code: String): Flow<TestItem> {
         val table = BtsItem.BTS_ITEM
-        return dslContext.select(table.fields().toList())
+        val query = dslContext
+            .select(table.fields().toList())
             .from(table)
             .where(table.TST_LARGE_CATE_CD.eq(code))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestItem(row) }
             .asFlow()
-            .map { r: Record -> r.into(TestItem::class.java) }
     }
 
     // --- StandardCharge ---
@@ -54,11 +71,25 @@ class TestItemRepositoryImpl(
 
     override suspend fun findChargesByTestCd(tstCd: String): Flow<StandardCharge> {
         val table = BtsStndCharge.BTS_STND_CHARGE
-        return dslContext.select(table.fields().toList())
+        val query = dslContext
+            .select(table.fields().toList())
             .from(table)
             .where(table.TST_CD.eq(tstCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toStandardCharge(row) }
             .asFlow()
-            .map { r: Record -> r.into(StandardCharge::class.java) }
     }
 
     // --- TestItemSpecimen ---
@@ -68,10 +99,115 @@ class TestItemRepositoryImpl(
 
     override suspend fun findSpecimensByTestCd(tstCd: String): Flow<TestItemSpecimen> {
         val table = BtsSpcm.BTS_SPCM
-        return dslContext.select(table.fields().toList())
+        val query = dslContext
+            .select(table.fields().toList())
             .from(table)
             .where(table.TST_CD.eq(tstCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestItemSpecimen(row) }
             .asFlow()
-            .map { r: Record -> r.into(TestItemSpecimen::class.java) }
+    }
+
+    private fun toTestItem(row: Map<String, Any>): TestItem {
+        return TestItem(
+            tstCd = row["tst_cd"] as String?,
+            tstLargeCateCd = row["tst_large_cate_cd"] as String,
+            tstMediumCateCd = row["tst_medium_cate_cd"] as String,
+            startDt = row["start_dt"] as LocalDate,
+            endDt = row["end_dt"] as LocalDate,
+            useYn = row["use_yn"] as Boolean,
+            reqPossYn = row["req_poss_yn"] as Boolean,
+            webYn = row["web_yn"] as Boolean,
+            tstNm = row["tst_nm"] as String,
+            tstAbbrNm = row["tst_abbr_nm"] as String,
+            tstEngNm = row["tst_eng_nm"] as String,
+            tstEngAbbrNm = row["tst_eng_abbr_nm"] as String,
+            tstIntNm = row["tst_int_nm"] as String,
+            rstTypeShortYn = row["rst_type_short_yn"] as Boolean,
+            rstTypeLongYn = row["rst_type_long_yn"] as Boolean,
+            rstTypeFileYn = row["rst_type_file_yn"] as Boolean,
+            rstTypeUrlYn = row["rst_type_url_yn"] as Boolean,
+            diseaseCd = row["disease_cd"] as String,
+            tstMethodCd = row["tst_method_cd"] as String?,
+            refVal = row["ref_val"] as String,
+            engRefVal = row["eng_ref_val"] as String,
+            clncSgnf = row["clnc_sgnf"] as String,
+            engClncSgnf = row["eng_clnc_sgnf"] as String,
+            tstDesc = row["tst_desc"] as String,
+            tstEngDesc = row["tst_eng_desc"] as String,
+            tstDayweek = row["tst_dayweek"] as String,
+            tstTatday = (row["tst_tatday"] as Number).toInt(),
+            insuApplyCd = row["insu_apply_cd"] as String,
+            insuCd = row["insu_cd"] as String,
+            insuCateNo = row["insu_cate_no"] as String,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String?,
+            updateDetime = row["update_detime"] as LocalDateTime?
+        )
+    }
+
+    private fun toStandardCharge(row: Map<String, Any>): StandardCharge {
+        return StandardCharge(
+            stndChargeId = row["stnd_charge_id"] as String?,
+            tstCd = row["tst_cd"] as String,
+            applyStartDt = row["apply_start_dt"] as LocalDate,
+            applyEndDt = row["apply_end_dt"] as LocalDate,
+            insuCd = row["insu_cd"] as String?,
+            insuCateNo = row["insu_cate_no"] as String?,
+            relatValuePoint = (row["relat_value_point"] as Number?)?.toDouble(),
+            insuCharge = (row["insu_charge"] as Number).toDouble(),
+            qladCharge = (row["qlad_charge"] as Number).toDouble(),
+            stndCharge = (row["stnd_charge"] as Number).toDouble(),
+            lowestCharge = (row["lowest_charge"] as Number).toDouble(),
+            qladCd = row["qlad_cd"] as String?,
+            relatValueQladPoint = (row["relat_value_qlad_point"] as Number).toDouble(),
+            outputInsuCd = row["output_insu_cd"] as String?,
+            totalQladCharge = (row["total_qlad_charge"] as Number).toDouble(),
+            supval = (row["supval"] as Number).toDouble(),
+            addtax = (row["addtax"] as Number).toDouble(),
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime
+        )
+    }
+
+    private fun toTestItemSpecimen(row: Map<String, Any>): TestItemSpecimen {
+        return TestItemSpecimen(
+            spcmId = row["spcm_id"] as String?,
+            tstCd = row["tst_cd"] as String,
+            spcmCd = row["spcm_cd"] as String,
+            sortOrder = (row["sort_order"] as Number).toInt(),
+            estlYn = row["estl_yn"] as Boolean,
+            takeQnty = row["take_qnty"] as String,
+            engTakeQnty = row["eng_take_qnty"] as String,
+            useQnty = row["use_qnty"] as String,
+            engUseQnty = row["eng_use_qnty"] as String,
+            strgMethodCd = row["strg_method_cd"] as String,
+            spcmStbl = row["spcm_stbl"] as String?,
+            engSpcmStbl = row["eng_spcm_stbl"] as String?,
+            takeMethod = row["take_method"] as String?,
+            engTakeMethod = row["eng_take_method"] as String?,
+            spcmDesc = row["spcm_desc"] as String,
+            engDesc = row["eng_desc"] as String?,
+            caution = row["caution"] as String,
+            engCaution = row["eng_caution"] as String,
+            spcmCntnCd = row["spcm_cntn_cd"] as String,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String?,
+            updateDetime = row["update_detime"] as LocalDateTime?
+        )
     }
 }

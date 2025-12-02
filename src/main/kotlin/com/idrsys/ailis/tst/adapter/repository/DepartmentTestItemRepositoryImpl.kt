@@ -19,6 +19,7 @@ import org.jooq.Record
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 interface DepartmentGroupDataRepository : CoroutineCrudRepository<DepartmentGroup, String>
@@ -55,9 +56,24 @@ class DepartmentTestItemRepositoryImpl(
 
     override suspend fun findGroupItemsByDeptCd(deptCd: String): Flow<DepartmentGroupItem> {
         val table = BbsDeptGrpItm.BBS_DEPT_GRP_ITM
-        return dslContext.select(table.fields().toList())
+        val query = dslContext
+            .select(table.fields().toList())
             .from(table)
             .where(table.DEPT_CD.eq(deptCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toDepartmentGroupItem(row) }
             .asFlow()
             .map { r: Record -> r.into(DepartmentGroupItem::class.java) }
     }
@@ -69,9 +85,24 @@ class DepartmentTestItemRepositoryImpl(
 
     override suspend fun findGroupItemTestsByDeptCd(deptCd: String): Flow<DepartmentGroupItemTest> {
         val table = BbsDeptGrpItmTst.BBS_DEPT_GRP_ITM_TST
-        return dslContext.select(table.fields().toList())
+        val query = dslContext
+            .select(table.fields().toList())
             .from(table)
             .where(table.DEPT_CD.eq(deptCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toDepartmentGroupItemTest(row) }
             .asFlow()
             .map { r: Record -> r.into(DepartmentGroupItemTest::class.java) }
     }
@@ -111,9 +142,7 @@ class DepartmentTestItemRepositoryImpl(
             .where(condition)
 
         // SQL 스트링 생성
-        val sql = dslContext.renderInlined(query)
-
-        return databaseClient.sql(sql)
+        return databaseClient.sql(dslContext.renderInlined(query))
             .map { row, _ ->
                 DeptTestItemCategoryResponse(
                     tstLargeCateCd = row.get(item.TST_LARGE_CATE_CD.name, String::class.java)!!,
@@ -129,5 +158,48 @@ class DepartmentTestItemRepositoryImpl(
             }
             .all()
             .asFlow()
+    }
+
+    private fun toDepartmentGroupItem(row: Map<String, Any>): DepartmentGroupItem {
+        return DepartmentGroupItem(
+            deptGrpItmId = row["dept_grp_itm_id"] as String?,
+            deptCd = row["dept_cd"] as String,
+            tstCateCd = row["tst_cate_cd"] as String,
+            tstCateItemCd = row["tst_cate_item_cd"] as String,
+            tstCateItemNm = row["tst_cate_item_nm"] as String,
+            sortOrder = (row["sort_order"] as Number).toInt(),
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDtime = row["update_detime"] as LocalDateTime
+        )
+    }
+
+    private fun toDepartmentGroupItemTest(row: Map<String, Any>): DepartmentGroupItemTest {
+        return DepartmentGroupItemTest(
+            deptGrpItmTstId = row["dept_grp_itm_tst_id"] as String?,
+            deptCd = row["dept_cd"] as String,
+            tstCateCd = row["tst_cate_cd"] as String,
+            tstCateItemCd = row["tst_cate_item_cd"] as String,
+            tstCd = row["tst_cd"] as String,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime
+        )
+    }
+
+    private fun toDepartmentTestItem(row: Map<String, Any>): DepartmentTestItem {
+        return DepartmentTestItem(
+            deptTstItemId = row["dept_tst_item_id"] as String?,
+            deptCd = row["dept_cd"] as String,
+            tstCd = row["tst_cd"] as String,
+            danDivCd = row["dan_div_cd"] as String,
+            tstDayweek = row["tst_dayweek"] as String,
+            tstTatday = (row["tst_tatday"] as Number).toInt(),
+            deptTstDesc = row["dept_tst_desc"] as String?,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDtime = row["update_detime"] as LocalDateTime
+        )
     }
 }
