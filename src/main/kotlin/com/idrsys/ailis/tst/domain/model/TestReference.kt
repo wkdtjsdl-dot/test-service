@@ -268,7 +268,7 @@ class TestReferenceGroup(
             now: LocalDateTime
         ): TestReferenceGroup {
             return TestReferenceGroup(
-                refGroupCd = null,
+                refGroupCd = command.refGroupCd,
                 refNm = command.refNm,
                 refAbbrNm = command.refAbbrNm,
                 refEngNm = command.refEngNm,
