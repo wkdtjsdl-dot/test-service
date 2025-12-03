@@ -18,13 +18,13 @@ Accept: application/json
     client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
 %}
 
-### 검사분류 목록 조회 (대분류별)
+### 검사 기준정보 검사코드분류 중분류 조회
 GET {{api-service}}/api/tst/bbs/tst-cate/TC_20
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 검사분류 등록
+### 검사 기준정보 검사코드분류 중분류 등록
 POST {{api-service}}/api/tst/bbs/tst-cate
 Content-Type: application/json
 Accept: application/json
@@ -41,7 +41,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "sortOrder": 1
 }
 
-### 검사분류 수정
+### 검사 기준정보 검사코드분류 중분류 수정
 PUT {{api-service}}/api/tst/bbs/tst-cate/96d81069-c74f-440a-b59d-21decd798782
 Content-Type: application/json
 Accept: application/json
@@ -56,7 +56,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "sortOrder": 2
 }
 
-### 검사분류 삭제
+### 검사 기준정보 검사코드분류 중분류 삭제
 DELETE {{api-service}}/api/tst/bbs/tst-cate/96d81069-c74f-440a-b59d-21decd798782
 Content-Type: application/json
 Accept: application/json

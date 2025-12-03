@@ -6,6 +6,7 @@ import com.idrsys.ailis.tst.domain.command.TestReferenceGroupItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestReferenceGroupItemUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestReferenceGroupUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestReferenceUpdateCommand
+import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -268,7 +269,7 @@ class TestReferenceGroup(
             now: LocalDateTime
         ): TestReferenceGroup {
             return TestReferenceGroup(
-                refGroupCd = null,
+                refGroupCd = command.refGroupCd,
                 refNm = command.refNm,
                 refAbbrNm = command.refAbbrNm,
                 refEngNm = command.refEngNm,
@@ -296,6 +297,7 @@ class TestReferenceGroupItem(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "tstRefGroupItemId")
     @Column("tst_ref_group_item_id")
     val tstRefGroupItemId: String? = tstRefGroupItemId
 

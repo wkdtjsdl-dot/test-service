@@ -37,6 +37,7 @@ data class TestReferenceUpdateCommand(
 )
 
 data class TestReferenceGroupCreateCommand(
+    val refGroupCd: String,
     val refNm: String,
     val refAbbrNm: String,
     val refEngNm: String,

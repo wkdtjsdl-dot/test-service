@@ -66,6 +66,7 @@ data class TestReferenceResponse(
 // --- Test Reference Group ---
 
 data class TestReferenceGroupRegisterRequest(
+    val refGroupCd: String,
     val refNm: String,
     val refAbbrNm: String,
     val refEngNm: String,

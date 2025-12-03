@@ -18,25 +18,25 @@ Accept: application/json
     client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
 %}
 
-### 의뢰서서류 목록 조회 (전체)
+### 검사 기준정보 검사의뢰서류 목록
 GET {{api-service}}/api/tst/bbs/req-doc
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 의뢰서서류 목록 조회 (서류구분별)
+### 검사 기준정보 검사의뢰서류 목록 (서류구분별)
 GET {{api-service}}/api/tst/bbs/req-doc?docDivCd=01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 의뢰서서류 단건 조회
+### 검사 기준정보 검사의뢰서류 조회
 GET {{api-service}}/api/tst/bbs/req-doc/DOC001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 의뢰서서류 등록
+### 검사 기준정보 검사의뢰서류 등록
 POST {{api-service}}/api/tst/bbs/req-doc
 Content-Type: application/json
 Accept: application/json
@@ -51,7 +51,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "docEngFileId": "FILE002"
 }
 
-### 의뢰서서류 수정
+### 검사 기준정보 검사의뢰서류 수정
 PUT {{api-service}}/api/tst/bbs/req-doc/TEST_DOC01
 Content-Type: application/json
 Accept: application/json
@@ -65,7 +65,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "docEngFileId": "FILE004"
 }
 
-### 의뢰서서류 삭제
+### 검사 기준정보 검사의뢰서류 삭제
 DELETE {{api-service}}/api/tst/bbs/req-doc/TEST_DOC01
 Content-Type: application/json
 Accept: application/json
