@@ -59,11 +59,13 @@ class DepartmentTestItemController(
 
     @Operation(summary = "검사 기준정보 부서분류그룹 목록")
     @GetMapping("/api/bbs/dept-group")
-    fun getAllGroups(): Flow<DepartmentGroupResponse> {
+    fun getAllGroups(@RequestParam(required = false) deptCd: String?): Flow<DepartmentGroupResponse> {
         return kotlinx.coroutines.flow.flow {
-            useCase.getAllGroups().collect { emit(it) }
+            useCase.getGroups(deptCd).collect { emit(it) }
         }
     }
+
+
 
     // --- DepartmentGroupItem ---
 

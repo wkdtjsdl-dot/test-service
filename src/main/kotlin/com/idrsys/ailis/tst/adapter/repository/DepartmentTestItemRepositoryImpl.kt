@@ -7,6 +7,7 @@ import com.idrsys.ailis.tst.domain.model.DepartmentGroup
 import com.idrsys.ailis.tst.domain.model.DepartmentGroupItem
 import com.idrsys.ailis.tst.domain.model.DepartmentGroupItemTest
 import com.idrsys.ailis.tst.domain.model.DepartmentTestItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptGroup
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptGrpItm
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptGrpItmTst
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
@@ -46,6 +47,25 @@ class DepartmentTestItemRepositoryImpl(
     override suspend fun findGroupById(deptGroupId: String): DepartmentGroup? = groupDataRepo.findById(deptGroupId)
     override suspend fun deleteGroupById(deptGroupId: String) = groupDataRepo.deleteById(deptGroupId)
     override suspend fun findAllGroups(): Flow<DepartmentGroup> = groupDataRepo.findAll()
+    override suspend fun findlGroupsByDeptCd(deptCd: String): Flow<DepartmentGroup> {
+        val table = BbsDeptGroup.BBS_DEPT_GROUP
+
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(table.DEPT_CD.eq(deptCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            if (value != null) executeSpec = executeSpec.bind(index, value)
+            else executeSpec = executeSpec.bindNull(index, String::class.java)
+        }
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toDepartmentGroup(row) }
+            .asFlow()
+    }
 
     // --- DepartmentGroupItem ---
     override suspend fun saveGroupItem(entity: DepartmentGroupItem): DepartmentGroupItem = groupItemDataRepo.save(entity)
@@ -156,6 +176,23 @@ class DepartmentTestItemRepositoryImpl(
             .all()
             .asFlow()
     }
+
+    private fun toDepartmentGroup(row: Map<String, Any>): DepartmentGroup {
+        return DepartmentGroup(
+            deptGroupId = row["dept_group_id"] as String?,
+            deptCd = row["dept_cd"] as String,
+            tstCateCd = row["tst_cate_cd"] as String,
+            tstCateNm = row["tst_cate_nm"] as String,
+            updateAuthCd = row["update_auth_cd"] as String,
+            dupAllowYn = row["dup_allow_yn"] as Boolean,
+            sortOrder = (row["sort_order"] as Number).toInt(),
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDtime = row["update_detime"] as LocalDateTime
+        )
+    }
+
 
     private fun toDepartmentGroupItem(row: Map<String, Any>): DepartmentGroupItem {
         return DepartmentGroupItem(
