@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
+@Transactional(readOnly=false)
 class CustService(
     private val custCustomRepository: CustCustomRepository,
     private val custRepository: CustRepository,
@@ -38,9 +39,9 @@ class CustService(
     private val hospitalDataService: HospitalDataService
 ) : CustUseCase {
     override suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable): Page<CustListResponse> {
-
         var finalSearchParam = searchParam
         val (deptNameById, userNameById) = fetchLookupMaps()
+        val systemCodeMaps = fetchSystemCodeMaps()
 
         if (!searchParam.empUserIdNm.isNullOrBlank()) {
             val keyword = searchParam.empUserIdNm
@@ -57,7 +58,7 @@ class CustService(
 
         val responses = custsFromRepo.map { custWithSalsPicInfo ->
             val initialResponse = custMapper.toListResponse(custWithSalsPicInfo)
-            transformCustListResponse(initialResponse, deptNameById, userNameById)
+            transformCustListResponse(initialResponse, deptNameById, userNameById, systemCodeMaps)
         }
 
         return PageImpl(responses, pageable, total)
@@ -67,6 +68,7 @@ class CustService(
         var finalSearchParam = searchParam
 
         val (deptNameById, userNameById) = fetchLookupMaps()
+        val systemCodeMaps = fetchSystemCodeMaps()
 
         if (!searchParam.empUserIdNm.isNullOrBlank()) {
             val keyword = searchParam.empUserIdNm
@@ -81,7 +83,7 @@ class CustService(
         return custsFromRepo
             .map(custMapper::toListResponse) // Map to CustListResponse first
             .map { initialResponse ->
-                transformCustListResponse(initialResponse, deptNameById, userNameById)
+                transformCustListResponse(initialResponse, deptNameById, userNameById, systemCodeMaps)
             }
     }
 
@@ -103,7 +105,6 @@ class CustService(
         return response
     }
 
-    @Transactional(readOnly = false)
     override suspend fun registerCust(command: CustRegisterCommand, creator: String): Cust {
         val custCd = command.custCd
 
@@ -122,7 +123,6 @@ class CustService(
         return savedCust
     }
 
-    @Transactional(readOnly = false)
     override suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust {
         val cust = custRepository.findByCustMstId(custMstId)
             ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
@@ -166,11 +166,22 @@ class CustService(
         return LookupMaps(deptNameById, userNameById)
     }
 
-    // 부서명, 사원명, 영업팀코드 치환
+    private suspend fun fetchSystemCodeMaps(): SystemCodeMaps {
+        val systemCodes = baseServiceClient.getChildrenSystemCodes(listOf("CSDV", "CSTP", "CSST")) ?: emptyMap()
+
+        val custDivNameByCd = systemCodes["CSDV"]?.associate { it.cd to it.cdNm } ?: emptyMap()
+        val custTypeNameByCd = systemCodes["CSTP"]?.associate { it.cd to it.cdNm } ?: emptyMap()
+        val custStatNameByCd = systemCodes["CSST"]?.associate { it.cd to it.cdNm } ?: emptyMap()
+
+        return SystemCodeMaps(custDivNameByCd, custTypeNameByCd, custStatNameByCd)
+    }
+
+    // 부서명, 사원명, 영업팀코드, 고객 코드 치환
     private suspend fun transformCustListResponse(
         custListResponse: CustListResponse,
         deptNameById: Map<String, String>,
-        userNameById: Map<String, String>
+        userNameById: Map<String, String>,
+        systemCodeMaps: SystemCodeMaps
     ): CustListResponse {
         val deptNm = custListResponse.bzoffiCd?.let { deptNameById[it] }
 
@@ -213,11 +224,27 @@ class CustService(
             sortedEntries.joinToString(",") { (teamCode, userName) -> "$teamCode=$userName" }
         } ?: custListResponse.salsPicInfo
 
-        return custListResponse.copy(deptNm = deptNm, salsPicInfo = transformedSalsPicInfo)
+        val custDivNm = systemCodeMaps.custDivNameByCd[custListResponse.custDivCd] ?: custListResponse.custDivCd
+        val custTypeNm = systemCodeMaps.custTypeNameByCd[custListResponse.custTypeCd] ?: custListResponse.custTypeCd
+        val custStatNm = systemCodeMaps.custStatNameByCd[custListResponse.custStatCd] ?: custListResponse.custStatCd
+
+        return custListResponse.copy(
+            deptNm = deptNm,
+            salsPicInfo = transformedSalsPicInfo,
+            custDivCd = custDivNm,
+            custTypeCd = custTypeNm,
+            custStatCd = custStatNm
+        )
     }
 
     data class LookupMaps(
         val deptNameById: Map<String, String>,
         val userNameById: Map<String, String>
+    )
+
+    data class SystemCodeMaps(
+        val custDivNameByCd: Map<String, String>,
+        val custTypeNameByCd: Map<String, String>,
+        val custStatNameByCd: Map<String, String>
     )
 }

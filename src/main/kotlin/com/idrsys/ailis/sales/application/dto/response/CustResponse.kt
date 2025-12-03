@@ -116,7 +116,7 @@ data class CustListResponse(
     @ExcelColumn("고객상태")
     val custStatCd: String,             // 고객상태
     @ExcelColumn("등록일시")
-    val createDtime: LocalDateTime,      // 등록일시
+    val createDtime: String,            // 등록일시 (formatted as 'YYYY-MM-DD HH:mm:ss')
     val frgnAcctYn: Boolean,            // 해외거래처여부
     val cntr: custCntrResponse?,         //
 

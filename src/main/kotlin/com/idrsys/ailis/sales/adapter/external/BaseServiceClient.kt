@@ -10,6 +10,7 @@ import com.idrsys.ailis.sales.application.dto.response.inner.BaseDepartmentRespo
 import com.idrsys.ailis.sales.application.dto.response.inner.BaseAttachedFileResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.BaseAttachedFileGroupResponse
 import com.idrsys.ailis.sales.application.dto.request.attachedfile.AttachedFileGroupCreateCommand
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseSysCodeResponse
 
 @Component
 class BaseServiceClient(
@@ -78,6 +79,27 @@ class BaseServiceClient(
             } catch (ex: Exception){
                 null
             }
+    }
+
+    // ========== 시스템 코드 관련 메서드 ==========
+
+    /**
+     * 상위 코드별 하위 시스템 코드 목록 조회
+     */
+    suspend fun getChildrenSystemCodes(cateCds: List<String>): Map<String, List<BaseSysCodeResponse>>? {
+        return try {
+            client.get()
+                .uri { uriBuilder ->
+                    uriBuilder
+                        .path("/api/inner/system-codes/by-cates")
+                        .queryParam("cateCds", cateCds.joinToString(","))
+                        .build()
+                }
+                .retrieve()
+                .awaitBody<Map<String, List<BaseSysCodeResponse>>>()
+        } catch (ex: Exception) {
+            null
+        }
     }
 
     // ========== 첨부파일 관련 메서드 ==========
