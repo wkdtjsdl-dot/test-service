@@ -22,19 +22,19 @@ Accept: application/json
 # 부서별 그룹 (Department Group)
 ###########################
 
-### 부서별 그룹 목록 조회
+### 검사 기준정보 부서분류그룹 목록
 GET {{api-service}}/api/tst/bbs/dept-group
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 부서별 그룹 단건 조회
+### 검사 기준정보 부서분류그룹 조회
 GET {{api-service}}/api/tst/bbs/dept-group/GRP001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 부서별 그룹 등록
+### 검사 기준정보 부서분류그룹 등록
 POST {{api-service}}/api/tst/bbs/dept-group
 Content-Type: application/json
 Accept: application/json
@@ -47,7 +47,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "sortOrder": 1
 }
 
-### 부서별 그룹 수정
+### 검사 기준정보 부서분류그룹 수정
 PUT {{api-service}}/api/tst/bbs/dept-group/TEST_GRP01
 Content-Type: application/json
 Accept: application/json
@@ -60,7 +60,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "sortOrder": 2
 }
 
-### 부서별 그룹 삭제
+### 검사 기준정보 부서분류그룹 삭제
 DELETE {{api-service}}/api/tst/bbs/dept-group/TEST_GRP01
 Content-Type: application/json
 Accept: application/json
@@ -70,19 +70,19 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 # 부서별 그룹항목 (Department Group Item)
 ###########################
 
-### 부서별 그룹항목 단건 조회
+### 검사 기준정보 부서분류그룹항목 조회
 GET {{api-service}}/api/tst/bbs/dept-group-item/ITEM001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 부서별 그룹항목 목록 조회 (부서별)
+### 검사 기준정보 부서분류그룹항목 목록 (부서별)
 GET {{api-service}}/api/tst/bbs/dept-group-item/by-dept/DEPT01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 부서별 그룹항목 등록
+### 검사 기준정보 부서분류그룹항목 등록
 POST {{api-service}}/api/tst/bbs/dept-group-item
 Content-Type: application/json
 Accept: application/json
@@ -94,7 +94,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "sortOrder": 1
 }
 
-### 부서별 그룹항목 수정
+### 검사 기준정보 부서분류그룹항목 수정
 PUT {{api-service}}/api/tst/bbs/dept-group-item/TEST_ITEM01
 Content-Type: application/json
 Accept: application/json
@@ -106,7 +106,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "sortOrder": 2
 }
 
-### 부서별 그룹항목 삭제
+### 검사 기준정보 부서분류그룹항목 삭제
 DELETE {{api-service}}/api/tst/bbs/dept-group-item/TEST_ITEM01
 Content-Type: application/json
 Accept: application/json
@@ -116,19 +116,19 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 # 부서별 그룹항목 검사 (Department Group Item Test)
 ###########################
 
-### 부서별 그룹항목 검사 단건 조회
+### 검사 기준정보 부서검사종목 조회
 GET {{api-service}}/api/tst/bts/dept-group-item-tst/TEST001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 부서별 그룹항목 검사 목록 조회 (부서별)
+### 검사 기준정보 부서검사종목 목록 (부서별)
 GET {{api-service}}/api/tst/bts/dept-group-item-tst/by-dept/DEPT01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 부서별 그룹항목 검사 등록
+### 검사 기준정보 부서검사종목 등록
 POST {{api-service}}/api/tst/bts/dept-group-item-tst
 Content-Type: application/json
 Accept: application/json
@@ -140,7 +140,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "sortOrder": 1
 }
 
-### 부서별 그룹항목 검사 삭제
+### 검사 기준정보 부서검사종목 삭제
 DELETE {{api-service}}/api/tst/bts/dept-group-item-tst/TEST_TEST01
 Content-Type: application/json
 Accept: application/json
@@ -150,19 +150,19 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 # 부서별 검사항목 (Department Test Item)
 ###########################
 
-### 부서별 검사항목 단건 조회
+### 검사 기준정보 부서검사종목 조회
 GET {{api-service}}/api/tst/bbs/dept-tst-item/DEPTITEM001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 부서별 검사항목 목록 조회 (부서별)
+### 검사 기준정보 부서검사종목 목록 (부서별)
 GET {{api-service}}/api/tst/bbs/dept-tst-item/by-dept/DEPT01
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
-### 부서별 검사항목 등록
+### 검사 기준정보 부서검사종목 등록
 POST {{api-service}}/api/tst/bbs/dept-tst-item
 Content-Type: application/json
 Accept: application/json
@@ -175,7 +175,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "sortOrder": 1
 }
 
-### 부서별 검사항목 수정
+### 검사 기준정보 부서검사종목 수정
 PUT {{api-service}}/api/tst/bbs/dept-tst-item/TEST_DEPTITEM01
 Content-Type: application/json
 Accept: application/json
@@ -188,7 +188,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "sortOrder": 2
 }
 
-### 부서별 검사항목 삭제
+### 검사 기준정보 부서검사종목 삭제
 DELETE {{api-service}}/api/tst/bbs/dept-tst-item/TEST_DEPTITEM01
 Content-Type: application/json
 Accept: application/json
