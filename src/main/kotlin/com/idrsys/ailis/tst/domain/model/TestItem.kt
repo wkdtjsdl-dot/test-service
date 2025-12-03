@@ -9,6 +9,7 @@ import com.idrsys.ailis.tst.domain.command.TestItemRefItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemSpecimenCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemUpdateCommand
+import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -306,6 +307,7 @@ class StandardCharge(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "stndChargeId")
     @Column("stnd_charge_id")
     val stndChargeId: String? = stndChargeId
 
@@ -451,6 +453,7 @@ class TestItemSpecimen(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "spcmId")
     @Column("spcm_id")
     val spcmId: String? = spcmId
 
@@ -602,6 +605,7 @@ class TestItemRefItem(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "refItemId")
     @Column("ref_item_id")
     val refItemId: String? = refItemId
 
@@ -690,6 +694,7 @@ class TestItemGene(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "itemGeneId")
     @Column("item_gene_id")
     val itemGeneId: String? = itemGeneId
 
@@ -749,6 +754,7 @@ class TestItemEssentialDoc(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "itemEstlDocId")
     @Column("item_estl_doc_id")
     val itemEstlDocId: String? = itemEstlDocId
 
