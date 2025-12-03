@@ -22,7 +22,7 @@ class RequestDocumentController(
     private val requestDocumentUseCase: RequestDocumentUseCase
 ) {
 
-    @Operation(summary = "의뢰서서류 목록")
+    @Operation(summary = "검사 기준정보 검사의뢰서류 목록")
     @GetMapping
     fun getDocuments(@RequestParam(required = false) docDivCd: String?): Flux<RequestDocumentResponse> {
         return mono {
@@ -30,7 +30,7 @@ class RequestDocumentController(
         }.flatMapMany { flow -> Flux.from(flow.asPublisher()) }
     }
 
-    @Operation(summary = "의뢰서서류 조회")
+    @Operation(summary = "검사 기준정보 검사의뢰서류 조회")
     @GetMapping("/{docCd}")
     fun getDocument(@PathVariable docCd: String): Mono<RequestDocumentResponse> {
         return mono {
@@ -38,7 +38,7 @@ class RequestDocumentController(
         }
     }
 
-    @Operation(summary = "의뢰서서류 등록")
+    @Operation(summary = "검사 기준정보 검사의뢰서류 등록")
     @PostMapping
     fun registerDocument(
         @RequestBody request: RequestDocumentRegisterRequest,
@@ -49,7 +49,7 @@ class RequestDocumentController(
         }
     }
 
-    @Operation(summary = "의뢰서서류 수정")
+    @Operation(summary = "검사 기준정보 검사의뢰서류 수정")
     @PutMapping("/{docCd}")
     fun updateDocument(
         @PathVariable docCd: String,
@@ -61,7 +61,7 @@ class RequestDocumentController(
         }
     }
 
-    @Operation(summary = "의뢰서서류 삭제")
+    @Operation(summary = "검사 기준정보 검사의뢰서류 삭제")
     @DeleteMapping("/{docCd}")
     fun deleteDocument(
         @PathVariable docCd: String,

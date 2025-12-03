@@ -20,7 +20,7 @@ class TestReferenceController(
 
     // --- TestReference ---
 
-    @Operation(summary = "검사 항목 등록", description = "새로운 검사 항목을 등록합니다")
+    @Operation(summary = "검사 기준정보 검사참조항목 등록", description = "새로운 검사 항목을 등록합니다")
     @PostMapping("/api/bbs/tst-ref")
     fun registerReference(
         @RequestBody request: TestReferenceRegisterRequest,
@@ -29,13 +29,13 @@ class TestReferenceController(
         useCase.registerReference(request, auth.adminId)
     }
 
-    @Operation(summary = "검사 항목 조회", description = "ID로 검사 항목을 조회합니다")
+    @Operation(summary = "검사 기준정보 검사참조항목 조회", description = "ID로 검사 항목을 조회합니다")
     @GetMapping("/api/bbs/tst-ref/{refCd}")
     fun getReference(@PathVariable refCd: String): Mono<TestReferenceResponse> = mono {
         useCase.getReference(refCd)
     }
 
-    @Operation(summary = "검사 항목 수정", description = "검사 항목 정보를 수정합니다")
+    @Operation(summary = "검사 기준정보 검사참조항목 수정", description = "검사 항목 정보를 수정합니다")
     @PutMapping("/api/bbs/tst-ref/{refCd}")
     fun updateReference(
         @PathVariable refCd: String,
@@ -45,7 +45,7 @@ class TestReferenceController(
         useCase.updateReference(refCd, request, auth.adminId)
     }
 
-    @Operation(summary = "검사 항목 삭제", description = "검사 항목을 삭제합니다")
+    @Operation(summary = "검사 기준정보 검사참조항목 삭제", description = "검사 항목을 삭제합니다")
     @DeleteMapping("/api/bbs/tst-ref/{refCd}")
     fun deleteReference(
         @PathVariable refCd: String,
@@ -55,7 +55,7 @@ class TestReferenceController(
         null
     }
 
-    @Operation(summary = "검사 항목 전체 조회", description = "모든 검사 항목을 조회합니다")
+    @Operation(summary = "검사 기준정보 검사참조항목 목록", description = "모든 검사 항목을 조회합니다")
     @GetMapping("/api/bbs/tst-ref")
     fun getAllReferences(): Flow<TestReferenceResponse> {
         return kotlinx.coroutines.flow.flow {
@@ -65,7 +65,7 @@ class TestReferenceController(
 
     // --- TestReferenceGroup ---
 
-    @Operation(summary = "검사 항목 그룹 등록", description = "새로운 검사 항목 그룹을 등록합니다")
+    @Operation(summary = "검사 기준정보 검사 참조그룹 등록", description = "새로운 검사 항목 그룹을 등록합니다")
     @PostMapping("/api/bbs/tst-ref-group")
     fun registerGroup(
         @RequestBody request: TestReferenceGroupRegisterRequest,
@@ -74,13 +74,13 @@ class TestReferenceController(
         useCase.registerGroup(request, auth.adminId)
     }
 
-    @Operation(summary = "검사 항목 그룹 조회")
+    @Operation(summary = "검사 기준정보 검사 참조그룹 조회")
     @GetMapping("/api/bbs/tst-ref-group/{refGroupCd}")
     fun getGroup(@PathVariable refGroupCd: String): Mono<TestReferenceGroupResponse> = mono {
         useCase.getGroup(refGroupCd)
     }
 
-    @Operation(summary = "검사 항목 그룹 수정")
+    @Operation(summary = "검사 기준정보 검사 참조그룹 수정")
     @PutMapping("/api/bbs/tst-ref-group/{refGroupCd}")
     fun updateGroup(
         @PathVariable refGroupCd: String,
@@ -90,7 +90,7 @@ class TestReferenceController(
         useCase.updateGroup(refGroupCd, request, auth.adminId)
     }
 
-    @Operation(summary = "검사 항목 그룹 삭제")
+    @Operation(summary = "검사 기준정보 검사 참조그룹 삭제")
     @DeleteMapping("/api/bbs/tst-ref-group/{refGroupCd}")
     fun deleteGroup(
         @PathVariable refGroupCd: String,
@@ -100,7 +100,7 @@ class TestReferenceController(
         null
     }
 
-    @Operation(summary = "검사 항목 그룹 전체 조회")
+    @Operation(summary = "검사 기준정보 검사 참조그룹 목록")
     @GetMapping("/api/bbs/tst-ref-group")
     fun getAllGroups(): Flow<TestReferenceGroupResponse> {
         return kotlinx.coroutines.flow.flow {
@@ -110,7 +110,7 @@ class TestReferenceController(
 
     // --- TestReferenceGroupItem ---
 
-    @Operation(summary = "검사 항목 그룹 항목 등록")
+    @Operation(summary = "검사 기준정보 검사 참조그룹 참조항목 추가")
     @PostMapping("/api/bbs/tst-ref-group-item")
     fun registerGroupItem(
         @RequestBody request: TestReferenceGroupItemRegisterRequest,
@@ -135,7 +135,7 @@ class TestReferenceController(
         useCase.updateGroupItem(tstRefGroupItemId, request, auth.adminId)
     }
 
-    @Operation(summary = "검사 항목 그룹 항목 삭제")
+    @Operation(summary = "검사 기준정보 검사 참조그룹 참조항목 삭제")
     @DeleteMapping("/api/bbs/tst-ref-group-item/{tstRefGroupItemId}")
     fun deleteGroupItem(
         @PathVariable tstRefGroupItemId: String,

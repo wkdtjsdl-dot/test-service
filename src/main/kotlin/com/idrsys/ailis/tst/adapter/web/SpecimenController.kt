@@ -21,7 +21,7 @@ class SpecimenContainerController(
     private val specimenContainerUseCase: SpecimenContainerUseCase
 ) {
 
-    @Operation(summary = "검체용기 목록")
+    @Operation(summary = "검사 기준정보 검체용기 목록")
     @GetMapping
     fun getContainers(@RequestParam(required = false) cntnNm: String?): Flux<SpecimenContainerResponse> {
         return mono {
@@ -29,7 +29,7 @@ class SpecimenContainerController(
         }.flatMapMany { flow -> Flux.from(flow.asPublisher()) }
     }
 
-    @Operation(summary = "검체용기 조회")
+    @Operation(summary = "검사 기준정보 검체용기 조회")
     @GetMapping("/{spcmCntnCd}")
     fun getContainer(@PathVariable spcmCntnCd: String): Mono<SpecimenContainerResponse> {
         return mono {
@@ -37,7 +37,7 @@ class SpecimenContainerController(
         }
     }
 
-    @Operation(summary = "검체용기 등록")
+    @Operation(summary = "검사 기준정보 검체용기 등록")
     @PostMapping
     fun registerContainer(
         @RequestBody request: SpecimenContainerRegisterRequest,
@@ -48,7 +48,7 @@ class SpecimenContainerController(
         }
     }
 
-    @Operation(summary = "검체용기 수정")
+    @Operation(summary = "검사 기준정보 검체용기 수정")
     @PutMapping("/{spcmCntnCd}")
     fun updateContainer(
         @PathVariable spcmCntnCd: String,
@@ -60,7 +60,7 @@ class SpecimenContainerController(
         }
     }
 
-    @Operation(summary = "검체용기 삭제")
+    @Operation(summary = "검사 기준정보 검체용기 삭제")
     @DeleteMapping("/{spcmCntnCd}")
     fun deleteContainer(
         @PathVariable spcmCntnCd: String,
@@ -79,7 +79,7 @@ class SpecimenController(
     private val specimenUseCase: SpecimenUseCase
 ) {
 
-    @Operation(summary = "검체 목록")
+    @Operation(summary = "검사 기준정보 검체 목록")
     @GetMapping
     fun getSpecimens(
         @RequestParam(required = false) spcmNm: String?,
@@ -90,7 +90,7 @@ class SpecimenController(
         }.flatMapMany { flow -> Flux.from(flow.asPublisher()) }
     }
 
-    @Operation(summary = "검체 조회")
+    @Operation(summary = "검사 기준정보 검체 조회")
     @GetMapping("/{spcmCd}")
     fun getSpecimen(@PathVariable spcmCd: String): Mono<SpecimenResponse> {
         return mono {
@@ -98,7 +98,7 @@ class SpecimenController(
         }
     }
 
-    @Operation(summary = "검체 등록")
+    @Operation(summary = "검사 기준정보 검체 등록")
     @PostMapping
     fun registerSpecimen(
         @RequestBody request: SpecimenRegisterRequest,
@@ -109,7 +109,7 @@ class SpecimenController(
         }
     }
 
-    @Operation(summary = "검체 수정")
+    @Operation(summary = "검사 기준정보 검체 수정")
     @PutMapping("/{spcmCd}")
     fun updateSpecimen(
         @PathVariable spcmCd: String,
@@ -121,7 +121,7 @@ class SpecimenController(
         }
     }
 
-    @Operation(summary = "검체 삭제")
+    @Operation(summary = "검사 기준정보 검체 삭제")
     @DeleteMapping("/{spcmCd}")
     fun deleteSpecimen(
         @PathVariable spcmCd: String,

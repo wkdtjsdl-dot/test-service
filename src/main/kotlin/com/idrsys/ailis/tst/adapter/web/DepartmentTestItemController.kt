@@ -22,7 +22,7 @@ class DepartmentTestItemController(
 
     // --- DepartmentGroup ---
 
-    @Operation(summary = "부서별 그룹 등록")
+    @Operation(summary = "검사 기준정보 부서분류그룹 등록")
     @PostMapping("/api/bbs/dept-group")
     fun registerGroup(
         @RequestBody request: DepartmentGroupRegisterRequest,
@@ -31,13 +31,13 @@ class DepartmentTestItemController(
         useCase.registerGroup(request, auth.adminId)
     }
 
-    @Operation(summary = "부서별 그룹 조회")
+    @Operation(summary = "검사 기준정보 부서분류그룹 조회")
     @GetMapping("/api/bbs/dept-group/{deptGroupId}")
     fun getGroup(@PathVariable deptGroupId: String): Mono<DepartmentGroupResponse> = mono {
         useCase.getGroup(deptGroupId)
     }
 
-    @Operation(summary = "부서별 그룹 수정")
+    @Operation(summary = "검사 기준정보 부서분류그룹 수정")
     @PutMapping("/api/bbs/dept-group/{deptGroupId}")
     fun updateGroup(
         @PathVariable deptGroupId: String,
@@ -47,7 +47,7 @@ class DepartmentTestItemController(
         useCase.updateGroup(deptGroupId, request, auth.adminId)
     }
 
-    @Operation(summary = "부서별 그룹 삭제")
+    @Operation(summary = "검사 기준정보 부서분류그룹 삭제")
     @DeleteMapping("/api/bbs/dept-group/{deptGroupId}")
     fun deleteGroup(
         @PathVariable deptGroupId: String,
@@ -57,7 +57,7 @@ class DepartmentTestItemController(
         null
     }
 
-    @Operation(summary = "부서별 그룹 전체 조회")
+    @Operation(summary = "검사 기준정보 부서분류그룹 목록")
     @GetMapping("/api/bbs/dept-group")
     fun getAllGroups(): Flow<DepartmentGroupResponse> {
         return kotlinx.coroutines.flow.flow {
@@ -67,7 +67,7 @@ class DepartmentTestItemController(
 
     // --- DepartmentGroupItem ---
 
-    @Operation(summary = "부서별 그룹 항목 등록")
+    @Operation(summary = "검사 기준정보 부서분류그룹항목 등록")
     @PostMapping("/api/bbs/dept-group-item")
     fun registerGroupItem(
         @RequestBody request: DepartmentGroupItemRegisterRequest,
@@ -76,13 +76,13 @@ class DepartmentTestItemController(
         useCase.registerGroupItem(request, auth.adminId)
     }
 
-    @Operation(summary = "부서별 그룹 항목 조회")
+    @Operation(summary = "검사 기준정보 부서분류그룹항목 조회")
     @GetMapping("/api/bbs/dept-group-item/{deptGrpItmId}")
     fun getGroupItem(@PathVariable deptGrpItmId: String): Mono<DepartmentGroupItemResponse> = mono {
         useCase.getGroupItem(deptGrpItmId)
     }
 
-    @Operation(summary = "부서별 그룹 항목 수정")
+    @Operation(summary = "검사 기준정보 부서분류그룹항목 수정")
     @PutMapping("/api/bbs/dept-group-item/{deptGrpItmId}")
     fun updateGroupItem(
         @PathVariable deptGrpItmId: String,
@@ -92,7 +92,7 @@ class DepartmentTestItemController(
         useCase.updateGroupItem(deptGrpItmId, request, auth.adminId)
     }
 
-    @Operation(summary = "부서별 그룹 항목 삭제")
+    @Operation(summary = "검사 기준정보 부서분류그룹항목 삭제")
     @DeleteMapping("/api/bbs/dept-group-item/{deptGrpItmId}")
     fun deleteGroupItem(
         @PathVariable deptGrpItmId: String,
@@ -102,7 +102,7 @@ class DepartmentTestItemController(
         null
     }
 
-    @Operation(summary = "부서별 그룹 항목 목록 조회 (부서코드별)")
+    @Operation(summary = "검사 기준정보 부서분류그룹항목 목록")
     @GetMapping("/api/bbs/dept-group-item/by-dept/{deptCd}")
     fun getGroupItemsByDept(@PathVariable deptCd: String): Flow<DepartmentGroupItemResponse> {
         return kotlinx.coroutines.flow.flow {
@@ -112,7 +112,7 @@ class DepartmentTestItemController(
 
     // --- DepartmentGroupItemTest ---
 
-    @Operation(summary = "부서별 그룹 항목 검사 등록")
+    @Operation(summary = "검사 기준정보 부서검사종목 등록")
     @PostMapping("/api/bts/dept-group-item-tst")
     fun registerGroupItemTest(
         @RequestBody request: DepartmentGroupItemTestRegisterRequest,
@@ -121,7 +121,7 @@ class DepartmentTestItemController(
         useCase.registerGroupItemTest(request, auth.adminId)
     }
 
-    @Operation(summary = "부서별 그룹 항목 검사 삭제")
+    @Operation(summary = "검사 기준정보 부서검사종목 삭제")
     @DeleteMapping("/api/bts/dept-group-item-tst/{deptGrpItmTstId}")
     fun deleteGroupItemTest(
         @PathVariable deptGrpItmTstId: String,
@@ -131,7 +131,7 @@ class DepartmentTestItemController(
         null
     }
 
-    @Operation(summary = "부서별 그룹 항목 검사 목록 조회 (부서코드별)")
+    @Operation(summary = "검사 기준정보 부서검사종목 목록")
     @GetMapping("/api/bts/dept-group-item-tst/by-dept/{deptCd}")
     fun getGroupItemTestsByDept(@PathVariable deptCd: String): Flow<DepartmentGroupItemTestResponse> {
         return kotlinx.coroutines.flow.flow {
@@ -141,7 +141,7 @@ class DepartmentTestItemController(
 
     // --- DepartmentTestItem ---
 
-    @Operation(summary = "부서별 검사 항목 등록")
+    @Operation(summary = "검사 기준정보 부서검사종목 등록")
     @PostMapping("/api/bbs/dept-tst-item")
     fun registerTestItem(
         @RequestBody request: DepartmentTestItemRegisterRequest,
@@ -150,7 +150,7 @@ class DepartmentTestItemController(
         useCase.registerTestItem(request, auth.adminId)
     }
 
-    @Operation(summary = "부서별 검사 항목 수정")
+    @Operation(summary = "검사 기준정보 부서검사종목 수정")
     @PutMapping("/api/bbs/dept-tst-item/{deptTstItemId}")
     fun updateTestItem(
         @PathVariable deptTstItemId: String,
@@ -160,7 +160,7 @@ class DepartmentTestItemController(
         useCase.updateTestItem(deptTstItemId, request, auth.adminId)
     }
 
-    @Operation(summary = "부서별 검사 항목 삭제")
+    @Operation(summary = "검사 기준정보 부서검사종목 삭제")
     @DeleteMapping("/api/bbs/dept-tst-item/{deptTstItemId}")
     fun deleteTestItem(
         @PathVariable deptTstItemId: String,
@@ -170,7 +170,7 @@ class DepartmentTestItemController(
         null
     }
 
-    @Operation(summary = "부서별 검사 항목 목록 조회 (부서코드별)")
+    @Operation(summary = "검사 기준정보 부서검사종목 목록")
     @GetMapping("/api/bbs/dept-tst-item")
     fun getTestItemsByDept(@ParameterObject searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse> {
         return kotlinx.coroutines.flow.flow {
