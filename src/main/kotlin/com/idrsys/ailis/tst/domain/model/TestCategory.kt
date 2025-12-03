@@ -2,6 +2,7 @@ package com.idrsys.ailis.tst.domain.model
 
 import com.idrsys.ailis.tst.domain.command.TestCategoryCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestCategoryUpdateCommand
+import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -27,6 +28,7 @@ class TestCategory(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "tstCateId")
     @Column("tst_cate_id")
     val tstCateId: String? = tstCateId
 
