@@ -45,6 +45,9 @@ class CustCustomRepositoryImpl(
                 !searchParam.cntrEndEndDt.isNullOrBlank() ||
                 !searchParam.recntrMonth.isNullOrBlank()
 
+        // 진료과목 검색 시 병원 테이블 join
+        val needsHospitalJoin = !searchParam.medicalSubj.isNullOrBlank()
+
         val salsPicInfoField: Field<*> =
             (stringAgg(
                 SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD.concat("=").concat(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID),
@@ -60,9 +63,17 @@ class CustCustomRepositoryImpl(
             .leftJoin(SCS_GCGN_SALS_PIC_INFO).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID))
             .leftJoin(rprsCustMst).on(SCS_CUST_MST.RPRS_CUST_CD.eq(rprsCustMst.CUST_CD))
 
+        // 필터링이 필요한 테이블
         if (needsContractJoin) {
-            queryPart = queryPart.leftJoin(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
+            queryPart = queryPart.join(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
                 .and(SCS_CUST_CNTR.USE_YN.isTrue)
+        }
+
+        if (needsHospitalJoin) {
+            queryPart = queryPart
+                .join(SCS_HOSP_MST).on(SCS_CUST_MST.CARE_INST_ID.eq(SCS_HOSP_MST.CARE_INST_ID))
+                .and(SCS_HOSP_MST.USE_YN.isTrue)
+                .join(SCS_HOSP_MEDI_SBJT).on(SCS_HOSP_MST.CARE_INST_ID.eq(SCS_HOSP_MEDI_SBJT.CARE_INST_ID))
         }
 
         val query = queryPart
@@ -90,20 +101,31 @@ class CustCustomRepositoryImpl(
                 !searchParam.recntrMonth.isNullOrBlank()
 
         val needsSalsPicInfoJoin = !searchParam.empUserId.isNullOrBlank() || searchParam.empUserIds.isNotEmpty()
+        val needsHospitalJoin = !searchParam.medicalSubj.isNullOrBlank()
+        val needsRprsCustJoin = !searchParam.rprsCustCdNm.isNullOrBlank()
 
-        var queryPart = if (needsContractJoin || needsSalsPicInfoJoin) {
+        var queryPart = if (needsContractJoin || needsSalsPicInfoJoin || needsHospitalJoin || needsRprsCustJoin) {
             dslContext.select(countDistinct(SCS_CUST_MST.CUST_MST_ID))
         } else {
             dslContext.selectCount()
         }.from(SCS_CUST_MST)
 
         if (needsContractJoin) {
-            queryPart = queryPart.leftJoin(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
+            queryPart = queryPart.join(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
         }
         if (needsSalsPicInfoJoin) {
-            queryPart = queryPart.leftJoin(SCS_GCGN_SALS_PIC_INFO).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID))
+            queryPart = queryPart.join(SCS_GCGN_SALS_PIC_INFO).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID))
         }
-        queryPart = queryPart.leftJoin(SCS_CUST_MST.`as`("RPRS_CUST_MST")).on(SCS_CUST_MST.RPRS_CUST_CD.eq(SCS_CUST_MST.`as`("RPRS_CUST_MST").CUST_CD))
+        if (needsHospitalJoin) {
+            queryPart = queryPart
+                .join(SCS_HOSP_MST).on(SCS_CUST_MST.CARE_INST_ID.eq(SCS_HOSP_MST.CARE_INST_ID))
+                .and(SCS_HOSP_MST.USE_YN.isTrue)
+                .join(SCS_HOSP_MEDI_SBJT).on(SCS_HOSP_MST.CARE_INST_ID.eq(SCS_HOSP_MEDI_SBJT.CARE_INST_ID))
+        }
+        // Note: findCustsWithSalsPicInfo 에서는 display용으로 LEFT JOIN
+        if (needsRprsCustJoin) {
+            queryPart = queryPart.join(SCS_CUST_MST.`as`("RPRS_CUST_MST")).on(SCS_CUST_MST.RPRS_CUST_CD.eq(SCS_CUST_MST.`as`("RPRS_CUST_MST").CUST_CD))
+        }
 
         val query = queryPart.where(conditions)
 
@@ -147,6 +169,13 @@ class CustCustomRepositoryImpl(
         searchParam.studyProjCustYn?.let { conds += SCS_CUST_MST.STUDY_PROJ_CUST_YN.eq(it) }
         searchParam.sapCustCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.SAP_CUST_CD.likeIgnoreCase("%$it%") }
         searchParam.custTypeCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.CUST_TYPE_CD.eq(it) }
+
+        // 시스템 코드 숫자 코드 substring 비교 MDSB_SBJT_54 -> 54
+        searchParam.medicalSubj?.takeIf { it.isNotBlank() }?.let { fullCode ->
+            val medicalSubjCode = fullCode.substringAfterLast("_")
+            conds += SCS_HOSP_MEDI_SBJT.MEDI_SBJT_CD.eq(medicalSubjCode)
+            conds += SCS_HOSP_MEDI_SBJT.USE_YN.isTrue
+        }
 
         // Contract Date filtering
         searchParam.cntrStartDt?.takeIf { it.isNotBlank() }?.let {

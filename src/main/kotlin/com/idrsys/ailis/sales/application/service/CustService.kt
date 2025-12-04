@@ -19,6 +19,7 @@ import com.idrsys.ailis.sales.shared.mapper.CustMapper
 import com.idrsys.ailis.sales.application.service.HospitalDataService
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Page
@@ -101,7 +102,7 @@ class CustService(
 
         val (deptNameById, userNameById) = fetchLookupMaps(userIds)
 
-        return kotlinx.coroutines.flow.flow {
+        return flow {
             custsFromRepo.forEach { custWithSalsPicInfo ->
                 val initialResponse = custMapper.toListResponse(custWithSalsPicInfo)
                 val transformed = transformCustListResponse(initialResponse, deptNameById, userNameById, systemCodeMaps)
