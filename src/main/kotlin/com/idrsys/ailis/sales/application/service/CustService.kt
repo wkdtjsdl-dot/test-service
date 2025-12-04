@@ -39,22 +39,33 @@ class CustService(
     private val hospitalDataService: HospitalDataService
 ) : CustUseCase {
     override suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable): Page<CustListResponse> {
-        var finalSearchParam = searchParam
-        val (deptNameById, userNameById) = fetchLookupMaps()
         val systemCodeMaps = fetchSystemCodeMaps()
 
+        // 검색어에서 받아온 값(name or id)을 id로 정리해서 쿼리에 던짐
+        var finalSearchParam = searchParam
         if (!searchParam.empUserIdNm.isNullOrBlank()) {
-            val keyword = searchParam.empUserIdNm
-            val userIds = userNameById.entries
-                .filter { it.value.contains(keyword, ignoreCase = true) || it.key.contains(keyword, ignoreCase = true) }
-                .map { it.key }
-            finalSearchParam = searchParam.copy(empUserIds = userIds)
+            val users = baseServiceClient.getUsers() ?: emptyList()
+            val matchedUserIds = users
+                .filter { it.userNm.contains(searchParam.empUserIdNm, ignoreCase = true) ||
+                          it.userId.contains(searchParam.empUserIdNm, ignoreCase = true) }
+                .map { it.userId }
+            finalSearchParam = searchParam.copy(empUserIds = matchedUserIds)
         }
 
         val total = custCustomRepository.countCusts(finalSearchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
         val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(finalSearchParam, pageable).toList()
+
+        val userIds = custsFromRepo.flatMap { cust ->
+            cust.salsPicInfo?.split(",")
+                ?.mapNotNull { pair ->
+                    val parts = pair.split("=")
+                    if (parts.size == 2) parts[1] else null
+                } ?: emptyList()
+        }.distinct()
+
+        val (deptNameById, userNameById) = fetchLookupMaps(userIds)
 
         val responses = custsFromRepo.map { custWithSalsPicInfo ->
             val initialResponse = custMapper.toListResponse(custWithSalsPicInfo)
@@ -65,26 +76,39 @@ class CustService(
     }
 
     override suspend fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> {
-        var finalSearchParam = searchParam
-
-        val (deptNameById, userNameById) = fetchLookupMaps()
         val systemCodeMaps = fetchSystemCodeMaps()
 
+        // 검색어에서 받아온 값(name or id)을 id로 정리해서 쿼리에 던짐
+        var finalSearchParam = searchParam
         if (!searchParam.empUserIdNm.isNullOrBlank()) {
-            val keyword = searchParam.empUserIdNm
-            val userIds = userNameById.entries
-                .filter { it.value.contains(keyword, ignoreCase = true) || it.key.contains(keyword, ignoreCase = true) }
-                .map { it.key }
-            finalSearchParam = searchParam.copy(empUserIds = userIds)
+            val users = baseServiceClient.getUsers() ?: emptyList()
+            val matchedUserIds = users
+                .filter { it.userNm.contains(searchParam.empUserIdNm, ignoreCase = true) ||
+                          it.userId.contains(searchParam.empUserIdNm, ignoreCase = true) }
+                .map { it.userId }
+            finalSearchParam = searchParam.copy(empUserIds = matchedUserIds)
         }
 
-        val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(finalSearchParam, Pageable.unpaged())
+        val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(finalSearchParam, Pageable.unpaged()).toList()
 
-        return custsFromRepo
-            .map(custMapper::toListResponse) // Map to CustListResponse first
-            .map { initialResponse ->
-                transformCustListResponse(initialResponse, deptNameById, userNameById, systemCodeMaps)
+        val userIds = custsFromRepo.flatMap { cust ->
+            cust.salsPicInfo?.split(",")
+                ?.mapNotNull { pair ->
+                    val parts = pair.split("=")
+                    if (parts.size == 2) parts[1] else null
+                } ?: emptyList()
+        }.distinct()
+
+        val (deptNameById, userNameById) = fetchLookupMaps(userIds)
+
+        return kotlinx.coroutines.flow.flow {
+            custsFromRepo.forEach { custWithSalsPicInfo ->
+                val initialResponse = custMapper.toListResponse(custWithSalsPicInfo)
+                val transformed = transformCustListResponse(initialResponse, deptNameById, userNameById, systemCodeMaps)
+                emit(transformed)
             }
+        }
+
     }
 
     override suspend fun findCustByCustMstId(custMstId: String): CustResponse {
@@ -156,11 +180,15 @@ class CustService(
         return autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
     }
 
-    private suspend fun fetchLookupMaps(): LookupMaps {
+    private suspend fun fetchLookupMaps(userIds: List<String>): LookupMaps {
         val depts = baseServiceClient.getDepartments() ?: emptyList()
         val deptNameById = depts.associate { it.deptCd to it.deptNm }
 
-        val users = baseServiceClient.getUsers() ?: emptyList()
+        val users = if (userIds.isNotEmpty()) {
+            baseServiceClient.getUsersByIds(userIds) ?: emptyList()
+        } else {
+            emptyList()
+        }
         val userNameById = users.associate { it.userId to it.userNm }
 
         return LookupMaps(deptNameById, userNameById)

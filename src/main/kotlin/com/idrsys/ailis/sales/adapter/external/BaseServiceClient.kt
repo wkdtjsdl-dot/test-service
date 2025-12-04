@@ -48,6 +48,23 @@ class BaseServiceClient(
         }
     }
 
+    suspend fun getUsersByIds(userIds: List<String>): List<BaseUserResponse>? {
+        if (userIds.isEmpty()) return emptyList()
+        return try {
+            client.get()
+                .uri { uriBuilder ->
+                    uriBuilder
+                        .path("/api/inner/users/byids")
+                        .queryParam("ids", userIds.joinToString(","))
+                        .build()
+                }
+                .retrieve()
+                .awaitBody<List<BaseUserResponse>>()
+        } catch (ex: Exception) {
+            null
+        }
+    }
+
     suspend fun getDepartments(): List<BaseDepartmentDetailResponse>? {
         return try {
             client.get()
