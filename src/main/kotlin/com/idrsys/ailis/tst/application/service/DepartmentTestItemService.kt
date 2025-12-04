@@ -55,11 +55,10 @@ class DepartmentTestItemService(
         return repository.findAllGroups().map { mapper.toResponse(it) }
     }
     override suspend fun getGroups(deptCd: String?): Flow<DepartmentGroupResponse> {
-        return if (deptCd.isNullOrBlank()) {
-            emptyFlow()
-        } else {
-            repository.findlGroupsByDeptCd(deptCd).map { mapper.toResponse(it) }
+        if(deptCd.isNullOrBlank()) {
+            throw IllegalStateException("deptCd is required")
         }
+        return repository.findlGroupsByDeptCd(deptCd).map { mapper.toResponse(it) }
     }
 
 
