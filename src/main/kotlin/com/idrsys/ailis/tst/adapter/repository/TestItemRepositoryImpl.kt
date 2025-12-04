@@ -1,6 +1,8 @@
 package com.idrsys.ailis.tst.adapter.repository
 
+import com.idrsys.ailis.tst.application.dto.DeptTestItemCategoryResponse
 import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
+import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
 import com.idrsys.ailis.tst.application.required.TestItemRepository
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
@@ -18,7 +20,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemGene
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
-import org.jooq.impl.DSL.noCondition
+import org.jooq.impl.DSL.notExists
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -59,11 +61,21 @@ class TestItemRepositoryImpl(
     override suspend fun save(entity: TestItem): TestItem = itemDataRepo.save(entity)
     override suspend fun findById(tstCd: String): TestItem? = itemDataRepo.findById(tstCd)
 
-    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItem> {
+    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse> {
         val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
         val tstItem = BtsItem.BTS_ITEM
 
-        var condition = noCondition()
+        // 서브쿼리
+        val notExistsCondition = notExists(
+            dslContext.selectOne()
+                .from(deptTestItem)
+                .where(
+                    deptTestItem.TST_CD.eq(tstItem.TST_CD)
+                        .and(deptTestItem.DEPT_CD.eq(searchParam.deptCd))
+                )
+        )
+
+        var condition = notExistsCondition
 
         searchParam.tstLargeCateCd?.let {
             condition = condition.and(tstItem.TST_LARGE_CATE_CD.eq(it))
@@ -74,29 +86,38 @@ class TestItemRepositoryImpl(
         searchParam.useYn?.let {
             condition = condition.and(tstItem.USE_YN.eq(it))
         }
-        searchParam.deptCd?.let {
-            condition = condition.and(deptTestItem.DEPT_CD.eq(it))
-        }
 
-        val query = dslContext
-            .select(tstItem.fields().toList())
+        val query = dslContext.select(
+            tstItem.TST_CD,
+            tstItem.TST_LARGE_CATE_CD,
+            tstItem.TST_MEDIUM_CATE_CD,
+            tstItem.USE_YN,
+            tstItem.TST_NM
+        )
             .from(tstItem)
-            .join(deptTestItem).on(tstItem.TST_CD.eq(deptTestItem.TST_CD))
             .where(condition)
 
+        // SQL과 바인딩 값 준비
         var executeSpec = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { index, value: Any? ->
-            if (value != null) {
-                executeSpec = executeSpec.bind(index, value)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
             } else {
-                executeSpec = executeSpec.bindNull(index, String::class.java)
+                executeSpec.bindNull(index, String::class.java)
             }
         }
 
         return executeSpec
-            .fetch()
+            .map { row, _ ->
+                TestItemSimpleResponse(
+                    tstCd = row.get(tstItem.TST_CD.name, String::class.java)!!,
+                    tstLargeCateCd = row.get(tstItem.TST_LARGE_CATE_CD.name, String::class.java)!!,
+                    tstMediumCateCd = row.get(tstItem.TST_MEDIUM_CATE_CD.name, String::class.java)!!,
+                    useYn = row.get(tstItem.USE_YN.name, Boolean::class.java)!!,
+                    tstNm = row.get(tstItem.TST_NM.name, String::class.java)!!,
+                )
+            }
             .all()
-            .map { row -> toTestItem(row) }
             .asFlow()
     }
 
