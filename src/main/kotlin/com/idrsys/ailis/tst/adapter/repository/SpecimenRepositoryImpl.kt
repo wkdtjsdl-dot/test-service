@@ -38,7 +38,7 @@ class SpecimenRepositoryImpl(
         val query = dslContext.select(table.fields().toList()).from(table)
 
         if (spcmNm != null) {
-            query.where(table.SPCM_NM.like("%$spcmNm%"))
+            query.where(table.SPCM_NM.like("%$spcmNm%")).or(table.SPCM_ENG_NM.like("%$spcmNm%"))
         }
         if (spcmCateCd != null) {
             query.where(table.SPCM_CATE_CD.eq(spcmCateCd))
@@ -65,12 +65,12 @@ class SpecimenRepositoryImpl(
     private fun toSpecimen(row: Map<String, Any>): Specimen {
         return Specimen(
             spcmCd = row["spcm_cd"] as String,
-            spcmCateCd = row["spcm_cate_cd"] as String,
+            spcmCateCd = row["spcm_cate_cd"] as String?,
             useYn = row["use_yn"] as Boolean,
             spcmNm = row["spcm_nm"] as String,
-            spcmAbbrNm = row["spcm_abbr_nm"] as String,
+            spcmAbbrNm = row["spcm_abbr_nm"] as String?,
             spcmEngNm = row["spcm_eng_nm"] as String,
-            spcmEngAbbrNm = row["spcm_eng_abbr_nm"] as String,
+            spcmEngAbbrNm = row["spcm_eng_abbr_nm"] as String?,
             collAmt = row["coll_amt"] as String?,
             engCollAmt = row["eng_coll_amt"] as String?,
             spcmStrg = row["spcm_strg"] as String?,
