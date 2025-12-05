@@ -11,6 +11,7 @@ interface DepartmentTestItemUseCase {
     suspend fun updateGroup(deptGroupId: String, request: DepartmentGroupUpdateRequest, adminId: String): DepartmentGroupResponse
     suspend fun deleteGroup(deptGroupId: String, adminId: String)
     suspend fun getAllGroups(): Flow<DepartmentGroupResponse>
+    suspend fun getGroups(deptCd: String?): Flow<DepartmentGroupResponse>
 
     // --- DepartmentGroupItem ---
     suspend fun registerGroupItem(request: DepartmentGroupItemRegisterRequest, adminId: String): DepartmentGroupItemResponse

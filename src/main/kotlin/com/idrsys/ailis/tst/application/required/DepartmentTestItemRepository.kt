@@ -14,6 +14,7 @@ interface DepartmentTestItemRepository {
     suspend fun findGroupById(deptGroupId: String): DepartmentGroup?
     suspend fun deleteGroupById(deptGroupId: String)
     suspend fun findAllGroups(): Flow<DepartmentGroup>
+    suspend fun findlGroupsByDeptCd(deptCd: String): Flow<DepartmentGroup>
 
     // --- DepartmentGroupItem ---
     suspend fun saveGroupItem(entity: DepartmentGroupItem): DepartmentGroupItem
