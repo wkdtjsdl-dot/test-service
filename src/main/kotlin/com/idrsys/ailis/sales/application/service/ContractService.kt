@@ -85,4 +85,11 @@ class ContractService(
         val updatedContract = contractRepository.save(contract)
         return contractMapper.toResponse(updatedContract)
     }
+
+    // 첨부파일 삭제 생기면 추가적인 수정 예정
+    override suspend fun deleteContract(custMstId: String, custCntrId: Long, adminId: String): Boolean {
+        contractCustomRepository.findDomainById(custCntrId)
+            ?: throw NoSuchElementException("Contract not found with id: $custCntrId")
+        return contractRepository.delete(custCntrId)
+    }
 }

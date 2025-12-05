@@ -12,4 +12,5 @@ interface ContractUseCase {
     suspend fun getContractDetail(custCntrId: Long): ContractResponse
     suspend fun createContract(custMstId: String, command: ContractCommand, adminId: String): ContractResponse
     suspend fun updateContract(custMstId: String, custCntrId: Long, command: ContractCommand, adminId: String): ContractResponse
+    suspend fun deleteContract(custMstId: String, custCntrId: Long, adminId: String): Boolean
 }

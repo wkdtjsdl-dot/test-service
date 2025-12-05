@@ -63,4 +63,14 @@ class ContractController(
             ): ContractResponse {
                 return contractUseCase.updateContract(custMstId, custCntrId, command, auth.adminId)
             }
+
+    @DeleteMapping("/{custCntrId}")
+    @Operation(summary = "updateContract", description = "고객 계약정보 삭제")
+    suspend fun deleteContract(
+        @RequestParam custMstId: String,
+        @PathVariable custCntrId: Long,
+        @JwtAuthorization auth: AuthenticationAdmin,
+    ): Boolean {
+        return contractUseCase.deleteContract(custMstId, custCntrId, auth.adminId)
+    }
 }

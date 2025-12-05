@@ -15,4 +15,14 @@ class ContractRepositoryImpl(
     override suspend fun save(contract: Contract): Contract {
         return contractDataRepository.save(contract)
     }
+
+    override suspend fun findById(id: Long): Contract? {
+        return contractDataRepository.findById(id)
+    }
+
+    override suspend fun delete(id: Long): Boolean {
+        val entity = findById(id) ?: return false
+        contractDataRepository.delete(entity)
+        return true
+    }
 }
