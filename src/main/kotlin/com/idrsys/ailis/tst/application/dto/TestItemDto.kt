@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 // --- Test Item ---
 
 data class TestItemSearchParam(
-    val deptCd: String?,
+    val deptCd: String,
     val tstLargeCateCd: String?,
     val tstMediumCateCd: String?,
     val useYn: Boolean?
@@ -111,6 +111,14 @@ data class TestItemResponse(
     val createDtime: LocalDateTime,
     val updater: String?,
     val updateDetime: LocalDateTime?
+)
+
+data class TestItemSimpleResponse(
+    val tstCd: String,
+    val tstLargeCateCd: String,
+    val tstMediumCateCd: String,
+    val useYn: Boolean,
+    val tstNm: String,
 )
 
 // --- Standard Charge ---

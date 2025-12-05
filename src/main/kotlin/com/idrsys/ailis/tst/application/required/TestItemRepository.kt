@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.application.required
 
 import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
+import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
@@ -13,7 +14,7 @@ interface TestItemRepository {
     // --- TestItem ---
     suspend fun save(entity: TestItem): TestItem
     suspend fun findById(tstCd: String): TestItem?
-    fun getItems(searchParam: TestItemSearchParam): Flow<TestItem>
+    fun getItems(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse>
 
     // --- StandardCharge ---
     suspend fun saveCharge(entity: StandardCharge): StandardCharge

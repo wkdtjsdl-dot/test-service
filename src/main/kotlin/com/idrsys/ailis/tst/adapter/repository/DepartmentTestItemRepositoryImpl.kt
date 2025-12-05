@@ -7,9 +7,11 @@ import com.idrsys.ailis.tst.domain.model.DepartmentGroup
 import com.idrsys.ailis.tst.domain.model.DepartmentGroupItem
 import com.idrsys.ailis.tst.domain.model.DepartmentGroupItemTest
 import com.idrsys.ailis.tst.domain.model.DepartmentTestItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptGroup
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptGrpItm
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptGrpItmTst
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstCate
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
@@ -46,6 +48,25 @@ class DepartmentTestItemRepositoryImpl(
     override suspend fun findGroupById(deptGroupId: String): DepartmentGroup? = groupDataRepo.findById(deptGroupId)
     override suspend fun deleteGroupById(deptGroupId: String) = groupDataRepo.deleteById(deptGroupId)
     override suspend fun findAllGroups(): Flow<DepartmentGroup> = groupDataRepo.findAll()
+    override suspend fun findlGroupsByDeptCd(deptCd: String): Flow<DepartmentGroup> {
+        val table = BbsDeptGroup.BBS_DEPT_GROUP
+
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(table.DEPT_CD.eq(deptCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            if (value != null) executeSpec = executeSpec.bind(index, value)
+            else executeSpec = executeSpec.bindNull(index, String::class.java)
+        }
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toDepartmentGroup(row) }
+            .asFlow()
+    }
 
     // --- DepartmentGroupItem ---
     override suspend fun saveGroupItem(entity: DepartmentGroupItem): DepartmentGroupItem = groupItemDataRepo.save(entity)
@@ -110,20 +131,22 @@ class DepartmentTestItemRepositoryImpl(
     override suspend fun findTestItemsByDeptCd(searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse> {
         val testItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
         val item = BtsItem.BTS_ITEM
+        val testCate = BbsTstCate.BBS_TST_CATE
 
         var condition = testItem.DEPT_CD.eq(searchParam.deptCd)
             .and(item.USE_YN.isTrue)
 
-        searchParam.tstLargeCateCd?.let {
+        searchParam.tstLargeCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(item.TST_LARGE_CATE_CD.eq(it))
         }
-        searchParam.tstMediumCateCd?.let {
+        searchParam.tstMediumCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(item.TST_MEDIUM_CATE_CD.eq(it))
         }
 
         val query = dslContext.select(
             item.TST_LARGE_CATE_CD,
             item.TST_MEDIUM_CATE_CD,
+            testCate.CATE_NM,
             testItem.DEPT_TST_ITEM_ID,
             testItem.DEPT_CD,
             testItem.TST_CD,
@@ -135,6 +158,7 @@ class DepartmentTestItemRepositoryImpl(
         )
             .from(testItem)
             .join(item).on(item.TST_CD.eq(testItem.TST_CD))
+            .join(testCate).on(testCate.TST_MEDIUM_CATE_CD.eq(item.TST_MEDIUM_CATE_CD))
             .where(condition)
 
         // SQL 스트링 생성
@@ -143,6 +167,7 @@ class DepartmentTestItemRepositoryImpl(
                 DeptTestItemCategoryResponse(
                     tstLargeCateCd = row.get(item.TST_LARGE_CATE_CD.name, String::class.java)!!,
                     tstMediumCateCd = row.get(item.TST_MEDIUM_CATE_CD.name, String::class.java)!!,
+                    cateNm = row.get(testCate.CATE_NM.name, String::class.java)!!,
                     deptTstItemId = row.get(testItem.DEPT_TST_ITEM_ID.name, String::class.java)!!,
                     deptCd = row.get(testItem.DEPT_CD.name, String::class.java)!!,
                     tstCd = row.get(testItem.TST_CD.name, String::class.java)!!,
@@ -156,6 +181,23 @@ class DepartmentTestItemRepositoryImpl(
             .all()
             .asFlow()
     }
+
+    private fun toDepartmentGroup(row: Map<String, Any>): DepartmentGroup {
+        return DepartmentGroup(
+            deptGroupId = row["dept_group_id"] as String?,
+            deptCd = row["dept_cd"] as String,
+            tstCateCd = row["tst_cate_cd"] as String,
+            tstCateNm = row["tst_cate_nm"] as String,
+            updateAuthCd = row["update_auth_cd"] as String,
+            dupAllowYn = row["dup_allow_yn"] as Boolean,
+            sortOrder = (row["sort_order"] as Number).toInt(),
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDtime = row["update_detime"] as LocalDateTime
+        )
+    }
+
 
     private fun toDepartmentGroupItem(row: Map<String, Any>): DepartmentGroupItem {
         return DepartmentGroupItem(

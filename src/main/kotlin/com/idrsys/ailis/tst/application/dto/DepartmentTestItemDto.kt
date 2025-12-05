@@ -123,6 +123,7 @@ data class DepartmentTestItemResponse(
 data class DeptTestItemCategoryResponse(
     val tstLargeCateCd: String,
     val tstMediumCateCd: String,
+    val cateNm: String,
     val deptTstItemId: String,
     val deptCd: String,
     val tstCd: String,

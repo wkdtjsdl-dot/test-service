@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import com.idrsys.ailis.tst.domain.model.DepartmentGroup
 import com.idrsys.ailis.tst.domain.model.DepartmentTestItem
+import kotlinx.coroutines.flow.emptyFlow
 import java.time.LocalDateTime
 
 @Service
@@ -53,6 +54,14 @@ class DepartmentTestItemService(
     override suspend fun getAllGroups(): Flow<DepartmentGroupResponse> {
         return repository.findAllGroups().map { mapper.toResponse(it) }
     }
+    override suspend fun getGroups(deptCd: String?): Flow<DepartmentGroupResponse> {
+        if(deptCd.isNullOrBlank()) {
+            throw IllegalStateException("deptCd is required")
+        }
+        return repository.findlGroupsByDeptCd(deptCd).map { mapper.toResponse(it) }
+    }
+
+
 
     // --- DepartmentGroupItem ---
 
