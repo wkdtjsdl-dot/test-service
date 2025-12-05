@@ -11,6 +11,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptGroup
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptGrpItm
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptGrpItmTst
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstCate
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
@@ -130,20 +131,22 @@ class DepartmentTestItemRepositoryImpl(
     override suspend fun findTestItemsByDeptCd(searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse> {
         val testItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
         val item = BtsItem.BTS_ITEM
+        val testCate = BbsTstCate.BBS_TST_CATE
 
         var condition = testItem.DEPT_CD.eq(searchParam.deptCd)
             .and(item.USE_YN.isTrue)
 
-        searchParam.tstLargeCateCd?.let {
+        searchParam.tstLargeCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(item.TST_LARGE_CATE_CD.eq(it))
         }
-        searchParam.tstMediumCateCd?.let {
+        searchParam.tstMediumCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(item.TST_MEDIUM_CATE_CD.eq(it))
         }
 
         val query = dslContext.select(
             item.TST_LARGE_CATE_CD,
             item.TST_MEDIUM_CATE_CD,
+            testCate.CATE_NM,
             testItem.DEPT_TST_ITEM_ID,
             testItem.DEPT_CD,
             testItem.TST_CD,
@@ -155,6 +158,7 @@ class DepartmentTestItemRepositoryImpl(
         )
             .from(testItem)
             .join(item).on(item.TST_CD.eq(testItem.TST_CD))
+            .join(testCate).on(testCate.TST_MEDIUM_CATE_CD.eq(item.TST_MEDIUM_CATE_CD))
             .where(condition)
 
         // SQL 스트링 생성
@@ -163,6 +167,7 @@ class DepartmentTestItemRepositoryImpl(
                 DeptTestItemCategoryResponse(
                     tstLargeCateCd = row.get(item.TST_LARGE_CATE_CD.name, String::class.java)!!,
                     tstMediumCateCd = row.get(item.TST_MEDIUM_CATE_CD.name, String::class.java)!!,
+                    cateNm = row.get(testCate.CATE_NM.name, String::class.java)!!,
                     deptTstItemId = row.get(testItem.DEPT_TST_ITEM_ID.name, String::class.java)!!,
                     deptCd = row.get(testItem.DEPT_CD.name, String::class.java)!!,
                     tstCd = row.get(testItem.TST_CD.name, String::class.java)!!,

@@ -77,10 +77,10 @@ class TestItemRepositoryImpl(
 
         var condition = notExistsCondition
 
-        searchParam.tstLargeCateCd?.let {
+        searchParam.tstLargeCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(tstItem.TST_LARGE_CATE_CD.eq(it))
         }
-        searchParam.tstMediumCateCd?.let {
+        searchParam.tstMediumCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(tstItem.TST_MEDIUM_CATE_CD.eq(it))
         }
         searchParam.useYn?.let {
