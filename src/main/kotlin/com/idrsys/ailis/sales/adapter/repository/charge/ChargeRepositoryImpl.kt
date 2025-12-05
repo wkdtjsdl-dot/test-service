@@ -19,4 +19,8 @@ class ChargeRepositoryImpl(
     override suspend fun findById(custChargeId: String): Charge? {
         return chargeDataRepository.findById(custChargeId)
     }
+
+    override suspend fun deleteById(custChargeId: String) {
+        chargeDataRepository.deleteById(custChargeId)
+    }
 }

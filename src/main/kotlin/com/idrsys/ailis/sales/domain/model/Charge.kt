@@ -135,7 +135,6 @@ class Charge(
     override fun isNew(): Boolean = _isNew
 
     fun update(command: ChargeUpdateCommand, updater: String) {
-        this.applyStartDt = command.applyStartDt
         this.applyEndDt = command.applyEndDt
         this.crcyCd = command.crcyCd
         this.specialCharge = command.specialCharge

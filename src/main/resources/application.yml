@@ -2,12 +2,18 @@ spring:
   application:
     name: sales-service
   config:
-    import: "configserver:"
+    import:
+      - "configserver:"
   cloud:
     config:
       uri: http://${CONFIG_SERVER}:8888
       username: configUser
       password: configPassword
+
+comm-on:
+  reactive:
+    exception-handler:
+      enabled: true
 
 hira:
   api:

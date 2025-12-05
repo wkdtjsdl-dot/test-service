@@ -4,7 +4,6 @@ import com.idrsys.ailis.sales.application.dto.request.charge.ChargeRegisterComma
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
 import com.idrsys.ailis.sales.application.dto.response.ChargeResponse
-import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.usecase.charge.ChargeUseCase
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
 import com.idrsys.reactive.excel.ReactiveExcelWriter
@@ -13,7 +12,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.data.domain.Page
@@ -53,6 +51,16 @@ class ChargeController(
         @JwtAuthorization auth: AuthenticationAdmin
     ): ChargeResponse {
         return chargeUseCase.updateCharge(custChargeId, command, auth.adminId)
+    }
+
+    @DeleteMapping("/{custChargeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "deleteCharge", description = "고객 수가 삭제")
+    suspend fun deleteCharge(
+        @PathVariable custChargeId: String,
+        @JwtAuthorization auth: AuthenticationAdmin
+    ) {
+        chargeUseCase.deleteCharge(custChargeId)
     }
 
     @GetMapping("/{custChargeId}")
