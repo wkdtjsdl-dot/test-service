@@ -8,7 +8,7 @@ interface TestItemUseCase {
     suspend fun registerItem(request: TestItemRegisterRequest, adminId: String): TestItemResponse
     suspend fun getItem(tstCd: String): TestItemResponse
     suspend fun updateItem(tstCd: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse
-    fun getItems(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse>
+    fun getItems(searchParam: TestItemSearchParam): Flow<TestItemResponse>
 
     // --- StandardCharge ---
     suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse

@@ -1,8 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
-import com.idrsys.ailis.tst.application.dto.DeptTestItemCategoryResponse
 import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
-import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
 import com.idrsys.ailis.tst.application.required.TestItemRepository
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
@@ -61,7 +59,7 @@ class TestItemRepositoryImpl(
     override suspend fun save(entity: TestItem): TestItem = itemDataRepo.save(entity)
     override suspend fun findById(tstCd: String): TestItem? = itemDataRepo.findById(tstCd)
 
-    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse> {
+    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItem> {
         val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
         val tstItem = BtsItem.BTS_ITEM
 
@@ -87,13 +85,7 @@ class TestItemRepositoryImpl(
             condition = condition.and(tstItem.USE_YN.eq(it))
         }
 
-        val query = dslContext.select(
-            tstItem.TST_CD,
-            tstItem.TST_LARGE_CATE_CD,
-            tstItem.TST_MEDIUM_CATE_CD,
-            tstItem.USE_YN,
-            tstItem.TST_NM
-        )
+        val query = dslContext.select(tstItem.fields().toList())
             .from(tstItem)
             .where(condition)
 
@@ -108,16 +100,9 @@ class TestItemRepositoryImpl(
         }
 
         return executeSpec
-            .map { row, _ ->
-                TestItemSimpleResponse(
-                    tstCd = row.get(tstItem.TST_CD.name, String::class.java)!!,
-                    tstLargeCateCd = row.get(tstItem.TST_LARGE_CATE_CD.name, String::class.java)!!,
-                    tstMediumCateCd = row.get(tstItem.TST_MEDIUM_CATE_CD.name, String::class.java)!!,
-                    useYn = row.get(tstItem.USE_YN.name, Boolean::class.java)!!,
-                    tstNm = row.get(tstItem.TST_NM.name, String::class.java)!!,
-                )
-            }
+            .fetch()
             .all()
+            .map { row -> toTestItem(row) }
             .asFlow()
     }
 
@@ -186,7 +171,8 @@ class TestItemRepositoryImpl(
             endDt = row["end_dt"] as LocalDate,
             useYn = row["use_yn"] as Boolean,
             reqPossYn = row["req_poss_yn"] as Boolean,
-            webYn = row["web_yn"] as Boolean,
+            webKorYn = row["web_kor_yn"] as Boolean,
+            webEngYn = row["web_eng_yn"] as Boolean,
             tstNm = row["tst_nm"] as String,
             tstAbbrNm = row["tst_abbr_nm"] as String,
             tstEngNm = row["tst_eng_nm"] as String,
@@ -198,21 +184,21 @@ class TestItemRepositoryImpl(
             rstTypeUrlYn = row["rst_type_url_yn"] as Boolean,
             diseaseCd = row["disease_cd"] as String,
             tstMethodCd = row["tst_method_cd"] as String?,
-            refVal = row["ref_val"] as String,
-            engRefVal = row["eng_ref_val"] as String,
-            clncSgnf = row["clnc_sgnf"] as String,
-            engClncSgnf = row["eng_clnc_sgnf"] as String,
-            tstDesc = row["tst_desc"] as String,
-            tstEngDesc = row["tst_eng_desc"] as String,
-            tstDayweek = row["tst_dayweek"] as String,
-            tstTatday = (row["tst_tatday"] as Number).toInt(),
-            insuApplyCd = row["insu_apply_cd"] as String,
-            insuCd = row["insu_cd"] as String,
-            insuCateNo = row["insu_cate_no"] as String,
+            refVal = row["ref_val"] as String?,
+            engRefVal = row["eng_ref_val"] as String?,
+            clncSgnf = row["clnc_sgnf"] as String?,
+            engClncSgnf = row["eng_clnc_sgnf"] as String?,
+            tstDesc = row["tst_desc"] as String?,
+            tstEngDesc = row["tst_eng_desc"] as String?,
+            tstDayweek = row["tst_dayweek"] as String?,
+            tstTatday = (row["tst_tatday"] as Number?)?.toInt(),
+            insuApplyCd = row["insu_apply_cd"] as String?,
+            insuCd = row["insu_cd"] as String?,
+            insuCateNo = row["insu_cate_no"] as String?,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
-            updater = row["updater"] as String?,
-            updateDetime = row["update_detime"] as LocalDateTime?
+            updater = row["updater"] as String,
+            updateDetime = row["update_detime"] as LocalDateTime
         )
     }
 
