@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 // --- Test Reference ---
 
 data class TestReferenceRegisterRequest(
+    val refCd: String,
     val refCateCd: String,
     val useYn: Boolean,
     val refNm: String,

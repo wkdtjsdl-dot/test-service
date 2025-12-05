@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.domain.command
 
 data class TestReferenceCreateCommand(
+    val refCd: String,
     val refCateCd: String,
     val useYn: Boolean,
     val refNm: String,

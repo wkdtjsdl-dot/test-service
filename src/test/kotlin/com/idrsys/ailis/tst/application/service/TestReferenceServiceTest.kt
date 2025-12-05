@@ -55,7 +55,8 @@ class TestReferenceServiceTest {
             refMaxVal = 10,
             dataFormat = "FORMAT01",
             dftData = "Default",
-            dftEngData = "Default Eng"
+            dftEngData = "Default Eng",
+            refCd = "TA0001"
         )
         val domain = TestReference(
             refCd = "uuid",
@@ -117,7 +118,8 @@ class TestReferenceServiceTest {
             refMaxVal = 10,
             dataFormat = "FORMAT01",
             dftData = "Default",
-            dftEngData = "Default Eng"
+            dftEngData = "Default Eng",
+            refCd = "TA0001"
         )
 
         `when`(commandMapper.toCreateCommand(request)).thenReturn(command)

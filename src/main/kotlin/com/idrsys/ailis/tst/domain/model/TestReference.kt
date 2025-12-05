@@ -162,7 +162,7 @@ class TestReference(
             now: LocalDateTime
         ): TestReference {
             return TestReference(
-                refCd = null,
+                refCd = command.refCd,
                 refCateCd = command.refCateCd,
                 useYn = command.useYn,
                 refNm = command.refNm,
