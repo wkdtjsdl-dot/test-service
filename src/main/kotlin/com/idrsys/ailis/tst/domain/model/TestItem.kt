@@ -27,33 +27,34 @@ class TestItem(
     endDt: LocalDate,
     useYn: Boolean,
     reqPossYn: Boolean,
-    webYn: Boolean,
+    webKorYn: Boolean,
+    webEngYn: Boolean,
     tstNm: String,
     tstAbbrNm: String,
     tstEngNm: String,
     tstEngAbbrNm: String,
-    tstIntNm: String,
+    tstIntNm: String?,
     rstTypeShortYn: Boolean,
     rstTypeLongYn: Boolean,
     rstTypeFileYn: Boolean,
     rstTypeUrlYn: Boolean,
-    diseaseCd: String,
+    diseaseCd: String?,
     tstMethodCd: String?,
-    refVal: String,
-    engRefVal: String,
-    clncSgnf: String,
-    engClncSgnf: String,
-    tstDesc: String,
-    tstEngDesc: String,
-    tstDayweek: String,
-    tstTatday: Int,
-    insuApplyCd: String,
-    insuCd: String,
-    insuCateNo: String,
+    refVal: String?,
+    engRefVal: String?,
+    clncSgnf: String?,
+    engClncSgnf: String?,
+    tstDesc: String?,
+    tstEngDesc: String?,
+    tstDayweek: String?,
+    tstTatday: Int?,
+    insuApplyCd: String?,
+    insuCd: String?,
+    insuCateNo: String?,
     creator: String,
     createDtime: LocalDateTime,
-    updater: String?,
-    updateDetime: LocalDateTime?
+    updater: String,
+    updateDetime: LocalDateTime
 ) : Persistable<String> {
 
     @Id
@@ -84,8 +85,12 @@ class TestItem(
     var reqPossYn: Boolean = reqPossYn
         private set
 
-    @Column("web_yn")
-    var webYn: Boolean = webYn
+    @Column("web_kor_yn")
+    var webKorYn: Boolean = webKorYn
+        private set
+
+    @Column("web_eng_yn")
+    var webEngYn: Boolean = webEngYn
         private set
 
     @Column("tst_nm")
@@ -105,7 +110,7 @@ class TestItem(
         private set
 
     @Column("tst_int_nm")
-    var tstIntNm: String = tstIntNm
+    var tstIntNm: String? = tstIntNm
         private set
 
     @Column("rst_type_short_yn")
@@ -125,7 +130,7 @@ class TestItem(
         private set
 
     @Column("disease_cd")
-    var diseaseCd: String = diseaseCd
+    var diseaseCd: String? = diseaseCd
         private set
 
     @Column("tst_method_cd")
@@ -133,47 +138,47 @@ class TestItem(
         private set
 
     @Column("ref_val")
-    var refVal: String = refVal
+    var refVal: String? = refVal
         private set
 
     @Column("eng_ref_val")
-    var engRefVal: String = engRefVal
+    var engRefVal: String? = engRefVal
         private set
 
     @Column("clnc_sgnf")
-    var clncSgnf: String = clncSgnf
+    var clncSgnf: String? = clncSgnf
         private set
 
     @Column("eng_clnc_sgnf")
-    var engClncSgnf: String = engClncSgnf
+    var engClncSgnf: String? = engClncSgnf
         private set
 
     @Column("tst_desc")
-    var tstDesc: String = tstDesc
+    var tstDesc: String? = tstDesc
         private set
 
     @Column("tst_eng_desc")
-    var tstEngDesc: String = tstEngDesc
+    var tstEngDesc: String? = tstEngDesc
         private set
 
     @Column("tst_dayweek")
-    var tstDayweek: String = tstDayweek
+    var tstDayweek: String? = tstDayweek
         private set
 
     @Column("tst_tatday")
-    var tstTatday: Int = tstTatday
+    var tstTatday: Int? = tstTatday
         private set
 
     @Column("insu_apply_cd")
-    var insuApplyCd: String = insuApplyCd
+    var insuApplyCd: String? = insuApplyCd
         private set
 
     @Column("insu_cd")
-    var insuCd: String = insuCd
+    var insuCd: String? = insuCd
         private set
 
     @Column("insu_cate_no")
-    var insuCateNo: String = insuCateNo
+    var insuCateNo: String? = insuCateNo
         private set
 
     @Column("creator")
@@ -185,11 +190,11 @@ class TestItem(
         private set
 
     @Column("updater")
-    var updater: String? = updater
+    var updater: String = updater
         private set
 
     @Column("update_detime")
-    var updateDetime: LocalDateTime? = updateDetime
+    var updateDetime: LocalDateTime = updateDetime
         private set
 
     @Transient
@@ -210,7 +215,8 @@ class TestItem(
         this.endDt = command.endDt
         this.useYn = command.useYn
         this.reqPossYn = command.reqPossYn
-        this.webYn = command.webYn
+        this.webKorYn = command.webKorYn
+        this.webEngYn = command.webEngYn
         this.tstNm = command.tstNm
         this.tstAbbrNm = command.tstAbbrNm
         this.tstEngNm = command.tstEngNm
@@ -251,7 +257,8 @@ class TestItem(
                 endDt = command.endDt,
                 useYn = command.useYn,
                 reqPossYn = command.reqPossYn,
-                webYn = command.webYn,
+                webKorYn = command.webKorYn,
+                webEngYn = command.webEngYn,
                 tstNm = command.tstNm,
                 tstAbbrNm = command.tstAbbrNm,
                 tstEngNm = command.tstEngNm,
@@ -276,8 +283,8 @@ class TestItem(
                 insuCateNo = command.insuCateNo,
                 creator = creator,
                 createDtime = now,
-                updater = null,
-                updateDetime = null
+                updater = creator,
+                updateDetime = now
             ).apply { setAsNew() }
         }
     }
