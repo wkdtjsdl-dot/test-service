@@ -17,8 +17,8 @@ interface CustLogsMapper {
         Mapping(source = "newLog.custMstHstId", target = "custMstHstId"),
         Mapping(source = "newLog.updater", target = "editBy"),
         Mapping(source = "newLog.updateDtime", target = "editAt"),
+        Mapping(source = "newLog.updateReason", target = "updateReason"),
         Mapping(source = "diffString", target = "editContents"),
-        Mapping(target = "editReason", expression = "java(\"추후 추가 예정\")"),
         Mapping(source = "oldLog.custMstId", target = "custMstId"),
         Mapping(source = "oldLog.custCd", target = "custCd"),
         Mapping(source = "oldLog.custNm", target = "custNm")

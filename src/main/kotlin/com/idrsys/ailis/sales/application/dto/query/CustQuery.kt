@@ -132,3 +132,9 @@ data class CustCareInstId (
     val custMstId: String,
     val careInstId: String
 )
+
+data class CustBasicInfo(
+    val custCd: String,     // 고객코드
+    val custNm: String,      // 고객명
+    val bzoffiCd: String?   // 영업소
+)

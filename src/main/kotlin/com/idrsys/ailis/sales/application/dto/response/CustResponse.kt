@@ -151,3 +151,9 @@ data class salsPicInfoResponse(
 data class custCntrResponse(
     val custCntrId: String
 )
+
+data class CustBasicResponse(
+    val custCd: String,     // 고객코드
+    val custNm: String,     // 고객명
+    val bzoffiCd: String?   // 영업소
+)

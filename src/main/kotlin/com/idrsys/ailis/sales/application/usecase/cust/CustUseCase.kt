@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
+import com.idrsys.ailis.sales.application.dto.response.CustBasicResponse
 import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
@@ -24,4 +25,5 @@ interface CustUseCase {
     fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteResponse>
     fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse>
     fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteResponse>
+    suspend fun getCustList(searchParam: CustSearchParam): List<CustBasicResponse>
 }

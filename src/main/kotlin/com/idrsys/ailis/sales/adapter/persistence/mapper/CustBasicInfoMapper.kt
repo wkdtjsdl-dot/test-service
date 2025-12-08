@@ -1,0 +1,15 @@
+package com.idrsys.ailis.sales.adapter.persistence.mapper
+
+import com.idrsys.ailis.sales.application.dto.query.CustBasicInfo
+import io.r2dbc.spi.Row
+
+/**
+ * Maps a [Row] to a [CustBasicInfo] object.
+ */
+internal fun Row.toCustBasicInfo(): CustBasicInfo {
+    return CustBasicInfo(
+        custCd = this.get("cust_cd", String::class.java)!!,
+        custNm = this.get("cust_nm", String::class.java)!!,
+        bzoffiCd = this.get("bzoffi_cd", String::class.java)
+    )
+}

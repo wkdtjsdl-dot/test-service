@@ -1,11 +1,13 @@
 package com.idrsys.ailis.sales.shared.mapper
 
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
+import com.idrsys.ailis.sales.application.dto.query.CustBasicInfo
 import com.idrsys.ailis.sales.application.dto.query.CustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.query.CustDetailInfo
 import com.idrsys.ailis.sales.application.dto.query.RprsCustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
 import com.idrsys.ailis.sales.application.dto.query.DirectAcctCdNmAutoCompleteInfo
+import com.idrsys.ailis.sales.application.dto.response.CustBasicResponse
 import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
@@ -59,4 +61,6 @@ abstract class CustMapper {
     abstract fun toRprsCustCdNmAutoCompleteResponse(model: RprsCustCdNmAutoCompleteInfo): RprsCustCdNmAutoCompleteResponse
 
     abstract fun toDirectAcctCdNmAutoCompleteResponse(model: DirectAcctCdNmAutoCompleteInfo): DirectAcctCdNmAutoCompleteResponse
+
+    abstract fun toBasicResponse(model: CustBasicInfo): CustBasicResponse
 }

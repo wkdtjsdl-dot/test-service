@@ -47,12 +47,13 @@ class GcgnSalsPicInfoService(
     }
 
     override suspend fun createGcgnSalsPicInfo(command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
+        val user = baseServiceClient.getUser(command.empUserId)
+            ?: throw IllegalArgumentException("User not found with id: ${command.empUserId}")
         val now = LocalDateTime.now()
         val gcgnSalsPicInfo = gcgnSalsPicInfoMapper.toDomain(command, adminId, now).apply { setAsNew() }
         val savedGcgnSalsPicInfo = gcgnSalsPicInfoRepository.save(gcgnSalsPicInfo)
         val response = gcgnSalsPicInfoMapper.toResponse(savedGcgnSalsPicInfo)
-        val empNm = response.empUserId.let { baseServiceClient.getUser(it)?.userNm }
-        return response.copy(empNm = empNm)
+        return response.copy(empNm = user.userNm)
     }
 
     override suspend fun updateGcgnSalsPicInfo(gcgnSalsPicInfoId: Long, command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {

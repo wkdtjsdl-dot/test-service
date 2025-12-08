@@ -7,6 +7,7 @@ import com.idrsys.ailis.sales.application.dto.query.*
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.generated.jooq.Tables.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
@@ -344,6 +345,39 @@ class CustCustomRepositoryImpl(
 
         return sql
             .map { row, _ -> row.toRprsCustCdNmAutoCompleteInfo() }
+            .all()
+            .asFlow()
+    }
+
+    // 고객 테이블 join 없이 최소한의 데이터 조회
+    override suspend fun findCustList(searchParam: CustSearchParam): Flow<CustBasicInfo> {
+        val conditions = mutableListOf<Condition>()
+
+        searchParam.custCdNm?.takeIf { it.isNotBlank() }?.let { keyword ->
+            conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword)
+                .or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
+        }
+
+        searchParam.bzoffiCd?.takeIf { it.isNotBlank() }?.let {
+            conditions += SCS_CUST_MST.BZOFFI_CD.eq(it)
+        }
+
+        searchParam.custCds?.takeIf { it.isNotEmpty() }?.let {
+            conditions += SCS_CUST_MST.CUST_CD.`in`(it)
+
+        }
+
+        if (conditions.isEmpty()) return emptyFlow()
+
+        val query = dslContext.selectFrom(SCS_CUST_MST)
+            .where(conditions)
+            .orderBy(SCS_CUST_MST.CUST_CD.asc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustBasicInfo() }
             .all()
             .asFlow()
     }

@@ -5,6 +5,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
+import com.idrsys.ailis.sales.application.dto.response.CustBasicResponse
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
 import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
@@ -30,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
-@Transactional(readOnly=false)
+@Transactional(readOnly = false)
 class CustService(
     private val custCustomRepository: CustCustomRepository,
     private val custRepository: CustRepository,
@@ -39,6 +40,7 @@ class CustService(
     private val baseServiceClient: BaseServiceClient,
     private val hospitalDataService: HospitalDataService
 ) : CustUseCase {
+    @Transactional(readOnly = true)
     override suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable): Page<CustListResponse> {
         val systemCodeMaps = fetchSystemCodeMaps()
 
@@ -76,6 +78,7 @@ class CustService(
         return PageImpl(responses, pageable, total)
     }
 
+    @Transactional(readOnly = true)
     override suspend fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> {
         val systemCodeMaps = fetchSystemCodeMaps()
 
@@ -112,6 +115,7 @@ class CustService(
 
     }
 
+    @Transactional(readOnly = true)
     override suspend fun findCustByCustMstId(custMstId: String): CustResponse {
         val cust = custCustomRepository.findCustDetailInfoByCustMstId(custMstId)
             ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
@@ -165,23 +169,35 @@ class CustService(
         return updatedCust
     }
 
+    @Transactional(readOnly = true)
     override suspend fun isCustCdExists(custCd: String): Boolean {
         return custCustomRepository.existByCustCd(custCd)
     }
 
+    @Transactional(readOnly = true)
     override fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteResponse> {
         val autoCompleteList = custCustomRepository.findCustCdNmAutoComplete(searchParam)
         return autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
     }
 
+    @Transactional(readOnly = true)
     override fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse> {
         val autoCompleteList = custCustomRepository.findRprsCustCdNmAutoComplete(searchParam)
         return autoCompleteList.map(custMapper::toRprsCustCdNmAutoCompleteResponse)
     }
 
+    @Transactional(readOnly = true)
     override fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteResponse> {
         val autoCompleteList = custCustomRepository.findDirectAcctCdNmAutoComplete(searchParam)
         return autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getCustList(searchParam: CustSearchParam): List<CustBasicResponse> {
+        // join 없는 cust_mst 최소한의 데이터
+        return custCustomRepository.findCustList(searchParam)
+            .map(custMapper::toBasicResponse)
+            .toList()
     }
 
     private suspend fun fetchLookupMaps(userIds: List<String>): LookupMaps {
