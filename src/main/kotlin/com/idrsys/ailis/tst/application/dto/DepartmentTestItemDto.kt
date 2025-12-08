@@ -36,6 +36,8 @@ data class DepartmentGroupResponse(
     val updateDtime: LocalDateTime
 )
 
+
+
 // --- Department Group Item ---
 
 data class DepartmentGroupItemRegisterRequest(
@@ -64,7 +66,17 @@ data class DepartmentGroupItemResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,
-    val updateDtime: LocalDateTime
+    val updateDtime: LocalDateTime,
+
+)
+data class DepartmentGroupItemWithCount(
+    val deptGrpItmId: String,
+    val deptCd: String,
+    val tstCateItemCd: String,
+    val tstCateItemNm: String,
+    val sortOrder: Int,
+    val testCount: Int,
+    val tstCateCd: String
 )
 
 // --- Department Group Item Test ---

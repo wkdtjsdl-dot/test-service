@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.adapter.web
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.usecase.DepartmentTestItemUseCase
 import com.idrsys.ailis.tst.shared.vo.AuthenticationAdmin
@@ -105,12 +106,15 @@ class DepartmentTestItemController(
     }
 
     @Operation(summary = "검사 기준정보 부서분류그룹항목 목록")
-    @GetMapping("/api/bbs/dept-group-item/by-dept/{deptCd}")
-    fun getGroupItemsByDept(@PathVariable deptCd: String): Flow<DepartmentGroupItemResponse> {
+    @GetMapping("/api/bbs/dept-group-item")
+    fun getGroupItems(
+        @ParameterObject search: DepartmentGroupItemSearchParam
+    ): Flow<DepartmentGroupItemWithCount> {
         return kotlinx.coroutines.flow.flow {
-            useCase.getGroupItemsByDept(deptCd).collect { emit(it) }
+            useCase.getGroupItems(search).collect { emit(it) }
         }
     }
+
 
     // --- DepartmentGroupItemTest ---
 

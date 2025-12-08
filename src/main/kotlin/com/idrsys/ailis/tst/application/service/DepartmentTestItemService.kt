@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemCommandMapper
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemMapper
@@ -92,6 +93,12 @@ class DepartmentTestItemService(
 
     override suspend fun getGroupItemsByDept(deptCd: String): Flow<DepartmentGroupItemResponse> {
         return repository.findGroupItemsByDeptCd(deptCd).map { mapper.toResponse(it) }
+    }
+    override suspend fun getGroupItems(
+        search: DepartmentGroupItemSearchParam
+    ): Flow<DepartmentGroupItemWithCount> {
+
+        return repository.getGroupItems(search)
     }
 
     // --- DepartmentGroupItemTest ---

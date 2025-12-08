@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.application.usecase
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import kotlinx.coroutines.flow.Flow
 
@@ -13,13 +14,15 @@ interface DepartmentTestItemUseCase {
     suspend fun getAllGroups(): Flow<DepartmentGroupResponse>
     suspend fun getGroups(deptCd: String?): Flow<DepartmentGroupResponse>
 
+
+
     // --- DepartmentGroupItem ---
     suspend fun registerGroupItem(request: DepartmentGroupItemRegisterRequest, adminId: String): DepartmentGroupItemResponse
     suspend fun getGroupItem(deptGrpItmId: String): DepartmentGroupItemResponse
     suspend fun updateGroupItem(deptGrpItmId: String, request: DepartmentGroupItemUpdateRequest, adminId: String): DepartmentGroupItemResponse
     suspend fun deleteGroupItem(deptGrpItmId: String, adminId: String)
     suspend fun getGroupItemsByDept(deptCd: String): Flow<DepartmentGroupItemResponse>
-
+    suspend fun getGroupItems(search: DepartmentGroupItemSearchParam): Flow<DepartmentGroupItemWithCount>
     // --- DepartmentGroupItemTest ---
     suspend fun registerGroupItemTest(request: DepartmentGroupItemTestRegisterRequest, adminId: String): DepartmentGroupItemTestResponse
     suspend fun deleteGroupItemTest(deptGrpItmTstId: String, adminId: String)
