@@ -202,7 +202,13 @@ class CustCustomRepositoryImpl(
         }
 
         searchParam.empUserId?.takeIf { it.isNotBlank() }?.let { conds += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(it) }
-        searchParam.empUserIds.takeIf { it.isNotEmpty() }?.let { conds += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.`in`(it) }
+        // empUserIdNm으로 검색했지만 매칭되는 사용자가 없으면 empUserIds가 빈 리스트
+        // 이 경우 결과가 0건이어야 하므로 불가능한 조건 추가
+        if (!searchParam.empUserIdNm.isNullOrBlank() && searchParam.empUserIds.isEmpty()) {
+            conds += falseCondition() // 항상 false인 조건 (결과 0건)
+        } else {
+            searchParam.empUserIds.takeIf { it.isNotEmpty() }?.let { conds += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.`in`(it) }
+        }
 
         return conds
     }
