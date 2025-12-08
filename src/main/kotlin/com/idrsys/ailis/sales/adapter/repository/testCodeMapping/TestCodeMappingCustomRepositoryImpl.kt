@@ -72,6 +72,7 @@ class TestCodeMappingCustomRepositoryImpl(
 
         val countQuery = dslContext.selectCount()
         val query = countQuery.from(SCS_CUST_TST_CD_MPG)
+            .leftJoin(SCS_CUST_MST).on(SCS_CUST_TST_CD_MPG.CUST_CD.eq(SCS_CUST_MST.CUST_CD))
 
         val finalQuery = query.where(conditions)
 
@@ -83,7 +84,14 @@ class TestCodeMappingCustomRepositoryImpl(
 
     private fun buildConditions(searchParam: TestCodeMappingSearchParam): List<Condition> {
         val conds = mutableListOf<Condition>()
-        searchParam.custCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_TST_CD_MPG.CUST_CD.eq(it) }
+        val custOrConditions = mutableListOf<Condition>()
+
+        searchParam.custCd?.takeIf { it.isNotBlank() }?.let { custOrConditions.add(SCS_CUST_TST_CD_MPG.CUST_CD.equalIgnoreCase(it)) }
+        searchParam.custNm?.takeIf { it.isNotBlank() }?.let { custOrConditions.add(SCS_CUST_MST.CUST_NM.likeIgnoreCase("%${it}%")) }
+
+        if (custOrConditions.isNotEmpty()) {
+            conds.add(custOrConditions.reduce { acc, condition -> acc.or(condition) })
+        }
         return conds
     }
 
