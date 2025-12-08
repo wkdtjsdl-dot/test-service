@@ -16,6 +16,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BtsSpcm
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsRefItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemGene
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
 import org.jooq.impl.DSL.notExists
@@ -60,6 +61,10 @@ class TestItemRepositoryImpl(
     override suspend fun findById(tstCd: String): TestItem? = itemDataRepo.findById(tstCd)
 
     override fun getItems(searchParam: TestItemSearchParam): Flow<TestItem> {
+        if (searchParam.deptCd.isNullOrBlank()) {
+            return flowOf()
+        }
+
         val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
         val tstItem = BtsItem.BTS_ITEM
 
