@@ -153,6 +153,8 @@ class CustMstHst(
     val reqMethodCd: String?,
     @Column("req_if_type_cd")
     val reqIfTypeCd: String?,
+    @Column("update_reason")
+    val updateReason: String?,
     @Column("creator")
     val creator: String,
     @Column("create_dtime")

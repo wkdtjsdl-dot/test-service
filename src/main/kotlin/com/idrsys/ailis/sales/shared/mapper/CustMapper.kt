@@ -32,8 +32,9 @@ abstract class CustMapper {
 
     @Mappings(
         Mapping(target = "custMstHstId", ignore = true),
+        Mapping(target = "updateReason", source = "updateReason")
     )
-    abstract fun toHistDomain(cust: Cust): CustMstHst
+    abstract fun toHistDomain(cust: Cust, updateReason: String?): CustMstHst
 
     @Mappings(
         Mapping(target = "deptNm", ignore = true),

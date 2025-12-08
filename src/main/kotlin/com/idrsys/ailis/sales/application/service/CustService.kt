@@ -138,25 +138,28 @@ class CustService(
                 "USER_ALREADY_EXIST", "이미 존재하는 고객코드입니다 : $custCd")
         }
 
-        val newCust = custMapper.toDomain(command, creator, LocalDateTime.now())
+        val now = LocalDateTime.now()
+        val newCust = custMapper.toDomain(command, creator, now)
         val savedCust = custRepository.save(newCust)
 
         // Save history
-        val hist = custMapper.toHistDomain(savedCust)
+        val hist = custMapper.toHistDomain(savedCust, command.updateReason)
         custMstHistRepository.save(hist)
 
         return savedCust
     }
 
     override suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust {
+        val custCd = command.custCd
+
         val cust = custRepository.findByCustMstId(custMstId)
-            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+            ?: throw UserDefinedException("USER_NOT_FOUND","고객을 찾을 수 없습니다: $custCd")
 
         cust.update(command, updater)
         val updatedCust = custRepository.save(cust)
 
         // Save history
-        val hist = custMapper.toHistDomain(updatedCust)
+        val hist = custMapper.toHistDomain(updatedCust, command.updateReason)
         custMstHistRepository.save(hist)
 
         return updatedCust

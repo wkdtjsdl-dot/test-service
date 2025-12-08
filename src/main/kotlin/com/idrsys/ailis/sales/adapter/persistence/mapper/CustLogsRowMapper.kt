@@ -80,5 +80,6 @@ fun Row.toCustMstHst(): CustMstHst {
         updateDtime = this.get("update_dtime", LocalDateTime::class.java)!!,
         reqIfTypeCd = this.get("req_if_type_cd", String::class.java),
         reqMethodCd = this.get("req_method_cd", String::class.java),
+        updateReason = this.get("update_reason", String::class.java)
     )
 }

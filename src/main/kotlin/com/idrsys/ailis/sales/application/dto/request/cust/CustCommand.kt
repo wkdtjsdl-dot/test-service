@@ -8,7 +8,7 @@ data class CustCommand(
     val custNm: String,                 // 고객명
     val custDivCd: String,              // 고객구분코드      직접거래처여부 : 직접거래처 / 재수탁거래처
     val directAcctCd: String?,           // 직접거래처코드
-    val directAcctAcctCd: String,       // 직접거래처거래처코드 인터페이스용
+    val directAcctAcctCd: String?,      // 직접거래처거래처코드 인터페이스용
     val rprsNm: String?,                 // 대표자명
     val rstOutputCustNm: String?,       // 결과지출력고객명
     val careInstId: String?,             // 요양기관ID  ->  심평원명    scs_hosp_mst
@@ -28,7 +28,7 @@ data class CustCommand(
     val zipcd: String?,                  // 우편번호
     val addr1: String?,                  // 주소1
     val addr2: String?,                  // 주소2
-    val reqDivCd: String?,               // 의뢰구분코드 (공통코드 RQDV)
+    val reqDivCd: String,               // 의뢰구분코드 (공통코드 RQDV)
     // 사업자등록정보
     val bizrno: String?,                 // 사업자번호
     val sapCustCd: String?,              // SAP고객코드
@@ -75,71 +75,8 @@ data class CustCommand(
     val reqIfTypeCd: String?,           // 의뢰연동유형코드
     val atchFileGrupId: String?,         // 첨부파일그룹아이디
     val reqPossTstLimitYn: Boolean?,     // 의뢰가능검사제한여부
+    val updateReason: String? = null    // 변경사유 (히스토리 테이블용)
 )
-
-//data class CustUpdateCommand(
-//    val custCd: String,
-//    val custNm: String,
-//    val rstOutputCustNm: String?,
-//    val rprsNm: String?,
-//    val rprsCustYn: Boolean,
-//    val rprsCustCd: String?,
-//    val custDivCd: String,
-//    val directAcctCd: String?,
-//    val directAcctAcctCd: String,
-//    val frgnAcctYn: Boolean,
-//    val studyProjCustYn: Boolean,
-//    val studyProjNm: String?,
-//    val natnCd: String,
-//    val useLangCd: String,
-//    val crcyCd: String,
-//    val custStatCd: String,
-//    val reqPossYn: Boolean,
-//    val custTypeCd: String,
-//    val custGradeCd: String?,
-//    val branchCd: String?,
-//    val bzoffiCd: String?,
-//    val bzoffiPicId: String?,
-//    val asrtCd: String?,
-//    val zipcd: String?,
-//    val addr1: String?,
-//    val addr2: String?,
-//    val hpUrl: String?,
-//    val careInstNo: String?,
-//    val careInstId: String?,
-//    val bizrno: String?,
-//    val corpNo: String?,
-//    val bzse: String?,
-//    val bztp: String?,
-//    val biznm: String?,
-//    val bizregRprsNm: String?,
-//    val openDt: LocalDate?,
-//    val billPublYn: Boolean,
-//    val billAutoPublTargetYn: Boolean,
-//    val addtaxInclYn: Boolean,
-//    val taxDivCd: String,
-//    val billPic: String?,
-//    val billPicEmaiAddr: String?,
-//    val billPicTelno: String?,
-//    val billPublDt: Int?,
-//    val rprsAcctBillCombPublYn: Boolean,
-//    val payRtday: Int?,
-//    val payPlanDt: Int?,
-//    val payMethodCd: String?,
-//    val gccStmtMethodCd: String,
-//    val sapCustCd: String?,
-//    val spcmPickupMethodCd: String?,
-//    val gcgPickupPicEmpNo: String?,
-//    val truncUnitCd: String?,
-//    val invcEmailRecpYn: Boolean,
-//    val invcRecpEmailAddr: String?,
-//    val outamtWritingYn: Boolean,
-//    val sotOutputYn: Boolean,
-//    val sotOutputQnty: Int,
-//    val rstNtcnRecpYn: Boolean,
-//    val rstNtcnRecpEmailAddr: String?,
-//    val qcCustYn: Boolean,
-//)
 
 typealias CustRegisterCommand = CustCommand
 typealias CustUpdateCommand = CustCommand
