@@ -84,6 +84,16 @@ class TestItemController(
         null
     }
 
+    @Operation(summary = "표준 수가 삭제")
+    @PutMapping("/api/bts/item/stnd-charge/{stndChargeId}")
+    fun updateCharge(
+        @PathVariable stndChargeId: String,
+        @RequestBody request: StandardChargeUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<StandardChargeResponse> = mono {
+        useCase.updateCharge(stndChargeId, request, auth.adminId)
+    }
+
     @Operation(summary = "검사 검사종목 기준수가 목록")
     @GetMapping("/api/bts/item/stnd-charge")
     fun getChargesByTest(@RequestParam tstCd: String): Flow<StandardChargeResponse> {
