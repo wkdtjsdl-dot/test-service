@@ -118,7 +118,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 ###########################
 
 ### 검사 검사종목 기준수가 조회
-GET {{api-service}}/api/tst/bts/item/stnd-charge/CHARGE001
+GET {{api-service}}/api/tst/bts/item/stnd-charge/39cd94c9-eb8c-4479-b3e9-30128d28d101
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -142,6 +142,32 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "applyEndDt": "2024-12-31",
   "charge": 50000,
   "sortOrder": 1
+}
+
+### 검사 검사종목 기준수가 등록
+PUT {{api-service}}/api/tst/bts/item/stnd-charge/39cd94c9-eb8c-4479-b3e9-30128d28d101
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "stndChargeId": "39cd94c9-eb8c-4479-b3e9-30128d28d101",
+  "tstCd": "TST001",
+  "applyStartDt": "2024-01-01",
+  "applyEndDt": "2024-12-31",
+  "insuCd": null,
+  "insuCateNo": null,
+  "relatValuePoint": null,
+  "insuCharge": 100000,
+  "qladCharge": 2000,
+  "stndCharge": 300,
+  "lowestCharge": 0.0,
+  "qladCd": null,
+  "relatValueQladPoint": 0.0,
+  "outputInsuCd": null,
+  "totalQladCharge": 0.0,
+  "supval": 0.0,
+  "addtax": 0.0
 }
 
 ### 검사 검사종목 기준수가 삭제

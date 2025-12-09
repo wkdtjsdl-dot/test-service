@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.domain.model
 
 import com.idrsys.ailis.tst.domain.command.StandardChargeCreateCommand
+import com.idrsys.ailis.tst.domain.command.StandardChargeUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemEssentialDocCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemEssentialDocUpdateCommand
@@ -400,6 +401,28 @@ class StandardCharge(
     override fun getId(): String? = stndChargeId
 
     override fun isNew(): Boolean = _isNew
+
+    fun update(
+        command: StandardChargeUpdateCommand,
+        updater: String,
+        updateDetime: LocalDateTime
+    ) {
+        this.applyStartDt = command.applyStartDt
+        this.applyEndDt = command.applyEndDt
+        this.insuCd = command.insuCd
+        this.insuCateNo = command.insuCateNo
+        this.relatValuePoint = command.relatValuePoint
+        this.insuCharge = command.insuCharge
+        this.qladCharge = command.qladCharge
+        this.stndCharge = command.stndCharge
+        this.lowestCharge = command.lowestCharge
+        this.qladCd = command.qladCd
+        this.relatValueQladPoint = command.relatValueQladPoint
+        this.outputInsuCd = command.outputInsuCd
+        this.totalQladCharge = command.totalQladCharge
+        this.supval = command.supval
+        this.addtax = command.addtax
+    }
 
     companion object {
         fun create(

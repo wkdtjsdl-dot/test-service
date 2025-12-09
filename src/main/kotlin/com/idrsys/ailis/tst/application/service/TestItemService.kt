@@ -75,6 +75,15 @@ class TestItemService(
         repository.deleteChargeById(id)
     }
 
+    override suspend fun updateCharge(id: String, request: StandardChargeUpdateRequest,adminId: String): StandardChargeResponse {
+        val existing = repository.findChargeById(id) ?: throw RuntimeException("StandardCharge not found with id: $id")
+        val command = commandMapper.toUpdateCommand(request)
+        val now = java.time.LocalDateTime.now()
+        existing.update(command, adminId, now)
+        val saved = repository.saveCharge(existing)
+        return mapper.toResponse(saved)
+    }
+
     override suspend fun getChargesByTest(tstCd: String): Flow<StandardChargeResponse> {
         return repository.findChargesByTestCd(tstCd).map { mapper.toResponse(it) }
     }

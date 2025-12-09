@@ -144,6 +144,25 @@ data class StandardChargeRegisterRequest(
     val addtax: Double
 )
 
+data class StandardChargeUpdateRequest(
+    val tstCd: String,
+    val applyStartDt: LocalDate,
+    val applyEndDt: LocalDate,
+    val insuCd: String?,
+    val insuCateNo: String?,
+    val relatValuePoint: Double?,
+    val insuCharge: Double,
+    val qladCharge: Double,
+    val stndCharge: Double,
+    val lowestCharge: Double,
+    val qladCd: String?,
+    val relatValueQladPoint: Double,
+    val outputInsuCd: String?,
+    val totalQladCharge: Double,
+    val supval: Double,
+    val addtax: Double
+)
+
 data class StandardChargeResponse(
     val stndChargeId: String,
     val tstCd: String,

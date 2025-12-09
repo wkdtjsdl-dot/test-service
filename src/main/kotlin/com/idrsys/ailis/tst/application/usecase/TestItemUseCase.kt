@@ -15,6 +15,7 @@ interface TestItemUseCase {
     suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse
     suspend fun getCharge(id: String): StandardChargeResponse
     suspend fun deleteCharge(id: String, adminId: String)
+    suspend fun updateCharge(id: String, request: StandardChargeUpdateRequest, adminId: String): StandardChargeResponse
     suspend fun getChargesByTest(tstCd: String): Flow<StandardChargeResponse>
 
     // --- TestItemSpecimen ---
