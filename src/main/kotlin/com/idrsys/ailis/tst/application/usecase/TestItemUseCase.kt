@@ -29,7 +29,7 @@ interface TestItemUseCase {
     suspend fun getRefItem(refItemId: String): TestItemRefItemResponse
     suspend fun updateRefItem(refItemId: String, request: TestItemRefItemUpdateRequest, adminId: String): TestItemRefItemResponse
     suspend fun deleteRefItem(refItemId: String, adminId: String)
-    fun getRefItemsByTstCd(tstCd: String): Flow<TestItemRefItemResponse>
+    fun getRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse>
 
     // --- TestItemGene ---
     suspend fun registerGene(request: TestItemGeneRegisterRequest, adminId: String): TestItemGeneResponse

@@ -1,9 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
-import com.idrsys.ailis.tst.application.dto.DeptTestItemCategoryResponse
-import com.idrsys.ailis.tst.application.dto.TestItemAutoCompleteParam
-import com.idrsys.ailis.tst.application.dto.TestItemAutoCompleteResponse
-import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
+import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.required.TestItemRepository
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
@@ -12,6 +9,7 @@ import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRef
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemEstlDoc
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsStndCharge
@@ -21,8 +19,10 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemGene
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL.notExists
+import org.jooq.impl.DSL.noCondition
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -300,12 +300,26 @@ class TestItemRepositoryImpl(
     override suspend fun findRefItemById(refItemId: String): TestItemRefItem? = refItemDataRepo.findById(refItemId)
     override suspend fun deleteRefItemById(refItemId: String) = refItemDataRepo.deleteById(refItemId)
 
-    override fun findRefItemsByTstCd(tstCd: String): Flow<TestItemRefItem> {
-        val table = BtsRefItem.BTS_REF_ITEM
+    override fun findRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse> {
+        val refItem = BtsRefItem.BTS_REF_ITEM
+        val tstRef = BbsTstRef.BBS_TST_REF
+
+        val conditions = mutableListOf<Condition>()
+
+        searchParam.tstCd.takeIf { it.isNotBlank() }?.let {
+            conditions.add(refItem.TST_CD.eq(it))
+        }
+        searchParam.refCateCd.takeIf { it.isNotBlank() }?.let {
+            conditions.add(tstRef.REF_CATE_CD.eq(it))
+        }
+
         val query = dslContext
-            .select(table.fields().toList())
-            .from(table)
-            .where(table.TST_CD.eq(tstCd))
+            .select(refItem.REF_ITEM_ID, refItem.REF_CD, tstRef.REF_CATE_CD,
+                    refItem.SORT_ORDER, tstRef.REF_NM, refItem.ESTL_YN)
+            .from(tstRef)
+            .join(refItem).on(tstRef.REF_CD.eq(refItem.REF_CD))
+            .where(conditions)
+            .orderBy(refItem.SORT_ORDER)
 
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value: Any? ->
@@ -319,7 +333,7 @@ class TestItemRepositoryImpl(
         return executeSpec
             .fetch()
             .all()
-            .map { row -> toTestItemRefItem(row) }
+            .map { row -> toTestItemRefResponse(row) }
             .asFlow()
     }
 
@@ -334,6 +348,18 @@ class TestItemRepositoryImpl(
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String?,
             updateDetime = row["update_detime"] as LocalDateTime?
+        )
+    }
+
+    private fun toTestItemRefResponse(row: Map<String, Any>): TestItemRefResponse {
+        return TestItemRefResponse(
+            refItemId = row["ref_item_id"] as String,
+            tstCd = row["tst_cd"] as String?,
+            refCd = row["ref_cd"] as String,
+            refCateCd = row["ref_cate_cd"] as String?,
+            sortOrder = row["sort_order"] as Int?,
+            refNm = row["ref_nm"] as String,
+            estlYn = row["estl_yn"] as Boolean
         )
     }
 

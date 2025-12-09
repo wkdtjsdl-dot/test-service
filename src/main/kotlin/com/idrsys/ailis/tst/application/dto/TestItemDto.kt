@@ -260,6 +260,21 @@ data class TestItemRefItemResponse(
     val updateDetime: LocalDateTime?
 )
 
+data class TestItemRefRequest(
+    val refCateCd: String,
+    val tstCd: String
+)
+
+data class TestItemRefResponse(
+    val refItemId: String,
+    val tstCd: String?,
+    val refCd: String,
+    val refCateCd: String?,
+    val sortOrder: Int?,
+    val refNm: String,
+    val estlYn: Boolean
+)
+
 // --- Test Item Gene ---
 
 data class TestItemGeneRegisterRequest(

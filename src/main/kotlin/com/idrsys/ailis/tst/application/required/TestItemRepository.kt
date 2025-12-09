@@ -1,8 +1,6 @@
 package com.idrsys.ailis.tst.application.required
 
-import com.idrsys.ailis.tst.application.dto.TestItemAutoCompleteParam
-import com.idrsys.ailis.tst.application.dto.TestItemAutoCompleteResponse
-import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
+import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
@@ -34,7 +32,7 @@ interface TestItemRepository {
     suspend fun saveRefItem(entity: TestItemRefItem): TestItemRefItem
     suspend fun findRefItemById(refItemId: String): TestItemRefItem?
     suspend fun deleteRefItemById(refItemId: String)
-    fun findRefItemsByTstCd(tstCd: String): Flow<TestItemRefItem>
+    fun findRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse>
 
     // --- TestItemGene ---
     suspend fun saveGene(entity: TestItemGene): TestItemGene

@@ -139,8 +139,8 @@ class TestItemService(
         repository.deleteRefItemById(refItemId)
     }
 
-    override fun getRefItemsByTstCd(tstCd: String): Flow<TestItemRefItemResponse> {
-        return repository.findRefItemsByTstCd(tstCd).map { mapper.toResponse(it) }
+    override fun getRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse> {
+        return repository.findRefItemsByTstCd(searchParam)
     }
 
     // --- TestItemGene ---

@@ -173,8 +173,8 @@ class TestItemController(
 
     @Operation(summary = "검사 검사종목 참조항목 목록")
     @GetMapping("/api/bts/ref-item")
-    fun getRefItemsByTstCd(@RequestParam tstCd: String): Flow<TestItemRefItemResponse> =
-        useCase.getRefItemsByTstCd(tstCd)
+    fun getRefItemsByTstCd(@ParameterObject searchParam: TestItemRefRequest): Flow<TestItemRefResponse> =
+        useCase.getRefItemsByTstCd(searchParam)
 
     // --- TestItemGene ---
 
