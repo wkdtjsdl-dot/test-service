@@ -1,6 +1,9 @@
 package com.idrsys.ailis.tst.adapter.repository
 
+import com.idrsys.ailis.tst.application.dto.DepartmentGroupItemWithCount
 import com.idrsys.ailis.tst.application.dto.DeptTestItemCategoryResponse
+import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
+import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemTestSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.required.DepartmentTestItemRepository
 import com.idrsys.ailis.tst.domain.model.DepartmentGroup
@@ -16,6 +19,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -95,24 +99,79 @@ class DepartmentTestItemRepositoryImpl(
             .map { row -> toDepartmentGroupItem(row) }
             .asFlow()
     }
+    override suspend fun getGroupItems(search: DepartmentGroupItemSearchParam): Flow<DepartmentGroupItemWithCount> {
+        val itm = BbsDeptGrpItm.BBS_DEPT_GRP_ITM
+        val tstItm = BbsDeptGrpItmTst.BBS_DEPT_GRP_ITM_TST
+
+        val query = dslContext
+            .select(
+                itm.DEPT_GRP_ITM_ID,
+                itm.DEPT_CD,
+                itm.TST_CATE_CD,
+                itm.TST_CATE_ITEM_CD,
+                itm.TST_CATE_ITEM_NM,
+                itm.SORT_ORDER,
+                DSL.count(tstItm.TST_CD).`as`("test_count")
+            )
+            .from(itm)
+            .leftJoin(tstItm)
+            .on(itm.DEPT_GRP_ITM_ID.eq(tstItm.DEPT_GRP_ITM_TST_ID))
+            .where(
+                itm.DEPT_CD.eq(search.deptCd)
+                    .and(itm.TST_CATE_CD.eq(search.tstCateCd))
+            )
+            .groupBy(
+                itm.DEPT_GRP_ITM_ID,
+                itm.DEPT_CD,
+                itm.TST_CATE_CD,
+                itm.TST_CATE_ITEM_CD,
+                itm.TST_CATE_ITEM_NM,
+                itm.SORT_ORDER
+            )
+
+
+        return databaseClient.sql(query.sql)
+            .bind(0,search.deptCd)
+            .bind(1, search.tstCateCd)
+            .map { row, _ ->
+                DepartmentGroupItemWithCount(
+                    deptGrpItmId = row.get("dept_grp_itm_id", String::class.java)!!,
+                    deptCd = row.get("dept_cd", String::class.java)!!,
+                    tstCateCd = row.get("tst_cate_cd", String::class.java)!!,
+                    tstCateItemCd = row.get("tst_cate_item_cd", String::class.java)!!,
+                    tstCateItemNm = row.get("tst_cate_item_nm", String::class.java)!!,
+                    sortOrder = row.get("sort_order", Integer::class.java)!!.toInt(),
+                    testCount = row.get("test_count", java.lang.Long::class.java)?.toInt() ?: 0
+                )
+            }
+            .all()
+            .asFlow()
+    }
 
     // --- DepartmentGroupItemTest ---
     override suspend fun saveGroupItemTest(entity: DepartmentGroupItemTest): DepartmentGroupItemTest = groupItemTestDataRepo.save(entity)
     override suspend fun deleteGroupItemTestById(deptGrpItmTstId: String) = groupItemTestDataRepo.deleteById(deptGrpItmTstId)
 
-    override suspend fun findGroupItemTestsByDeptCd(deptCd: String): Flow<DepartmentGroupItemTest> {
+    override suspend fun findGroupItemTestsByDeptCd(
+        searchParam: DepartmentGroupItemTestSearchParam
+    ): Flow<DepartmentGroupItemTest> {
         val table = BbsDeptGrpItmTst.BBS_DEPT_GRP_ITM_TST
+
         val query = dslContext
             .select(table.fields().toList())
             .from(table)
-            .where(table.DEPT_CD.eq(deptCd))
+            .where(
+                table.DEPT_CD.eq(searchParam.deptCd)
+                    .and(table.TST_CATE_CD.eq(searchParam.tstCateCd))
+                    .and(table.TST_CATE_ITEM_CD.eq(searchParam.tstCateItmCd))
+            )
 
         var executeSpec = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { index, value: Any? ->
-            if (value != null) {
-                executeSpec = executeSpec.bind(index, value)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
             } else {
-                executeSpec = executeSpec.bindNull(index, String::class.java)
+                executeSpec.bindNull(index, String::class.java)
             }
         }
 
@@ -122,6 +181,8 @@ class DepartmentTestItemRepositoryImpl(
             .map { row -> toDepartmentGroupItemTest(row) }
             .asFlow()
     }
+
+
 
     // --- DepartmentTestItem ---
     override suspend fun saveTestItem(entity: DepartmentTestItem): DepartmentTestItem = testItemDataRepo.save(entity)
