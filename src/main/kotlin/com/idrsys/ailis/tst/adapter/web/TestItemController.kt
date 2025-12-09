@@ -52,6 +52,11 @@ class TestItemController(
         return useCase.getItems(searchParam)
     }
 
+    @Operation(summary = "검사 코드 자동완성")
+    @GetMapping("/api/bts/item/auto-complete")
+    fun autoCompleteItem(@ParameterObject searchParam: TestItemAutoCompleteParam): Flow<TestItemAutoCompleteResponse> {
+        return useCase.autoCompleteItems(searchParam)
+    }
     // --- StandardCharge ---
 
     @Operation(summary = "검사 검사종목 기준수가 등록")
