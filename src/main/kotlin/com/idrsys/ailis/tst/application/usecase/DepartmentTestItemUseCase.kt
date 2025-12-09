@@ -2,6 +2,7 @@ package com.idrsys.ailis.tst.application.usecase
 
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
+import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemTestSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import kotlinx.coroutines.flow.Flow
 
@@ -26,7 +27,7 @@ interface DepartmentTestItemUseCase {
     // --- DepartmentGroupItemTest ---
     suspend fun registerGroupItemTest(request: DepartmentGroupItemTestRegisterRequest, adminId: String): DepartmentGroupItemTestResponse
     suspend fun deleteGroupItemTest(deptGrpItmTstId: String, adminId: String)
-    suspend fun getGroupItemTestsByDept(deptCd: String): Flow<DepartmentGroupItemTestResponse>
+    suspend fun getGroupItemTestsByDept(searchParam: DepartmentGroupItemTestSearchParam): Flow<DepartmentGroupItemTestResponse>
 
     // --- DepartmentTestItem ---
     suspend fun registerTestItem(request: DepartmentTestItemRegisterRequest, adminId: String): DepartmentTestItemResponse

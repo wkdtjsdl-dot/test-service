@@ -3,6 +3,7 @@ package com.idrsys.ailis.tst.application.required
 import com.idrsys.ailis.tst.application.dto.DepartmentGroupItemWithCount
 import com.idrsys.ailis.tst.application.dto.DeptTestItemCategoryResponse
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
+import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemTestSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.domain.model.DepartmentGroup
 import com.idrsys.ailis.tst.domain.model.DepartmentGroupItem
@@ -29,7 +30,7 @@ interface DepartmentTestItemRepository {
     // --- DepartmentGroupItemTest ---
     suspend fun saveGroupItemTest(entity: DepartmentGroupItemTest): DepartmentGroupItemTest
     suspend fun deleteGroupItemTestById(deptGrpItmTstId: String)
-    suspend fun findGroupItemTestsByDeptCd(deptCd: String): Flow<DepartmentGroupItemTest>
+    suspend fun findGroupItemTestsByDeptCd(searchParam: DepartmentGroupItemTestSearchParam): Flow<DepartmentGroupItemTest>
 
     // --- DepartmentTestItem ---
     suspend fun saveTestItem(entity: DepartmentTestItem): DepartmentTestItem

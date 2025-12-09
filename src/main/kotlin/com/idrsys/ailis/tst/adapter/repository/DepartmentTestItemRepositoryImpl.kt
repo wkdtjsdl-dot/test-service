@@ -3,6 +3,7 @@ package com.idrsys.ailis.tst.adapter.repository
 import com.idrsys.ailis.tst.application.dto.DepartmentGroupItemWithCount
 import com.idrsys.ailis.tst.application.dto.DeptTestItemCategoryResponse
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
+import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemTestSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.required.DepartmentTestItemRepository
 import com.idrsys.ailis.tst.domain.model.DepartmentGroup
@@ -151,19 +152,26 @@ class DepartmentTestItemRepositoryImpl(
     override suspend fun saveGroupItemTest(entity: DepartmentGroupItemTest): DepartmentGroupItemTest = groupItemTestDataRepo.save(entity)
     override suspend fun deleteGroupItemTestById(deptGrpItmTstId: String) = groupItemTestDataRepo.deleteById(deptGrpItmTstId)
 
-    override suspend fun findGroupItemTestsByDeptCd(deptCd: String): Flow<DepartmentGroupItemTest> {
+    override suspend fun findGroupItemTestsByDeptCd(
+        searchParam: DepartmentGroupItemTestSearchParam
+    ): Flow<DepartmentGroupItemTest> {
         val table = BbsDeptGrpItmTst.BBS_DEPT_GRP_ITM_TST
+
         val query = dslContext
             .select(table.fields().toList())
             .from(table)
-            .where(table.DEPT_CD.eq(deptCd))
+            .where(
+                table.DEPT_CD.eq(searchParam.deptCd)
+                    .and(table.TST_CATE_CD.eq(searchParam.tstCateCd))
+                    .and(table.TST_CATE_ITEM_CD.eq(searchParam.tstCateItmCd))
+            )
 
         var executeSpec = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { index, value: Any? ->
-            if (value != null) {
-                executeSpec = executeSpec.bind(index, value)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
             } else {
-                executeSpec = executeSpec.bindNull(index, String::class.java)
+                executeSpec.bindNull(index, String::class.java)
             }
         }
 
@@ -173,6 +181,7 @@ class DepartmentTestItemRepositoryImpl(
             .map { row -> toDepartmentGroupItemTest(row) }
             .asFlow()
     }
+
 
 
     // --- DepartmentTestItem ---
