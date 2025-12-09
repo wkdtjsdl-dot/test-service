@@ -48,8 +48,8 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
-    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse> {
-        return repository.getItems(searchParam)
+    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItemResponse> {
+        return repository.getItems(searchParam).map { mapper.toResponse(it) }
     }
 
     override fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemAutoCompleteResponse> {

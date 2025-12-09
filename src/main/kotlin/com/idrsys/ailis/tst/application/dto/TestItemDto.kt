@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 // --- Test Item ---
 
 data class TestItemSearchParam(
-    val deptCd: String,
+    val deptCd: String?,
     val tstLargeCateCd: String?,
     val tstMediumCateCd: String?,
     val useYn: Boolean?
@@ -88,7 +88,8 @@ data class TestItemResponse(
     val endDt: LocalDate,
     val useYn: Boolean,
     val reqPossYn: Boolean,
-    val webYn: Boolean,
+    val webKorYn: Boolean,
+    val webEngYn: Boolean,
     val tstNm: String,
     val tstAbbrNm: String,
     val tstEngNm: String,
@@ -100,29 +101,21 @@ data class TestItemResponse(
     val rstTypeUrlYn: Boolean,
     val diseaseCd: String,
     val tstMethodCd: String?,
-    val refVal: String,
-    val engRefVal: String,
-    val clncSgnf: String,
-    val engClncSgnf: String,
-    val tstDesc: String,
-    val tstEngDesc: String,
-    val tstDayweek: String,
-    val tstTatday: Int,
-    val insuApplyCd: String,
-    val insuCd: String,
-    val insuCateNo: String,
+    val refVal: String?,
+    val engRefVal: String?,
+    val clncSgnf: String?,
+    val engClncSgnf: String?,
+    val tstDesc: String?,
+    val tstEngDesc: String?,
+    val tstDayweek: String?,
+    val tstTatday: Int?,
+    val insuApplyCd: String?,
+    val insuCd: String?,
+    val insuCateNo: String?,
     val creator: String,
     val createDtime: LocalDateTime,
-    val updater: String?,
-    val updateDetime: LocalDateTime?
-)
-
-data class TestItemSimpleResponse(
-    val tstCd: String,
-    val tstLargeCateCd: String,
-    val tstMediumCateCd: String,
-    val useYn: Boolean,
-    val tstNm: String,
+    val updater: String,
+    val updateDetime: LocalDateTime
 )
 
 data class TestItemAutoCompleteResponse(

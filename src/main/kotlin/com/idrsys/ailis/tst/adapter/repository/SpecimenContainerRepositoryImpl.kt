@@ -6,6 +6,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BbsSpcmCntn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
+import org.jooq.impl.DSL.lower
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -37,8 +38,10 @@ class SpecimenContainerRepositoryImpl(
         val table = BbsSpcmCntn.BBS_SPCM_CNTN
         val query = dslContext.select(table.fields().toList()).from(table)
 
-        if (cntnNm != null) {
-            query.where(table.CNTN_NM.like("%$cntnNm%"))
+        if (!cntnNm.isNullOrBlank()) {
+            query.where(
+                lower(table.CNTN_NM).like("%${cntnNm.lowercase()}%")
+            )
         }
         
         query.orderBy(table.SPCM_CNTN_CD)
