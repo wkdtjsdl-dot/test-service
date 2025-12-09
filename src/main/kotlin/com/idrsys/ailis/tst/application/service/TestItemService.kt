@@ -52,6 +52,10 @@ class TestItemService(
         return repository.getItems(searchParam)
     }
 
+    override fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemAutoCompleteResponse> {
+        return repository.autoCompleteItems(searchParam)
+    }
+
     // --- StandardCharge ---
 
     override suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse {

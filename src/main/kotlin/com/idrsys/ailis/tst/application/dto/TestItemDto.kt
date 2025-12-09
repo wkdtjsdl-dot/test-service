@@ -12,6 +12,10 @@ data class TestItemSearchParam(
     val useYn: Boolean?
 )
 
+data class TestItemAutoCompleteParam(
+    val keyword: String
+)
+
 data class TestItemRegisterRequest(
     val tstLargeCateCd: String,
     val tstMediumCateCd: String,
@@ -119,6 +123,11 @@ data class TestItemSimpleResponse(
     val tstMediumCateCd: String,
     val useYn: Boolean,
     val tstNm: String,
+)
+
+data class TestItemAutoCompleteResponse(
+    val tstCd: String,
+    val tstNm: String
 )
 
 // --- Standard Charge ---

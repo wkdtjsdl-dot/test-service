@@ -1,5 +1,7 @@
 package com.idrsys.ailis.tst.application.required
 
+import com.idrsys.ailis.tst.application.dto.TestItemAutoCompleteParam
+import com.idrsys.ailis.tst.application.dto.TestItemAutoCompleteResponse
 import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
 import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
 import com.idrsys.ailis.tst.domain.model.StandardCharge
@@ -15,6 +17,7 @@ interface TestItemRepository {
     suspend fun save(entity: TestItem): TestItem
     suspend fun findById(tstCd: String): TestItem?
     fun getItems(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse>
+    fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemAutoCompleteResponse>
 
     // --- StandardCharge ---
     suspend fun saveCharge(entity: StandardCharge): StandardCharge

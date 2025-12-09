@@ -101,6 +101,18 @@ Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
+### 검사 코드 자동완성 (검색어로 검색)
+GET {{api-service}}/api/tst/bts/item/auto-complete?keyword=테스트
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 코드 자동완성 (검사 코드로 검색)
+GET {{api-service}}/api/tst/bts/item/auto-complete?keyword=N119
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
 ###########################
 # 표준수가 (Standard Charge)
 ###########################

@@ -1,6 +1,8 @@
 package com.idrsys.ailis.tst.adapter.repository
 
 import com.idrsys.ailis.tst.application.dto.DeptTestItemCategoryResponse
+import com.idrsys.ailis.tst.application.dto.TestItemAutoCompleteParam
+import com.idrsys.ailis.tst.application.dto.TestItemAutoCompleteResponse
 import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
 import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
 import com.idrsys.ailis.tst.application.required.TestItemRepository
@@ -115,6 +117,40 @@ class TestItemRepositoryImpl(
                     tstMediumCateCd = row.get(tstItem.TST_MEDIUM_CATE_CD.name, String::class.java)!!,
                     useYn = row.get(tstItem.USE_YN.name, Boolean::class.java)!!,
                     tstNm = row.get(tstItem.TST_NM.name, String::class.java)!!,
+                )
+            }
+            .all()
+            .asFlow()
+    }
+
+    override fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemAutoCompleteResponse> {
+        val tstItem = BtsItem.BTS_ITEM
+        val keyword = "%${searchParam.keyword}%"
+
+        val condition = tstItem.TST_CD.likeIgnoreCase(keyword).or(tstItem.TST_NM.likeIgnoreCase(keyword))
+
+        val query = dslContext.select(
+            tstItem.TST_CD,
+            tstItem.TST_NM
+        )
+            .from(tstItem)
+            .where(condition)
+            .limit(20)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .map { row, _ ->
+                TestItemAutoCompleteResponse(
+                    tstCd = row.get(tstItem.TST_CD.name, String::class.java)!!,
+                    tstNm = row.get(tstItem.TST_NM.name, String::class.java)!!
                 )
             }
             .all()
