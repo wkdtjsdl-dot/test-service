@@ -126,7 +126,6 @@ class TestItemRepositoryImpl(
         )
             .from(tstItem)
             .where(condition)
-            .limit(20)
 
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value ->
