@@ -279,6 +279,7 @@ data class TestItemRefDetailResponse(
     val refItemId: String,
     val tstCd: String,
     val refCd: String,
+    val refNm: String,
     val refType: String,
     val refSize: Int?,
     val sortOrder: Int?,

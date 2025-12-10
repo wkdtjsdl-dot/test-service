@@ -348,7 +348,7 @@ class TestItemRepositoryImpl(
         }
 
         val query = dslContext
-            .select(refItem.REF_ITEM_ID, refItem.TST_CD, tstRef.REF_CD,
+            .select(refItem.REF_ITEM_ID, refItem.TST_CD, tstRef.REF_CD, tstRef.REF_NM,
                 tstRef.REF_TYPE, tstRef.REF_SIZE, refItem.SORT_ORDER, refItem.ESTL_YN)
             .from(tstRef)
             .join(refItem).on(tstRef.REF_CD.eq(refItem.REF_CD))
@@ -403,6 +403,7 @@ class TestItemRepositoryImpl(
             refItemId = row["ref_item_id"] as String,
             tstCd = row["tst_cd"] as String,
             refCd = row["ref_cd"] as String,
+            refNm = row["ref_nm"] as String,
             refType = row["ref_type"] as String,
             refSize = row["ref_size"] as Int?,
             sortOrder = row["sort_order"] as Int?,
