@@ -113,6 +113,7 @@ data class TestReferenceGroupItemResponse(
     val tstRefGroupItemId: String,
     val refGroupCd: String,
     val refCd: String,
+    val refNm: String,
     val sortOrder: Int,
     val creator: String,
     val createDtime: LocalDateTime,
