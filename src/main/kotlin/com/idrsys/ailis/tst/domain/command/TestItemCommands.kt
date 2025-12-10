@@ -3,6 +3,7 @@ package com.idrsys.ailis.tst.domain.command
 import java.time.LocalDate
 
 data class TestItemCreateCommand(
+    val tstCd: String,
     val tstLargeCateCd: String,
     val tstMediumCateCd: String,
     val startDt: LocalDate,

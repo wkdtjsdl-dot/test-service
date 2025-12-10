@@ -17,13 +17,15 @@ data class TestItemAutoCompleteParam(
 )
 
 data class TestItemRegisterRequest(
+    val tstCd: String,
     val tstLargeCateCd: String,
     val tstMediumCateCd: String,
     val startDt: LocalDate,
     val endDt: LocalDate,
     val useYn: Boolean,
     val reqPossYn: Boolean,
-    val webYn: Boolean,
+    val webKorYn: Boolean,
+    val webEngYn: Boolean,
     val tstNm: String,
     val tstAbbrNm: String,
     val tstEngNm: String,
@@ -55,7 +57,8 @@ data class TestItemUpdateRequest(
     val endDt: LocalDate,
     val useYn: Boolean,
     val reqPossYn: Boolean,
-    val webYn: Boolean,
+    val webKorYn: Boolean,
+    val webEngYn: Boolean,
     val tstNm: String,
     val tstAbbrNm: String,
     val tstEngNm: String,
