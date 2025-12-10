@@ -4,6 +4,15 @@ import java.time.LocalDateTime
 
 // --- Test Reference ---
 
+data class TestReferenceAutoCompleteParam(
+    val refCdNm: String
+)
+
+data class TestReferenceAutoCompleteResponse(
+    val refCd: String,
+    val refNm: String
+)
+
 data class TestReferenceRegisterRequest(
     val refCd: String,
     val refCateCd: String,

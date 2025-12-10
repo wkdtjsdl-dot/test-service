@@ -1,5 +1,7 @@
 package com.idrsys.ailis.tst.application.required
 
+import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteParam
+import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteResponse
 import com.idrsys.ailis.tst.application.dto.TestReferenceGroupItemResponse
 import com.idrsys.ailis.tst.domain.model.TestReference
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroup
@@ -11,6 +13,7 @@ interface TestReferenceRepository {
     suspend fun save(entity: TestReference): TestReference
     suspend fun findById(refCd: String): TestReference?
     suspend fun findAllByRefCateCd(refCateCd: String?): Flow<TestReference>
+    fun autoCompleteReferences(searchParam: TestReferenceAutoCompleteParam): Flow<TestReferenceAutoCompleteResponse>
 
     // --- TestReferenceGroup ---
     suspend fun saveGroup(entity: TestReferenceGroup): TestReferenceGroup

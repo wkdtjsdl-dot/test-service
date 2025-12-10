@@ -34,6 +34,12 @@ Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
+### 참조항목 코드 자동완성
+GET {{api-service}}/api/tst/bbs/tst-ref/auto-complete?refCdNm=00
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
 ### 검사 기준정보 검사참조항목 등록
 POST {{api-service}}/api/tst/bbs/tst-ref
 Content-Type: application/json

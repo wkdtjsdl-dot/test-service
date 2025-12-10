@@ -1,5 +1,7 @@
 package com.idrsys.ailis.tst.adapter.repository
 
+import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteParam
+import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteResponse
 import com.idrsys.ailis.tst.application.dto.TestReferenceGroupItemResponse
 import com.idrsys.ailis.tst.application.required.TestReferenceRepository
 import com.idrsys.ailis.tst.domain.model.TestReference
@@ -59,6 +61,39 @@ class TestReferenceRepositoryImpl(
             .fetch()
             .all()
             .map { row -> toRequestRef(row) }
+            .asFlow()
+    }
+
+    override fun autoCompleteReferences(searchParam: TestReferenceAutoCompleteParam): Flow<TestReferenceAutoCompleteResponse> {
+        val tstRef = BbsTstRef.BBS_TST_REF
+        val refCdNm = "%${searchParam.refCdNm}%"
+
+        val condition = tstRef.REF_CD.likeIgnoreCase(refCdNm).or(tstRef.REF_NM.likeIgnoreCase(refCdNm))
+
+        val query = dslContext.select(
+            tstRef.REF_CD,
+            tstRef.REF_NM
+        )
+            .from(tstRef)
+            .where(condition)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .map { row, _ ->
+                TestReferenceAutoCompleteResponse(
+                    refCd = row.get(tstRef.REF_CD.name, String::class.java)!!,
+                    refNm = row.get(tstRef.REF_NM.name, String::class.java)!!
+                )
+            }
+            .all()
             .asFlow()
     }
 

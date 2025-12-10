@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactor.mono
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
@@ -63,6 +64,12 @@ class TestReferenceController(
         return kotlinx.coroutines.flow.flow {
             useCase.getAllReferences(refCateCd).collect { emit(it) }
         }
+    }
+
+    @Operation(summary = "참조항목 코드 자동완성")
+    @GetMapping("/api/bbs/tst-ref/auto-complete")
+    fun autoCompleteReference(@ParameterObject searchParam: TestReferenceAutoCompleteParam): Flow<TestReferenceAutoCompleteResponse> {
+        return useCase.autoCompleteReferences(searchParam)
     }
 
     // --- TestReferenceGroup ---
