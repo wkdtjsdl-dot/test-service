@@ -13,7 +13,7 @@ data class CustLogsEditResponse (
     val custNm: String,
     val editBy: String,
     val editAt: LocalDateTime,
-    val editReason: String?,
+    val updateReason: String?,
     val editContents: String
 )
 

@@ -113,7 +113,7 @@ class CustLogsService(
 
     private fun generateDiffString(old: CustMstHst, new: CustMstHst): String {
         val diffs = StringBuilder()
-        val propertiesToIgnore = setOf("custMstHstId", "updater", "updateDtime", "creator", "createDtime", "isNew")
+        val propertiesToIgnore = setOf("custMstHstId", "updater", "updateDtime", "creator", "createDtime", "isNew", "updateReason")
 
         CustMstHst::class.memberProperties.forEach { prop ->
             if (prop.name !in propertiesToIgnore) {
