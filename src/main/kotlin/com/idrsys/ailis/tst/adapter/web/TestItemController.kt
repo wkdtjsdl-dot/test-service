@@ -147,7 +147,7 @@ class TestItemController(
 
     @Operation(summary = "검사 검사종목 참조항목 조회")
     @GetMapping("/api/bts/ref-item/{refItemId}")
-    fun getRefItem(@PathVariable refItemId: String): Mono<TestItemRefItemResponse> = mono {
+    fun getRefItem(@PathVariable refItemId: String): Mono<TestItemRefDetailResponse> = mono {
         useCase.getRefItem(refItemId)
     }
 

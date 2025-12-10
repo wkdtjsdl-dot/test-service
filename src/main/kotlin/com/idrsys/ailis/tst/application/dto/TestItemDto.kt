@@ -267,11 +267,21 @@ data class TestItemRefRequest(
 
 data class TestItemRefResponse(
     val refItemId: String,
-    val tstCd: String?,
+    val tstCd: String,
     val refCd: String,
     val refCateCd: String?,
     val sortOrder: Int?,
     val refNm: String,
+    val estlYn: Boolean
+)
+
+data class TestItemRefDetailResponse(
+    val refItemId: String,
+    val tstCd: String,
+    val refCd: String,
+    val refType: String,
+    val refSize: Int?,
+    val sortOrder: Int?,
     val estlYn: Boolean
 )
 

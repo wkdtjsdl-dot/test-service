@@ -121,9 +121,8 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
-    override suspend fun getRefItem(refItemId: String): TestItemRefItemResponse {
-        val domain = repository.findRefItemById(refItemId) ?: throw RuntimeException("TestItemRefItem not found with id: $refItemId")
-        return mapper.toResponse(domain)
+    override suspend fun getRefItem(refItemId: String): TestItemRefDetailResponse {
+        return repository.getDetailRefItemById(refItemId) ?: throw RuntimeException("TestItemRefItem not found with id: $refItemId")
     }
 
     override suspend fun updateRefItem(refItemId: String, request: TestItemRefItemUpdateRequest, adminId: String): TestItemRefItemResponse {
