@@ -119,6 +119,7 @@ class TestItemRepositoryImpl(
 
         val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
         val tstItem = BtsItem.BTS_ITEM
+        val useYn = searchParam.useYn ?: true
 
         // 서브쿼리
         val notExistsCondition = notExists(
@@ -138,7 +139,7 @@ class TestItemRepositoryImpl(
         searchParam.tstMediumCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(tstItem.TST_MEDIUM_CATE_CD.eq(it))
         }
-        searchParam.useYn?.let {
+        useYn.let {
             condition = condition.and(tstItem.USE_YN.eq(it))
         }
 
