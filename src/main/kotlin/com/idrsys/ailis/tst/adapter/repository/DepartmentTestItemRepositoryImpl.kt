@@ -115,7 +115,9 @@ class DepartmentTestItemRepositoryImpl(
             )
             .from(itm)
             .leftJoin(tstItm)
-            .on(itm.DEPT_GRP_ITM_ID.eq(tstItm.DEPT_GRP_ITM_TST_ID))
+            .on(itm.DEPT_CD.eq(tstItm.DEPT_CD))
+            .and(itm.TST_CATE_CD.eq(tstItm.TST_CATE_CD))
+            .and(itm.TST_CATE_ITEM_CD.eq(tstItm.TST_CATE_ITEM_CD))
             .where(
                 itm.DEPT_CD.eq(search.deptCd)
                     .and(itm.TST_CATE_CD.eq(search.tstCateCd))
@@ -128,6 +130,7 @@ class DepartmentTestItemRepositoryImpl(
                 itm.TST_CATE_ITEM_NM,
                 itm.SORT_ORDER
             )
+
 
 
         return databaseClient.sql(query.sql)
@@ -146,6 +149,7 @@ class DepartmentTestItemRepositoryImpl(
             }
             .all()
             .asFlow()
+
     }
 
     // --- DepartmentGroupItemTest ---
