@@ -1,9 +1,11 @@
 package com.idrsys.ailis.tst.adapter.repository
 
+import com.idrsys.ailis.tst.application.dto.TestReferenceGroupItemResponse
 import com.idrsys.ailis.tst.application.required.TestReferenceRepository
 import com.idrsys.ailis.tst.domain.model.TestReference
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroup
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRef
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRefGroupItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
@@ -34,7 +36,56 @@ class TestReferenceRepositoryImpl(
     // --- TestReference ---
     override suspend fun save(entity: TestReference): TestReference = refDataRepo.save(entity)
     override suspend fun findById(refCd: String): TestReference? = refDataRepo.findById(refCd)
-    override suspend fun findAll(): Flow<TestReference> = refDataRepo.findAll()
+    override suspend fun findAllByRefCateCd(refCateCd: String?): Flow<TestReference> {
+        val table = BbsTstRef.BBS_TST_REF
+        val query = dslContext.select(table.fields().toList()).from(table)
+
+        if(refCateCd != null) {
+            query.where(table.REF_CATE_CD.eq(refCateCd))
+        }
+
+        query.orderBy(table.SORT_ORDER)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toRequestRef(row) }
+            .asFlow()
+    }
+
+    private fun toRequestRef(row: Map<String, Any>): TestReference {
+        return TestReference(
+            refCd = row["ref_cd"] as String,
+            refNm = row["ref_nm"] as String,
+            refAbbrNm = row["ref_abbr_nm"] as String,
+            refEngNm = row["ref_eng_nm"] as String,
+            refEngAbbrNm = row["ref_eng_abbr_nm"] as String,
+            refType = row["ref_type"] as String,
+            refCateCd = row["ref_cate_cd"] as String,
+            refMinVal = row["ref_min_val"] as Int,
+            refMaxVal = row["ref_max_val"] as Int,
+            refSize = row["ref_size"] as Int,
+            sortOrder = row["sort_order"] as Int,
+            useYn = row["use_yn"] as Boolean,
+            rangeChkYn = row["range_chk_yn"] as Boolean,
+            creator = row["creator"] as String,
+            updater = row["updater"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updateDetime = row["update_detime"] as LocalDateTime,
+            dataFormat = row["data_format"] as String,
+            dftData = row["dft_data"] as String,
+            dftEngData = row["dft_eng_data"] as String,
+        )
+    }
 
     // --- TestReferenceGroup ---
     override suspend fun saveGroup(entity: TestReferenceGroup): TestReferenceGroup = groupDataRepo.save(entity)
@@ -47,14 +98,21 @@ class TestReferenceRepositoryImpl(
     override suspend fun findGroupItemById(tstRefGroupItemId: String): TestReferenceGroupItem? = groupItemDataRepo.findById(tstRefGroupItemId)
     override suspend fun deleteGroupItemById(tstRefGroupItemId: String) = groupItemDataRepo.deleteById(tstRefGroupItemId)
 
-    override fun findGroupItemsByGroupCd(refGroupCd: String): Flow<TestReferenceGroupItem> {
-        val table = BbsTstRefGroupItem.BBS_TST_REF_GROUP_ITEM
-        val query = dslContext.select(table.fields().toList())
-            .from(table)
-            .where(table.REF_GROUP_CD.eq(refGroupCd))
+    override fun findGroupItemsByGroupCd(refGroupCd: String): Flow<TestReferenceGroupItemResponse> {
+        val itemTable = BbsTstRefGroupItem.BBS_TST_REF_GROUP_ITEM
+        val refTable = BbsTstRef.BBS_TST_REF   // 추가
+
+        val query = dslContext
+            .select(
+                itemTable.fields().toList() + refTable.REF_NM
+            )
+            .from(itemTable)
+            .leftJoin(refTable)
+            .on(itemTable.REF_CD.eq(refTable.REF_CD))
+            .where(itemTable.REF_GROUP_CD.eq(refGroupCd))
 
         var executeSpec = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { index, value: Any? ->
+        query.bindValues.forEachIndexed { index, value ->
             if (value != null) {
                 executeSpec = executeSpec.bind(index, value)
             } else {
@@ -69,11 +127,12 @@ class TestReferenceRepositoryImpl(
             .asFlow()
     }
 
-    private fun toTestReferenceGroupItem(row: Map<String, Any>): TestReferenceGroupItem {
-        return TestReferenceGroupItem(
-            tstRefGroupItemId = row["tst_ref_group_item_id"] as String?,
+    private fun toTestReferenceGroupItem(row: Map<String, Any>): TestReferenceGroupItemResponse {
+        return TestReferenceGroupItemResponse(
+            tstRefGroupItemId = row["tst_ref_group_item_id"] as String,
             refGroupCd = row["ref_group_cd"] as String,
             refCd = row["ref_cd"] as String,
+            refNm = row["ref_nm"] as String,
             sortOrder = (row["sort_order"] as Number).toInt(),
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,

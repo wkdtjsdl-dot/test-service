@@ -57,8 +57,8 @@ class TestReferenceService(
         repository.save(reference)
     }
 
-    override suspend fun getAllReferences(): Flow<TestReferenceResponse> {
-        return repository.findAll().map { mapper.toResponse(it) }
+    override suspend fun getAllReferences(refCateCd: String?): Flow<TestReferenceResponse> {
+        return repository.findAllByRefCateCd(refCateCd).map { mapper.toResponse(it) }
     }
 
     // --- TestReferenceGroup ---
@@ -122,6 +122,6 @@ class TestReferenceService(
     }
 
     override fun getGroupItemsByGroup(refGroupCd: String): Flow<TestReferenceGroupItemResponse> {
-        return repository.findGroupItemsByGroupCd(refGroupCd).map { mapper.toResponse(it) }
+        return repository.findGroupItemsByGroupCd(refGroupCd)
     }
 }

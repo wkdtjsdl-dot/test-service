@@ -9,7 +9,7 @@ interface TestReferenceUseCase {
     suspend fun getReference(refCd: String): TestReferenceResponse
     suspend fun updateReference(refCd: String, request: TestReferenceUpdateRequest, adminId: String): TestReferenceResponse
     suspend fun deleteReference(refCd: String, adminId: String)
-    suspend fun getAllReferences(): Flow<TestReferenceResponse>
+    suspend fun getAllReferences(refCateCd: String?): Flow<TestReferenceResponse>
 
     // --- TestReferenceGroup ---
     suspend fun registerGroup(request: TestReferenceGroupRegisterRequest, adminId: String): TestReferenceGroupResponse

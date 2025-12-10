@@ -57,9 +57,11 @@ class TestReferenceController(
 
     @Operation(summary = "검사 기준정보 검사참조항목 목록", description = "모든 검사 항목을 조회합니다")
     @GetMapping("/api/bbs/tst-ref")
-    fun getAllReferences(): Flow<TestReferenceResponse> {
+    fun getAllReferences(
+        @RequestParam(required = false) refCateCd: String?,
+    ): Flow<TestReferenceResponse> {
         return kotlinx.coroutines.flow.flow {
-            useCase.getAllReferences().collect { emit(it) }
+            useCase.getAllReferences(refCateCd).collect { emit(it) }
         }
     }
 

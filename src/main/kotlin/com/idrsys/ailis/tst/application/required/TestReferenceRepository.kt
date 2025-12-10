@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.application.required
 
+import com.idrsys.ailis.tst.application.dto.TestReferenceGroupItemResponse
 import com.idrsys.ailis.tst.domain.model.TestReference
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroup
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem
@@ -9,7 +10,7 @@ interface TestReferenceRepository {
     // --- TestReference ---
     suspend fun save(entity: TestReference): TestReference
     suspend fun findById(refCd: String): TestReference?
-    suspend fun findAll(): Flow<TestReference>
+    suspend fun findAllByRefCateCd(refCateCd: String?): Flow<TestReference>
 
     // --- TestReferenceGroup ---
     suspend fun saveGroup(entity: TestReferenceGroup): TestReferenceGroup
@@ -21,5 +22,5 @@ interface TestReferenceRepository {
     suspend fun saveGroupItem(entity: TestReferenceGroupItem): TestReferenceGroupItem
     suspend fun findGroupItemById(tstRefGroupItemId: String): TestReferenceGroupItem?
     suspend fun deleteGroupItemById(tstRefGroupItemId: String)
-    fun findGroupItemsByGroupCd(refGroupCd: String): Flow<TestReferenceGroupItem>
+    fun findGroupItemsByGroupCd(refGroupCd: String): Flow<TestReferenceGroupItemResponse>
 }
