@@ -33,6 +33,7 @@ interface TestItemRepository {
     suspend fun findRefItemById(refItemId: String): TestItemRefItem?
     suspend fun deleteRefItemById(refItemId: String)
     fun findRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse>
+    suspend fun getDetailRefItemById(refItemId: String): TestItemRefDetailResponse?
 
     // --- TestItemGene ---
     suspend fun saveGene(entity: TestItemGene): TestItemGene

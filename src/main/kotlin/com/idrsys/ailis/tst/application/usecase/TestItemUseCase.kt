@@ -26,7 +26,7 @@ interface TestItemUseCase {
 
     // --- TestItemRefItem ---
     suspend fun registerRefItem(request: TestItemRefItemRegisterRequest, adminId: String): TestItemRefItemResponse
-    suspend fun getRefItem(refItemId: String): TestItemRefItemResponse
+    suspend fun getRefItem(refItemId: String): TestItemRefDetailResponse
     suspend fun updateRefItem(refItemId: String, request: TestItemRefItemUpdateRequest, adminId: String): TestItemRefItemResponse
     suspend fun deleteRefItem(refItemId: String, adminId: String)
     fun getRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse>

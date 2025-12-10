@@ -19,10 +19,10 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemGene
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL.notExists
-import org.jooq.impl.DSL.noCondition
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -314,7 +314,7 @@ class TestItemRepositoryImpl(
         }
 
         val query = dslContext
-            .select(refItem.REF_ITEM_ID, refItem.REF_CD, tstRef.REF_CATE_CD,
+            .select(refItem.REF_ITEM_ID, refItem.TST_CD, refItem.REF_CD, tstRef.REF_CATE_CD,
                     refItem.SORT_ORDER, tstRef.REF_NM, refItem.ESTL_YN)
             .from(tstRef)
             .join(refItem).on(tstRef.REF_CD.eq(refItem.REF_CD))
@@ -337,6 +337,41 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
+    override suspend fun getDetailRefItemById(refItemId: String): TestItemRefDetailResponse? {
+        val refItem = BtsRefItem.BTS_REF_ITEM
+        val tstRef = BbsTstRef.BBS_TST_REF
+
+        val conditions = mutableListOf<Condition>()
+
+        refItemId.takeIf { it.isNotBlank() }?.let {
+            conditions.add(refItem.REF_ITEM_ID.eq(it))
+        }
+
+        val query = dslContext
+            .select(refItem.REF_ITEM_ID, refItem.TST_CD, tstRef.REF_CD,
+                tstRef.REF_TYPE, tstRef.REF_SIZE, refItem.SORT_ORDER, refItem.ESTL_YN)
+            .from(tstRef)
+            .join(refItem).on(tstRef.REF_CD.eq(refItem.REF_CD))
+            .where(conditions)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        val row = executeSpec
+            .fetch()
+            .one()
+            .awaitSingleOrNull()
+
+        return row?.let { toTestItemRefDetailResponse(it) }
+    }
+
+
     private fun toTestItemRefItem(row: Map<String, Any>): TestItemRefItem {
         return TestItemRefItem(
             refItemId = row["ref_item_id"] as String?,
@@ -354,11 +389,23 @@ class TestItemRepositoryImpl(
     private fun toTestItemRefResponse(row: Map<String, Any>): TestItemRefResponse {
         return TestItemRefResponse(
             refItemId = row["ref_item_id"] as String,
-            tstCd = row["tst_cd"] as String?,
+            tstCd = row["tst_cd"] as String,
             refCd = row["ref_cd"] as String,
             refCateCd = row["ref_cate_cd"] as String?,
             sortOrder = row["sort_order"] as Int?,
             refNm = row["ref_nm"] as String,
+            estlYn = row["estl_yn"] as Boolean
+        )
+    }
+
+    private fun toTestItemRefDetailResponse(row: Map<String, Any>): TestItemRefDetailResponse {
+        return TestItemRefDetailResponse(
+            refItemId = row["ref_item_id"] as String,
+            tstCd = row["tst_cd"] as String,
+            refCd = row["ref_cd"] as String,
+            refType = row["ref_type"] as String,
+            refSize = row["ref_size"] as Int?,
+            sortOrder = row["sort_order"] as Int?,
             estlYn = row["estl_yn"] as Boolean
         )
     }
