@@ -54,9 +54,10 @@ class TestCategoryService(
         val category = testCategoryRepository.findById(cateId)
             ?: throw NoSuchElementException("Category not found: $cateId")
 
-        val now = LocalDateTime.now()
-        category.delete(updater = adminId, updateDetime = now)
-
-        testCategoryRepository.save(category)
+//        val now = LocalDateTime.now()
+//        category.delete(updater = adminId, updateDetime = now)
+//
+//        testCategoryRepository.save(category)
+        testCategoryRepository.deleteById(cateId)
     }
 }

@@ -44,7 +44,7 @@ class TestCategoryController(
         return testCategoryUseCase.updateCategory(cateId, request, auth.adminId)
     }
 
-    @Operation(summary = "검사 기준정보 검사코드분류 중분류 삭제")
+    @Operation(summary = "검사 기준정보 검사코드분류 중분류 물리적 삭제")
     @DeleteMapping("/{cateId}")
     suspend fun deleteCategory(
         @PathVariable cateId: String,
