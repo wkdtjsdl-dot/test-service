@@ -121,7 +121,7 @@ class DepartmentTestItemService(
     }
 
     override suspend fun getGroupItemTestsByDept(searchParam: DepartmentGroupItemTestSearchParam): Flow<DepartmentGroupItemTestResponse> {
-        return repository.findGroupItemTestsByDeptCd(searchParam).map { mapper.toResponse(it) }
+        return repository.findGroupItemTestsByDeptCd(searchParam)
     }
 
     // --- DepartmentTestItem ---

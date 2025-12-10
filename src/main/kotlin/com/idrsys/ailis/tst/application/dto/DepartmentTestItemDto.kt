@@ -95,7 +95,8 @@ data class DepartmentGroupItemTestResponse(
     val tstCateItemCd: String,
     val tstCd: String,
     val creator: String,
-    val createDtime: LocalDateTime
+    val createDtime: LocalDateTime,
+    val tstNm: String,
 )
 
 // --- Department Test Item ---

@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
+import com.idrsys.ailis.tst.application.dto.DepartmentGroupItemTestResponse
 import com.idrsys.ailis.tst.application.dto.DepartmentGroupItemWithCount
 import com.idrsys.ailis.tst.application.dto.DeptTestItemCategoryResponse
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
@@ -158,12 +159,15 @@ class DepartmentTestItemRepositoryImpl(
 
     override suspend fun findGroupItemTestsByDeptCd(
         searchParam: DepartmentGroupItemTestSearchParam
-    ): Flow<DepartmentGroupItemTest> {
+    ): Flow<DepartmentGroupItemTestResponse> {
         val table = BbsDeptGrpItmTst.BBS_DEPT_GRP_ITM_TST
+        val joinTable = BtsItem.BTS_ITEM
 
         val query = dslContext
-            .select(table.fields().toList())
+            .select(table.fields().toList() + joinTable.TST_NM.`as` ("tst_nm"))
             .from(table)
+            .leftJoin(joinTable)
+            .on(table.TST_CD.eq(joinTable.TST_CD))
             .where(
                 table.DEPT_CD.eq(searchParam.deptCd)
                     .and(table.TST_CATE_CD.eq(searchParam.tstCateCd))
@@ -182,10 +186,22 @@ class DepartmentTestItemRepositoryImpl(
         return executeSpec
             .fetch()
             .all()
-            .map { row -> toDepartmentGroupItemTest(row) }
+            .map { row -> toDepartmentGroupTestItemWithTstNm(row) }
             .asFlow()
     }
 
+    private fun toDepartmentGroupTestItemWithTstNm(row: Map<String, Any>): DepartmentGroupItemTestResponse {
+        return DepartmentGroupItemTestResponse(
+            deptGrpItmTstId = row["dept_grp_itm_tst_id"] as String,
+            deptCd = row["dept_cd"] as String,
+            tstCateCd = row["tst_cate_cd"] as String,
+            tstCateItemCd = row["tst_cate_item_cd"] as String,
+            tstCd = row["tst_cd"] as String,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            tstNm = row["tst_nm"] as String
+        )
+    }
 
 
     // --- DepartmentTestItem ---
