@@ -23,6 +23,7 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.jooq.impl.DSL.notExists
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
@@ -64,22 +65,11 @@ class TestItemRepositoryImpl(
     override suspend fun save(entity: TestItem): TestItem = itemDataRepo.save(entity)
     override suspend fun findById(tstCd: String): TestItem? = itemDataRepo.findById(tstCd)
 
-    // TODO
     override fun getItems(searchParam: TestItemSearchParam): Flow<TestItem> {
         val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
         val tstItem = BtsItem.BTS_ITEM
 
-        // 서브쿼리
-        val notExistsCondition = notExists(
-            dslContext.selectOne()
-                .from(deptTestItem)
-                .where(
-                    deptTestItem.TST_CD.eq(tstItem.TST_CD)
-                        .and(deptTestItem.DEPT_CD.eq(searchParam.deptCd))
-                )
-        )
-
-        var condition = notExistsCondition
+        var condition: Condition = DSL.trueCondition()
 
         searchParam.tstLargeCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(tstItem.TST_LARGE_CATE_CD.eq(it))
@@ -91,9 +81,20 @@ class TestItemRepositoryImpl(
             condition = condition.and(tstItem.USE_YN.eq(it))
         }
 
-        val query = dslContext.select(tstItem.fields().toList())
+        var selectFrom = dslContext
+            .select(tstItem.fields().toList())
             .from(tstItem)
-            .where(condition)
+
+        // deptCd가 존재하면 LEFT OUTER JOIN 추가
+        searchParam.deptCd?.takeIf { it.isNotBlank() }?.let { deptCd ->
+            selectFrom = selectFrom.innerJoin(deptTestItem)
+                .on(
+                    tstItem.TST_CD.eq(deptTestItem.TST_CD)
+                        .and(deptTestItem.DEPT_CD.eq(deptCd))
+                )
+        }
+
+        val query = selectFrom.where(condition)
 
         // SQL과 바인딩 값 준비
         var executeSpec = databaseClient.sql(query.sql)
@@ -119,6 +120,7 @@ class TestItemRepositoryImpl(
 
         val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
         val tstItem = BtsItem.BTS_ITEM
+        val useYn = searchParam.useYn ?: true
 
         // 서브쿼리
         val notExistsCondition = notExists(
@@ -138,7 +140,7 @@ class TestItemRepositoryImpl(
         searchParam.tstMediumCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(tstItem.TST_MEDIUM_CATE_CD.eq(it))
         }
-        searchParam.useYn?.let {
+        useYn.let {
             condition = condition.and(tstItem.USE_YN.eq(it))
         }
 

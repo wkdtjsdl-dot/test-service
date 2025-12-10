@@ -67,7 +67,7 @@ class TestReferenceController(
     }
 
     @Operation(summary = "참조항목 코드 자동완성")
-    @GetMapping("/api/bbs/tst-ref/auto-complete")
+    @GetMapping("/api/bbs/tst-ref/autoComplete")
     fun autoCompleteReference(@ParameterObject searchParam: TestReferenceAutoCompleteParam): Flow<TestReferenceAutoCompleteResponse> {
         return useCase.autoCompleteReferences(searchParam)
     }

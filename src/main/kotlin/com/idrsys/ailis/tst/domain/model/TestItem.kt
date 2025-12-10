@@ -251,7 +251,7 @@ class TestItem(
             now: LocalDateTime
         ): TestItem {
             return TestItem(
-                tstCd = null,
+                tstCd = command.tstCd,
                 tstLargeCateCd = command.tstLargeCateCd,
                 tstMediumCateCd = command.tstMediumCateCd,
                 startDt = command.startDt,
