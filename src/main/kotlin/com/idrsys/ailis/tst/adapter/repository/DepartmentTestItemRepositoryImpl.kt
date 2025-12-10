@@ -19,6 +19,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstCate
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactor.awaitSingle
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
@@ -51,8 +52,32 @@ class DepartmentTestItemRepositoryImpl(
     // --- DepartmentGroup ---
     override suspend fun saveGroup(entity: DepartmentGroup): DepartmentGroup = groupDataRepo.save(entity)
     override suspend fun findGroupById(deptGroupId: String): DepartmentGroup? = groupDataRepo.findById(deptGroupId)
-    override suspend fun deleteGroupById(deptGroupId: String) = groupDataRepo.deleteById(deptGroupId)
+//    override suspend fun deleteGroupById(deptGroupId: String) = groupDataRepo.deleteById(deptGroupId)
+override suspend fun deleteGroupById(deptGroupId: String) {
+    val group = groupDataRepo.findById(deptGroupId)
+        ?: throw IllegalArgumentException("해당 부서의 그룹이 존재하지 않습니다.")
+
+    val itm = BbsDeptGrpItm.BBS_DEPT_GRP_ITM
+
+    val query = dslContext.select(DSL.count(itm.DEPT_GRP_ITM_ID))
+        .from(itm)
+        .where(itm.DEPT_CD.eq(group.deptCd)
+            .and(itm.TST_CATE_CD.eq(group.tstCateCd)))
+
+    val count = databaseClient.sql(dslContext.renderInlined(query))
+        .map { row, _ -> row.get(0, java.lang.Long::class.java) ?: 0 }
+        .one()
+        .awaitSingle()
+
+    if (count > 0) {
+        throw IllegalStateException("부서 분류그룹에 항목이 존재하여 삭제할 수 없습니다.")
+    }
+
+    groupDataRepo.deleteById(deptGroupId)
+}
+
     override suspend fun findAllGroups(): Flow<DepartmentGroup> = groupDataRepo.findAll()
+
     override suspend fun findlGroupsByDeptCd(deptCd: String): Flow<DepartmentGroup> {
         val table = BbsDeptGroup.BBS_DEPT_GROUP
 
