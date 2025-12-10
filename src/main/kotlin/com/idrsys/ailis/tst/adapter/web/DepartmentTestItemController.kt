@@ -4,6 +4,7 @@ import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemTestSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
+import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.usecase.DepartmentTestItemUseCase
 import com.idrsys.ailis.tst.shared.vo.AuthenticationAdmin
 import com.idrsys.web.annotation.JwtAuthorization
@@ -182,6 +183,14 @@ class DepartmentTestItemController(
     fun getTestItemsByDept(@ParameterObject searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse> {
         return kotlinx.coroutines.flow.flow {
             useCase.getTestItemsByDept(searchParam).collect { emit(it) }
+        }
+    }
+
+    @Operation(summary = "검사 검사종목 목록 (미지정)")
+    @GetMapping("/api/bbs/item")
+    fun getItems(@ParameterObject searchParam: UnspecifiedDepartmentTestItemSearchParam): Flow<TestItemResponse> {
+        return kotlinx.coroutines.flow.flow {
+            useCase.getUnspecifiedDeptItems(searchParam).collect { emit(it) }
         }
     }
 }

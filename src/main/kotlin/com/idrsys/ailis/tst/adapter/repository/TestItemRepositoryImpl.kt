@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.adapter.repository
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.required.TestItemRepository
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
@@ -63,8 +64,56 @@ class TestItemRepositoryImpl(
     override suspend fun save(entity: TestItem): TestItem = itemDataRepo.save(entity)
     override suspend fun findById(tstCd: String): TestItem? = itemDataRepo.findById(tstCd)
 
+    // TODO
     override fun getItems(searchParam: TestItemSearchParam): Flow<TestItem> {
-        if (searchParam.deptCd.isNullOrBlank()) {
+        val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
+        val tstItem = BtsItem.BTS_ITEM
+
+        // 서브쿼리
+        val notExistsCondition = notExists(
+            dslContext.selectOne()
+                .from(deptTestItem)
+                .where(
+                    deptTestItem.TST_CD.eq(tstItem.TST_CD)
+                        .and(deptTestItem.DEPT_CD.eq(searchParam.deptCd))
+                )
+        )
+
+        var condition = notExistsCondition
+
+        searchParam.tstLargeCateCd?.takeIf { it.isNotBlank() }?.let {
+            condition = condition.and(tstItem.TST_LARGE_CATE_CD.eq(it))
+        }
+        searchParam.tstMediumCateCd?.takeIf { it.isNotBlank() }?.let {
+            condition = condition.and(tstItem.TST_MEDIUM_CATE_CD.eq(it))
+        }
+        searchParam.useYn?.let {
+            condition = condition.and(tstItem.USE_YN.eq(it))
+        }
+
+        val query = dslContext.select(tstItem.fields().toList())
+            .from(tstItem)
+            .where(condition)
+
+        // SQL과 바인딩 값 준비
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestItem(row) }
+            .asFlow()
+    }
+
+    override fun findUnspecifiedDeptItems(searchParam: UnspecifiedDepartmentTestItemSearchParam): Flow<TestItem> {
+        if (searchParam.deptCd.isBlank()) {
             return flowOf()
         }
 

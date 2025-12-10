@@ -5,3 +5,10 @@ data class DepartmentTestItemSearchParam(
     val tstLargeCateCd: String?,
     val tstMediumCateCd: String?
 )
+
+data class UnspecifiedDepartmentTestItemSearchParam(
+    val deptCd: String,
+    val tstLargeCateCd: String?,
+    val tstMediumCateCd: String?,
+    val useYn: Boolean?
+)

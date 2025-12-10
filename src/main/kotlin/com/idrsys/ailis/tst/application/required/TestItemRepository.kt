@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.application.required
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
@@ -14,6 +15,7 @@ interface TestItemRepository {
     suspend fun save(entity: TestItem): TestItem
     suspend fun findById(tstCd: String): TestItem?
     fun getItems(searchParam: TestItemSearchParam): Flow<TestItem>
+    fun findUnspecifiedDeptItems(searchParam: UnspecifiedDepartmentTestItemSearchParam): Flow<TestItem>
     fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemAutoCompleteResponse>
 
     // --- StandardCharge ---

@@ -4,6 +4,7 @@ import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemTestSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
+import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import kotlinx.coroutines.flow.Flow
 
 interface DepartmentTestItemUseCase {
@@ -34,4 +35,6 @@ interface DepartmentTestItemUseCase {
     suspend fun updateTestItem(deptTstItemId: String, request: DepartmentTestItemUpdateRequest, adminId: String): DepartmentTestItemResponse
     suspend fun deleteTestItem(deptTstItemId: String, adminId: String)
     suspend fun getTestItemsByDept(searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse>
+
+    suspend fun getUnspecifiedDeptItems(searchParam: UnspecifiedDepartmentTestItemSearchParam): Flow<TestItemResponse>
 }

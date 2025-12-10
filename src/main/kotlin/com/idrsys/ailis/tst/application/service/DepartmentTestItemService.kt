@@ -4,9 +4,12 @@ import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemTestSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
+import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemCommandMapper
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemMapper
+import com.idrsys.ailis.tst.application.mapper.TestItemMapper
 import com.idrsys.ailis.tst.application.required.DepartmentTestItemRepository
+import com.idrsys.ailis.tst.application.required.TestItemRepository
 import com.idrsys.ailis.tst.application.usecase.DepartmentTestItemUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -14,14 +17,15 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import com.idrsys.ailis.tst.domain.model.DepartmentGroup
 import com.idrsys.ailis.tst.domain.model.DepartmentTestItem
-import kotlinx.coroutines.flow.emptyFlow
 import java.time.LocalDateTime
 
 @Service
 @Transactional
 class DepartmentTestItemService(
     private val repository: DepartmentTestItemRepository,
+    private val testItemRepository: TestItemRepository,
     private val mapper: DepartmentTestItemMapper,
+    private val testItemMapper: TestItemMapper,
     private val commandMapper: DepartmentTestItemCommandMapper
 ) : DepartmentTestItemUseCase {
 
@@ -146,5 +150,9 @@ class DepartmentTestItemService(
 
     override suspend fun getTestItemsByDept(searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse> {
         return repository.findTestItemsByDeptCd(searchParam)
+    }
+
+    override suspend fun getUnspecifiedDeptItems(searchParam: UnspecifiedDepartmentTestItemSearchParam): Flow<TestItemResponse> {
+        return testItemRepository.findUnspecifiedDeptItems(searchParam).map { testItemMapper.toResponse(it) }
     }
 }
