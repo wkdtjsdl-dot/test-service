@@ -4,7 +4,7 @@ import com.idrsys.ailis.sales.application.dto.query.GcgnSalsPicInfoQuery
 import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalsPicInfoSearchParam
 import com.idrsys.ailis.sales.application.required.repository.gcgnSalsPicInfo.GcgnSalsPicInfoCustomRepository
 import com.idrsys.ailis.sales.domain.model.GcgnSalsPicInfo
-import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsGcgnSalsPicInfo.SCS_GCGN_SALS_PIC_INFO
 import com.idrsys.ailis.sales.shared.mapper.GcgnSalsPicInfoMapper
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toGcgnSalsPicInfo
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toGcgnSalsPicInfoQuery
@@ -124,6 +124,9 @@ class GcgnSalsPicInfoCustomRepositoryImpl(
         }
         searchParam.empUserId?.takeIf { it.isNotBlank() }?.let {
             conds += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(it)
+        }
+        searchParam.custCd?.takeIf { it.isNotBlank() }?.let {
+            conds += SCS_GCGN_SALS_PIC_INFO.CUST_CD.eq(it)
         }
         return conds
     }

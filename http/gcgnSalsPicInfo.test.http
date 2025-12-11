@@ -82,3 +82,13 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 GET {{api-service}}/api/sals/custs/sals-pics/autoComplete?empUserId=2500&empUserIdNm=2200
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 영업담당자 목록 조회
+GET {{api-service}}/api/sals/custs/sals-pics?custMstId=36973D74-A010-4975-A5EE-9B8697F28C51&page=0&size=10
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 영업담당자 목록 inner 테스트
+GET {{sales-service}}/api/inner/custs/sals-pics?custCd=G010000&page=0&size=15
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

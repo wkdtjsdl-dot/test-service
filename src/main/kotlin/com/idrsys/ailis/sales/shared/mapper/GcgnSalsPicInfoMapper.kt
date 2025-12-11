@@ -11,10 +11,10 @@ import java.time.LocalDateTime
 @Mapper(componentModel = "spring")
 interface GcgnSalsPicInfoMapper {
 
-    @Mapping(target = "empNm", ignore = true)
+    @Mapping(target = "empUserNm", ignore = true)
     fun toResponse(dto: GcgnSalsPicInfoQuery): GcgnSalsPicInfoResponse
 
-    @Mapping(target = "empNm", ignore = true)
+    @Mapping(target = "empUserNm", ignore = true)
     fun toResponse(domain: GcgnSalsPicInfo): GcgnSalsPicInfoResponse
 
     @Mapping(target = "gcgnSalsPicInfoId", ignore = true)

@@ -18,6 +18,6 @@ internal fun Row.toGcgnSalsPicInfoQuery(): GcgnSalsPicInfoQuery {
         createDtime = this.get("create_dtime", LocalDateTime::class.java)!!,
         updater = this.get("updater", String::class.java)!!,
         updateDtime = this.get("update_dtime", LocalDateTime::class.java)!!,
-        empNm = null
+        empUserNm = null
     )
 }

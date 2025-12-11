@@ -15,7 +15,7 @@ data class GcgnSalsPicInfoQuery(
     val createDtime: LocalDateTime,
     val updater: String,
     val updateDtime: LocalDateTime,
-    val empNm: String? = null,
+    val empUserNm: String? = null,
 )
 
 data class GcgnSalsPicInfoQueryEmpUserId(

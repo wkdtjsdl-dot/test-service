@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -28,22 +29,43 @@ class GcgnSalsPicInfoService(
 
     override suspend fun getGcgnSalsPicInfoPage(searchParam: GcgnSalsPicInfoSearchParam, pageable: Pageable): Page<GcgnSalsPicInfoResponse> {
         val total = gcgnSalsPicInfoCustomRepository.countGcgnSalsPicInfos(searchParam)
-        if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val gcgnSalsPicInfos = gcgnSalsPicInfoCustomRepository.findGcgnSalsPicInfos(searchParam, pageable).map { dto ->
-            val empNm = dto.empUserId.let { baseServiceClient.getUser(it)?.userNm }
-            gcgnSalsPicInfoMapper.toResponse(dto.copy(empNm = empNm))
-        }.toList()
+        val serializablePageable = if (pageable.isUnpaged) {
+            if (total == 0L) PageRequest.of(0, 1)
+            else PageRequest.of(0, total.toInt())
+        } else {
+            pageable
+        }
 
-        return PageImpl(gcgnSalsPicInfos, pageable, total)
+        if (total == 0L) return PageImpl(emptyList(), serializablePageable, 0)
+
+        val gcgnSalsPicInfoDtos = gcgnSalsPicInfoCustomRepository.findGcgnSalsPicInfos(searchParam, pageable).toList()
+
+        // Fetch user names in batch to avoid N+1 problem
+        val empUserIds = gcgnSalsPicInfoDtos.map { it.empUserId }.distinct()
+        val userNameById = if (empUserIds.isNotEmpty()) {
+            baseServiceClient.getUsersByIds(empUserIds)
+                ?.associate { it.userId to it.userNm }
+                ?: emptyMap()
+        } else {
+            emptyMap()
+        }
+
+        val gcgnSalsPicInfos = gcgnSalsPicInfoDtos.map { dto ->
+            val response = gcgnSalsPicInfoMapper.toResponse(dto)
+            response.copy(empUserNm = userNameById[dto.empUserId])
+        }
+
+        return PageImpl(gcgnSalsPicInfos, serializablePageable, total)
     }
 
     override suspend fun getGcgnSalsPicInfoDetail(gcgnSalsPicInfoId: Long): GcgnSalsPicInfoResponse {
         val dto = gcgnSalsPicInfoCustomRepository.findGcgnSalsPicInfoById(gcgnSalsPicInfoId)
             ?: throw NoSuchElementException("GcgnSalsPicInfo not found with id: $gcgnSalsPicInfoId")
 
-        val empNm = dto.empUserId.let { baseServiceClient.getUser(it)?.userNm }
-        return gcgnSalsPicInfoMapper.toResponse(dto.copy(empNm = empNm))
+        val response = gcgnSalsPicInfoMapper.toResponse(dto)
+        val empUserNm = dto.empUserId.let { baseServiceClient.getUser(it)?.userNm }
+        return response.copy(empUserNm = empUserNm)
     }
 
     override suspend fun createGcgnSalsPicInfo(command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
@@ -53,7 +75,7 @@ class GcgnSalsPicInfoService(
         val gcgnSalsPicInfo = gcgnSalsPicInfoMapper.toDomain(command, adminId, now).apply { setAsNew() }
         val savedGcgnSalsPicInfo = gcgnSalsPicInfoRepository.save(gcgnSalsPicInfo)
         val response = gcgnSalsPicInfoMapper.toResponse(savedGcgnSalsPicInfo)
-        return response.copy(empNm = user.userNm)
+        return response.copy(empUserNm = user.userNm)
     }
 
     override suspend fun updateGcgnSalsPicInfo(gcgnSalsPicInfoId: Long, command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
@@ -64,8 +86,8 @@ class GcgnSalsPicInfoService(
 
         val updatedGcgnSalsPicInfo = gcgnSalsPicInfoRepository.save(gcgnSalsPicInfo)
         val response = gcgnSalsPicInfoMapper.toResponse(updatedGcgnSalsPicInfo)
-        val empNm = response.empUserId.let { baseServiceClient.getUser(it)?.userNm }
-        return response.copy(empNm = empNm)
+        val empUserNm = response.empUserId.let { baseServiceClient.getUser(it)?.userNm }
+        return response.copy(empUserNm = empUserNm)
     }
 
     override suspend fun deleteGcgnSalsPicInfo(gcgnSalsPicInfoId: Long) {
