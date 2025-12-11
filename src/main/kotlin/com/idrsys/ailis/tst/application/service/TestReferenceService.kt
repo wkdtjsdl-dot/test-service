@@ -65,6 +65,10 @@ class TestReferenceService(
         return repository.autoCompleteReferences(searchParam)
     }
 
+    override suspend fun findSimpleReferenceByRefCd(refCds: List<String>): Flow<TestReferenceSimpleResponse> {
+        return repository.findSimpleReferenceByRefCd(refCds)
+    }
+
     // --- TestReferenceGroup ---
 
     override suspend fun registerGroup(request: TestReferenceGroupRegisterRequest, adminId: String): TestReferenceGroupResponse {

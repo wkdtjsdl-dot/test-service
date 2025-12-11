@@ -3,6 +3,7 @@ package com.idrsys.ailis.tst.adapter.repository
 import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteParam
 import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteResponse
 import com.idrsys.ailis.tst.application.dto.TestReferenceGroupItemResponse
+import com.idrsys.ailis.tst.application.dto.TestReferenceSimpleResponse
 import com.idrsys.ailis.tst.application.required.TestReferenceRepository
 import com.idrsys.ailis.tst.domain.model.TestReference
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroup
@@ -11,6 +12,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRef
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRefGroupItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
@@ -95,6 +97,42 @@ class TestReferenceRepositoryImpl(
                     refNm = row.get(tstRef.REF_NM.name, String::class.java)!!,
                     refType = row.get(tstRef.REF_TYPE.name, String::class.java)!!,
                     refSize = row.get(tstRef.REF_SIZE.name, Int::class.java)!!
+                )
+            }
+            .all()
+            .asFlow()
+    }
+
+    override suspend fun findSimpleReferenceByRefCd(refCds: List<String>): Flow<TestReferenceSimpleResponse> {
+        val tstRef = BbsTstRef.BBS_TST_REF
+
+        val condition = mutableListOf<Condition>()
+
+        refCds.takeIf { it.isNotEmpty() }?.let {
+            condition.add(tstRef.REF_CD.`in`(it))
+        }
+
+        val query = dslContext.select(
+            tstRef.REF_CD,
+            tstRef.REF_NM
+        )
+            .from(tstRef)
+            .where(condition)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .map { row, _ ->
+                TestReferenceSimpleResponse(
+                    refCd = row.get(tstRef.REF_CD.name, String::class.java)!!,
+                    refNm = row.get(tstRef.REF_NM.name, String::class.java)!!
                 )
             }
             .all()

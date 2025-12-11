@@ -94,6 +94,12 @@ Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
+### 검사 기준정보 검사참조항목 조회
+GET {{tst-service}}/api/inner/bbs/tst-ref?cds=TA0018,TA0014,TA0999
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
 ###########################
 # 검사기준치 그룹 (Test Reference Group)
 ###########################

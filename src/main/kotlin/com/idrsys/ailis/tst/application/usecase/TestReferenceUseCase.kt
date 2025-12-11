@@ -11,6 +11,7 @@ interface TestReferenceUseCase {
     suspend fun deleteReference(refCd: String, adminId: String)
     suspend fun getAllReferences(refCateCd: String?): Flow<TestReferenceResponse>
     fun autoCompleteReferences(searchParam: TestReferenceAutoCompleteParam): Flow<TestReferenceAutoCompleteResponse>
+    suspend fun findSimpleReferenceByRefCd(refCds: List<String>): Flow<TestReferenceSimpleResponse>
 
     // --- TestReferenceGroup ---
     suspend fun registerGroup(request: TestReferenceGroupRegisterRequest, adminId: String): TestReferenceGroupResponse
