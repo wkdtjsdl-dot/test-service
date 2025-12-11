@@ -84,7 +84,7 @@ class TestItemController(
         null
     }
 
-    @Operation(summary = "표준 수가 삭제")
+    @Operation(summary = "검사 검사종목 기준수가 수정")
     @PutMapping("/api/bts/item/stnd-charge/{stndChargeId}")
     fun updateCharge(
         @PathVariable stndChargeId: String,
