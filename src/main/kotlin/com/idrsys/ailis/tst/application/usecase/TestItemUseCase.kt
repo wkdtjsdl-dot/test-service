@@ -33,7 +33,7 @@ interface TestItemUseCase {
     fun getRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse>
 
     // --- TestGene ---
-     fun getGenes(genAlpa: String): Flow<TestGeneResponse>
+     fun getGenes(geneCd: String): Flow<TestGeneResponse>
     // --- TestItemGene ---
     suspend fun registerGene(request: TestItemGeneRegisterRequest, adminId: String): TestItemGeneResponse
     suspend fun deleteGene(itemGeneId: String, adminId: String)

@@ -22,6 +22,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BtsRefItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemGene
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemHst
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -509,29 +510,28 @@ class TestItemRepositoryImpl(
     }
 
     // --- TestGene ---
-    override fun getGenes(genAlpa: String): Flow<TestGene> {
+    override fun getGenes(geneCd: String): Flow<TestGene> {
         val table = BbsGene.BBS_GENE
+
+        if (geneCd.isBlank()) return emptyFlow()
+
+        val keyword = geneCd.uppercase()
+
         val query = dslContext
             .select(table.fields().toList())
             .from(table)
-            .where(substring(table.GENE_CD,1,1).likeIgnoreCase(genAlpa))
+            .where(table.GENE_CD.like("$keyword%"))
+
         val sql = query.getSQL(ParamType.INLINED)
-        val executeSpec = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { index, value: Any? ->
-            if (value != null) {
-                executeSpec.bind(index,value)
-            }else{
-                executeSpec.bindNull(index, String::class.java)
-            }
-        }
+        println("🔍 SQL = $sql")
 
         return databaseClient.sql(sql)
             .fetch()
             .all()
-            .map { row ->  toTestGene(row)
-            }
+            .map { row -> toTestGene(row) }
             .asFlow()
     }
+
 
 
     private fun toTestGene(row: Map<String, Any>): TestGene {

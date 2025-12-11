@@ -41,7 +41,7 @@ interface TestItemRepository {
     suspend fun getDetailRefItemById(refItemId: String): TestItemRefDetailResponse?
 
     // --- TestGene ---
-     fun getGenes(genAlpa: String):Flow<TestGene>
+     fun getGenes(geneCd: String):Flow<TestGene>
     // --- TestItemGene ---
     suspend fun saveGene(entity: TestItemGene): TestItemGene
     suspend fun deleteGeneById(itemGeneId: String)
