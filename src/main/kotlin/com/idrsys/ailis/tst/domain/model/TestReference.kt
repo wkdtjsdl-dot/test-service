@@ -35,7 +35,7 @@ class TestReference(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDetime: LocalDateTime
+    updateDtime: LocalDateTime
 ) : Persistable<String> {
 
     @Id
@@ -114,8 +114,8 @@ class TestReference(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime = updateDtime
         private set
 
     @Transient
@@ -129,13 +129,13 @@ class TestReference(
 
     override fun isNew(): Boolean = _isNew
 
-    fun delete(updater: String, updateDetime: LocalDateTime) {
+    fun delete(updater: String, updateDtime: LocalDateTime) {
         this.useYn = false
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
-    fun update(command: TestReferenceUpdateCommand, updater: String, updateDetime: LocalDateTime) {
+    fun update(command: TestReferenceUpdateCommand, updater: String, updateDtime: LocalDateTime) {
         this.refCateCd = command.refCateCd
         this.useYn = command.useYn
         this.refNm = command.refNm
@@ -152,7 +152,7 @@ class TestReference(
         this.dftData = command.dftData
         this.dftEngData = command.dftEngData
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
     companion object {
@@ -181,7 +181,7 @@ class TestReference(
                 creator = creator,
                 createDtime = now,
                 updater = creator,
-                updateDetime = now
+                updateDtime = now
             ).apply { setAsNew() }
         }
     }
@@ -198,7 +198,7 @@ class TestReferenceGroup(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDetime: LocalDateTime
+    updateDtime: LocalDateTime
 ) : Persistable<String> {
 
     @Id
@@ -237,8 +237,8 @@ class TestReferenceGroup(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime = updateDtime
         private set
 
     @Transient
@@ -252,14 +252,14 @@ class TestReferenceGroup(
 
     override fun isNew(): Boolean = _isNew
 
-    fun update(command: TestReferenceGroupUpdateCommand, updater: String, updateDetime: LocalDateTime) {
+    fun update(command: TestReferenceGroupUpdateCommand, updater: String, updateDtime: LocalDateTime) {
         this.refNm = command.refNm
         this.refAbbrNm = command.refAbbrNm
         this.refEngNm = command.refEngNm
         this.refEngAbbrNm = command.refEngAbbrNm
         this.sortOrder = command.sortOrder
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
     companion object {
@@ -278,7 +278,7 @@ class TestReferenceGroup(
                 creator = creator,
                 createDtime = now,
                 updater = creator,
-                updateDetime = now
+                updateDtime = now
             ).apply { setAsNew() }
         }
     }
@@ -293,7 +293,7 @@ class TestReferenceGroupItem(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDetime: LocalDateTime
+    updateDtime: LocalDateTime
 ) : Persistable<String> {
 
     @Id
@@ -325,8 +325,8 @@ class TestReferenceGroupItem(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime = updateDtime
         private set
 
     @Transient
@@ -340,12 +340,12 @@ class TestReferenceGroupItem(
 
     override fun isNew(): Boolean = _isNew
 
-    fun update(command: TestReferenceGroupItemUpdateCommand, updater: String, updateDetime: LocalDateTime) {
+    fun update(command: TestReferenceGroupItemUpdateCommand, updater: String, updateDtime: LocalDateTime) {
         this.refGroupCd = command.refGroupCd
         this.refCd = command.refCd
         this.sortOrder = command.sortOrder
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
     companion object {
@@ -362,7 +362,7 @@ class TestReferenceGroupItem(
                 creator = creator,
                 createDtime = now,
                 updater = creator,
-                updateDetime = now
+                updateDtime = now
             ).apply { setAsNew() }
         }
     }

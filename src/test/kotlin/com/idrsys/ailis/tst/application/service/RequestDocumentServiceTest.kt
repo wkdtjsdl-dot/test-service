@@ -58,7 +58,7 @@ class RequestDocumentServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = RequestDocumentResponse(
             docCd = "DOC01",
@@ -70,7 +70,7 @@ class RequestDocumentServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         val command = RequestDocumentCreateCommand(
@@ -114,7 +114,7 @@ class RequestDocumentServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = RequestDocumentResponse(
             docCd = id,
@@ -126,7 +126,7 @@ class RequestDocumentServiceTest {
             creator = "admin",
             createDtime = existing.createDtime,
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         val command = RequestDocumentUpdateCommand(
@@ -163,7 +163,7 @@ class RequestDocumentServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = RequestDocumentResponse(
             docCd = id,
@@ -175,7 +175,7 @@ class RequestDocumentServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         `when`(repository.findById(id)).thenReturn(domain)
@@ -213,7 +213,7 @@ class RequestDocumentServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = RequestDocumentResponse(
             docCd = "DOC01",
@@ -225,7 +225,7 @@ class RequestDocumentServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         `when`(repository.findAllByDocDivCd(null)).thenReturn(flowOf(domain))

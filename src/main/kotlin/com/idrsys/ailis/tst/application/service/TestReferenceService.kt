@@ -52,7 +52,7 @@ class TestReferenceService(
             ?: throw NoSuchElementException("TestReference not found: $refCd")
 
         val now = java.time.LocalDateTime.now()
-        reference.delete(updater = adminId, updateDetime = now)
+        reference.delete(updater = adminId, updateDtime = now)
 
         repository.save(reference)
     }

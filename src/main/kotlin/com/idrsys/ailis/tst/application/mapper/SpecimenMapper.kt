@@ -14,7 +14,7 @@ interface SpecimenContainerMapper {
     @Mapping(target = "creator", ignore = true)
     @Mapping(target = "createDtime", ignore = true)
     @Mapping(target = "updater", ignore = true)
-    @Mapping(target = "updateDetime", ignore = true)
+    @Mapping(target = "updateDtime", ignore = true)
     fun toDomain(request: SpecimenContainerRegisterRequest): SpecimenContainer
 }
 
@@ -25,6 +25,6 @@ interface SpecimenMapper {
     @Mapping(target = "creator", ignore = true)
     @Mapping(target = "createDtime", ignore = true)
     @Mapping(target = "updater", ignore = true)
-    @Mapping(target = "updateDetime", ignore = true)
+    @Mapping(target = "updateDtime", ignore = true)
     fun toDomain(request: SpecimenRegisterRequest): Specimen
 }

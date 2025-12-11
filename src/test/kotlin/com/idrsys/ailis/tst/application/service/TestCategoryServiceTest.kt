@@ -71,7 +71,7 @@ class TestCategoryServiceTest {
             creator = "system",
             createDtime = LocalDateTime.now(),
             updater = "system",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         val response = TestCategoryResponse(
@@ -87,7 +87,7 @@ class TestCategoryServiceTest {
             creator = "system",
             createDtime = LocalDateTime.now(),
             updater = "system",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         // Use helper to avoid NPE with Mockito.any() in Kotlin

@@ -109,7 +109,7 @@ class TestItemServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = TestItemResponse(
             tstCd = "uuid",
@@ -146,7 +146,7 @@ class TestItemServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         val command = TestItemCreateCommand(
@@ -228,7 +228,8 @@ class TestItemServiceTest {
             tstTatday = 2,
             insuApplyCd = "APPLY02",
             insuCd = "INSU02",
-            insuCateNo = "CATE02"
+            insuCateNo = "CATE02",
+            updateReason = ""
         )
         val existing = TestItem(
             tstCd = id,
@@ -265,7 +266,7 @@ class TestItemServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = TestItemResponse(
             tstCd = id,
@@ -302,7 +303,7 @@ class TestItemServiceTest {
             creator = "admin",
             createDtime = existing.createDtime,
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         val command = TestItemUpdateCommand(
@@ -389,7 +390,7 @@ class TestItemServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = TestItemResponse(
             tstCd = id,
@@ -426,7 +427,7 @@ class TestItemServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         `when`(repository.findById(id)).thenReturn(domain)

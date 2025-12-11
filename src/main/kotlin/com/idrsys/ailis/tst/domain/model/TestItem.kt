@@ -55,7 +55,7 @@ class TestItem(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDetime: LocalDateTime
+    updateDtime: LocalDateTime
 ) : Persistable<String> {
 
     @Id
@@ -194,8 +194,8 @@ class TestItem(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime = updateDtime
         private set
 
     @Transient
@@ -209,7 +209,7 @@ class TestItem(
 
     override fun isNew(): Boolean = _isNew
 
-    fun update(command: TestItemUpdateCommand, updater: String, updateDetime: LocalDateTime) {
+    fun update(command: TestItemUpdateCommand, updater: String, updateDtime: LocalDateTime) {
         this.tstLargeCateCd = command.tstLargeCateCd
         this.tstMediumCateCd = command.tstMediumCateCd
         this.startDt = command.startDt
@@ -241,7 +241,7 @@ class TestItem(
         this.insuCd = command.insuCd
         this.insuCateNo = command.insuCateNo
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
     companion object {
@@ -285,7 +285,7 @@ class TestItem(
                 creator = creator,
                 createDtime = now,
                 updater = creator,
-                updateDetime = now
+                updateDtime = now
             ).apply { setAsNew() }
         }
     }
@@ -405,7 +405,7 @@ class StandardCharge(
     fun update(
         command: StandardChargeUpdateCommand,
         updater: String,
-        updateDetime: LocalDateTime
+        updateDtime: LocalDateTime
     ) {
         this.applyStartDt = command.applyStartDt
         this.applyEndDt = command.applyEndDt
@@ -479,7 +479,7 @@ class TestItemSpecimen(
     creator: String,
     createDtime: LocalDateTime,
     updater: String?,
-    updateDetime: LocalDateTime?
+    updateDtime: LocalDateTime?
 ) : Persistable<String> {
 
     @Id
@@ -571,8 +571,8 @@ class TestItemSpecimen(
     var updater: String? = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime? = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime? = updateDtime
         private set
 
     @Transient
@@ -615,7 +615,7 @@ class TestItemSpecimen(
                 creator = creator,
                 createDtime = now,
                 updater = null,
-                updateDetime = null
+                updateDtime = null
             ).apply { setAsNew() }
         }
     }
@@ -631,7 +631,7 @@ class TestItemRefItem(
     creator: String,
     createDtime: LocalDateTime,
     updater: String?,
-    updateDetime: LocalDateTime?
+    updateDtime: LocalDateTime?
 ) : Persistable<String> {
 
     @Id
@@ -667,8 +667,8 @@ class TestItemRefItem(
     var updater: String? = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime? = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime? = updateDtime
         private set
 
     @Transient
@@ -685,12 +685,12 @@ class TestItemRefItem(
     fun update(
         command: TestItemRefItemUpdateCommand,
         updater: String,
-        updateDetime: LocalDateTime
+        updateDtime: LocalDateTime
     ) {
         this.estlYn = command.estlYn
         this.sortOrder = command.sortOrder
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
     companion object {
@@ -708,7 +708,7 @@ class TestItemRefItem(
                 creator = creator,
                 createDtime = now,
                 updater = creator,
-                updateDetime = now
+                updateDtime = now
             ).apply { setAsNew() }
         }
     }
@@ -722,7 +722,7 @@ class TestGene(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDetime: LocalDateTime,
+    updateDtime: LocalDateTime,
 ) {
     @Column("geneCd")
     val geneCd: String = geneCd
@@ -742,8 +742,8 @@ class TestGene(
     @Column("updater")
     val updater: String = updater
 
-    @Column("updateDetime")
-    val updateDetime: LocalDateTime = updateDetime
+    @Column("updateDtime")
+    val updateDtime: LocalDateTime = updateDtime
 
 
 }
@@ -814,7 +814,7 @@ class TestItemEssentialDoc(
     creator: String,
     createDtime: LocalDateTime,
     updater: String? = null,
-    updateDetime: LocalDateTime? = null
+    updateDtime: LocalDateTime? = null
 ) : Persistable<String> {
 
     @Id
@@ -842,8 +842,8 @@ class TestItemEssentialDoc(
     var updater: String? = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime? = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime? = updateDtime
         private set
 
     @Transient
@@ -860,7 +860,7 @@ class TestItemEssentialDoc(
     ) {
         this.docCd = command.docCd
         this.updater = updater
-        this.updateDetime = now
+        this.updateDtime = now
     }
 
     override fun getId(): String? = itemEstlDocId

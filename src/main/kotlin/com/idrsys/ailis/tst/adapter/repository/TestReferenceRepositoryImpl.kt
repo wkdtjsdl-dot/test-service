@@ -161,7 +161,7 @@ class TestReferenceRepositoryImpl(
             creator = row["creator"] as String,
             updater = row["updater"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
-            updateDetime = row["update_detime"] as LocalDateTime,
+            updateDtime = row["update_dtime"] as LocalDateTime,
             dataFormat = row["data_format"] as String,
             dftData = row["dft_data"] as String,
             dftEngData = row["dft_eng_data"] as String,
@@ -254,7 +254,7 @@ class TestReferenceRepositoryImpl(
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String,
-            updateDetime = row["update_detime"] as LocalDateTime
+            updateDtime = row["update_dtime"] as LocalDateTime
         )
     }
 }

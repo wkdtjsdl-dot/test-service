@@ -50,7 +50,7 @@ interface TestItemMapper {
     @Mappings(
         Mapping(source = "newLog.itemHstId", target = "itemHstId"),
         Mapping(source = "newLog.updater", target = "editBy"),
-        Mapping(source = "newLog.updateDetime", target = "editAt"),
+        Mapping(source = "newLog.updateDtime", target = "editAt"),
         Mapping(source = "newLog.hstDesc", target = "hstDesc"),
         Mapping(source = "diffString", target = "editContents"),
         Mapping(source = "oldLog.tstCd", target = "tstCd"),

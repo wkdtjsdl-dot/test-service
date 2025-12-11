@@ -15,7 +15,7 @@ data class TestCategoryResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,
-    val updateDetime: LocalDateTime
+    val updateDtime: LocalDateTime
 )
 
 data class TestCategoryRegisterRequest(

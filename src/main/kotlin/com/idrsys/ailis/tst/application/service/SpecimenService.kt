@@ -63,7 +63,7 @@ class SpecimenService(
             ?: throw NoSuchElementException("Specimen not found: $spcmCd")
 
         val now = LocalDateTime.now()
-        specimen.delete(updater = adminId, updateDetime = now)
+        specimen.delete(updater = adminId, updateDtime = now)
 
         specimenRepository.save(specimen)
     }
