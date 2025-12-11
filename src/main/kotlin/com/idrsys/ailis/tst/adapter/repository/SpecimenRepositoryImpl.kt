@@ -38,7 +38,7 @@ class SpecimenRepositoryImpl(
         val query = dslContext.select(table.fields().toList()).from(table)
 
         if (spcmNm != null) {
-            query.where(table.SPCM_NM.like("%$spcmNm%")).or(table.SPCM_ENG_NM.like("%$spcmNm%"))
+            query.where(table.SPCM_NM.likeIgnoreCase("%$spcmNm%")).or(table.SPCM_ENG_NM.likeIgnoreCase("%$spcmNm%"))
         }
         if (spcmCateCd != null) {
             query.where(table.SPCM_CATE_CD.eq(spcmCateCd))
