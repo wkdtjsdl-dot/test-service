@@ -596,7 +596,7 @@ class TestItemRepositoryImpl(
             geneCd = row["gene_cd"] as String,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
-            geneNm = row["gene_nm"] as String,
+            geneNm = row["gene_nm"] as String?,
         )
     }
 

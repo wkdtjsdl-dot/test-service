@@ -314,7 +314,7 @@ data class TestItemGeneResponse(
     val geneCd: String,
     val creator: String,
     val createDtime: LocalDateTime,
-    val geneNm: String,
+    val geneNm: String?,
 )
 
 // --- Test Item Essential Doc ---
