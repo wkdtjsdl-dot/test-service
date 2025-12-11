@@ -69,6 +69,10 @@ class TestReferenceService(
         return repository.getReferenceByRefGroupCd(searchParam).map { mapper.toResponse(it) }
     }
 
+    override suspend fun findSimpleReferenceByRefCd(refCds: List<String>): Flow<TestReferenceSimpleResponse> {
+        return repository.findSimpleReferenceByRefCd(refCds)
+    }
+
     // --- TestReferenceGroup ---
 
     override suspend fun registerGroup(request: TestReferenceGroupRegisterRequest, adminId: String): TestReferenceGroupResponse {

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/bts/inner/item")
+@RequestMapping("/api/inner/bts/item")
 class TestItemInnerController(
     private val testItemUseCase: TestItemUseCase
 ) {

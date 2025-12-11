@@ -20,6 +20,11 @@ data class TestReferenceAutoCompleteResponse(
     val refSize: Int
 )
 
+data class TestReferenceSimpleResponse(
+    val refCd: String,
+    val refNm: String
+)
+
 data class TestReferenceRegisterRequest(
     val refCd: String,
     val refCateCd: String,

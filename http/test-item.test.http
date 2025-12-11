@@ -114,7 +114,7 @@ Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검사 코드 innerApi 조회
-GET {{tst-service}}/api/bts/inner/item?cds=N119,N110,N112
+GET {{tst-service}}/api/inner/bts/item?cds=N119,N110,N112
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

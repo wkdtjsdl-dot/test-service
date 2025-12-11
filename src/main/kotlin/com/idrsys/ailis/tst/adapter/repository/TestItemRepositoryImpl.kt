@@ -20,6 +20,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BtsStndCharge
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsSpcm
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsRefItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemGene
+import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemHst
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -28,10 +29,8 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
-import org.jooq.Param
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL.notExists
-import org.jooq.impl.DSL.noCondition
 import org.jooq.impl.DSL.substring
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
@@ -629,8 +628,6 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
-    override suspend fun saveTestItemHistory(entity: TestItemHst): TestItemHst = testItemHstDataRepo.save(entity)
-
     private fun toTestItemEssentialDoc(row: Map<String, Any>): TestItemEssentialDoc {
         return TestItemEssentialDoc(
             itemEstlDocId = row["item_estl_doc_id"] as String?,
@@ -642,4 +639,73 @@ class TestItemRepositoryImpl(
             updateDetime = row["update_detime"] as LocalDateTime?
         )
     }
+
+    // --- TestItemHst ---
+    override suspend fun saveTestItemHistory(entity: TestItemHst): TestItemHst = testItemHstDataRepo.save(entity)
+    override suspend fun findTestItemHistoryByTstCd(tstCd: String): Flow<TestItemHst> {
+        val table = BtsItemHst.BTS_ITEM_HST
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(table.TST_CD.eq(tstCd))
+            .orderBy(table.UPDATE_DETIME.desc())
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestItemHst(row) }
+            .asFlow()
+    }
+
+    private fun toTestItemHst(row: Map<String, Any>): TestItemHst {
+        return TestItemHst(
+            itemHstId = row["item_hst_id"] as String,
+            hstDesc = row["hst_desc"] as String,
+            tstCd = row["tst_cd"] as String,
+            tstLargeCateCd = row["tst_large_cate_cd"] as String,
+            tstMediumCateCd = row["tst_medium_cate_cd"] as String,
+            startDt = row["start_dt"] as LocalDate,
+            endDt = row["end_dt"] as LocalDate,
+            useYn = row["use_yn"] as Boolean,
+            reqPossYn = row["req_poss_yn"] as Boolean,
+            webKorYn = row["web_kor_yn"] as Boolean,
+            webEngYn = row["web_eng_yn"] as Boolean,
+            tstNm = row["tst_nm"] as String,
+            tstAbbrNm = row["tst_abbr_nm"] as String,
+            tstEngNm = row["tst_eng_nm"] as String,
+            tstEngAbbrNm = row["tst_eng_abbr_nm"] as String,
+            tstIntNm = row["tst_int_nm"] as String,
+            rstTypeShortYn = row["rst_type_short_yn"] as Boolean,
+            rstTypeLongYn = row["rst_type_long_yn"] as Boolean,
+            rstTypeFileYn = row["rst_type_file_yn"] as Boolean,
+            rstTypeUrlYn = row["rst_type_url_yn"] as Boolean,
+            diseaseCd = row["disease_cd"] as String,
+            tstMethodCd = row["tst_method_cd"] as String,
+            refVal = row["ref_val"] as String,
+            engRefVal = row["eng_ref_val"] as String,
+            clncSgnf = row["clnc_sgnf"] as String,
+            engClncSgnf = row["eng_clnc_sgnf"] as String,
+            tstDesc = row["tst_desc"] as String,
+            tstEngDesc = row["tst_eng_desc"] as String,
+            tstDayweek = row["tst_dayweek"] as String,
+            tstTatday = row["tst_tatday"] as Int,
+            insuApplyCd = row["insu_apply_cd"] as String,
+            insuCd = row["insu_cd"] as String,
+            insuCateNo = row["insu_cate_no"] as String,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDetime = row["update_detime"] as LocalDateTime
+        )
+    }
+
 }
