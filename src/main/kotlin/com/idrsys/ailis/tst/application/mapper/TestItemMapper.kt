@@ -2,6 +2,7 @@ package com.idrsys.ailis.tst.application.mapper
 
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.domain.model.StandardCharge
+import com.idrsys.ailis.tst.domain.model.TestGene
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
 import com.idrsys.ailis.tst.domain.model.TestItemGene
@@ -31,6 +32,8 @@ interface TestItemMapper {
     // --- TestItemRefItem ---
     fun toResponse(domain: TestItemRefItem): TestItemRefItemResponse
 
+    // --- TestGene ---
+    fun  toResponse(domain: TestGene): TestGeneResponse
     // --- TestItemGene ---
     fun toResponse(domain: TestItemGene): TestItemGeneResponse
 

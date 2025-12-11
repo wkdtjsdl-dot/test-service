@@ -176,6 +176,12 @@ class TestItemController(
     fun getRefItemsByTstCd(@ParameterObject searchParam: TestItemRefRequest): Flow<TestItemRefResponse> =
         useCase.getRefItemsByTstCd(searchParam)
 
+
+    // --- Gene ---
+    @Operation(summary = "검사 검사종목 미지정 유전자 목록")
+    @GetMapping("/api/bbs/gene")
+    fun getGene(@RequestParam genAlpa: String): Flow<TestGeneResponse> = useCase.getGenes(genAlpa)
+
     // --- TestItemGene ---
 
     @Operation(summary = "검사 검사종목 유전자 등록")
