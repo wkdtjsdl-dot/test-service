@@ -5,3 +5,6 @@ data class CustReqPossTstItemCommand(
     val custCd: String,
     val tstCd: String
 )
+data class CustReqPossTstItemUpdateCommand(
+    val tstCd: String
+)
