@@ -165,7 +165,7 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
-    override fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemAutoCompleteResponse> {
+    override fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse> {
         val tstItem = BtsItem.BTS_ITEM
         val keyword = "%${searchParam.keyword}%"
 
@@ -189,7 +189,43 @@ class TestItemRepositoryImpl(
 
         return executeSpec
             .map { row, _ ->
-                TestItemAutoCompleteResponse(
+                TestItemSimpleResponse(
+                    tstCd = row.get(tstItem.TST_CD.name, String::class.java)!!,
+                    tstNm = row.get(tstItem.TST_NM.name, String::class.java)!!
+                )
+            }
+            .all()
+            .asFlow()
+    }
+
+    override fun findSimpleItemByTstCd(tstCds: List<String>): Flow<TestItemSimpleResponse> {
+        val tstItem = BtsItem.BTS_ITEM
+
+        val condition = mutableListOf<Condition>()
+
+        tstCds.takeIf { it.isNotEmpty() }?.let {
+            condition.add(tstItem.TST_CD.`in`(it))
+        }
+
+        val query = dslContext.select(
+            tstItem.TST_CD,
+            tstItem.TST_NM
+        )
+            .from(tstItem)
+            .where(condition)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .map { row, _ ->
+                TestItemSimpleResponse(
                     tstCd = row.get(tstItem.TST_CD.name, String::class.java)!!,
                     tstNm = row.get(tstItem.TST_NM.name, String::class.java)!!
                 )

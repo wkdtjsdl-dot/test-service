@@ -121,7 +121,7 @@ data class TestItemResponse(
     val updateDetime: LocalDateTime
 )
 
-data class TestItemAutoCompleteResponse(
+data class TestItemSimpleResponse(
     val tstCd: String,
     val tstNm: String
 )

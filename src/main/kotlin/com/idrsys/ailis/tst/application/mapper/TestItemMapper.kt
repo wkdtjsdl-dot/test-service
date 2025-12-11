@@ -16,6 +16,7 @@ interface TestItemMapper {
     // --- TestItem ---
     fun toDomain(request: TestItemRegisterRequest): TestItem
     fun toResponse(domain: TestItem): TestItemResponse
+    fun toSimpleResponse(domain: TestItem): TestItemSimpleResponse
 
     // --- StandardCharge ---
     fun toDomain(request: StandardChargeRegisterRequest): StandardCharge

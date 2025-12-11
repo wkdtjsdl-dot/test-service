@@ -16,7 +16,8 @@ interface TestItemRepository {
     suspend fun findById(tstCd: String): TestItem?
     fun getItems(searchParam: TestItemSearchParam): Flow<TestItem>
     fun findUnspecifiedDeptItems(searchParam: UnspecifiedDepartmentTestItemSearchParam): Flow<TestItem>
-    fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemAutoCompleteResponse>
+    fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse>
+    fun findSimpleItemByTstCd(tstCds: List<String>): Flow<TestItemSimpleResponse>
 
     // --- StandardCharge ---
     suspend fun saveCharge(entity: StandardCharge): StandardCharge

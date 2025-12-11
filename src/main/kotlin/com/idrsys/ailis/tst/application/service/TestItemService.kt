@@ -52,8 +52,12 @@ class TestItemService(
         return repository.getItems(searchParam).map { mapper.toResponse(it) }
     }
 
-    override fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemAutoCompleteResponse> {
+    override fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse> {
         return repository.autoCompleteItems(searchParam)
+    }
+
+    override suspend fun findSimpleItemByTstCd(tstCds: List<String>): Flow<TestItemSimpleResponse> {
+        return repository.findSimpleItemByTstCd(tstCds)
     }
 
     // --- StandardCharge ---

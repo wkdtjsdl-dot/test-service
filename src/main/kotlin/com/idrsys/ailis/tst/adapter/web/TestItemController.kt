@@ -54,7 +54,7 @@ class TestItemController(
 
     @Operation(summary = "검사 코드 자동완성")
     @GetMapping("/api/bts/item/auto-complete")
-    fun autoCompleteItem(@ParameterObject searchParam: TestItemAutoCompleteParam): Flow<TestItemAutoCompleteResponse> {
+    fun autoCompleteItem(@ParameterObject searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse> {
         return useCase.autoCompleteItems(searchParam)
     }
     // --- StandardCharge ---
