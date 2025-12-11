@@ -266,12 +266,12 @@ class TestItemService(
             "creator" to "생성자",
             "createDtime" to "생성일시",
             "updater" to "수정자",
-            "updateDetime" to "수정일시"
+            "updateDtime" to "수정일시"
         )
 
         return logs.windowed(size = 2, step = 1).map { (newLog, oldLog) ->
             val diffs = StringBuilder()
-            val propertiesToIgnore = setOf("itemHstId", "tstCd", "updater", "updateDetime", "creator", "createDtime", "isNew", "hstDesc")
+            val propertiesToIgnore = setOf("itemHstId", "tstCd", "updater", "updateDtime", "creator", "createDtime", "isNew", "hstDesc")
 
             TestItemHst::class.memberProperties.forEach { prop ->
                 prop.isAccessible = true // private backing field 강제 오픈

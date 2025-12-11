@@ -24,7 +24,7 @@ class TestCategory(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDetime: LocalDateTime
+    updateDtime: LocalDateTime
 ) : Persistable<String> {
 
     @Id
@@ -75,8 +75,8 @@ class TestCategory(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime = updateDtime
         private set
 
     @Transient
@@ -90,7 +90,7 @@ class TestCategory(
 
     override fun isNew(): Boolean = _isNew
 
-    fun update(command: TestCategoryUpdateCommand, updater: String, updateDetime: LocalDateTime) {
+    fun update(command: TestCategoryUpdateCommand, updater: String, updateDtime: LocalDateTime) {
         this.cateNm = command.cateNm
         this.cateAbbrNm = command.cateAbbrNm
         this.cateEngNm = command.cateEngNm
@@ -98,13 +98,13 @@ class TestCategory(
         this.useYn = command.useYn
         this.sortOrder = command.sortOrder
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
-    fun delete(updater: String, updateDetime: LocalDateTime) {
+    fun delete(updater: String, updateDtime: LocalDateTime) {
         this.useYn = false
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
     companion object {
@@ -126,7 +126,7 @@ class TestCategory(
                 creator = creator,
                 createDtime = now,
                 updater = creator,
-                updateDetime = now
+                updateDtime = now
             ).apply { setAsNew() }
         }
     }

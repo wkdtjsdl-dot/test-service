@@ -47,7 +47,7 @@ class TestItemHst(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDetime: LocalDateTime
+    updateDtime: LocalDateTime
 ) : Persistable<String> {
 
     @Id
@@ -195,8 +195,8 @@ class TestItemHst(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime = updateDtime
         private set
 
     @Transient

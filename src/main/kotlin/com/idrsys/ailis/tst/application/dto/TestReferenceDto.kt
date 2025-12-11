@@ -82,7 +82,7 @@ data class TestReferenceResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,
-    val updateDetime: LocalDateTime
+    val updateDtime: LocalDateTime
 )
 
 // --- Test Reference Group ---
@@ -114,7 +114,7 @@ data class TestReferenceGroupResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,
-    val updateDetime: LocalDateTime
+    val updateDtime: LocalDateTime
 )
 
 // --- Test Reference Group Item ---
@@ -140,5 +140,5 @@ data class TestReferenceGroupItemResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,
-    val updateDetime: LocalDateTime
+    val updateDtime: LocalDateTime
 )

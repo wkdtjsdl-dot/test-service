@@ -337,7 +337,7 @@ class TestItemRepositoryImpl(
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String,
-            updateDetime = row["update_detime"] as LocalDateTime
+            updateDtime = row["update_dtime"] as LocalDateTime
         )
     }
 
@@ -389,7 +389,7 @@ class TestItemRepositoryImpl(
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String?,
-            updateDetime = row["update_detime"] as LocalDateTime?
+            updateDtime = row["update_dtime"] as LocalDateTime?
         )
     }
 
@@ -480,7 +480,7 @@ class TestItemRepositoryImpl(
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String?,
-            updateDetime = row["update_detime"] as LocalDateTime?
+            updateDtime = row["update_dtime"] as LocalDateTime?
         )
     }
 
@@ -542,7 +542,7 @@ class TestItemRepositoryImpl(
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String,
-            updateDetime = row["update_detime"] as LocalDateTime
+            updateDtime = row["update_dtime"] as LocalDateTime
 
         )
     }
@@ -636,7 +636,7 @@ class TestItemRepositoryImpl(
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String?,
-            updateDetime = row["update_detime"] as LocalDateTime?
+            updateDtime = row["update_dtime"] as LocalDateTime?
         )
     }
 
@@ -648,7 +648,7 @@ class TestItemRepositoryImpl(
             .select(table.fields().toList())
             .from(table)
             .where(table.TST_CD.eq(tstCd))
-            .orderBy(table.UPDATE_DETIME.desc())
+            .orderBy(table.UPDATE_DTIME.desc())
 
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value: Any? ->
@@ -704,7 +704,7 @@ class TestItemRepositoryImpl(
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String,
-            updateDetime = row["update_detime"] as LocalDateTime
+            updateDtime = row["update_dtime"] as LocalDateTime
         )
     }
 

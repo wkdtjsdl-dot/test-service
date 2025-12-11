@@ -11,7 +11,7 @@ data class SpecimenContainerResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,
-    val updateDetime: LocalDateTime
+    val updateDtime: LocalDateTime
 )
 
 data class SpecimenContainerRegisterRequest(
@@ -49,7 +49,7 @@ data class SpecimenResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,
-    val updateDetime: LocalDateTime
+    val updateDtime: LocalDateTime
 )
 
 data class SpecimenRegisterRequest(

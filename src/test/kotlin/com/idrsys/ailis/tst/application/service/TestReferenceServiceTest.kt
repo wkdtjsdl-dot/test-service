@@ -78,7 +78,7 @@ class TestReferenceServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = TestReferenceResponse(
             refCd = "uuid",
@@ -100,7 +100,7 @@ class TestReferenceServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         val command = TestReferenceCreateCommand(
@@ -174,7 +174,7 @@ class TestReferenceServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = TestReferenceResponse(
             refCd = refCd,
@@ -196,7 +196,7 @@ class TestReferenceServiceTest {
             creator = "admin",
             createDtime = existing.createDtime,
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         val command = TestReferenceUpdateCommand(
@@ -253,7 +253,7 @@ class TestReferenceServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = TestReferenceResponse(
             refCd = refCd,
@@ -275,7 +275,7 @@ class TestReferenceServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         `when`(repository.findById(refCd)).thenReturn(domain)
@@ -312,7 +312,7 @@ class TestReferenceServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         `when`(repository.findById(refCd)).thenReturn(domain)
@@ -347,7 +347,7 @@ class TestReferenceServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = TestReferenceResponse(
             refCd = "uuid",
@@ -369,14 +369,14 @@ class TestReferenceServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
-        `when`(repository.findAll()).thenReturn(flowOf(domain))
+        `when`(repository.findAllByRefCateCd(null)).thenReturn(flowOf(domain))
         `when`(mapper.toResponse(domain)).thenReturn(response)
 
         // When
-        val result = service.getAllReferences().toList()
+        val result = service.getAllReferences(null).toList()
 
         // Then
         assertEquals(1, result.size)

@@ -80,7 +80,7 @@ class SpecimenServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = SpecimenResponse(
             spcmCd = "SPCM01",
@@ -103,7 +103,7 @@ class SpecimenServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         val command = SpecimenCreateCommand(
@@ -180,7 +180,7 @@ class SpecimenServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = SpecimenResponse(
             spcmCd = id,
@@ -203,7 +203,7 @@ class SpecimenServiceTest {
             creator = "admin",
             createDtime = existing.createDtime,
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         val command = SpecimenUpdateCommand(
@@ -262,7 +262,7 @@ class SpecimenServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = SpecimenResponse(
             spcmCd = id,
@@ -285,7 +285,7 @@ class SpecimenServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         `when`(repository.findById(id)).thenReturn(domain)
@@ -323,7 +323,7 @@ class SpecimenServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         `when`(repository.findById(id)).thenReturn(domain)
@@ -359,7 +359,7 @@ class SpecimenServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
         val response = SpecimenResponse(
             spcmCd = "SPCM01",
@@ -382,7 +382,7 @@ class SpecimenServiceTest {
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
-            updateDetime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now()
         )
 
         `when`(repository.findAll(null, null)).thenReturn(flowOf(domain))

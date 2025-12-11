@@ -31,7 +31,7 @@ class Specimen(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDetime: LocalDateTime
+    updateDtime: LocalDateTime
 ) : Persistable<String> {
 
     @Id
@@ -114,8 +114,8 @@ class Specimen(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime = updateDtime
         private set
 
     @Transient
@@ -132,7 +132,7 @@ class Specimen(
     fun update(
         command: SpecimenUpdateCommand,
         updater: String,
-        updateDetime: LocalDateTime
+        updateDtime: LocalDateTime
     ) {
         this.spcmCateCd = command.spcmCateCd
         this.useYn = command.useYn
@@ -151,13 +151,13 @@ class Specimen(
         this.ref = command.ref
         this.engRef = command.engRef
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
-    fun delete(updater: String, updateDetime: LocalDateTime) {
+    fun delete(updater: String, updateDtime: LocalDateTime) {
         this.useYn = false
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
     companion object {
@@ -187,7 +187,7 @@ class Specimen(
                 creator = creator,
                 createDtime = now,
                 updater = creator,
-                updateDetime = now
+                updateDtime = now
             ).apply { setAsNew() }
         }
     }

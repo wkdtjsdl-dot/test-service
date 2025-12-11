@@ -68,7 +68,7 @@ class DepartmentGroup(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
+    @Column("update_dtime")
     var updateDtime: LocalDateTime = updateDtime
         private set
 
@@ -168,7 +168,7 @@ class DepartmentGroupItem(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
+    @Column("update_dtime")
     var updateDtime: LocalDateTime = updateDtime
         private set
 
@@ -302,7 +302,7 @@ class DepartmentTestItem(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
+    @Column("update_dtime")
     var updateDtime: LocalDateTime = updateDtime
         private set
 

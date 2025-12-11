@@ -20,7 +20,7 @@ class RequestDocument(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDetime: LocalDateTime
+    updateDtime: LocalDateTime
 ) : Persistable<String> {
 
     @Id
@@ -59,8 +59,8 @@ class RequestDocument(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime = updateDtime
         private set
 
     @Transient
@@ -77,7 +77,7 @@ class RequestDocument(
     fun update(
         command: RequestDocumentUpdateCommand,
         updater: String,
-        updateDetime: LocalDateTime
+        updateDtime: LocalDateTime
     ) {
         this.docDivCd = command.docDivCd
         this.docNm = command.docNm
@@ -85,7 +85,7 @@ class RequestDocument(
         this.docFileId = command.docFileId
         this.docEngFileId = command.docEngFileId
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
     companion object {
@@ -104,7 +104,7 @@ class RequestDocument(
                 creator = creator,
                 createDtime = now,
                 updater = creator,
-                updateDetime = now
+                updateDtime = now
             ).apply { setAsNew() }
         }
     }

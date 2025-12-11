@@ -55,7 +55,7 @@ class TestCategoryService(
             ?: throw NoSuchElementException("Category not found: $cateId")
 
 //        val now = LocalDateTime.now()
-//        category.delete(updater = adminId, updateDetime = now)
+//        category.delete(updater = adminId, updateDtime = now)
 //
 //        testCategoryRepository.save(category)
         testCategoryRepository.deleteById(cateId)

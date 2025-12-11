@@ -78,7 +78,7 @@ class TestCategoryRepositoryImpl(
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String,
-            updateDetime = row["update_detime"] as LocalDateTime
+            updateDtime = row["update_dtime"] as LocalDateTime
         )
     }
 }

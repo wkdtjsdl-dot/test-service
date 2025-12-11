@@ -119,7 +119,7 @@ data class TestItemResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,
-    val updateDetime: LocalDateTime
+    val updateDtime: LocalDateTime
 )
 
 data class TestItemSimpleResponse(
@@ -235,7 +235,7 @@ data class TestItemSpecimenResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String?,
-    val updateDetime: LocalDateTime?
+    val updateDtime: LocalDateTime?
 )
 
 // --- Test Item Ref Item ---
@@ -261,7 +261,7 @@ data class TestItemRefItemResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String?,
-    val updateDetime: LocalDateTime?
+    val updateDtime: LocalDateTime?
 )
 
 data class TestItemRefRequest(
@@ -298,7 +298,7 @@ data class TestGeneResponse (
    val creator: String,
    val createDtime: LocalDateTime,
    val updater: String?,
-   val updateDetime: LocalDateTime?,
+   val updateDtime: LocalDateTime?,
         )
 
 // --- Test Item Gene ---
@@ -335,7 +335,7 @@ data class TestItemEssentialDocResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String?,
-    val updateDetime: LocalDateTime?
+    val updateDtime: LocalDateTime?
 )
 
 // --- Test Item Basic History ---

@@ -18,7 +18,7 @@ class SpecimenContainer(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDetime: LocalDateTime
+    updateDtime: LocalDateTime
 ) : Persistable<String> {
 
     @Id
@@ -49,8 +49,8 @@ class SpecimenContainer(
     var updater: String = updater
         private set
 
-    @Column("update_detime")
-    var updateDetime: LocalDateTime = updateDetime
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime = updateDtime
         private set
 
     @Transient
@@ -67,13 +67,13 @@ class SpecimenContainer(
     fun update(
         command: SpecimenContainerUpdateCommand,
         updater: String,
-        updateDetime: LocalDateTime
+        updateDtime: LocalDateTime
     ) {
         this.cntnNm = command.cntnNm
         this.cntnEngNm = command.cntnEngNm
         this.cntnFileId = command.cntnFileId
         this.updater = updater
-        this.updateDetime = updateDetime
+        this.updateDtime = updateDtime
     }
 
     companion object {
@@ -90,7 +90,7 @@ class SpecimenContainer(
                 creator = creator,
                 createDtime = now,
                 updater = creator,
-                updateDetime = now
+                updateDtime = now
             ).apply { setAsNew() }
         }
     }
