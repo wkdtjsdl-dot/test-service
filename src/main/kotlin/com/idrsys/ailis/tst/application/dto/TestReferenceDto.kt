@@ -10,7 +10,9 @@ data class TestReferenceAutoCompleteParam(
 
 data class TestReferenceAutoCompleteResponse(
     val refCd: String,
-    val refNm: String
+    val refNm: String,
+    val refType: String,
+    val refSize: Int
 )
 
 data class TestReferenceRegisterRequest(
