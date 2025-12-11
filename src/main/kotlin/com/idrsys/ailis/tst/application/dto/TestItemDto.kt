@@ -290,6 +290,17 @@ data class TestItemRefDetailResponse(
     val estlYn: Boolean
 )
 
+// --- Gene ---
+data class TestGeneResponse (
+   val geneCd: String,
+   val geneNm: String,
+   val sortOrder: Int,
+   val creator: String,
+   val createDtime: LocalDateTime,
+   val updater: String?,
+   val updateDetime: LocalDateTime?,
+        )
+
 // --- Test Item Gene ---
 
 data class TestItemGeneRegisterRequest(
@@ -302,7 +313,8 @@ data class TestItemGeneResponse(
     val tstCd: String,
     val geneCd: String,
     val creator: String,
-    val createDtime: LocalDateTime
+    val createDtime: LocalDateTime,
+    val geneNm: String,
 )
 
 // --- Test Item Essential Doc ---

@@ -714,6 +714,40 @@ class TestItemRefItem(
     }
 }
 
+@Table("tst_scm.bbs_gene")
+class TestGene(
+    geneCd: String,
+    geneNm: String?,
+    sortOrder: Int?,
+    creator: String,
+    createDtime: LocalDateTime,
+    updater: String,
+    updateDetime: LocalDateTime,
+) {
+    @Column("geneCd")
+    val geneCd: String = geneCd
+
+    @Column("geneNm")
+    val geneNm: String? = geneNm
+
+    @Column("sortOrder")
+    val sortOrder: Int? = sortOrder
+
+    @Column("creator")
+    val creator: String = creator
+
+    @Column("createDtime")
+    val createDtime: LocalDateTime = createDtime
+
+    @Column("updater")
+    val updater: String = updater
+
+    @Column("updateDetime")
+    val updateDetime: LocalDateTime = updateDetime
+
+
+}
+
 @Table("tst_scm.bts_item_gene")
 class TestItemGene(
     itemGeneId: String? = null,

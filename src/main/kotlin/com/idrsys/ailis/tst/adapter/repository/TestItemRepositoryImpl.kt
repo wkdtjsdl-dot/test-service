@@ -4,6 +4,7 @@ import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.required.TestItemRepository
 import com.idrsys.ailis.tst.domain.model.StandardCharge
+import com.idrsys.ailis.tst.domain.model.TestGene
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
@@ -11,6 +12,7 @@ import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
 import com.idrsys.ailis.tst.domain.model.TestItemHst
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsGene
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRef
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemEstlDoc
@@ -25,7 +27,11 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.jooq.Param
+import org.jooq.conf.ParamType
 import org.jooq.impl.DSL.notExists
+import org.jooq.impl.DSL.noCondition
+import org.jooq.impl.DSL.substring
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -503,26 +509,80 @@ class TestItemRepositoryImpl(
         )
     }
 
+    // --- TestGene ---
+    override fun getGenes(genAlpa: String): Flow<TestGene> {
+        val table = BbsGene.BBS_GENE
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(substring(table.GENE_CD,1,1).likeIgnoreCase(genAlpa))
+        val sql = query.getSQL(ParamType.INLINED)
+        val executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec.bind(index,value)
+            }else{
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return databaseClient.sql(sql)
+            .fetch()
+            .all()
+            .map { row ->  toTestGene(row)
+            }
+            .asFlow()
+    }
+
+
+    private fun toTestGene(row: Map<String, Any>): TestGene {
+        return TestGene(
+            geneCd = row["gene_cd"] as String,
+            geneNm = row["gene_nm"] as String?,
+            sortOrder = row["sort_order"] as Int?,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDetime = row["update_detime"] as LocalDateTime
+
+        )
+    }
+
     // --- TestItemGene ---
     override suspend fun saveGene(entity: TestItemGene): TestItemGene = geneDataRepo.save(entity)
     override suspend fun deleteGeneById(itemGeneId: String) = geneDataRepo.deleteById(itemGeneId)
 
-    override fun findGenesByTestCd(tstCd: String): Flow<TestItemGene> {
-        val table = BtsItemGene.BTS_ITEM_GENE
-        val query = dslContext
-            .select(table.fields().toList())
-            .from(table)
-            .where(table.TST_CD.eq(tstCd))
+    override fun findGenesByTestCd(tstCd: String): Flow<TestItemGeneResponse> {
+        val ig = BtsItemGene.BTS_ITEM_GENE
+        val g = BbsGene.BBS_GENE
 
+        // JOIN QUERY 생성
+        val query = dslContext
+            .select(
+                ig.ITEM_GENE_ID,
+                ig.TST_CD,
+                ig.GENE_CD,
+                ig.CREATOR,
+                ig.CREATE_DTIME,
+                // bbs_gene 컬럼 추가
+                g.GENE_NM,
+                g.SORT_ORDER
+            )
+            .from(ig)
+            .join(g).on(ig.GENE_CD.eq(g.GENE_CD))
+            .where(ig.TST_CD.eq(tstCd))
+
+        // SQL 생성
         var executeSpec = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { index, value: Any? ->
-            if (value != null) {
-                executeSpec = executeSpec.bind(index, value)
-            } else {
-                executeSpec = executeSpec.bindNull(index, String::class.java)
-            }
+
+        // 바인딩 처리
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec =
+                if (value != null) executeSpec.bind(index, value)
+                else executeSpec.bindNull(index, String::class.java)
         }
 
+        // flow 변환
         return executeSpec
             .fetch()
             .all()
@@ -530,13 +590,14 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
-    private fun toTestItemGene(row: Map<String, Any>): TestItemGene {
-        return TestItemGene(
-            itemGeneId = row["item_gene_id"] as String?,
+    private fun toTestItemGene(row: Map<String, Any>): TestItemGeneResponse {
+        return TestItemGeneResponse(
+            itemGeneId = row["item_gene_id"] as String,
             tstCd = row["tst_cd"] as String,
             geneCd = row["gene_cd"] as String,
             creator = row["creator"] as String,
-            createDtime = row["create_dtime"] as LocalDateTime
+            createDtime = row["create_dtime"] as LocalDateTime,
+            geneNm = row["gene_nm"] as String,
         )
     }
 

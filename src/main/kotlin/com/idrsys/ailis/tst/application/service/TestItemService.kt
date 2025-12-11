@@ -161,6 +161,11 @@ class TestItemService(
         return repository.findRefItemsByTstCd(searchParam)
     }
 
+    // --- TestGene ---
+    override fun getGenes(genAlpa: String): Flow<TestGeneResponse> {
+        return repository.getGenes(genAlpa).map { mapper.toResponse(it) }
+    }
+
     // --- TestItemGene ---
 
     override suspend fun registerGene(request: TestItemGeneRegisterRequest, adminId: String): TestItemGeneResponse {
@@ -177,7 +182,7 @@ class TestItemService(
 
     @Transactional(readOnly = true)
     override fun getGenesByTest(tstCd: String): Flow<TestItemGeneResponse> {
-        return repository.findGenesByTestCd(tstCd).map { mapper.toResponse(it) }
+        return repository.findGenesByTestCd(tstCd)
     }
 
     // --- TestItemEssentialDoc ---
