@@ -514,22 +514,17 @@ class TestItemRepositoryImpl(
     override fun getGenes(geneCd: String): Flow<TestGene> {
         val table = BbsGene.BBS_GENE
 
-        // 글자가 2글자 미만이면 빈 Flow 반환
-        if (geneCd.length < 2) return emptyFlow()
+        if (geneCd.isBlank()) return emptyFlow()
+
+        val keyword = geneCd.uppercase()
 
         val query = dslContext
             .select(table.fields().toList())
             .from(table)
-            .where(table.GENE_CD.likeIgnoreCase("$geneCd%")) // 앞글자부터 검색
+            .where(table.GENE_CD.like("$keyword%"))
 
         val sql = query.getSQL(ParamType.INLINED)
-
-        var executeSpec = databaseClient.sql(sql)
-        query.bindValues.forEachIndexed { index, value ->
-            executeSpec =
-                if (value != null) executeSpec.bind(index, value)
-                else executeSpec.bindNull(index, String::class.java)
-        }
+        println("🔍 SQL = $sql")
 
         return databaseClient.sql(sql)
             .fetch()
@@ -537,6 +532,7 @@ class TestItemRepositoryImpl(
             .map { row -> toTestGene(row) }
             .asFlow()
     }
+
 
 
     private fun toTestGene(row: Map<String, Any>): TestGene {
