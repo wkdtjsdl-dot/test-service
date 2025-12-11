@@ -8,6 +8,7 @@ import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
+import com.idrsys.ailis.tst.domain.model.TestItemHst
 import kotlinx.coroutines.flow.Flow
 
 interface TestItemRepository {
@@ -48,4 +49,7 @@ interface TestItemRepository {
     suspend fun findEssentialDocById(itemEstlDocId: String): TestItemEssentialDoc?
     suspend fun deleteEssentialDocById(itemEstlDocId: String)
     fun findEssentialDocsByTstCd(tstCd: String): Flow<TestItemEssentialDoc>
+
+    // --- TestItemHst ---
+    suspend fun saveTestItemHistory(entity: TestItemHst): TestItemHst
 }

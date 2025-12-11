@@ -17,7 +17,7 @@ import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
 
 @Service
-@Transactional
+@Transactional(readOnly = false)
 class TestItemService(
     private val repository: TestItemRepository,
     private val mapper: TestItemMapper,
@@ -34,6 +34,7 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional(readOnly = true)
     override suspend fun getItem(tstCd: String): TestItemResponse {
         val domain = repository.findById(tstCd) ?: throw RuntimeException("TestItem not found with id: $tstCd")
         return mapper.toResponse(domain)
@@ -41,17 +42,25 @@ class TestItemService(
 
     override suspend fun updateItem(tstCd: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse {
         val existing = repository.findById(tstCd) ?: throw RuntimeException("TestItem not found with id: $tstCd")
+
+        // Save history
+        val hist = mapper.toDomain(existing, request.updateReason ?: "").apply { setAsNew() }
+        repository.saveTestItemHistory(hist)
+
         val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
         existing.update(command, adminId, now)
         val saved = repository.save(existing)
+
         return mapper.toResponse(saved)
     }
 
+    @Transactional(readOnly = true)
     override fun getItems(searchParam: TestItemSearchParam): Flow<TestItemResponse> {
         return repository.getItems(searchParam).map { mapper.toResponse(it) }
     }
 
+    @Transactional(readOnly = true)
     override fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse> {
         return repository.autoCompleteItems(searchParam)
     }
@@ -70,6 +79,7 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional(readOnly = true)
     override suspend fun getCharge(id: String): StandardChargeResponse {
         val domain = repository.findChargeById(id) ?: throw RuntimeException("StandardCharge not found with id: $id")
         return mapper.toResponse(domain)
@@ -88,6 +98,7 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional(readOnly = true)
     override suspend fun getChargesByTest(tstCd: String): Flow<StandardChargeResponse> {
         return repository.findChargesByTestCd(tstCd).map { mapper.toResponse(it) }
     }
@@ -102,6 +113,7 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional(readOnly = true)
     override suspend fun getSpecimen(spcmId: String): TestItemSpecimenResponse {
         val domain = repository.findSpecimenById(spcmId) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
         return mapper.toResponse(domain)
@@ -111,6 +123,7 @@ class TestItemService(
         repository.deleteSpecimenById(id)
     }
 
+    @Transactional(readOnly = true)
     override fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenResponse> {
         return repository.findSpecimensByTestCd(tstCd).map { mapper.toResponse(it) }
     }
@@ -125,6 +138,7 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional(readOnly = true)
     override suspend fun getRefItem(refItemId: String): TestItemRefDetailResponse {
         return repository.getDetailRefItemById(refItemId) ?: throw RuntimeException("TestItemRefItem not found with id: $refItemId")
     }
@@ -142,6 +156,7 @@ class TestItemService(
         repository.deleteRefItemById(refItemId)
     }
 
+    @Transactional(readOnly = true)
     override fun getRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse> {
         return repository.findRefItemsByTstCd(searchParam)
     }
@@ -160,6 +175,7 @@ class TestItemService(
         repository.deleteGeneById(itemGeneId)
     }
 
+    @Transactional(readOnly = true)
     override fun getGenesByTest(tstCd: String): Flow<TestItemGeneResponse> {
         return repository.findGenesByTestCd(tstCd).map { mapper.toResponse(it) }
     }
@@ -174,6 +190,7 @@ class TestItemService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional(readOnly = true)
     override suspend fun getEssentialDoc(itemEstlDocId: String): TestItemEssentialDocResponse {
         val domain = repository.findEssentialDocById(itemEstlDocId)
             ?: throw IllegalArgumentException("TestItemEssentialDoc not found: $itemEstlDocId")
@@ -194,6 +211,7 @@ class TestItemService(
         repository.deleteEssentialDocById(itemEstlDocId)
     }
 
+    @Transactional(readOnly = true)
     override fun getEssentialDocsByTest(tstCd: String): Flow<TestItemEssentialDocResponse> {
         return repository.findEssentialDocsByTstCd(tstCd).map { mapper.toResponse(it) }
     }

@@ -9,6 +9,7 @@ import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
+import com.idrsys.ailis.tst.domain.model.TestItemHst
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRef
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
@@ -50,6 +51,9 @@ interface TestItemGeneDataRepository : CoroutineCrudRepository<TestItemGene, Str
 interface TestItemEssentialDocDataRepository : CoroutineCrudRepository<TestItemEssentialDoc, String>
 
 @Repository
+interface TestItemHstDataRepository : CoroutineCrudRepository<TestItemHst, String>
+
+@Repository
 class TestItemRepositoryImpl(
     private val itemDataRepo: TestItemDataRepository,
     private val chargeDataRepo: StandardChargeDataRepository,
@@ -57,6 +61,7 @@ class TestItemRepositoryImpl(
     private val refItemDataRepo: TestItemRefItemDataRepository,
     private val geneDataRepo: TestItemGeneDataRepository,
     private val essentialDocDataRepo: TestItemEssentialDocDataRepository,
+    private val testItemHstDataRepo: TestItemHstDataRepository,
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient
 ) : TestItemRepository {
@@ -562,6 +567,8 @@ class TestItemRepositoryImpl(
             .map { row -> toTestItemEssentialDoc(row) }
             .asFlow()
     }
+
+    override suspend fun saveTestItemHistory(entity: TestItemHst): TestItemHst = testItemHstDataRepo.save(entity)
 
     private fun toTestItemEssentialDoc(row: Map<String, Any>): TestItemEssentialDoc {
         return TestItemEssentialDoc(

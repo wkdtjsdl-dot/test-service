@@ -72,7 +72,9 @@ class TestReferenceRepositoryImpl(
 
         val query = dslContext.select(
             tstRef.REF_CD,
-            tstRef.REF_NM
+            tstRef.REF_NM,
+            tstRef.REF_TYPE,
+            tstRef.REF_SIZE,
         )
             .from(tstRef)
             .where(condition)
@@ -90,7 +92,9 @@ class TestReferenceRepositoryImpl(
             .map { row, _ ->
                 TestReferenceAutoCompleteResponse(
                     refCd = row.get(tstRef.REF_CD.name, String::class.java)!!,
-                    refNm = row.get(tstRef.REF_NM.name, String::class.java)!!
+                    refNm = row.get(tstRef.REF_NM.name, String::class.java)!!,
+                    refType = row.get(tstRef.REF_TYPE.name, String::class.java)!!,
+                    refSize = row.get(tstRef.REF_SIZE.name, Int::class.java)!!
                 )
             }
             .all()

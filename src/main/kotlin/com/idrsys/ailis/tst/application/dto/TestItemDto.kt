@@ -80,7 +80,8 @@ data class TestItemUpdateRequest(
     val tstTatday: Int,
     val insuApplyCd: String,
     val insuCd: String,
-    val insuCateNo: String
+    val insuCateNo: String,
+    val updateReason: String?
 )
 
 data class TestItemResponse(

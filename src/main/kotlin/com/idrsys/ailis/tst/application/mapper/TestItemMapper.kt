@@ -5,9 +5,12 @@ import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
 import com.idrsys.ailis.tst.domain.model.TestItemGene
+import com.idrsys.ailis.tst.domain.model.TestItemHst
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import org.mapstruct.Mapper
+import org.mapstruct.Mapping
+import org.mapstruct.Mappings
 import org.mapstruct.ReportingPolicy
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
@@ -34,4 +37,11 @@ interface TestItemMapper {
 
     // --- TestItemEssentialDoc ---
     fun toResponse(domain: TestItemEssentialDoc): TestItemEssentialDocResponse
+
+    // --- TestItemHst ---
+    @Mappings(
+        Mapping(target = "itemHstId", ignore = true),
+        Mapping(target = "hstDesc", source = "updateReason")
+    )
+    fun toDomain(testItem: TestItem, updateReason: String = ""): TestItemHst
 }
