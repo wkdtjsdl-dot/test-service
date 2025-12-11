@@ -182,9 +182,11 @@ class TestReferenceRepositoryImpl(
             .from(tstRef)
             .where(tstRef.REF_CD.notIn(subQuery))
 
-        searchParam.refCateCd?.let {
-            query = query.and(tstRef.REF_CATE_CD.eq(it))
-        }
+        searchParam.refCateCd
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                query = query.and(tstRef.REF_CATE_CD.eq(it))
+            }
 
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value ->
