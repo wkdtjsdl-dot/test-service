@@ -48,7 +48,7 @@ class TestReferenceRepositoryImpl(
         val table = BbsTstRef.BBS_TST_REF
         val query = dslContext.select(table.fields().toList()).from(table)
 
-        if(refCateCd != null) {
+        if(refCateCd != null && refCateCd.isNotBlank()) {
             query.where(table.REF_CATE_CD.eq(refCateCd))
         }
         query.where(table.USE_YN.eq(true))
