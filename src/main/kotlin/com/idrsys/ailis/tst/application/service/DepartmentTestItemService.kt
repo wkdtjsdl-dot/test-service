@@ -152,6 +152,7 @@ class DepartmentTestItemService(
         return repository.findTestItemsByDeptCd(searchParam)
     }
 
+    @Transactional(readOnly = true)
     override suspend fun getUnspecifiedDeptItems(searchParam: UnspecifiedDepartmentTestItemSearchParam): Flow<TestItemResponse> {
         return testItemRepository.findUnspecifiedDeptItems(searchParam).map { testItemMapper.toResponse(it) }
     }
