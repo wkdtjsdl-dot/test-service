@@ -224,7 +224,7 @@ override suspend fun deleteGroupById(deptGroupId: String) {
             tstCd = row["tst_cd"] as String,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
-            tstNm = row["tst_nm"] as String
+            tstNm = row["tst_nm"] as? String?: ""
         )
     }
 
