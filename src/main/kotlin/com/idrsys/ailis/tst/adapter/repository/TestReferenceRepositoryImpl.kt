@@ -45,7 +45,7 @@ class TestReferenceRepositoryImpl(
         if(refCateCd != null) {
             query.where(table.REF_CATE_CD.eq(refCateCd))
         }
-
+        query.where(table.USE_YN.eq(true))
         query.orderBy(table.SORT_ORDER)
 
         var executeSpec = databaseClient.sql(query.sql)
