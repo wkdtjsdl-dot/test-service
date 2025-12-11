@@ -707,8 +707,8 @@ class TestItemRefItem(
                 sortOrder = command.sortOrder,
                 creator = creator,
                 createDtime = now,
-                updater = null,
-                updateDetime = null
+                updater = creator,
+                updateDetime = now
             ).apply { setAsNew() }
         }
     }
