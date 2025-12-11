@@ -21,6 +21,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BtsSpcm
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsRefItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemGene
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -510,27 +511,30 @@ class TestItemRepositoryImpl(
     }
 
     // --- TestGene ---
-    override fun getGenes(genAlpa: String): Flow<TestGene> {
+    override fun getGenes(geneCd: String): Flow<TestGene> {
         val table = BbsGene.BBS_GENE
+
+        // 글자가 2글자 미만이면 빈 Flow 반환
+        if (geneCd.length < 2) return emptyFlow()
+
         val query = dslContext
             .select(table.fields().toList())
             .from(table)
-            .where(substring(table.GENE_CD,1,1).likeIgnoreCase(genAlpa))
+            .where(table.GENE_CD.likeIgnoreCase("$geneCd%")) // 앞글자부터 검색
+
         val sql = query.getSQL(ParamType.INLINED)
-        val executeSpec = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { index, value: Any? ->
-            if (value != null) {
-                executeSpec.bind(index,value)
-            }else{
-                executeSpec.bindNull(index, String::class.java)
-            }
+
+        var executeSpec = databaseClient.sql(sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec =
+                if (value != null) executeSpec.bind(index, value)
+                else executeSpec.bindNull(index, String::class.java)
         }
 
         return databaseClient.sql(sql)
             .fetch()
             .all()
-            .map { row ->  toTestGene(row)
-            }
+            .map { row -> toTestGene(row) }
             .asFlow()
     }
 
