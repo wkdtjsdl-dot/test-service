@@ -2,6 +2,7 @@ package com.idrsys.ailis.sales.adapter.web
 
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemCommand
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemSearchParam
+import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.CustReqPossTstItemResponse
 import com.idrsys.ailis.sales.application.usecase.custreqposststitem.CustReqPossTstItemUseCase
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
@@ -50,6 +51,17 @@ class CustReqPossTstItemController(
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): CustReqPossTstItemResponse {
         return useCase.saveItem(command, auth.adminId)
+    }
+
+    @PutMapping("/{custReqPossTstItemId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "updateItem", description = "의뢰가능검사 수정")
+    suspend fun updateItem(
+        @PathVariable custReqPossTstItemId: Long,
+        @RequestBody command: CustReqPossTstItemUpdateCommand,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): CustReqPossTstItemResponse {
+        return useCase.updateItem(custReqPossTstItemId, command, auth.adminId)
     }
 
     @DeleteMapping("/{custReqPossTstItemId}")

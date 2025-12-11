@@ -2,11 +2,13 @@ package com.idrsys.ailis.sales.application.service
 
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemCommand
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemSearchParam
+import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.CustReqPossTstItemResponse
 import com.idrsys.ailis.sales.application.required.repository.custreqposststitem.CustReqPossTstItemCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.custreqposststitem.CustReqPossTstItemRepository
 import com.idrsys.ailis.sales.application.usecase.custreqposststitem.CustReqPossTstItemUseCase
 import com.idrsys.ailis.sales.shared.mapper.CustReqPossTstItemMapper
+import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -54,6 +56,44 @@ class CustReqPossTstItemService(
         val domain = mapper.toDomain(command, creator, now)
         domain.setAsNew()
         val saved = repository.save(domain)
+        return mapper.toResponse(saved)
+    }
+
+    @Transactional
+    override suspend fun updateItem(id: Long, command: CustReqPossTstItemUpdateCommand, updater: String): CustReqPossTstItemResponse {
+        // 1. 기존 데이터 조회
+        val existing = repository.findById(id)
+            ?: throw UserDefinedException(
+                "CUST_REQ_POSS_TST_ITEM_NOT_FOUND",
+                "의뢰가능검사 항목을 찾을 수 없습니다. (ID: $id)"
+            )
+
+        // 2. tstCd 변경 시 중복 체크
+        if (existing.tstCd != command.tstCd) {
+            val custMstId = existing.custMstId ?: throw IllegalArgumentException("custMstId가 null입니다.")
+            val exists = repository.existsByCustMstIdAndTstCd(custMstId, command.tstCd)
+            if (exists) {
+                throw UserDefinedException(
+                    "CUST_REQ_POSS_TST_ITEM_DUPLICATE",
+                    "검사코드 ${command.tstCd}는 이미 등록되어 있습니다."
+                )
+            }
+        }
+
+        // 3. 기존 레코드 삭제
+        repository.deleteById(id)
+
+        // 4. 새 레코드 생성 (custMstId, custCd는 유지, tstCd는 새 값, creator/createDtime은 현재 시점)
+        val now = LocalDateTime.now()
+        val newCommand = CustReqPossTstItemCommand(
+            custMstId = existing.custMstId,
+            custCd = existing.custCd,
+            tstCd = command.tstCd
+        )
+        val newDomain = mapper.toDomain(newCommand, updater, now)
+        newDomain.setAsNew()
+        val saved = repository.save(newDomain)
+
         return mapper.toResponse(saved)
     }
 
