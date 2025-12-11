@@ -40,10 +40,10 @@ class SpecimenRepositoryImpl(
         if (spcmNm != null) {
             query.where(table.SPCM_NM.likeIgnoreCase("%$spcmNm%")).or(table.SPCM_ENG_NM.likeIgnoreCase("%$spcmNm%"))
         }
-        if (spcmCateCd != null) {
+        if (spcmCateCd != null && spcmCateCd.isNotBlank()) {
             query.where(table.SPCM_CATE_CD.eq(spcmCateCd))
         }
-        
+        query.where(table.USE_YN.isTrue)
         query.orderBy(table.SPCM_CD)
 
         var executeSpec = databaseClient.sql(query.sql)
