@@ -65,6 +65,10 @@ class TestReferenceService(
         return repository.autoCompleteReferences(searchParam)
     }
 
+    override fun getReferenceByRefGroupCd(searchParam: TestReferenceByGroupParam): Flow<TestReferenceResponse> {
+        return repository.getReferenceByRefGroupCd(searchParam).map { mapper.toResponse(it) }
+    }
+
     override suspend fun findSimpleReferenceByRefCd(refCds: List<String>): Flow<TestReferenceSimpleResponse> {
         return repository.findSimpleReferenceByRefCd(refCds)
     }

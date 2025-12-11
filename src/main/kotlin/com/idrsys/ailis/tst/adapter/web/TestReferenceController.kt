@@ -72,6 +72,14 @@ class TestReferenceController(
         return useCase.autoCompleteReferences(searchParam)
     }
 
+    @Operation(summary = "검사 기준정보 검사참조그룹 검사 참조항목 목록 조회 ")
+    @GetMapping("/api/bbs/tst-ref/group-by")
+    fun getReferenceByRefGroupCd(@ParameterObject searchParam: TestReferenceByGroupParam): Flow<TestReferenceResponse> {
+        return kotlinx.coroutines.flow.flow {
+            useCase.getReferenceByRefGroupCd(searchParam).collect { emit(it) }
+        }
+    }
+
     // --- TestReferenceGroup ---
 
     @Operation(summary = "검사 기준정보 검사 참조그룹 등록", description = "새로운 검사 항목 그룹을 등록합니다")

@@ -47,4 +47,14 @@ interface TestItemMapper {
         Mapping(target = "hstDesc", source = "updateReason")
     )
     fun toDomain(testItem: TestItem, updateReason: String = ""): TestItemHst
+    @Mappings(
+        Mapping(source = "newLog.itemHstId", target = "itemHstId"),
+        Mapping(source = "newLog.updater", target = "editBy"),
+        Mapping(source = "newLog.updateDetime", target = "editAt"),
+        Mapping(source = "newLog.hstDesc", target = "hstDesc"),
+        Mapping(source = "diffString", target = "editContents"),
+        Mapping(source = "oldLog.tstCd", target = "tstCd"),
+        Mapping(source = "oldLog.tstNm", target = "tstNm")
+    )
+    fun toLogsEditResponse(oldLog: TestItemHst, newLog: TestItemHst, diffString: String): TestItemLogsResponse
 }

@@ -8,6 +8,11 @@ data class TestReferenceAutoCompleteParam(
     val refCdNm: String
 )
 
+data class TestReferenceByGroupParam(
+    val refGroupCd: String,
+    val refCateCd: String
+)
+
 data class TestReferenceAutoCompleteResponse(
     val refCd: String,
     val refNm: String,

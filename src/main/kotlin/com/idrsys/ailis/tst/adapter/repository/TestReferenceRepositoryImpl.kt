@@ -2,18 +2,22 @@ package com.idrsys.ailis.tst.adapter.repository
 
 import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteParam
 import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteResponse
+import com.idrsys.ailis.tst.application.dto.TestReferenceByGroupParam
 import com.idrsys.ailis.tst.application.dto.TestReferenceGroupItemResponse
 import com.idrsys.ailis.tst.application.dto.TestReferenceSimpleResponse
 import com.idrsys.ailis.tst.application.required.TestReferenceRepository
 import com.idrsys.ailis.tst.domain.model.TestReference
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroup
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRef
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRefGroupItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -162,6 +166,40 @@ class TestReferenceRepositoryImpl(
             dftData = row["dft_data"] as String,
             dftEngData = row["dft_eng_data"] as String,
         )
+    }
+
+    override fun getReferenceByRefGroupCd(searchParam: TestReferenceByGroupParam): Flow<TestReference> {
+        val tstRef = BbsTstRef.BBS_TST_REF
+        val groupItem = BbsTstRefGroupItem.BBS_TST_REF_GROUP_ITEM
+
+        val subQuery = dslContext
+            .select(groupItem.REF_CD)
+            .from(groupItem)
+            .where(groupItem.REF_GROUP_CD.eq(searchParam.refGroupCd))
+
+        var query = dslContext
+            .select(tstRef.fields().toList())
+            .from(tstRef)
+            .where(tstRef.REF_CD.notIn(subQuery))
+
+        searchParam.refCateCd?.let {
+            query = query.and(tstRef.REF_CATE_CD.eq(it))
+        }
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toRequestRef(row) }
+            .asFlow()
     }
 
     // --- TestReferenceGroup ---

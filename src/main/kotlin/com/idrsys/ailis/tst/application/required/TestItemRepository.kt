@@ -55,4 +55,5 @@ interface TestItemRepository {
 
     // --- TestItemHst ---
     suspend fun saveTestItemHistory(entity: TestItemHst): TestItemHst
+    suspend fun findTestItemHistoryByTstCd(tstCd: String): Flow<TestItemHst>
 }
