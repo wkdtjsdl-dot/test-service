@@ -20,7 +20,12 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
+import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Record11
+import org.jooq.Select
+import org.jooq.SelectConditionStep
+import org.jooq.SelectJoinStep
 import org.jooq.impl.DSL
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
@@ -234,10 +239,106 @@ override suspend fun deleteGroupById(deptGroupId: String) {
     override suspend fun findTestItemById(deptTstItemId: String): DepartmentTestItem? = testItemDataRepo.findById(deptTstItemId)
     override suspend fun deleteTestItemById(deptTstItemId: String) = testItemDataRepo.deleteById(deptTstItemId)
 
-    override suspend fun findTestItemsByDeptCd(searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse> {
-        val testItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
-        val item = BtsItem.BTS_ITEM
-        val testCate = BbsTstCate.BBS_TST_CATE
+//    override suspend fun findTestItemsByDeptCd(searchParam: DepartmentTestItemSearchParam): Flow<DeptTestItemCategoryResponse> {
+//        val testItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
+//        val item = BtsItem.BTS_ITEM
+//        val testCate = BbsTstCate.BBS_TST_CATE
+//
+//        var condition = testItem.DEPT_CD.eq(searchParam.deptCd)
+//            .and(item.USE_YN.isTrue)
+//
+//        searchParam.tstLargeCateCd?.takeIf { it.isNotBlank() }?.let {
+//            condition = condition.and(item.TST_LARGE_CATE_CD.eq(it))
+//        }
+//        searchParam.tstMediumCateCd?.takeIf { it.isNotBlank() }?.let {
+//            condition = condition.and(item.TST_MEDIUM_CATE_CD.eq(it))
+//        }
+//
+//        val query = dslContext.select(
+//            item.TST_LARGE_CATE_CD,
+//            item.TST_MEDIUM_CATE_CD,
+//            testCate.CATE_NM,
+//            testItem.DEPT_TST_ITEM_ID,
+//            testItem.DEPT_CD,
+//            testItem.TST_CD,
+//            item.TST_NM,
+//            testItem.DAN_DIV_CD,
+//            testItem.TST_DAYWEEK,
+//            testItem.TST_TATDAY,
+//            testItem.DEPT_TST_DESC,
+//        )
+//            .from(testItem)
+//            .join(item).on(item.TST_CD.eq(testItem.TST_CD))
+//            .join(testCate).on(testCate.TST_MEDIUM_CATE_CD.eq(item.TST_MEDIUM_CATE_CD))
+//            .where(condition)
+//
+//        // SQL 스트링 생성
+//        return databaseClient.sql(dslContext.renderInlined(query))
+//            .map { row, _ ->
+//                DeptTestItemCategoryResponse(
+//                    tstLargeCateCd = row.get(item.TST_LARGE_CATE_CD.name, String::class.java)!!,
+//                    tstMediumCateCd = row.get(item.TST_MEDIUM_CATE_CD.name, String::class.java)!!,
+//                    cateNm = row.get(testCate.CATE_NM.name, String::class.java)!!,
+//                    deptTstItemId = row.get(testItem.DEPT_TST_ITEM_ID.name, String::class.java)!!,
+//                    deptCd = row.get(testItem.DEPT_CD.name, String::class.java)!!,
+//                    tstCd = row.get(testItem.TST_CD.name, String::class.java)!!,
+//                    tstNm = row.get(item.TST_NM.name, String::class.java)!!,
+//                    danDivCd = row.get(testItem.DAN_DIV_CD.name, String::class.java)!!,
+//                    tstDayweek = row.get(testItem.TST_DAYWEEK.name, String::class.java)!!,
+//                    tstTatday = row.get(testItem.TST_TATDAY.name, Integer::class.java)!!.toInt(),
+//                    deptTstDesc = row.get(testItem.DEPT_TST_DESC.name, String::class.java),
+//                )
+//            }
+//            .all()
+//            .asFlow()
+//    }
+override suspend fun findTestItemsByDeptCd(
+    searchParam: DepartmentTestItemSearchParam
+): Flow<DeptTestItemCategoryResponse> {
+
+    val testItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
+    val item = BtsItem.BTS_ITEM
+    val testCate = BbsTstCate.BBS_TST_CATE
+
+    // 없는 경우 -> 기존 단순 쿼리 사용
+
+    val query = if (searchParam.tstCateCd.isNullOrBlank() && searchParam.tstCateItemCd.isNullOrBlank()) {
+
+        buildBasicQuery(searchParam, testItem, item, testCate)
+    } else {
+        // tstCateCd와 tstCateItemCd가 모두 있는 경우 -> CTE 쿼리 사용
+        buildQueryWithGroupFiltering(searchParam, testItem, item, testCate)
+    }
+
+    return databaseClient.sql(dslContext.renderInlined(query))
+        .map { row, _ ->
+            DeptTestItemCategoryResponse(
+                tstLargeCateCd = row.get(item.TST_LARGE_CATE_CD.name, String::class.java)!!,
+                tstMediumCateCd = row.get(item.TST_MEDIUM_CATE_CD.name, String::class.java)!!,
+                cateNm = row.get(testCate.CATE_NM.name, String::class.java)!!,
+                deptTstItemId = row.get(testItem.DEPT_TST_ITEM_ID.name, String::class.java)!!,
+                deptCd = row.get(testItem.DEPT_CD.name, String::class.java)!!,
+                tstCd = row.get(testItem.TST_CD.name, String::class.java)!!,
+                tstNm = row.get(item.TST_NM.name, String::class.java)!!,
+                danDivCd = row.get(testItem.DAN_DIV_CD.name, String::class.java)!!,
+                tstDayweek = row.get(testItem.TST_DAYWEEK.name, String::class.java)!!,
+                tstTatday = row.get(testItem.TST_TATDAY.name, Integer::class.java)!!.toInt(),
+                deptTstDesc = row.get(testItem.DEPT_TST_DESC.name, String::class.java),
+            )
+        }
+        .all()
+        .asFlow()
+}
+
+    /**
+     * 기본 쿼리 (분류그룹 필터링 없음)
+     */
+    private fun buildBasicQuery(
+        searchParam: DepartmentTestItemSearchParam,
+        testItem: BbsDeptTstItem,
+        item: BtsItem,
+        testCate: BbsTstCate
+    ): Select<*> {
 
         var condition = testItem.DEPT_CD.eq(searchParam.deptCd)
             .and(item.USE_YN.isTrue)
@@ -245,11 +346,12 @@ override suspend fun deleteGroupById(deptGroupId: String) {
         searchParam.tstLargeCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(item.TST_LARGE_CATE_CD.eq(it))
         }
+
         searchParam.tstMediumCateCd?.takeIf { it.isNotBlank() }?.let {
             condition = condition.and(item.TST_MEDIUM_CATE_CD.eq(it))
         }
 
-        val query = dslContext.select(
+        return dslContext.select(
             item.TST_LARGE_CATE_CD,
             item.TST_MEDIUM_CATE_CD,
             testCate.CATE_NM,
@@ -260,33 +362,175 @@ override suspend fun deleteGroupById(deptGroupId: String) {
             testItem.DAN_DIV_CD,
             testItem.TST_DAYWEEK,
             testItem.TST_TATDAY,
-            testItem.DEPT_TST_DESC,
+            testItem.DEPT_TST_DESC
+
         )
             .from(testItem)
             .join(item).on(item.TST_CD.eq(testItem.TST_CD))
             .join(testCate).on(testCate.TST_MEDIUM_CATE_CD.eq(item.TST_MEDIUM_CATE_CD))
             .where(condition)
-
-        // SQL 스트링 생성
-        return databaseClient.sql(dslContext.renderInlined(query))
-            .map { row, _ ->
-                DeptTestItemCategoryResponse(
-                    tstLargeCateCd = row.get(item.TST_LARGE_CATE_CD.name, String::class.java)!!,
-                    tstMediumCateCd = row.get(item.TST_MEDIUM_CATE_CD.name, String::class.java)!!,
-                    cateNm = row.get(testCate.CATE_NM.name, String::class.java)!!,
-                    deptTstItemId = row.get(testItem.DEPT_TST_ITEM_ID.name, String::class.java)!!,
-                    deptCd = row.get(testItem.DEPT_CD.name, String::class.java)!!,
-                    tstCd = row.get(testItem.TST_CD.name, String::class.java)!!,
-                    tstNm = row.get(item.TST_NM.name, String::class.java)!!,
-                    danDivCd = row.get(testItem.DAN_DIV_CD.name, String::class.java)!!,
-                    tstDayweek = row.get(testItem.TST_DAYWEEK.name, String::class.java)!!,
-                    tstTatday = row.get(testItem.TST_TATDAY.name, Integer::class.java)!!.toInt(),
-                    deptTstDesc = row.get(testItem.DEPT_TST_DESC.name, String::class.java),
-                )
-            }
-            .all()
-            .asFlow()
     }
+
+
+    /**
+     * CTE 쿼리 (분류그룹 기반 필터링)
+     */
+    private fun buildQueryWithGroupFiltering(
+        searchParam: DepartmentTestItemSearchParam,
+        testItem: BbsDeptTstItem,
+        item: BtsItem,
+        testCate: BbsTstCate
+    ): Select<*> {
+
+        val deptGroup = BbsDeptGroup.BBS_DEPT_GROUP
+        val deptGrpItm = BbsDeptGrpItm.BBS_DEPT_GRP_ITM
+        val deptGrpItmTst = BbsDeptGrpItmTst.BBS_DEPT_GRP_ITM_TST
+
+        // --------------------- CTE 선언 ---------------------
+
+        // grp
+        val grpCte = DSL.name("grp")
+            .fields("dept_cd", "tst_cate_cd", "dup_allow_yn")
+            .`as`(
+                DSL.select(
+                    deptGroup.DEPT_CD,
+                    deptGroup.TST_CATE_CD,
+                    deptGroup.DUP_ALLOW_YN
+                )
+                    .from(deptGroup)
+                    .where(
+                        deptGroup.DEPT_CD.eq(searchParam.deptCd)
+                            .and(deptGroup.TST_CATE_CD.eq(searchParam.tstCateCd))
+                    )
+                    .limit(1)
+            )
+
+        // current_item_tests
+        val currentItemTestsCte = DSL.name("current_item_tests")
+            .fields("tst_cd")
+            .`as`(
+                DSL.selectDistinct(deptGrpItmTst.TST_CD)
+                    .from(deptGrpItm)
+                    .join(deptGrpItmTst)
+                    .on(
+                        deptGrpItm.DEPT_CD.eq(deptGrpItmTst.DEPT_CD)
+                            .and(deptGrpItm.TST_CATE_CD.eq(deptGrpItmTst.TST_CATE_CD))
+                            .and(deptGrpItm.TST_CATE_ITEM_CD.eq(deptGrpItmTst.TST_CATE_ITEM_CD))
+                    )
+                    .where(
+                        deptGrpItm.DEPT_CD.eq(searchParam.deptCd)
+                            .and(deptGrpItm.TST_CATE_CD.eq(searchParam.tstCateCd))
+                            .and(deptGrpItm.TST_CATE_ITEM_CD.eq(searchParam.tstCateItemCd))
+                    )
+            )
+
+        // all_group_tests
+        val allGroupTestsCte = DSL.name("all_group_tests")
+            .fields("tst_cd")
+            .`as`(
+                DSL.selectDistinct(deptGrpItmTst.TST_CD)
+                    .from(deptGrpItm)
+                    .join(deptGrpItmTst)
+                    .on(
+                        deptGrpItm.DEPT_CD.eq(deptGrpItmTst.DEPT_CD)
+                            .and(deptGrpItm.TST_CATE_CD.eq(deptGrpItmTst.TST_CATE_CD))
+                            .and(deptGrpItm.TST_CATE_ITEM_CD.eq(deptGrpItmTst.TST_CATE_ITEM_CD))
+                    )
+                    .where(
+                        deptGrpItm.DEPT_CD.eq(searchParam.deptCd)
+                            .and(deptGrpItm.TST_CATE_CD.eq(searchParam.tstCateCd))
+                    )
+            )
+
+        // dept_all_tst
+        val deptAllTstCte = DSL.name("dept_all_tst")
+            .fields(*testItem.fields().map { it.name }.toTypedArray())
+            .`as`(
+                DSL.select(testItem.fields().toList())
+                    .from(testItem)
+                    .where(testItem.DEPT_CD.eq(searchParam.deptCd))
+            )
+
+
+        // --------------------- CTE alias ---------------------
+
+        val grp = grpCte.asTable("grp")
+        val currTests = currentItemTestsCte.asTable("current_item_tests")
+        val allTests = allGroupTestsCte.asTable("all_group_tests")
+        val deptAllTst = deptAllTstCte.asTable("dept_all_tst")
+
+        // --------------------- 필드 추출 ---------------------
+
+        val tstCdField = deptAllTst.field(testItem.TST_CD)!!
+        val deptTstItemIdField = deptAllTst.field(testItem.DEPT_TST_ITEM_ID)!!
+        val deptCdField = deptAllTst.field(testItem.DEPT_CD)!!
+        val danDivCdField = deptAllTst.field(testItem.DAN_DIV_CD)!!
+        val tstDayweekField = deptAllTst.field(testItem.TST_DAYWEEK)!!
+        val tstTatdayField = deptAllTst.field(testItem.TST_TATDAY)!!
+        val deptTstDescField = deptAllTst.field(testItem.DEPT_TST_DESC)
+
+        val dupAllowYnField = grp.field("dup_allow_yn", Boolean::class.java)!!
+
+        // --------------------- CASE 조건 ---------------------
+
+        val caseCondition =
+            DSL.`when`(
+                dupAllowYnField.isTrue,
+        tstCdField.notIn(
+            DSL.select(currTests.field("tst_cd", String::class.java)).from(currTests)
+        )
+        )
+                .`when`(
+            dupAllowYnField.isFalse,
+        tstCdField.notIn(
+            DSL.select(allTests.field("tst_cd", String::class.java)).from(allTests)
+        )
+        )
+        .else_(DSL.trueCondition())
+
+
+        // --------------------- 추가 필터 ---------------------
+
+        var additionalCondition: Condition = DSL.noCondition()
+
+        searchParam.tstLargeCateCd?.takeIf { it.isNotBlank() }?.let {
+            additionalCondition = additionalCondition.and(item.TST_LARGE_CATE_CD.eq(it))
+        }
+
+        searchParam.tstMediumCateCd?.takeIf { it.isNotBlank() }?.let {
+            additionalCondition = additionalCondition.and(item.TST_MEDIUM_CATE_CD.eq(it))
+        }
+
+
+
+
+        // --------------------- 최종 SELECT ---------------------
+        return DSL.with(grpCte)
+            .with(currentItemTestsCte)
+            .with(allGroupTestsCte)
+            .with(deptAllTstCte)
+            .select(
+                item.TST_LARGE_CATE_CD,
+                item.TST_MEDIUM_CATE_CD,
+                testCate.CATE_NM,
+                deptTstItemIdField,
+                deptCdField,
+                tstCdField,
+                item.TST_NM,
+                danDivCdField,
+                tstDayweekField,
+                tstTatdayField,
+                deptTstDescField
+            )
+            .from(deptAllTst)
+            .join(item).on(item.TST_CD.eq(tstCdField))
+            .join(testCate).on(testCate.TST_MEDIUM_CATE_CD.eq(item.TST_MEDIUM_CATE_CD))
+            .crossJoin(grp)
+            .where(item.USE_YN.isTrue.and(caseCondition).and(additionalCondition))
+            .orderBy(tstCdField)
+    }
+
+
 
     private fun toDepartmentGroup(row: Map<String, Any>): DepartmentGroup {
         return DepartmentGroup(
