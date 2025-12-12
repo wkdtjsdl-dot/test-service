@@ -281,6 +281,7 @@ data class TestItemRefResponse(
 
 data class TestItemRefDetailResponse(
     val refItemId: String,
+    val refCateCd: String,
     val tstCd: String,
     val refCd: String,
     val refNm: String,
