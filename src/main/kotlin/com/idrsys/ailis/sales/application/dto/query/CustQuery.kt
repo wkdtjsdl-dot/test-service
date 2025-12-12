@@ -136,5 +136,7 @@ data class CustCareInstId (
 data class CustBasicInfo(
     val custCd: String,     // 고객코드
     val custNm: String,      // 고객명
-    val bzoffiCd: String?   // 영업소
+    val telNo: String?,     // 전화번호
+    val branchCd: String?,  // 지점코드
+    val bzoffiCd: String?   // 영업소코드
 )
