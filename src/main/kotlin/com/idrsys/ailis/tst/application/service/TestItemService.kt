@@ -221,8 +221,13 @@ class TestItemService(
     }
 
     @Transactional(readOnly = true)
-    override fun getEssentialDocsByTest(tstCd: String): Flow<TestItemEssentialDocResponse> {
-        return repository.findEssentialDocsByTstCd(tstCd).map { mapper.toResponse(it) }
+    override fun getEssentialDocsByTest(tstCd: String): Flow<TestItemEssentialDocListResponse> {
+        return repository.findEssentialDocsByTstCd(tstCd)
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getDetailEssentialDocById(itemEstlDocId: String): TestItemEssentialDocDetailResponse? {
+        return repository.getDetailEssentialDocById(itemEstlDocId)
     }
 
     @Transactional(readOnly = true)

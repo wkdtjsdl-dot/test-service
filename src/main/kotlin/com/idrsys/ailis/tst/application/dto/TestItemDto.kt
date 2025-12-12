@@ -339,6 +339,23 @@ data class TestItemEssentialDocResponse(
     val updateDtime: LocalDateTime?
 )
 
+data class TestItemEssentialDocListResponse(
+    val itemEstlDocId: String,
+    val tstCd: String,
+    val docCd: String,
+    val docDivCd: String,
+    val docNm: String
+)
+
+data class TestItemEssentialDocDetailResponse(
+    val itemEstlDocId: String,
+    val docCd: String,
+    val docDivCd: String,
+    val docEngNm: String,
+    val docFileId: String,
+    val docEngFileId: String
+)
+
 // --- Test Item Basic History ---
 
 data class TestItemLogsSearchParam(
