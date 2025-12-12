@@ -407,7 +407,7 @@ class TestItemRepositoryImpl(
         searchParam.tstCd.takeIf { it.isNotBlank() }?.let {
             conditions.add(refItem.TST_CD.eq(it))
         }
-        searchParam.refCateCd.takeIf { it.isNotBlank() }?.let {
+        searchParam.refCateCd?.takeIf { it.isNotBlank() }?.let {
             conditions.add(tstRef.REF_CATE_CD.eq(it))
         }
 

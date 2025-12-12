@@ -265,7 +265,7 @@ data class TestItemRefItemResponse(
 )
 
 data class TestItemRefRequest(
-    val refCateCd: String,
+    val refCateCd: String?,
     val tstCd: String
 )
 
