@@ -136,7 +136,7 @@ class CustLogsService(
         val (previousLog, currentLog) = logs
 
         val diffDetails = mutableListOf<CustDetailLogs>()
-        val propertiesToIgnore = setOf("custMstHstId", "updater", "updateDtime", "creator", "createDtime", "isNew")
+        val propertiesToIgnore = setOf("custMstHstId", "updater", "updateDtime", "creator", "createDtime", "isNew", "updateReason")
 
         CustMstHst::class.memberProperties.forEach { prop ->
             if (prop.name !in propertiesToIgnore) {
