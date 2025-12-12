@@ -646,6 +646,48 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
+    override suspend fun getDetailEssentialDocById(itemEstlDocId: String): TestItemEssentialDocDetailResponse? {
+        val itemEstlDoc = BtsItemEstlDoc.BTS_ITEM_ESTL_DOC
+        val tstReqDoc = BbsTstReqDoc.BBS_TST_REQ_DOC
+
+        val query = dslContext
+            .select(
+                itemEstlDoc.ITEM_ESTL_DOC_ID,
+                itemEstlDoc.DOC_CD,
+                tstReqDoc.DOC_DIV_CD,
+                tstReqDoc.DOC_ENG_NM,
+                tstReqDoc.DOC_FILE_ID,
+                tstReqDoc.DOC_ENG_FILE_ID
+            )
+            .from(itemEstlDoc)
+            .join(tstReqDoc).on(itemEstlDoc.DOC_CD.eq(tstReqDoc.DOC_CD))
+            .where(itemEstlDoc.ITEM_ESTL_DOC_ID.eq(itemEstlDocId))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .one()
+            .map { row ->
+                TestItemEssentialDocDetailResponse(
+                    itemEstlDocId = row[itemEstlDoc.ITEM_ESTL_DOC_ID.name] as String,
+                    docCd = row[itemEstlDoc.DOC_CD.name] as String,
+                    docDivCd = row[tstReqDoc.DOC_DIV_CD.name] as String,
+                    docEngNm = row[tstReqDoc.DOC_ENG_NM.name] as String,
+                    docFileId = row[tstReqDoc.DOC_FILE_ID.name] as String,
+                    docEngFileId = row[tstReqDoc.DOC_ENG_FILE_ID.name] as String
+                )
+            }
+            .awaitSingleOrNull()
+    }
+
     private fun toTestItemEssentialDoc(row: Map<String, Any>): TestItemEssentialDoc {
         return TestItemEssentialDoc(
             itemEstlDocId = row["item_estl_doc_id"] as String?,

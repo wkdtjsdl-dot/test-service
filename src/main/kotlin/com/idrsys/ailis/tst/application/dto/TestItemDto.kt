@@ -347,6 +347,15 @@ data class TestItemEssentialDocListResponse(
     val docNm: String
 )
 
+data class TestItemEssentialDocDetailResponse(
+    val itemEstlDocId: String,
+    val docCd: String,
+    val docDivCd: String,
+    val docEngNm: String,
+    val docFileId: String,
+    val docEngFileId: String
+)
+
 // --- Test Item Basic History ---
 
 data class TestItemLogsSearchParam(

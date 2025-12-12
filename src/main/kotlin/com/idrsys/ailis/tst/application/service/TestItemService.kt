@@ -226,6 +226,11 @@ class TestItemService(
     }
 
     @Transactional(readOnly = true)
+    override suspend fun getDetailEssentialDocById(itemEstlDocId: String): TestItemEssentialDocDetailResponse? {
+        return repository.getDetailEssentialDocById(itemEstlDocId)
+    }
+
+    @Transactional(readOnly = true)
     override suspend fun getTestItemHistoryLogList(searchParam: TestItemLogsSearchParam): List<TestItemLogsResponse> {
         val logs = repository.findTestItemHistoryByTstCd(searchParam.tstCd).toList()
         if (logs.size < 2) return emptyList()
