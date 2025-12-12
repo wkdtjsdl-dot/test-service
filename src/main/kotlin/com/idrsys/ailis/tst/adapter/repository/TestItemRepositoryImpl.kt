@@ -14,6 +14,7 @@ import com.idrsys.ailis.tst.domain.model.TestItemHst
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsGene
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRef
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstReqDoc
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemEstlDoc
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsStndCharge
@@ -606,26 +607,42 @@ class TestItemRepositoryImpl(
     override suspend fun findEssentialDocById(itemEstlDocId: String): TestItemEssentialDoc? = essentialDocDataRepo.findById(itemEstlDocId)
     override suspend fun deleteEssentialDocById(itemEstlDocId: String) = essentialDocDataRepo.deleteById(itemEstlDocId)
 
-    override fun findEssentialDocsByTstCd(tstCd: String): Flow<TestItemEssentialDoc> {
-        val table = BtsItemEstlDoc.BTS_ITEM_ESTL_DOC
+    override fun findEssentialDocsByTstCd(tstCd: String): Flow<TestItemEssentialDocListResponse> {
+        val itemEstlDoc = BtsItemEstlDoc.BTS_ITEM_ESTL_DOC
+        val tstReqDoc = BbsTstReqDoc.BBS_TST_REQ_DOC
+
         val query = dslContext
-            .select(table.fields().toList())
-            .from(table)
-            .where(table.TST_CD.eq(tstCd))
+            .select(
+                itemEstlDoc.ITEM_ESTL_DOC_ID,
+                itemEstlDoc.TST_CD,
+                itemEstlDoc.DOC_CD,
+                tstReqDoc.DOC_DIV_CD,
+                tstReqDoc.DOC_NM
+            )
+            .from(itemEstlDoc)
+            .join(tstReqDoc).on(itemEstlDoc.DOC_CD.eq(tstReqDoc.DOC_CD))
+            .where(itemEstlDoc.TST_CD.eq(tstCd))
 
         var executeSpec = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { index, value: Any? ->
-            if (value != null) {
-                executeSpec = executeSpec.bind(index, value)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
             } else {
-                executeSpec = executeSpec.bindNull(index, String::class.java)
+                executeSpec.bindNull(index, String::class.java)
             }
         }
 
         return executeSpec
-            .fetch()
+            .map { row, _ ->
+                TestItemEssentialDocListResponse(
+                    itemEstlDocId = row.get(itemEstlDoc.ITEM_ESTL_DOC_ID.name, String::class.java)!!,
+                    tstCd = row.get(itemEstlDoc.TST_CD.name, String::class.java)!!,
+                    docCd = row.get(itemEstlDoc.DOC_CD.name, String::class.java)!!,
+                    docDivCd = row.get(tstReqDoc.DOC_DIV_CD.name, String::class.java)!!,
+                    docNm = row.get(tstReqDoc.DOC_NM.name, String::class.java)!!,
+                )
+            }
             .all()
-            .map { row -> toTestItemEssentialDoc(row) }
             .asFlow()
     }
 

@@ -44,7 +44,7 @@ interface TestItemUseCase {
     suspend fun getEssentialDoc(itemEstlDocId: String): TestItemEssentialDocResponse
     suspend fun updateEssentialDoc(itemEstlDocId: String, request: TestItemEssentialDocUpdateRequest, adminId: String): TestItemEssentialDocResponse
     suspend fun deleteEssentialDoc(itemEstlDocId: String, adminId: String)
-    fun getEssentialDocsByTest(tstCd: String): Flow<TestItemEssentialDocResponse>
+    fun getEssentialDocsByTest(tstCd: String): Flow<TestItemEssentialDocListResponse>
 
     // --- TestItemHst ---
     suspend fun getTestItemHistoryLogList(searchParam: TestItemLogsSearchParam): List<TestItemLogsResponse>

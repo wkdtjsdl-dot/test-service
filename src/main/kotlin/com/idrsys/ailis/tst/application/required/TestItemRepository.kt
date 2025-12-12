@@ -51,7 +51,7 @@ interface TestItemRepository {
     suspend fun saveEssentialDoc(entity: TestItemEssentialDoc): TestItemEssentialDoc
     suspend fun findEssentialDocById(itemEstlDocId: String): TestItemEssentialDoc?
     suspend fun deleteEssentialDocById(itemEstlDocId: String)
-    fun findEssentialDocsByTstCd(tstCd: String): Flow<TestItemEssentialDoc>
+    fun findEssentialDocsByTstCd(tstCd: String): Flow<TestItemEssentialDocListResponse>
 
     // --- TestItemHst ---
     suspend fun saveTestItemHistory(entity: TestItemHst): TestItemHst

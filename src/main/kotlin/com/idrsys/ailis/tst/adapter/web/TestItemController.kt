@@ -247,6 +247,6 @@ class TestItemController(
 
     @Operation(summary = "검사 검사종목 필수서류 목록")
     @GetMapping("/api/bts/item-estl-doc")
-    fun getEssentialDocsByTest(@RequestParam tstCd: String): Flow<TestItemEssentialDocResponse> =
+    fun getEssentialDocsByTest(@RequestParam tstCd: String): Flow<TestItemEssentialDocListResponse> =
         useCase.getEssentialDocsByTest(tstCd)
 }
