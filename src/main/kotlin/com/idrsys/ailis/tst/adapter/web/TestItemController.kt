@@ -221,8 +221,8 @@ class TestItemController(
 
     @Operation(summary = "검사 검사종목 필수서류 조회")
     @GetMapping("/api/bts/item-estl-doc/{itemEstlDocId}")
-    fun getEssentialDoc(@PathVariable itemEstlDocId: String): Mono<TestItemEssentialDocResponse> = mono {
-        useCase.getEssentialDoc(itemEstlDocId)
+    fun getEssentialDoc(@PathVariable itemEstlDocId: String): Mono<TestItemEssentialDocDetailResponse?> = mono {
+        useCase.getDetailEssentialDocById(itemEstlDocId)
     }
 
     @Operation(summary = "검사 검사종목 필수서류 수정")
