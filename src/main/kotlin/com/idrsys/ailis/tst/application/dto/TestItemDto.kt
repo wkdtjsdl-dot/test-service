@@ -335,8 +335,6 @@ data class TestItemEssentialDocResponse(
     val docCd: String,
     val creator: String,
     val createDtime: LocalDateTime,
-    val updater: String?,
-    val updateDtime: LocalDateTime?
 )
 
 data class TestItemEssentialDocListResponse(

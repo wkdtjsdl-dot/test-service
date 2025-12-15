@@ -699,8 +699,6 @@ class TestItemRepositoryImpl(
             docCd = row["doc_cd"] as String,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
-            updater = row["updater"] as String?,
-            updateDtime = row["update_dtime"] as LocalDateTime?
         )
     }
 

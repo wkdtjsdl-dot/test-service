@@ -211,7 +211,7 @@ class TestItemService(
             ?: throw IllegalArgumentException("TestItemEssentialDoc not found: $itemEstlDocId")
         val command = commandMapper.toUpdateCommand(request)
         val now = java.time.LocalDateTime.now()
-        domain.update(command, adminId, now)
+        domain.update(command)
         val saved = repository.saveEssentialDoc(domain)
         return mapper.toResponse(saved)
     }

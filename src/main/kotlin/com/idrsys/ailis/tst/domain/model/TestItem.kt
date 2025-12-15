@@ -813,8 +813,6 @@ class TestItemEssentialDoc(
     docCd: String,
     creator: String,
     createDtime: LocalDateTime,
-    updater: String? = null,
-    updateDtime: LocalDateTime? = null
 ) : Persistable<String> {
 
     @Id
@@ -838,14 +836,6 @@ class TestItemEssentialDoc(
     var createDtime: LocalDateTime = createDtime
         private set
 
-    @Column("updater")
-    var updater: String? = updater
-        private set
-
-    @Column("update_dtime")
-    var updateDtime: LocalDateTime? = updateDtime
-        private set
-
     @Transient
     private var _isNew: Boolean = false
 
@@ -855,12 +845,8 @@ class TestItemEssentialDoc(
 
     fun update(
         command: TestItemEssentialDocUpdateCommand,
-        updater: String,
-        now: LocalDateTime
     ) {
         this.docCd = command.docCd
-        this.updater = updater
-        this.updateDtime = now
     }
 
     override fun getId(): String? = itemEstlDocId
