@@ -9,6 +9,7 @@ internal fun Row.toCustReqPossTstItemQuery(): CustReqPossTstItemQuery = CustReqP
     custMstId = this.get("cust_mst_id", String::class.java),
     custCd = this.get("cust_cd", String::class.java)!!,
     tstCd = this.get("tst_cd", String::class.java)!!,
+    tstNm = null,
     creator = this.get("creator", String::class.java)!!,
     createDtime = this.get("create_dtime", LocalDateTime::class.java)!!
 )

@@ -7,6 +7,7 @@ data class CustReqPossTstItemQuery(
     val custMstId: String?,
     val custCd: String,
     val tstCd: String,
+    val tstNm: String?,
     val creator: String,
     val createDtime: LocalDateTime
 )
