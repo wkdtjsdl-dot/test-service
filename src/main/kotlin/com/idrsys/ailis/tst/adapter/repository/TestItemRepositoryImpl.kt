@@ -653,8 +653,10 @@ class TestItemRepositoryImpl(
         val query = dslContext
             .select(
                 itemEstlDoc.ITEM_ESTL_DOC_ID,
+                itemEstlDoc.TST_CD,
                 itemEstlDoc.DOC_CD,
                 tstReqDoc.DOC_DIV_CD,
+                tstReqDoc.DOC_NM,
                 tstReqDoc.DOC_ENG_NM,
                 tstReqDoc.DOC_FILE_ID,
                 tstReqDoc.DOC_ENG_FILE_ID
@@ -678,8 +680,10 @@ class TestItemRepositoryImpl(
             .map { row ->
                 TestItemEssentialDocDetailResponse(
                     itemEstlDocId = row[itemEstlDoc.ITEM_ESTL_DOC_ID.name] as String,
+                    tstCd = row[itemEstlDoc.TST_CD.name] as String,
                     docCd = row[itemEstlDoc.DOC_CD.name] as String,
                     docDivCd = row[tstReqDoc.DOC_DIV_CD.name] as String,
+                    docNm = row[tstReqDoc.DOC_NM.name] as String,
                     docEngNm = row[tstReqDoc.DOC_ENG_NM.name] as String,
                     docFileId = row[tstReqDoc.DOC_FILE_ID.name] as String,
                     docEngFileId = row[tstReqDoc.DOC_ENG_FILE_ID.name] as String

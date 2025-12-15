@@ -349,8 +349,10 @@ data class TestItemEssentialDocListResponse(
 
 data class TestItemEssentialDocDetailResponse(
     val itemEstlDocId: String,
+    val tstCd: String,
     val docCd: String,
     val docDivCd: String,
+    val docNm: String,
     val docEngNm: String,
     val docFileId: String,
     val docEngFileId: String
