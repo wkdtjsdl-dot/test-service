@@ -166,8 +166,8 @@ class TestItemService(
     }
 
     // --- TestGene ---
-    override fun getGenes(geneCd: String): Flow<TestGeneResponse> {
-        return repository.getGenes(geneCd).map { mapper.toResponse(it) }
+    override fun getGenes(request: TestGeneRequest): Flow<TestGeneResponse> {
+        return repository.getGenes(request).map { mapper.toResponse(it) }
     }
 
     // --- TestItemGene ---

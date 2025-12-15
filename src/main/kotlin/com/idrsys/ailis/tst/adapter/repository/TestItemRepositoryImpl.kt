@@ -512,20 +512,22 @@ class TestItemRepositoryImpl(
     }
 
     // --- TestGene ---
-    override fun getGenes(geneCd: String): Flow<TestGene> {
+    override fun getGenes(request: TestGeneRequest): Flow<TestGene> {
         val table = BbsGene.BBS_GENE
+        val itemTable = BtsItemGene.BTS_ITEM_GENE
+        if (request.geneCd.isBlank()) return emptyFlow()
 
-        if (geneCd.isBlank()) return emptyFlow()
-
-        val keyword = geneCd.uppercase()
+        val keyword = request.geneCd.uppercase()
 
         val query = dslContext
             .select(table.fields().toList())
             .from(table)
+            .leftJoin(itemTable).on(table.GENE_CD.eq(itemTable.GENE_CD))
+            .and(itemTable.TST_CD.eq(request.tstCd))
             .where(table.GENE_CD.like("$keyword%"))
+            .and(itemTable.GENE_CD.isNull)
 
         val sql = query.getSQL(ParamType.INLINED)
-        println("🔍 SQL = $sql")
 
         return databaseClient.sql(sql)
             .fetch()

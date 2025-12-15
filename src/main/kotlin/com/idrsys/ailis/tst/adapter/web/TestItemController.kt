@@ -180,7 +180,7 @@ class TestItemController(
     // --- Gene ---
     @Operation(summary = "검사 검사종목 미지정 유전자 목록")
     @GetMapping("/api/bbs/gene")
-    fun getGene(@RequestParam geneCd: String): Flow<TestGeneResponse> = useCase.getGenes(geneCd)
+    fun getGene(@ParameterObject request: TestGeneRequest): Flow<TestGeneResponse> = useCase.getGenes(request)
 
     // --- TestItemGene ---
 
