@@ -6,9 +6,12 @@ import com.idrsys.ailis.sales.application.dto.response.CustReqPossTstItemRespons
 import com.idrsys.ailis.sales.domain.model.CustReqPossTstItem
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
+import org.mapstruct.ReportingPolicy
 import java.time.LocalDateTime
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
 interface CustReqPossTstItemMapper {
 
     @Mapping(target = "custReqPossTstItemId", ignore = true)

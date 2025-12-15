@@ -7,9 +7,11 @@ import com.idrsys.ailis.sales.domain.model.Charge
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Mappings
+import org.mapstruct.ReportingPolicy
 import java.time.LocalDateTime
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+    unmappedTargetPolicy = ReportingPolicy.IGNORE)
 interface ChargeMapper {
     @Mappings(
         Mapping(target = "bzoffiNm", ignore = true)
