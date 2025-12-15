@@ -292,6 +292,11 @@ data class TestItemRefDetailResponse(
 )
 
 // --- Gene ---
+
+data class TestGeneRequest (
+    val geneCd: String,
+    val tstCd: String,
+)
 data class TestGeneResponse (
    val geneCd: String,
    val geneNm: String,
