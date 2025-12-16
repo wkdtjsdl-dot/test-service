@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
+import com.idrsys.ailis.sales.application.dto.response.CustBasicResponse
 import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.dto.response.CustListResponse
@@ -137,5 +138,13 @@ class CustController(
         @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam
     ) : Flow<DirectAcctCdNmAutoCompleteResponse> {
         return custUseCase.getDirectAcctCdNmAutoCompleteList(searchParam)
+    }
+
+    @GetMapping("/simple-list")
+    @Operation(summary = "getCustBasicList", description = "고객 기본정보 조회")
+    suspend fun getCustBasicList(
+        @ParameterObject @Parameter(hidden = true) searchParam: CustSearchParam
+    ): List<CustBasicResponse> {
+        return custUseCase.getCustList(searchParam)
     }
 }

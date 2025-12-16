@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.application.dto.cust
 
 data class CustSearchParam(
+    val bracnCd: String? = null,  // 지점
     val bzoffiCd: String? = null, // 영업소
     val custCdNm: String? = null, // 고객코드/명 사용자 입력값 or 자동완성 선택시 고객코드명
     val custCd: String? = null, // 자동완성 선택시 고객코드

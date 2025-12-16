@@ -24,6 +24,12 @@ Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
+### 고객 목록 심플 조회
+GET {{api-service}}/api/sals/custs/simple-list?brachCd=91300000&bzoffiCd=91300800
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
 ### 고객 목록 엑셀다운로드
 GET {{api-service}}/api/sals/custs/excel
 Content-Type: application/json
