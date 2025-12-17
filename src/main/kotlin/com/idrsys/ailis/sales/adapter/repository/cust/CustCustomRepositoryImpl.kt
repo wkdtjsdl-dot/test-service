@@ -352,6 +352,7 @@ class CustCustomRepositoryImpl(
     // 고객 테이블 join 없이 최소한의 데이터 조회
     override suspend fun findCustList(searchParam: CustSearchParam): Flow<CustBasicInfo> {
         val conditions = mutableListOf<Condition>()
+        val directAcctCdCustMst = SCS_CUST_MST.`as`("DIRECT_ACCT_CD_CUST_MST") // directAcctCdNm like 절 용
 
         searchParam.custCdNm?.takeIf { it.isNotBlank() }?.let { keyword ->
             conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword)
@@ -362,6 +363,11 @@ class CustCustomRepositoryImpl(
             conditions += SCS_CUST_MST.BZOFFI_CD.eq(it)
         }
 
+        // 직접거래처 사용자 입력값 직접거래처/직접거래처's custNm like 절
+        searchParam.directAcctCdNm?.takeIf { it.isNotBlank() }?.let { keyword -> conditions += SCS_CUST_MST.DIRECT_ACCT_CD.likeIgnoreCase("%$keyword%").or(directAcctCdCustMst.CUST_NM.likeIgnoreCase("%$keyword%")) }
+        // 의뢰가능여부 조건
+        searchParam.reqPossYn?.let { conditions += SCS_CUST_MST.REQ_POSS_YN.eq(it)}
+
         searchParam.custCds?.takeIf { it.isNotEmpty() }?.let {
             conditions += SCS_CUST_MST.CUST_CD.`in`(it)
 
@@ -369,9 +375,18 @@ class CustCustomRepositoryImpl(
 
         if (conditions.isEmpty()) return emptyFlow()
 
-        val query = dslContext.selectFrom(SCS_CUST_MST)
-            .where(conditions)
-            .orderBy(SCS_CUST_MST.CUST_CD.asc())
+        val needsDirectAcctCdCustMstJoin = !searchParam.directAcctCdNm.isNullOrBlank()
+
+        var queryPart = dslContext.select(
+            SCS_CUST_MST.asterisk(),
+        )
+            .from(SCS_CUST_MST)
+
+        if (needsDirectAcctCdCustMstJoin) {
+            queryPart = queryPart.leftJoin(directAcctCdCustMst).on(SCS_CUST_MST.DIRECT_ACCT_CD.eq(directAcctCdCustMst.CUST_CD))
+        }
+
+        val query = queryPart.where(conditions)
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }

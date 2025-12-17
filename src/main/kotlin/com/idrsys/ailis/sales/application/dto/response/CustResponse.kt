@@ -154,7 +154,8 @@ data class custCntrResponse(
 
 data class CustBasicResponse(
     val custMstId: String?,  // 고객UUID
-    val custCd: String,     // 고객코드
+    val directAcctCd: String?, // 직접거래처
+    val custCd: String,      // 고객코드
     val custNm: String,     // 고객명
     val telNo: String?,     // 전화번호
     val branchCd: String?,  // 지점코드

@@ -9,6 +9,7 @@ import io.r2dbc.spi.Row
 internal fun Row.toCustBasicInfo(): CustBasicInfo {
     return CustBasicInfo(
         custMstId = this.get("cust_mst_id", String::class.java),
+        directAcctCd = this.get("direct_acct_cd", String::class.java),
         custCd = this.get("cust_cd", String::class.java)!!,
         custNm = this.get("cust_nm", String::class.java)!!,
         telNo = this.get("tel_no", String::class.java),

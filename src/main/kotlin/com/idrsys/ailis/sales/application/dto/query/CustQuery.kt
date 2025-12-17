@@ -135,6 +135,7 @@ data class CustCareInstId (
 
 data class CustBasicInfo(
     val custMstId: String?,  // 고객UUID
+    val directAcctCd: String?, // 직접거래처
     val custCd: String,     // 고객코드
     val custNm: String,      // 고객명
     val telNo: String?,     // 전화번호

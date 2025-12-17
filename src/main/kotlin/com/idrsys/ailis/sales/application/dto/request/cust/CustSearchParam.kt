@@ -6,6 +6,9 @@ data class CustSearchParam(
     val custCdNm: String? = null, // 고객코드/명 사용자 입력값 or 자동완성 선택시 고객코드명
     val custCd: String? = null, // 자동완성 선택시 고객코드
     val custCds: List<String> = emptyList(), // in절 조회용 고객코드 리스트
+    val directAcctCdNm: String? = null, // 직접거래처/명 사용자 입력값 or 자동완성 선택시 직접거래처의 custNm
+    val directAcctCd: String? = null, // 직접거래처
+    val directAcctCds: List<String> = emptyList(),  // in절 조회용 직접거래처 리스트
     val rprsCustCdNm: String? = null, // 대표고객코드/명 사용자 입력값 or 자동완성 선택시 대표고객코드의 custNm
     val rprsCustCd: String? = null, // 자동완성 선택시 대표고객코드
     val custStatCd: String? = null, // 고객상태코드
@@ -24,10 +27,11 @@ data class CustSearchParam(
     val cntrEndStartDt: String? = null,
     val cntrEndEndDt: String? = null,
     val recntrMonth: String? = null,
-    val frgnAcctYn:Boolean? = null,
-    val studyProjCustYn:Boolean? = null,
-    val sapCustCd:String? = null,
-    val custTypeCd:String? = null
+    val frgnAcctYn: Boolean? = null,
+    val studyProjCustYn: Boolean? = null,
+    val sapCustCd: String? = null,
+    val custTypeCd: String? = null,
+    val reqPossYn: Boolean? = null, // 의뢰가능여부
 )
 
 data class CustAutoCompleteSearchParam(
