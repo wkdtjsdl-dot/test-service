@@ -1,28 +1,23 @@
 package com.idrsys.ailis.sales.application.service
 
 import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
+import com.idrsys.ailis.sales.adapter.external.TstServiceClient
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
-import com.idrsys.ailis.sales.application.dto.response.CustBasicResponse
-import com.idrsys.ailis.sales.application.dto.response.CustListResponse
-import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
-import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
-import com.idrsys.ailis.sales.application.dto.response.CustResponse
-import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
+import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemSearchParam
+import com.idrsys.ailis.sales.application.dto.response.*
+import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustMstHstRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
+import com.idrsys.ailis.sales.application.required.repository.custreqposststitem.CustReqPossTstItemCustomRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
-import com.idrsys.ailis.sales.application.service.HospitalDataService
 import com.idrsys.web.exception.UserDefinedException
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -36,8 +31,10 @@ class CustService(
     private val custCustomRepository: CustCustomRepository,
     private val custRepository: CustRepository,
     private val custMstHistRepository: CustMstHstRepository,
+    private val custReqPossTstItemCustomRepository: CustReqPossTstItemCustomRepository,
     private val custMapper: CustMapper,
     private val baseServiceClient: BaseServiceClient,
+    private val tstServiceClient: TstServiceClient,
     private val hospitalDataService: HospitalDataService
 ) : CustUseCase {
     @Transactional(readOnly = true)
@@ -132,6 +129,26 @@ class CustService(
         }
 
         return response
+    }
+
+    override suspend fun findTstItemsByCustMstId(custMstId: String): Flow<TstServiceTstItemsResponse> {
+        val custMst = custRepository.findByCustMstId(custMstId)
+
+        return if (custMst?.reqPossTstLimitYn == true) {
+            val allTestItemsMap = (tstServiceClient.findAllTstItems() ?: emptyList())
+                .associateBy { it.tstCd }
+
+            val searchParam = CustReqPossTstItemSearchParam(custMstId = custMstId)
+            custReqPossTstItemCustomRepository.findAllByCustMstId(searchParam)
+                .map { allowedItem ->
+                    TstServiceTstItemsResponse(
+                        tstCd = allowedItem.tstCd,
+                        tstNm = allTestItemsMap[allowedItem.tstCd]?.tstNm
+                    )
+                }
+        } else {
+            (tstServiceClient.findAllTstItems() ?: emptyList()).asFlow()
+        }
     }
 
     override suspend fun registerCust(command: CustRegisterCommand, creator: String): Cust {

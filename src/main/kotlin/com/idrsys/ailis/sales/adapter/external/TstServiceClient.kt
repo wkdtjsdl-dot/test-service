@@ -60,4 +60,17 @@ class TstServiceClient(
         }
     }
 
+    suspend fun findAllTstItems(): List<TstServiceTstItemsResponse>? {
+        return try {
+            client.get()
+                .uri { uriBuilder ->
+                    val builder = uriBuilder.path("/api/inner/bts/item/all")
+                    builder.build()
+                }
+                .retrieve()
+                .awaitBody<List<TstServiceTstItemsResponse>>()
+        } catch (ex: Exception) {
+            null
+        }
+    }
 }

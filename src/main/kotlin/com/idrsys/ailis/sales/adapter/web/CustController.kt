@@ -4,14 +4,9 @@ import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
-import com.idrsys.ailis.sales.application.dto.response.CustBasicResponse
-import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
-import com.idrsys.ailis.sales.application.dto.response.RprsCustCdNmAutoCompleteResponse
-import com.idrsys.ailis.sales.application.dto.response.CustListResponse
-import com.idrsys.ailis.sales.application.dto.response.CustResponse
-import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
+import com.idrsys.ailis.sales.application.dto.response.*
+import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
-import com.idrsys.ailis.sales.application.usecase.gcgnSalsPicInfo.GcgnSalsPicInfoUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
 import com.idrsys.reactive.excel.ReactiveExcelWriter
@@ -20,7 +15,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.data.domain.Page
@@ -85,6 +79,14 @@ class CustController(
         @PathVariable custMstId: String
     ) : CustResponse {
         return custUseCase.findCustByCustMstId(custMstId)
+    }
+
+    @GetMapping("/{custMstId}/items")
+    @Operation(summary = "findCustByCustMstId", description = "고객 의뢰 가능 검사코드 목록")
+    suspend fun findTstItemByCustMstId(
+        @PathVariable custMstId: String
+    ) : Flow<TstServiceTstItemsResponse> {
+        return custUseCase.findTstItemsByCustMstId(custMstId)
     }
 
     @PostMapping
