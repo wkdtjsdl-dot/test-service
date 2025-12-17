@@ -36,6 +36,7 @@ data class TestResultResponse(
     val reportStatusNm: String?,
     val custNm: String,
     val hospNm: String,
+    val deptCd: String?, // 부서 코드 (base-service Inner API 조회용)
     val deptNm: String,
     val reportDt: LocalDate?,
     val deliveryDt: LocalDate?,
