@@ -1,6 +1,5 @@
 package com.idrsys.ailis.tst.adapter.web
 
-import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
 import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
 import com.idrsys.ailis.tst.application.usecase.TestItemUseCase
 import io.swagger.v3.oas.annotations.Operation
@@ -8,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -24,5 +22,11 @@ class TestItemInnerController(
     ): Flow<TestItemSimpleResponse> {
         val tstCds = cds.split(",").map { it.trim() }.filter { it.isNotEmpty() }
         return testItemUseCase.findSimpleItemByTstCd(tstCds)
+    }
+
+    @Operation(summary = "검사 종목 inner 전체 조회")
+    @GetMapping("/all")
+    suspend fun findTestItemAll(): Flow<TestItemSimpleResponse> {
+        return testItemUseCase.findSimpleItemAll()
     }
 }
