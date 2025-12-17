@@ -3,25 +3,8 @@ package com.idrsys.ailis.tst.adapter.repository
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.required.TestItemRepository
-import com.idrsys.ailis.tst.domain.model.StandardCharge
-import com.idrsys.ailis.tst.domain.model.TestGene
-import com.idrsys.ailis.tst.domain.model.TestItem
-import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
-import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
-import com.idrsys.ailis.tst.domain.model.TestItemRefItem
-import com.idrsys.ailis.tst.domain.model.TestItemGene
-import com.idrsys.ailis.tst.domain.model.TestItemHst
-import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
-import com.idrsys.ailis.tst.generated.jooq.tables.BbsGene
-import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRef
-import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstReqDoc
-import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
-import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemEstlDoc
-import com.idrsys.ailis.tst.generated.jooq.tables.BtsStndCharge
-import com.idrsys.ailis.tst.generated.jooq.tables.BtsSpcm
-import com.idrsys.ailis.tst.generated.jooq.tables.BtsRefItem
-import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemGene
-import com.idrsys.ailis.tst.generated.jooq.tables.BtsItemHst
+import com.idrsys.ailis.tst.domain.model.*
+import com.idrsys.ailis.tst.generated.jooq.tables.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -29,10 +12,9 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 import org.jooq.conf.ParamType
+import org.jooq.impl.DSL
 import org.jooq.impl.DSL.notExists
-import org.jooq.impl.DSL.substring
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -76,6 +58,7 @@ class TestItemRepositoryImpl(
     // --- TestItem ---
     override suspend fun save(entity: TestItem): TestItem = itemDataRepo.save(entity)
     override suspend fun findById(tstCd: String): TestItem? = itemDataRepo.findById(tstCd)
+    override suspend fun findAll(): Flow<TestItem> = itemDataRepo.findAll()
 
     override fun getItems(searchParam: TestItemSearchParam): Flow<TestItem> {
         val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
