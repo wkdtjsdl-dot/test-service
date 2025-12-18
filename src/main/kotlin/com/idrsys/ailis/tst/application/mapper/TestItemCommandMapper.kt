@@ -9,6 +9,7 @@ import com.idrsys.ailis.tst.application.dto.TestItemRefItemRegisterRequest
 import com.idrsys.ailis.tst.application.dto.TestItemRefItemUpdateRequest
 import com.idrsys.ailis.tst.application.dto.TestItemRegisterRequest
 import com.idrsys.ailis.tst.application.dto.TestItemSpecimenRegisterRequest
+import com.idrsys.ailis.tst.application.dto.TestItemSpecimenUpdateRequest
 import com.idrsys.ailis.tst.application.dto.TestItemUpdateRequest
 import com.idrsys.ailis.tst.domain.command.StandardChargeCreateCommand
 import com.idrsys.ailis.tst.domain.command.StandardChargeUpdateCommand
@@ -19,6 +20,7 @@ import com.idrsys.ailis.tst.domain.command.TestItemGeneCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemSpecimenCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemSpecimenUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemUpdateCommand
 import org.mapstruct.Mapper
 
@@ -34,6 +36,8 @@ interface TestItemCommandMapper {
     fun toUpdateCommand(request: StandardChargeUpdateRequest): StandardChargeUpdateCommand
 
     fun toCreateCommand(request: TestItemSpecimenRegisterRequest): TestItemSpecimenCreateCommand
+
+    fun toUpdateCommand(request: TestItemSpecimenUpdateRequest): TestItemSpecimenUpdateCommand
 
     fun toCreateCommand(request: TestItemRefItemRegisterRequest): TestItemRefItemCreateCommand
 

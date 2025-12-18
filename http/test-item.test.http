@@ -188,13 +188,13 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 ###########################
 
 ### 검사 검사종목 검체 조회
-GET {{api-service}}/api/tst/bts/spcm/SPCM001
+GET {{api-service}}/api/tst/bts/spcm/2959A7FB-1301-464C-9AF6-B0CFA9881AEC
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검사 검사종목 검체 목록
-GET {{api-service}}/api/tst/bts/spcm/by-test/TST001
+GET {{api-service}}/api/tst/bts/spcm?tstCd=TST001
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -207,10 +207,48 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 {
   "tstCd": "TST001",
-  "spcmCd": "SPCM001",
-  "reqVol": "5ml",
-  "dftYn": true,
-  "sortOrder": 1
+  "spcmCd": "02",
+  "sortOrder": 1,
+  "estlYn": true,
+  "takeQnty": "5mL",
+  "engTakeQnty": "5mL",
+  "useQnty": "3mL",
+  "engUseQnty": "3mL",
+  "strgMethodCd": "01",
+  "spcmStbl": "냉장보관 시 7일",
+  "engSpcmStbl": "7 days at refrigerated",
+  "takeMethod": "정맥천자",
+  "engTakeMethod": "Venipuncture",
+  "spcmDesc": "혈청 검체",
+  "engDesc": "Serum specimen",
+  "caution": "채혈 후 30분 이내 분리",
+  "engCaution": "Separate within 30 minutes after collection",
+  "spcmCntnCd": "01"
+}
+
+### 검사 검사종목 검체 수정
+PUT {{api-service}}/api/tst/bts/spcm/2959A7FB-1301-464C-9AF6-B0CFA9881AEC
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "sortOrder": 2,
+  "estlYn": false,
+  "takeQnty": "10mL",
+  "engTakeQnty": "10mL",
+  "useQnty": "5mL",
+  "engUseQnty": "5mL",
+  "strgMethodCd": "02",
+  "spcmStbl": "냉동보관 시 30일",
+  "engSpcmStbl": "30 days at frozen",
+  "takeMethod": "정맥천자 또는 동맥천자",
+  "engTakeMethod": "Venipuncture or Arterial puncture",
+  "spcmDesc": "혈장 검체 (수정됨)",
+  "engDesc": "Plasma specimen (Updated)",
+  "caution": "채혈 후 즉시 원심분리",
+  "engCaution": "Centrifuge immediately after collection",
+  "spcmCntnCd": "02"
 }
 
 ### 검사 검사종목 검체 삭제

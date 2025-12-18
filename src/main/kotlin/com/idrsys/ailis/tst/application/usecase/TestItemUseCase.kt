@@ -21,10 +21,11 @@ interface TestItemUseCase {
     suspend fun getChargesByTest(tstCd: String): Flow<StandardChargeResponse>
 
     // --- TestItemSpecimen ---
-    suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenResponse
-    suspend fun getSpecimen(spcmId: String): TestItemSpecimenResponse
+    suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenDetailResponse
+    suspend fun getSpecimen(spcmId: String): TestItemSpecimenDetailResponse
+    suspend fun updateSpecimen(spcmId: String, request: TestItemSpecimenUpdateRequest, adminId: String): TestItemSpecimenDetailResponse
     suspend fun deleteSpecimen(id: String, adminId: String)
-    fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenResponse>
+    fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenListResponse>
 
     // --- TestItemRefItem ---
     suspend fun registerRefItem(request: TestItemRefItemRegisterRequest, adminId: String): TestItemRefItemResponse

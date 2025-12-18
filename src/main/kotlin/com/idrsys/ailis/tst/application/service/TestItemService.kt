@@ -113,18 +113,31 @@ class TestItemService(
 
     // --- TestItemSpecimen ---
 
-    override suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenResponse {
+    override suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenDetailResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
         val domain = TestItemSpecimen.create(command, adminId, now)
         val saved = repository.saveSpecimen(domain)
-        return mapper.toResponse(saved)
+        return repository.getSpecimenDetailById(saved.spcmId!!) ?: throw RuntimeException("TestItemSpecimen not found after save")
     }
 
     @Transactional(readOnly = true)
-    override suspend fun getSpecimen(spcmId: String): TestItemSpecimenResponse {
-        val domain = repository.findSpecimenById(spcmId) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
-        return mapper.toResponse(domain)
+    override suspend fun getSpecimen(spcmId: String): TestItemSpecimenDetailResponse {
+        return repository.getSpecimenDetailById(spcmId) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
+    }
+
+    @Transactional
+    override suspend fun updateSpecimen(
+        spcmId: String,
+        request: TestItemSpecimenUpdateRequest,
+        adminId: String
+    ): TestItemSpecimenDetailResponse {
+        val command = commandMapper.toUpdateCommand(request)
+        val now = java.time.LocalDateTime.now()
+        val existing = repository.findSpecimenById(spcmId) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
+        existing.update(command, adminId, now)
+        val updated = repository.saveSpecimen(existing)
+        return repository.getSpecimenDetailById(updated.spcmId!!) ?: throw RuntimeException("TestItemSpecimen not found after update")
     }
 
     override suspend fun deleteSpecimen(id: String, adminId: String) {
@@ -132,8 +145,8 @@ class TestItemService(
     }
 
     @Transactional(readOnly = true)
-    override fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenResponse> {
-        return repository.findSpecimensByTestCd(tstCd).map { mapper.toResponse(it) }
+    override fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenListResponse> {
+        return repository.getSpecimenDetailsByTestCd(tstCd)
     }
 
     // --- TestItemRefItem ---

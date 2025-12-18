@@ -9,6 +9,7 @@ import com.idrsys.ailis.tst.domain.command.TestItemGeneCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemSpecimenCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemSpecimenUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemUpdateCommand
 import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
@@ -585,6 +586,31 @@ class TestItemSpecimen(
     override fun getId(): String? = spcmId
 
     override fun isNew(): Boolean = _isNew
+
+    fun update(
+        command: TestItemSpecimenUpdateCommand,
+        updater: String,
+        updateDtime: LocalDateTime
+    ) {
+        this.sortOrder = command.sortOrder
+        this.estlYn = command.estlYn
+        this.takeQnty = command.takeQnty
+        this.engTakeQnty = command.engTakeQnty
+        this.useQnty = command.useQnty
+        this.engUseQnty = command.engUseQnty
+        this.strgMethodCd = command.strgMethodCd
+        this.spcmStbl = command.spcmStbl
+        this.engSpcmStbl = command.engSpcmStbl
+        this.takeMethod = command.takeMethod
+        this.engTakeMethod = command.engTakeMethod
+        this.spcmDesc = command.spcmDesc
+        this.engDesc = command.engDesc
+        this.caution = command.caution
+        this.engCaution = command.engCaution
+        this.spcmCntnCd = command.spcmCntnCd
+        this.updater = updater
+        this.updateDtime = updateDtime
+    }
 
     companion object {
         fun create(
