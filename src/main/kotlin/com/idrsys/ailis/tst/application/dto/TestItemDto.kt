@@ -410,3 +410,27 @@ data class TestItemLogsResponse(
     val editBy: String,
     val editAt: LocalDateTime
 )
+
+// --- Batch Specimens by Test Codes ---
+
+data class SpecimenSimple(
+    val spcmCd: String,
+    val spcmNm: String?
+)
+
+data class TestItemSpecimensResponse(
+    val tstCd: String,
+    val specimens: List<SpecimenSimple>
+)
+
+// --- Batch Ref Items by Test Codes ---
+
+data class RefItemSimple(
+    val refCd: String,
+    val refNm: String
+)
+
+data class TestItemRefItemsResponse(
+    val tstCd: String,
+    val refItems: List<RefItemSimple>
+)
