@@ -375,6 +375,56 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
+    override fun findSpecimensByTstCds(tstCds: List<String>): Flow<TestItemSpecimensResponse> {
+        if (tstCds.isEmpty()) {
+            return emptyFlow()
+        }
+
+        val btsSpcm = BtsSpcm.BTS_SPCM
+        val bbsSpcm = BbsSpcm.BBS_SPCM
+
+        val query = dslContext
+            .select(
+                btsSpcm.TST_CD,
+                btsSpcm.SPCM_CD,
+                bbsSpcm.SPCM_NM
+            )
+            .from(btsSpcm)
+            .leftJoin(bbsSpcm).on(btsSpcm.SPCM_CD.eq(bbsSpcm.SPCM_CD))
+            .where(btsSpcm.TST_CD.`in`(tstCds))
+            .orderBy(btsSpcm.TST_CD, btsSpcm.SORT_ORDER)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row ->
+                SpecimenSimple(
+                    spcmCd = row[btsSpcm.SPCM_CD.name] as String,
+                    spcmNm = row[bbsSpcm.SPCM_NM.name] as String?
+                ) to (row[btsSpcm.TST_CD.name] as String)
+            }
+            .collectList()
+            .flatMapMany { list ->
+                val grouped = list.groupBy({ it.second }, { it.first })
+                flowOf(*grouped.map { (tstCd, specimens) ->
+                    TestItemSpecimensResponse(
+                        tstCd = tstCd,
+                        specimens = specimens
+                    )
+                }.toTypedArray())
+            }
+            .asFlow()
+    }
+
     private fun toTestItemSpecimenListResponse(row: Map<String, Any>, btsSpcm: BtsSpcm, bbsSpcm: BbsSpcm): TestItemSpecimenListResponse {
         return TestItemSpecimenListResponse(
             spcmId = row[btsSpcm.SPCM_ID.name] as String,
@@ -588,6 +638,55 @@ class TestItemRepositoryImpl(
         return row?.let { toTestItemRefDetailResponse(it) }
     }
 
+    override fun findRefItemsByTstCds(tstCds: List<String>): Flow<TestItemRefItemsResponse> {
+        if (tstCds.isEmpty()) {
+            return emptyFlow()
+        }
+
+        val refItem = BtsRefItem.BTS_REF_ITEM
+        val tstRef = BbsTstRef.BBS_TST_REF
+
+        val query = dslContext
+            .select(
+                refItem.TST_CD,
+                refItem.REF_CD,
+                tstRef.REF_NM
+            )
+            .from(refItem)
+            .join(tstRef).on(refItem.REF_CD.eq(tstRef.REF_CD))
+            .where(refItem.TST_CD.`in`(tstCds))
+            .orderBy(refItem.TST_CD, refItem.SORT_ORDER)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row ->
+                RefItemSimple(
+                    refCd = row[refItem.REF_CD.name] as String,
+                    refNm = row[tstRef.REF_NM.name] as String
+                ) to (row[refItem.TST_CD.name] as String)
+            }
+            .collectList()
+            .flatMapMany { list ->
+                val grouped = list.groupBy({ it.second }, { it.first })
+                flowOf(*grouped.map { (tstCd, refItems) ->
+                    TestItemRefItemsResponse(
+                        tstCd = tstCd,
+                        refItems = refItems
+                    )
+                }.toTypedArray())
+            }
+            .asFlow()
+    }
 
     private fun toTestItemRefItem(row: Map<String, Any>): TestItemRefItem {
         return TestItemRefItem(
