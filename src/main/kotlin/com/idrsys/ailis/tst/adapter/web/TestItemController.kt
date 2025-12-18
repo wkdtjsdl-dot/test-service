@@ -109,14 +109,17 @@ class TestItemController(
     fun registerSpecimen(
         @RequestBody request: TestItemSpecimenRegisterRequest,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
-    ): Mono<TestItemSpecimenResponse> = mono {
+    ): Mono<TestItemSpecimenDetailResponse> = mono {
         useCase.registerSpecimen(request, auth.adminId)
     }
 
     @Operation(summary = "검사 검사종목 검체 조회")
-    @GetMapping("/api/bts/spcm/{spcmId}")
-    fun getSpecimen(@PathVariable spcmId: String): Mono<TestItemSpecimenResponse> = mono {
-        useCase.getSpecimen(spcmId)
+    @GetMapping("/api/bts/spcm/{tstCd}/{spcmId}")
+    fun getSpecimen(
+        @PathVariable spcmId: String,
+        @PathVariable tstCd: String
+    ): Mono<TestItemSpecimenDetailResponse> = mono {
+        useCase.getSpecimen(spcmId, tstCd)
     }
 
     @Operation(summary = "검사 항목별 검체 삭제")
@@ -131,7 +134,7 @@ class TestItemController(
 
     @Operation(summary = "검사 검사종목 검체 목록")
     @GetMapping("/api/bts/spcm")
-    fun getSpecimensByTest(@RequestParam tstCd: String): Flow<TestItemSpecimenResponse> =
+    fun getSpecimensByTest(@RequestParam tstCd: String): Flow<TestItemSpecimenListResponse> =
         useCase.getSpecimensByTest(tstCd)
 
     // --- TestItemRefItem ---

@@ -285,6 +285,139 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
+    override suspend fun getSpecimenDetailById(spcmId: String, tstCd: String): TestItemSpecimenDetailResponse? {
+        val btsSpcm = BtsSpcm.BTS_SPCM
+        val bbsSpcm = BbsSpcm.BBS_SPCM
+
+        val query = dslContext
+            .select(
+                btsSpcm.SPCM_ID,
+                btsSpcm.TST_CD,
+                btsSpcm.SPCM_CD,
+                bbsSpcm.SPCM_CATE_CD,
+                btsSpcm.SORT_ORDER,
+                btsSpcm.ESTL_YN,
+                btsSpcm.TAKE_QNTY,
+                btsSpcm.ENG_TAKE_QNTY,
+                btsSpcm.USE_QNTY,
+                btsSpcm.ENG_USE_QNTY,
+                btsSpcm.STRG_METHOD_CD,
+                btsSpcm.SPCM_STBL,
+                btsSpcm.ENG_SPCM_STBL,
+                btsSpcm.TAKE_METHOD,
+                btsSpcm.ENG_TAKE_METHOD,
+                btsSpcm.SPCM_DESC,
+                btsSpcm.ENG_DESC,
+                btsSpcm.CAUTION,
+                btsSpcm.ENG_CAUTION,
+                btsSpcm.SPCM_CNTN_CD,
+                btsSpcm.CREATOR,
+                btsSpcm.CREATE_DTIME,
+                btsSpcm.UPDATER,
+                btsSpcm.UPDATE_DTIME
+            )
+            .from(btsSpcm)
+            .leftJoin(bbsSpcm).on(btsSpcm.SPCM_CD.eq(bbsSpcm.SPCM_CD))
+            .where(bbsSpcm.SPCM_CD.eq(spcmId).and(btsSpcm.TST_CD.eq(tstCd)))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        val row = executeSpec
+            .fetch()
+            .one()
+            .awaitSingleOrNull()
+
+        return row?.let { toTestItemSpecimenResponse(it, btsSpcm, bbsSpcm) }
+    }
+
+    override fun getSpecimenDetailsByTestCd(tstCd: String): Flow<TestItemSpecimenListResponse> {
+        val btsSpcm = BtsSpcm.BTS_SPCM
+        val bbsSpcm = BbsSpcm.BBS_SPCM
+
+        val query = dslContext
+            .select(
+                btsSpcm.SPCM_ID,
+                btsSpcm.TST_CD,
+                btsSpcm.SPCM_CD,
+                bbsSpcm.SPCM_NM,
+                btsSpcm.SORT_ORDER,
+                btsSpcm.ESTL_YN,
+                btsSpcm.CREATOR,
+                btsSpcm.CREATE_DTIME,
+                btsSpcm.UPDATER,
+                btsSpcm.UPDATE_DTIME
+            )
+            .from(btsSpcm)
+            .leftJoin(bbsSpcm).on(btsSpcm.SPCM_CD.eq(bbsSpcm.SPCM_CD))
+            .where(btsSpcm.TST_CD.eq(tstCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestItemSpecimenListResponse(row, btsSpcm, bbsSpcm) }
+            .asFlow()
+    }
+
+    private fun toTestItemSpecimenListResponse(row: Map<String, Any>, btsSpcm: BtsSpcm, bbsSpcm: BbsSpcm): TestItemSpecimenListResponse {
+        return TestItemSpecimenListResponse(
+            spcmId = row[btsSpcm.SPCM_ID.name] as String,
+            tstCd = row[btsSpcm.TST_CD.name] as String,
+            spcmCd = row[btsSpcm.SPCM_CD.name] as String,
+            spcmNm = row[bbsSpcm.SPCM_NM.name] as String?,
+            sortOrder = (row[btsSpcm.SORT_ORDER.name] as Number).toInt(),
+            estlYn = row[btsSpcm.ESTL_YN.name] as Boolean,
+            creator = row[btsSpcm.CREATOR.name] as String,
+            createDtime = row[btsSpcm.CREATE_DTIME.name] as LocalDateTime,
+            updater = row[btsSpcm.UPDATER.name] as String?,
+            updateDtime = row[btsSpcm.UPDATE_DTIME.name] as LocalDateTime?
+        )
+    }
+
+    private fun toTestItemSpecimenResponse(row: Map<String, Any>, btsSpcm: BtsSpcm, bbsSpcm: BbsSpcm): TestItemSpecimenDetailResponse {
+        return TestItemSpecimenDetailResponse(
+            spcmId = row[btsSpcm.SPCM_ID.name] as String,
+            tstCd = row[btsSpcm.TST_CD.name] as String,
+            spcmCd = row[btsSpcm.SPCM_CD.name] as String,
+            spcmCateCd = row[bbsSpcm.SPCM_CATE_CD.name] as String?,
+            sortOrder = (row[btsSpcm.SORT_ORDER.name] as Number).toInt(),
+            estlYn = row[btsSpcm.ESTL_YN.name] as Boolean,
+            takeQnty = row[btsSpcm.TAKE_QNTY.name] as String,
+            engTakeQnty = row[btsSpcm.ENG_TAKE_QNTY.name] as String,
+            useQnty = row[btsSpcm.USE_QNTY.name] as String,
+            engUseQnty = row[btsSpcm.ENG_USE_QNTY.name] as String,
+            strgMethodCd = row[btsSpcm.STRG_METHOD_CD.name] as String,
+            spcmStbl = row[btsSpcm.SPCM_STBL.name] as String?,
+            engSpcmStbl = row[btsSpcm.ENG_SPCM_STBL.name] as String?,
+            takeMethod = row[btsSpcm.TAKE_METHOD.name] as String?,
+            engTakeMethod = row[btsSpcm.ENG_TAKE_METHOD.name] as String?,
+            spcmDesc = row[btsSpcm.SPCM_DESC.name] as String,
+            engDesc = row[btsSpcm.ENG_DESC.name] as String?,
+            caution = row[btsSpcm.CAUTION.name] as String,
+            engCaution = row[btsSpcm.ENG_CAUTION.name] as String,
+            spcmCntnCd = row[btsSpcm.SPCM_CNTN_CD.name] as String,
+            creator = row[btsSpcm.CREATOR.name] as String,
+            createDtime = row[btsSpcm.CREATE_DTIME.name] as LocalDateTime,
+            updater = row[btsSpcm.UPDATER.name] as String?,
+            updateDtime = row[btsSpcm.UPDATE_DTIME.name] as LocalDateTime?
+        )
+    }
+
     private fun toTestItem(row: Map<String, Any>): TestItem {
         return TestItem(
             tstCd = row["tst_cd"] as String?,

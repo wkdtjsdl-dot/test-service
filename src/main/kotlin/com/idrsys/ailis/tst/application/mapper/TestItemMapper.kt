@@ -28,7 +28,7 @@ interface TestItemMapper {
 
     // --- TestItemSpecimen ---
     fun toDomain(request: TestItemSpecimenRegisterRequest): TestItemSpecimen
-    fun toResponse(domain: TestItemSpecimen): TestItemSpecimenResponse
+    fun toResponse(domain: TestItemSpecimen): TestItemSpecimenDetailResponse
 
     // --- TestItemRefItem ---
     fun toResponse(domain: TestItemRefItem): TestItemRefItemResponse

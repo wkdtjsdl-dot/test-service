@@ -113,18 +113,17 @@ class TestItemService(
 
     // --- TestItemSpecimen ---
 
-    override suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenResponse {
+    override suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenDetailResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
         val domain = TestItemSpecimen.create(command, adminId, now)
         val saved = repository.saveSpecimen(domain)
-        return mapper.toResponse(saved)
+        return repository.getSpecimenDetailById(saved.spcmId!!, saved.tstCd) ?: throw RuntimeException("TestItemSpecimen not found after save")
     }
 
     @Transactional(readOnly = true)
-    override suspend fun getSpecimen(spcmId: String): TestItemSpecimenResponse {
-        val domain = repository.findSpecimenById(spcmId) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
-        return mapper.toResponse(domain)
+    override suspend fun getSpecimen(spcmId: String, tstCd: String): TestItemSpecimenDetailResponse {
+        return repository.getSpecimenDetailById(spcmId, tstCd) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
     }
 
     override suspend fun deleteSpecimen(id: String, adminId: String) {
@@ -132,8 +131,8 @@ class TestItemService(
     }
 
     @Transactional(readOnly = true)
-    override fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenResponse> {
-        return repository.findSpecimensByTestCd(tstCd).map { mapper.toResponse(it) }
+    override fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenListResponse> {
+        return repository.getSpecimenDetailsByTestCd(tstCd)
     }
 
     // --- TestItemRefItem ---
