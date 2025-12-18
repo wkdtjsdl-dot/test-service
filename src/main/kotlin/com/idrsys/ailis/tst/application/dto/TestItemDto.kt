@@ -220,7 +220,7 @@ data class TestItemSpecimenUpdateRequest(
     val useQnty: String,
     val engUseQnty: String,
     val strgMethod: String,
-    val engSpcmMethod: String,
+    val engStrgMethod: String,
     val spcmStbl: String?,
     val engSpcmStbl: String?,
     val takeMethod: String?,
