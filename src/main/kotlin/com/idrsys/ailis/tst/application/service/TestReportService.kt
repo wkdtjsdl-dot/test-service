@@ -1,8 +1,11 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.inner.TestItemKey
+import com.idrsys.ailis.tst.application.dto.inner.TestRequestKey
 import com.idrsys.ailis.tst.application.mapper.TestReportCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestReportMapper
+import com.idrsys.ailis.tst.application.required.ReqServiceClient
 import com.idrsys.ailis.tst.application.required.TestReportRepository
 import com.idrsys.ailis.tst.application.usecase.TestReportUseCase
 import com.idrsys.ailis.tst.domain.model.TestReport
@@ -21,7 +24,8 @@ class TestReportService(
     private val testReportRepository: TestReportRepository,
     private val testReportMapper: TestReportMapper,
     private val commandMapper: TestReportCommandMapper,
-    private val baseServiceClient: com.idrsys.ailis.tst.adapter.external.BaseServiceClient
+    private val baseServiceClient: com.idrsys.ailis.tst.adapter.external.BaseServiceClient,
+    private val reqServiceClient: ReqServiceClient
 ) : TestReportUseCase {
 
     @Transactional(readOnly = true)
@@ -29,40 +33,49 @@ class TestReportService(
         // 1. Repository에서 기본 검사결과 조회 (tbs_tst_report + bts_item JOIN)
         val reports = testReportRepository.searchTestResults(params)
 
-        // TODO: req-service Inner API로 의뢰 정보 조회
-        // req-service가 구현되면 아래 주석 해제하여 사용
-        // - 환자명(patientNm), 거래처(custNm), 병원(hospNm), 부서코드(deptCd)
-        // - 검사상태(tstStatusCd), 보고상태(reportStatusCd)
-        //
-        // val requestKeys = reports.map { TestRequestKey(it.tstReqDt, it.tstReqNo) }.distinct()
-        // val requestInfos = reqServiceClient.getTestRequestsByKeys(requestKeys)
+        if (reports.isEmpty()) {
+            return emptyList()
+        }
 
-        // 2. base-service Inner API로 부서명 조회
-        // req-service에서 deptCd를 받아온 후 부서명 조회
-        // 현재는 deptCd가 null이므로 실행되지 않음
-        val deptCds = reports.mapNotNull { it.deptCd }.distinct()
+        // 2. req-service Inner API로 의뢰 정보 조회 (Mock)
+        val requestKeys = reports.map { TestRequestKey(it.tstReqDt, it.tstReqNo) }.distinct()
+        val requestInfoList = reqServiceClient.getTestRequestsByKeys(requestKeys)
+        val requestInfoMap = requestInfoList.associateBy { TestRequestKey(it.tstReqDt, it.tstReqNo) }
+
+        // 3. req-service Inner API로 검사 항목 상태 조회 (Mock)
+        val itemKeys = reports.map { TestItemKey(it.tstReqDt, it.tstReqNo, it.tstCd) }
+        val itemStatusList = reqServiceClient.getTestItemsStatus(itemKeys)
+        val itemStatusMap = itemStatusList.associateBy {
+            TestItemKey(it.tstReqDt, it.tstReqNo, it.tstCd)
+        }
+
+        // 4. base-service Inner API로 부서명 조회
+        val deptCds = requestInfoList.mapNotNull { it.deptCd }.distinct()
         val deptNames = if (deptCds.isNotEmpty()) {
             baseServiceClient.getDepartmentsByDeptCds(deptCds)
         } else {
             emptyMap()
         }
 
-        // 3. 데이터 병합
+        // 5. 데이터 병합
         return reports.map { report ->
-            report.copy(
-                // base-service에서 조회한 부서명으로 업데이트
-                deptNm = report.deptCd?.let { deptNames[it] } ?: report.deptNm
+            val requestKey = TestRequestKey(report.tstReqDt, report.tstReqNo)
+            val itemKey = TestItemKey(report.tstReqDt, report.tstReqNo, report.tstCd)
 
-                // TODO: req-service 연동 시 아래 주석 해제
-                // val requestInfo = requestInfos[TestRequestKey(report.tstReqDt, report.tstReqNo)]
-                // patientNm = requestInfo?.patientNm ?: report.patientNm,
-                // custNm = requestInfo?.custNm ?: report.custNm,
-                // hospNm = requestInfo?.hospNm ?: report.hospNm,
-                // deptCd = requestInfo?.deptCd ?: report.deptCd,
-                // tstStatusCd = requestInfo?.tstStatusCd ?: report.tstStatusCd,
-                // tstStatusNm = requestInfo?.tstStatusNm,
-                // reportStatusCd = requestInfo?.reportStatusCd ?: report.reportStatusCd,
-                // reportStatusNm = requestInfo?.reportStatusNm
+            val requestInfo = requestInfoMap[requestKey]
+            val itemStatus = itemStatusMap[itemKey]
+
+            report.copy(
+                // req-service에서 조회한 데이터로 업데이트
+                patientNm = requestInfo?.patientNm ?: "",
+                custNm = requestInfo?.custNm ?: "",
+                hospNm = requestInfo?.hospNm ?: "",
+                deptCd = requestInfo?.deptCd,
+                deptNm = requestInfo?.deptCd?.let { deptNames[it] } ?: "",
+                tstStatusCd = itemStatus?.tstStat1Cd ?: "",
+                tstStatusNm = null, // TODO: base-service에서 코드명 조회
+                reportStatusCd = itemStatus?.tstStat2Cd ?: "",
+                reportStatusNm = null // TODO: base-service에서 코드명 조회
             )
         }
     }

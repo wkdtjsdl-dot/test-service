@@ -67,6 +67,25 @@ class TestReportRepositoryImpl(
         val report = TBS_TST_REPORT
         val item = BTS_ITEM
 
+        // 동적 WHERE 조건 빌드
+        val conditions = mutableListOf(
+            report.TST_REQ_DT.between(params.reqStartDt, params.reqEndDt)
+        )
+
+        // 보고일 조건
+        params.reportDt?.let {
+            conditions.add(
+                report.DELIVERY_DTIME.eq(it.atStartOfDay())
+            )
+        }
+
+        // 의뢰번호 범위 조건
+        params.reqNoFrom?.let { conditions.add(report.TST_REQ_NO.ge(it)) }
+        params.reqNoTo?.let { conditions.add(report.TST_REQ_NO.le(it)) }
+
+        // 검사코드 조건
+        params.tstCd?.let { conditions.add(report.TST_CD.eq(it)) }
+
         // jOOQ DSL로 쿼리 생성
         val query = dslContext
             .select(
@@ -85,7 +104,7 @@ class TestReportRepositoryImpl(
             )
             .from(report)
             .leftJoin(item).on(report.TST_CD.eq(item.TST_CD))
-            .where(report.TST_REQ_DT.between(params.reqStartDt, params.reqEndDt))
+            .where(conditions)
             .orderBy(report.TST_REQ_DT.desc(), report.TST_REQ_NO.desc())
 
         // DatabaseClient로 SQL 실행 (기존 패턴 - renderInlined 방식)

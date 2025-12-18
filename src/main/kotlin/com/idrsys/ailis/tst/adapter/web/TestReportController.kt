@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono
  */
 @Tag(name = "Test Result", description = "검사결과 보고서 API")
 @RestController
-@RequestMapping("/api/test-results")
+@RequestMapping("/api/bts/tst-report")
 class TestReportController(
     private val testReportUseCase: TestReportUseCase
 ) {
