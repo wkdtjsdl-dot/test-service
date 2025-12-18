@@ -1,11 +1,14 @@
 package com.idrsys.ailis.sales.adapter.web
 
+import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.response.CustBasicResponse
+import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.flow.Flow
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -23,5 +26,13 @@ class CustInnerController(
         @ParameterObject @Parameter(hidden = true) searchParam: CustSearchParam
     ): List<CustBasicResponse> {
         return custUseCase.getCustList(searchParam)
+    }
+
+    @GetMapping("/autoComplete/directAcctCdNm")
+    @Operation(summary = "getDirectAcctCdNmAutoCompleteList", description = "내부용 직접거래처코드/명 자동완성 조회")
+    fun getDirectAcctCdNmAutoCompleteList(
+        @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam
+    ): Flow<DirectAcctCdNmAutoCompleteResponse> {
+        return custUseCase.getDirectAcctCdNmAutoCompleteList(searchParam)
     }
 }

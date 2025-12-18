@@ -125,6 +125,9 @@ class GcgnSalsPicInfoCustomRepositoryImpl(
         searchParam.empUserId?.takeIf { it.isNotBlank() }?.let {
             conds += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(it)
         }
+        searchParam.empUserIds?.takeIf { it.isNotEmpty() }?.let {
+            conds += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.`in`(it)
+        }
         searchParam.custCd?.takeIf { it.isNotBlank() }?.let {
             conds += SCS_GCGN_SALS_PIC_INFO.CUST_CD.eq(it)
         }

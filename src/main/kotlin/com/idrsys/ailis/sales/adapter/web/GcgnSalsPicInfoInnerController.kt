@@ -32,4 +32,12 @@ class GcgnSalsPicInfoInnerController(
     ): Page<GcgnSalsPicInfoResponse> {
         return gcgnSalsPicInfoUseCase.getGcgnSalsPicInfoPage(searchParam, Pageable.unpaged())
     }
+
+    @GetMapping("/autoComplete")
+    @Operation(summary = "getSalsPicAutoCompleteList", description = "영업담당자 자동완성 조회")
+    suspend fun getSalsPicAutoCompleteList(
+        @ParameterObject @Parameter(hidden = true) searchParam: GcgnSalaPicInfoAutoSearchParam
+    ) : List<GcgnSalsPicInfoAutoResponse> {
+        return gcgnSalsPicInfoUseCase.getSalsPicAutoCompleteList(searchParam)
+    }
 }
