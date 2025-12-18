@@ -646,8 +646,8 @@ class TestItemSpecimen(
                 spcmCntnCd = command.spcmCntnCd,
                 creator = creator,
                 createDtime = now,
-                updater = null,
-                updateDtime = null
+                updater = creator,
+                updateDtime = now,
             ).apply { setAsNew() }
         }
     }
