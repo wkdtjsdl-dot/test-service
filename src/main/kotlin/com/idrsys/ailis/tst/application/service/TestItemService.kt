@@ -149,6 +149,11 @@ class TestItemService(
         return repository.getSpecimenDetailsByTestCd(tstCd)
     }
 
+    @Transactional(readOnly = true)
+    override suspend fun getSpecimensByTstCds(tstCds: List<String>): Flow<TestItemSpecimensResponse> {
+        return repository.findSpecimensByTstCds(tstCds)
+    }
+
     // --- TestItemRefItem ---
 
     override suspend fun registerRefItem(request: TestItemRefItemRegisterRequest, adminId: String): TestItemRefItemResponse {
@@ -180,6 +185,11 @@ class TestItemService(
     @Transactional(readOnly = true)
     override fun getRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse> {
         return repository.findRefItemsByTstCd(searchParam)
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getRefItemsByTstCds(tstCds: List<String>): Flow<TestItemRefItemsResponse> {
+        return repository.findRefItemsByTstCds(tstCds)
     }
 
     // --- TestGene ---
