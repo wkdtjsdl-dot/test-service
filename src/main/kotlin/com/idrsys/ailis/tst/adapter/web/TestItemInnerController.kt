@@ -1,6 +1,8 @@
 package com.idrsys.ailis.tst.adapter.web
 
 import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
+import com.idrsys.ailis.tst.application.dto.TestItemSpecimensResponse
+import com.idrsys.ailis.tst.application.dto.TestItemRefItemsResponse
 import com.idrsys.ailis.tst.application.usecase.TestItemUseCase
 import io.swagger.v3.oas.annotations.Operation
 import kotlinx.coroutines.flow.Flow
@@ -28,5 +30,23 @@ class TestItemInnerController(
     @GetMapping("/all")
     suspend fun findTestItemAll(): Flow<TestItemSimpleResponse> {
         return testItemUseCase.findSimpleItemAll()
+    }
+
+    @Operation(summary = "검사 코드별 검체 조회")
+    @GetMapping("/specimens")
+    suspend fun getSpecimensByTstCds(
+        @ParameterObject cds: String
+    ): Flow<TestItemSpecimensResponse> {
+        val codes = cds.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        return testItemUseCase.getSpecimensByTstCds(codes)
+    }
+
+    @Operation(summary = "검사 코드별 참조항목 조회")
+    @GetMapping("/ref-items")
+    suspend fun getRefItemsByTstCds(
+        @ParameterObject cds: String
+    ): Flow<TestItemRefItemsResponse> {
+        val codes = cds.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        return testItemUseCase.getRefItemsByTstCds(codes)
     }
 }

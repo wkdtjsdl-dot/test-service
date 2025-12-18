@@ -376,7 +376,7 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
-    override fun findSpecimensByTstCds(tstCds: List<String>): Flow<TestItemSpecimensResponse> {
+    override suspend fun findSpecimensByTstCds(tstCds: List<String>): Flow<TestItemSpecimensResponse> {
         if (tstCds.isEmpty()) {
             return emptyFlow()
         }
@@ -404,26 +404,28 @@ class TestItemRepositoryImpl(
             }
         }
 
-        return executeSpec
+        val list = executeSpec
             .fetch()
             .all()
-            .map { row ->
-                SpecimenSimple(
-                    spcmCd = row[btsSpcm.SPCM_CD.name] as String,
-                    spcmNm = row[bbsSpcm.SPCM_NM.name] as String?
-                ) to (row[btsSpcm.TST_CD.name] as String)
-            }
             .collectList()
-            .flatMapMany { list ->
-                val grouped = list.groupBy({ it.second }, { it.first })
-                flowOf(*grouped.map { (tstCd, specimens) ->
-                    TestItemSpecimensResponse(
-                        tstCd = tstCd,
-                        specimens = specimens
-                    )
-                }.toTypedArray())
+            .awaitSingleOrNull() ?: emptyList()
+
+        val grouped = list.groupBy(
+            { it[btsSpcm.TST_CD.name] as String },
+            { SpecimenSimple(
+                spcmCd = it[btsSpcm.SPCM_CD.name] as String,
+                spcmNm = it[bbsSpcm.SPCM_NM.name] as String?
+            )}
+        )
+
+        return kotlinx.coroutines.flow.flow {
+            grouped.forEach { (tstCd, specimens) ->
+                emit(TestItemSpecimensResponse(
+                    tstCd = tstCd,
+                    specimens = specimens
+                ))
             }
-            .asFlow()
+        }
     }
 
     private fun toTestItemSpecimenListResponse(row: Map<String, Any>, btsSpcm: BtsSpcm, bbsSpcm: BbsSpcm): TestItemSpecimenListResponse {
@@ -640,7 +642,7 @@ class TestItemRepositoryImpl(
         return row?.let { toTestItemRefDetailResponse(it) }
     }
 
-    override fun findRefItemsByTstCds(tstCds: List<String>): Flow<TestItemRefItemsResponse> {
+    override suspend fun findRefItemsByTstCds(tstCds: List<String>): Flow<TestItemRefItemsResponse> {
         if (tstCds.isEmpty()) {
             return emptyFlow()
         }
@@ -668,26 +670,28 @@ class TestItemRepositoryImpl(
             }
         }
 
-        return executeSpec
+        val list = executeSpec
             .fetch()
             .all()
-            .map { row ->
-                RefItemSimple(
-                    refCd = row[refItem.REF_CD.name] as String,
-                    refNm = row[tstRef.REF_NM.name] as String
-                ) to (row[refItem.TST_CD.name] as String)
-            }
             .collectList()
-            .flatMapMany { list ->
-                val grouped = list.groupBy({ it.second }, { it.first })
-                flowOf(*grouped.map { (tstCd, refItems) ->
-                    TestItemRefItemsResponse(
-                        tstCd = tstCd,
-                        refItems = refItems
-                    )
-                }.toTypedArray())
+            .awaitSingleOrNull() ?: emptyList()
+
+        val grouped = list.groupBy(
+            { it[refItem.TST_CD.name] as String },
+            { RefItemSimple(
+                refCd = it[refItem.REF_CD.name] as String,
+                refNm = it[tstRef.REF_NM.name] as String
+            )}
+        )
+
+        return kotlinx.coroutines.flow.flow {
+            grouped.forEach { (tstCd, refItems) ->
+                emit(TestItemRefItemsResponse(
+                    tstCd = tstCd,
+                    refItems = refItems
+                ))
             }
-            .asFlow()
+        }
     }
 
     private fun toTestItemRefItem(row: Map<String, Any>): TestItemRefItem {

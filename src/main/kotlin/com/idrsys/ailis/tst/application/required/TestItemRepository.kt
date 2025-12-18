@@ -35,7 +35,7 @@ interface TestItemRepository {
     fun findSpecimensByTestCd(tstCd: String): Flow<TestItemSpecimen>
     suspend fun getSpecimenDetailById(spcmId: String): TestItemSpecimenDetailResponse?
     fun getSpecimenDetailsByTestCd(tstCd: String): Flow<TestItemSpecimenListResponse>
-    fun findSpecimensByTstCds(tstCds: List<String>): Flow<TestItemSpecimensResponse>
+    suspend fun findSpecimensByTstCds(tstCds: List<String>): Flow<TestItemSpecimensResponse>
 
     // --- TestItemRefItem ---
     suspend fun saveRefItem(entity: TestItemRefItem): TestItemRefItem
@@ -43,7 +43,7 @@ interface TestItemRepository {
     suspend fun deleteRefItemById(refItemId: String)
     fun findRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse>
     suspend fun getDetailRefItemById(refItemId: String): TestItemRefDetailResponse?
-    fun findRefItemsByTstCds(tstCds: List<String>): Flow<TestItemRefItemsResponse>
+    suspend fun findRefItemsByTstCds(tstCds: List<String>): Flow<TestItemRefItemsResponse>
 
     // --- TestGene ---
      fun getGenes(request: TestGeneRequest):Flow<TestGene>
