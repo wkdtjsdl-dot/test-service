@@ -302,7 +302,8 @@ class TestItemRepositoryImpl(
                 btsSpcm.ENG_TAKE_QNTY,
                 btsSpcm.USE_QNTY,
                 btsSpcm.ENG_USE_QNTY,
-                btsSpcm.STRG_METHOD_CD,
+                btsSpcm.STRG_METHOD,
+                btsSpcm.ENG_STRG_METHOD,
                 btsSpcm.SPCM_STBL,
                 btsSpcm.ENG_SPCM_STBL,
                 btsSpcm.TAKE_METHOD,
@@ -375,6 +376,58 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
+    override suspend fun findSpecimensByTstCds(tstCds: List<String>): Flow<TestItemSpecimensResponse> {
+        if (tstCds.isEmpty()) {
+            return emptyFlow()
+        }
+
+        val btsSpcm = BtsSpcm.BTS_SPCM
+        val bbsSpcm = BbsSpcm.BBS_SPCM
+
+        val query = dslContext
+            .select(
+                btsSpcm.TST_CD,
+                btsSpcm.SPCM_CD,
+                bbsSpcm.SPCM_NM
+            )
+            .from(btsSpcm)
+            .leftJoin(bbsSpcm).on(btsSpcm.SPCM_CD.eq(bbsSpcm.SPCM_CD))
+            .where(btsSpcm.TST_CD.`in`(tstCds))
+            .orderBy(btsSpcm.TST_CD, btsSpcm.SORT_ORDER)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        val list = executeSpec
+            .fetch()
+            .all()
+            .collectList()
+            .awaitSingleOrNull() ?: emptyList()
+
+        val grouped = list.groupBy(
+            { it[btsSpcm.TST_CD.name] as String },
+            { SpecimenSimple(
+                spcmCd = it[btsSpcm.SPCM_CD.name] as String,
+                spcmNm = it[bbsSpcm.SPCM_NM.name] as String?
+            )}
+        )
+
+        return kotlinx.coroutines.flow.flow {
+            grouped.forEach { (tstCd, specimens) ->
+                emit(TestItemSpecimensResponse(
+                    tstCd = tstCd,
+                    specimens = specimens
+                ))
+            }
+        }
+    }
+
     private fun toTestItemSpecimenListResponse(row: Map<String, Any>, btsSpcm: BtsSpcm, bbsSpcm: BbsSpcm): TestItemSpecimenListResponse {
         return TestItemSpecimenListResponse(
             spcmId = row[btsSpcm.SPCM_ID.name] as String,
@@ -403,7 +456,8 @@ class TestItemRepositoryImpl(
             engTakeQnty = row[btsSpcm.ENG_TAKE_QNTY.name] as String,
             useQnty = row[btsSpcm.USE_QNTY.name] as String,
             engUseQnty = row[btsSpcm.ENG_USE_QNTY.name] as String,
-            strgMethodCd = row[btsSpcm.STRG_METHOD_CD.name] as String,
+            strgMethod = row[btsSpcm.STRG_METHOD.name] as String,
+            engStrgMethod = row[btsSpcm.ENG_STRG_METHOD.name] as String,
             spcmStbl = row[btsSpcm.SPCM_STBL.name] as String?,
             engSpcmStbl = row[btsSpcm.ENG_SPCM_STBL.name] as String?,
             takeMethod = row[btsSpcm.TAKE_METHOD.name] as String?,
@@ -495,7 +549,8 @@ class TestItemRepositoryImpl(
             engTakeQnty = row["eng_take_qnty"] as String,
             useQnty = row["use_qnty"] as String,
             engUseQnty = row["eng_use_qnty"] as String,
-            strgMethodCd = row["strg_method_cd"] as String,
+            strgMethod = row["strg_method"] as String,
+            engStrgMethod = row["eng_strg_method"] as String,
             spcmStbl = row["spcm_stbl"] as String?,
             engSpcmStbl = row["eng_spcm_stbl"] as String?,
             takeMethod = row["take_method"] as String?,
@@ -588,6 +643,57 @@ class TestItemRepositoryImpl(
         return row?.let { toTestItemRefDetailResponse(it) }
     }
 
+    override suspend fun findRefItemsByTstCds(tstCds: List<String>): Flow<TestItemRefItemsResponse> {
+        if (tstCds.isEmpty()) {
+            return emptyFlow()
+        }
+
+        val refItem = BtsRefItem.BTS_REF_ITEM
+        val tstRef = BbsTstRef.BBS_TST_REF
+
+        val query = dslContext
+            .select(
+                refItem.TST_CD,
+                refItem.REF_CD,
+                tstRef.REF_NM
+            )
+            .from(refItem)
+            .join(tstRef).on(refItem.REF_CD.eq(tstRef.REF_CD))
+            .where(refItem.TST_CD.`in`(tstCds))
+            .orderBy(refItem.TST_CD, refItem.SORT_ORDER)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        val list = executeSpec
+            .fetch()
+            .all()
+            .collectList()
+            .awaitSingleOrNull() ?: emptyList()
+
+        val grouped = list.groupBy(
+            { it[refItem.TST_CD.name] as String },
+            { RefItemSimple(
+                refCd = it[refItem.REF_CD.name] as String,
+                refNm = it[tstRef.REF_NM.name] as String
+            )}
+        )
+
+        return kotlinx.coroutines.flow.flow {
+            grouped.forEach { (tstCd, refItems) ->
+                emit(TestItemRefItemsResponse(
+                    tstCd = tstCd,
+                    refItems = refItems
+                ))
+            }
+        }
+    }
 
     private fun toTestItemRefItem(row: Map<String, Any>): TestItemRefItem {
         return TestItemRefItem(

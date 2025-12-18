@@ -119,6 +119,16 @@ Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
+### 검사 코드 innerApi 조회
+GET {{tst-service}}/api/inner/bts/item/specimens?cds=N119,J020,A023
+Content-Type: application/json
+Accept: application/json
+
+### 검사 코드 innerApi 조회
+GET {{tst-service}}/api/inner/bts/item/ref-items?cds=N118,M006,ON156
+Content-Type: application/json
+Accept: application/json
+
 
 ###########################
 # 표준수가 (Standard Charge)

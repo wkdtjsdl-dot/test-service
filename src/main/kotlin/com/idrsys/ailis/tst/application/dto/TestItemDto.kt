@@ -200,7 +200,8 @@ data class TestItemSpecimenRegisterRequest(
     val engTakeQnty: String,
     val useQnty: String,
     val engUseQnty: String,
-    val strgMethodCd: String,
+    val strgMethod: String,
+    val engStrgMethod: String,
     val spcmStbl: String?,
     val engSpcmStbl: String?,
     val takeMethod: String?,
@@ -219,7 +220,8 @@ data class TestItemSpecimenUpdateRequest(
     val engTakeQnty: String,
     val useQnty: String,
     val engUseQnty: String,
-    val strgMethodCd: String,
+    val strgMethod: String,
+    val engStrgMethod: String,
     val spcmStbl: String?,
     val engSpcmStbl: String?,
     val takeMethod: String?,
@@ -243,7 +245,8 @@ data class TestItemSpecimenDetailResponse(
     val engTakeQnty: String,
     val useQnty: String,
     val engUseQnty: String,
-    val strgMethodCd: String,
+    val strgMethod: String,
+    val engStrgMethod: String,
     val spcmStbl: String?,
     val engSpcmStbl: String?,
     val takeMethod: String?,
@@ -409,4 +412,28 @@ data class TestItemLogsResponse(
     val editContents: String,
     val editBy: String,
     val editAt: LocalDateTime
+)
+
+// --- Batch Specimens by Test Codes ---
+
+data class SpecimenSimple(
+    val spcmCd: String,
+    val spcmNm: String?
+)
+
+data class TestItemSpecimensResponse(
+    val tstCd: String,
+    val specimens: List<SpecimenSimple>
+)
+
+// --- Batch Ref Items by Test Codes ---
+
+data class RefItemSimple(
+    val refCd: String,
+    val refNm: String
+)
+
+data class TestItemRefItemsResponse(
+    val tstCd: String,
+    val refItems: List<RefItemSimple>
 )
