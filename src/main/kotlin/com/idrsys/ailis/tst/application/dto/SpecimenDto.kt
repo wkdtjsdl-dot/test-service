@@ -36,16 +36,6 @@ data class SpecimenResponse(
     val spcmAbbrNm: String?,
     val spcmEngNm: String,
     val spcmEngAbbrNm: String?,
-    val collAmt: String?,
-    val engCollAmt: String?,
-    val spcmStrg: String?,
-    val engSpcmStrg: String?,
-    val spcmSafe: String?,
-    val engSpcmSafe: String?,
-    val caution: String?,
-    val engCaution: String?,
-    val ref: String?,
-    val engRef: String?,
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,
@@ -60,16 +50,6 @@ data class SpecimenRegisterRequest(
     val spcmAbbrNm: String?,
     val spcmEngNm: String,
     val spcmEngAbbrNm: String?,
-    val collAmt: String?,
-    val engCollAmt: String?,
-    val spcmStrg: String?,
-    val engSpcmStrg: String?,
-    val spcmSafe: String?,
-    val engSpcmSafe: String?,
-    val caution: String?,
-    val engCaution: String?,
-    val ref: String?,
-    val engRef: String?
 )
 
 data class SpecimenUpdateRequest(
@@ -79,14 +59,4 @@ data class SpecimenUpdateRequest(
     val spcmAbbrNm: String?,
     val spcmEngNm: String,
     val spcmEngAbbrNm: String?,
-    val collAmt: String?,
-    val engCollAmt: String?,
-    val spcmStrg: String?,
-    val engSpcmStrg: String?,
-    val spcmSafe: String?,
-    val engSpcmSafe: String?,
-    val caution: String?,
-    val engCaution: String?,
-    val ref: String?,
-    val engRef: String?
 )
