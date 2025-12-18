@@ -467,7 +467,8 @@ class TestItemSpecimen(
     engTakeQnty: String,
     useQnty: String,
     engUseQnty: String,
-    strgMethodCd: String,
+    strgMethod: String,
+    engStrgMethod: String,
     spcmStbl: String?,
     engSpcmStbl: String?,
     takeMethod: String?,
@@ -520,8 +521,11 @@ class TestItemSpecimen(
     var engUseQnty: String = engUseQnty
         private set
 
-    @Column("strg_method_cd")
-    var strgMethodCd: String = strgMethodCd
+    @Column("strg_method")
+    var strgMethod: String = strgMethod
+        private set
+    @Column("eng_strg_method")
+    var engStrgMethod: String = engStrgMethod
         private set
 
     @Column("spcm_stbl")
@@ -598,7 +602,8 @@ class TestItemSpecimen(
         this.engTakeQnty = command.engTakeQnty
         this.useQnty = command.useQnty
         this.engUseQnty = command.engUseQnty
-        this.strgMethodCd = command.strgMethodCd
+        this.strgMethod = command.strgMethod
+        this.engStrgMethod = command.engStrgMethod
         this.spcmStbl = command.spcmStbl
         this.engSpcmStbl = command.engSpcmStbl
         this.takeMethod = command.takeMethod
@@ -628,7 +633,8 @@ class TestItemSpecimen(
                 engTakeQnty = command.engTakeQnty,
                 useQnty = command.useQnty,
                 engUseQnty = command.engUseQnty,
-                strgMethodCd = command.strgMethodCd,
+                strgMethod = command.strgMethod,
+                engStrgMethod = command.engStrgMethod,
                 spcmStbl = command.spcmStbl,
                 engSpcmStbl = command.engSpcmStbl,
                 takeMethod = command.takeMethod,
