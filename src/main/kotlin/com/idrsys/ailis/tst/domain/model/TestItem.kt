@@ -425,6 +425,47 @@ class StandardCharge(
         this.addtax = command.addtax
     }
 
+    fun updateDate(
+        applyStartDt: LocalDate,
+        applyEndDt: LocalDate,
+    ) {
+        this.applyStartDt = applyStartDt
+        this.applyEndDt = applyEndDt
+    }
+
+    fun markAsPersisted() {
+        this._isNew = false
+    }
+
+    fun copyAsNew(
+        applyStartDt: LocalDate,
+        applyEndDt: LocalDate,
+        creator: String,
+        now: LocalDateTime
+    ): StandardCharge {
+        return StandardCharge(
+            stndChargeId = null,
+            tstCd = this.tstCd,
+            applyStartDt = applyStartDt,
+            applyEndDt = applyEndDt,
+            insuCd = this.insuCd,
+            insuCateNo = this.insuCateNo,
+            relatValuePoint = this.relatValuePoint,
+            insuCharge = this.insuCharge,
+            qladCharge = this.qladCharge,
+            stndCharge = this.stndCharge,
+            lowestCharge = this.lowestCharge,
+            qladCd = this.qladCd,
+            relatValueQladPoint = this.relatValueQladPoint,
+            outputInsuCd = this.outputInsuCd,
+            totalQladCharge = this.totalQladCharge,
+            supval = this.supval,
+            addtax = this.addtax,
+            creator = creator,
+            createDtime = now
+        ).apply { setAsNew() }
+    }
+
     companion object {
         fun create(
             command: StandardChargeCreateCommand,

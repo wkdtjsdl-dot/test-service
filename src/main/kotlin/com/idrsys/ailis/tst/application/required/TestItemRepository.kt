@@ -27,6 +27,7 @@ interface TestItemRepository {
     suspend fun findChargeById(id: String): StandardCharge?
     suspend fun deleteChargeById(id: String)
     suspend fun findChargesByTestCd(tstCd: String): Flow<StandardCharge>
+    suspend fun getEqualDate(entity: StandardCharge): Flow<StandardCharge>
 
     // --- TestItemSpecimen ---
     suspend fun saveSpecimen(entity: TestItemSpecimen): TestItemSpecimen

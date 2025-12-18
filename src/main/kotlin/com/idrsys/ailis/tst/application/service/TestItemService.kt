@@ -82,10 +82,51 @@ class TestItemService(
     override suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()
-        val domain = StandardCharge.create(command, adminId, now)
-        val saved = repository.saveCharge(domain)
-        return mapper.toResponse(saved)
+
+        val newDomain = StandardCharge.create(command, adminId, now)
+        val newStart = command.applyStartDt
+        val newEnd = command.applyEndDt
+
+        val overlapped = repository.getEqualDate(newDomain).toList()
+        require(overlapped.size <= 1) {
+            "겹치는 날짜 데이터가 2개 이상 존재합니다."
+        }
+
+        if (overlapped.isEmpty()) {
+            return mapper.toResponse(repository.saveCharge(newDomain))
+        }
+
+        val old = overlapped.first().apply { markAsPersisted() }
+        val oldStart = old.applyStartDt
+        val oldEnd = old.applyEndDt
+
+        val tail =
+            if (oldEnd > newEnd) {
+                old.copyAsNew(
+                    applyStartDt = newEnd.plusDays(1),
+                    applyEndDt = oldEnd,
+                    adminId,
+                    now
+                )
+            } else null
+
+        if (oldStart < newStart) {
+            old.updateDate(
+                applyStartDt = oldStart,
+                applyEndDt = newStart.minusDays(1)
+            )
+            repository.saveCharge(old)
+        }
+
+        val savedNew = repository.saveCharge(newDomain)
+
+        tail?.let {
+            repository.saveCharge(it)
+        }
+
+        return mapper.toResponse(savedNew)
     }
+
 
     @Transactional(readOnly = true)
     override suspend fun getCharge(id: String): StandardChargeResponse {
@@ -109,6 +150,14 @@ class TestItemService(
     @Transactional(readOnly = true)
     override suspend fun getChargesByTest(tstCd: String): Flow<StandardChargeResponse> {
         return repository.findChargesByTestCd(tstCd).map { mapper.toResponse(it) }
+    }
+
+    @Transactional(readOnly = true)
+    suspend fun getEqualDate(request: StandardChargeRegisterRequest, adminId: String): Flow<StandardCharge> {
+        val command = commandMapper.toCreateCommand(request)
+        val now = java.time.LocalDateTime.now()
+        val domain = StandardCharge.create(command, adminId, now)
+        return repository.getEqualDate(domain)
     }
 
     // --- TestItemSpecimen ---
