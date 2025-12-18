@@ -285,7 +285,7 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
-    override suspend fun getSpecimenDetailById(spcmId: String, tstCd: String): TestItemSpecimenDetailResponse? {
+    override suspend fun getSpecimenDetailById(spcmId: String): TestItemSpecimenDetailResponse? {
         val btsSpcm = BtsSpcm.BTS_SPCM
         val bbsSpcm = BbsSpcm.BBS_SPCM
 
@@ -294,6 +294,7 @@ class TestItemRepositoryImpl(
                 btsSpcm.SPCM_ID,
                 btsSpcm.TST_CD,
                 btsSpcm.SPCM_CD,
+                bbsSpcm.SPCM_NM,
                 bbsSpcm.SPCM_CATE_CD,
                 btsSpcm.SORT_ORDER,
                 btsSpcm.ESTL_YN,
@@ -318,7 +319,7 @@ class TestItemRepositoryImpl(
             )
             .from(btsSpcm)
             .leftJoin(bbsSpcm).on(btsSpcm.SPCM_CD.eq(bbsSpcm.SPCM_CD))
-            .where(bbsSpcm.SPCM_CD.eq(spcmId).and(btsSpcm.TST_CD.eq(tstCd)))
+            .where(btsSpcm.SPCM_ID.eq(spcmId))
 
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value: Any? ->
@@ -394,6 +395,7 @@ class TestItemRepositoryImpl(
             spcmId = row[btsSpcm.SPCM_ID.name] as String,
             tstCd = row[btsSpcm.TST_CD.name] as String,
             spcmCd = row[btsSpcm.SPCM_CD.name] as String,
+            spcmNm = row[bbsSpcm.SPCM_NM.name] as String,
             spcmCateCd = row[bbsSpcm.SPCM_CATE_CD.name] as String?,
             sortOrder = (row[btsSpcm.SORT_ORDER.name] as Number).toInt(),
             estlYn = row[btsSpcm.ESTL_YN.name] as Boolean,

@@ -22,7 +22,8 @@ interface TestItemUseCase {
 
     // --- TestItemSpecimen ---
     suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenDetailResponse
-    suspend fun getSpecimen(spcmId: String, tstCd: String): TestItemSpecimenDetailResponse
+    suspend fun getSpecimen(spcmId: String): TestItemSpecimenDetailResponse
+    suspend fun updateSpecimen(spcmId: String, request: TestItemSpecimenUpdateRequest, adminId: String): TestItemSpecimenDetailResponse
     suspend fun deleteSpecimen(id: String, adminId: String)
     fun getSpecimensByTest(tstCd: String): Flow<TestItemSpecimenListResponse>
 

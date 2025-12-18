@@ -118,12 +118,26 @@ class TestItemService(
         val now = java.time.LocalDateTime.now()
         val domain = TestItemSpecimen.create(command, adminId, now)
         val saved = repository.saveSpecimen(domain)
-        return repository.getSpecimenDetailById(saved.spcmId!!, saved.tstCd) ?: throw RuntimeException("TestItemSpecimen not found after save")
+        return repository.getSpecimenDetailById(saved.spcmId!!) ?: throw RuntimeException("TestItemSpecimen not found after save")
     }
 
     @Transactional(readOnly = true)
-    override suspend fun getSpecimen(spcmId: String, tstCd: String): TestItemSpecimenDetailResponse {
-        return repository.getSpecimenDetailById(spcmId, tstCd) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
+    override suspend fun getSpecimen(spcmId: String): TestItemSpecimenDetailResponse {
+        return repository.getSpecimenDetailById(spcmId) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
+    }
+
+    @Transactional
+    override suspend fun updateSpecimen(
+        spcmId: String,
+        request: TestItemSpecimenUpdateRequest,
+        adminId: String
+    ): TestItemSpecimenDetailResponse {
+        val command = commandMapper.toUpdateCommand(request)
+        val now = java.time.LocalDateTime.now()
+        val existing = repository.findSpecimenById(spcmId) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
+        existing.update(command, adminId, now)
+        val updated = repository.saveSpecimen(existing)
+        return repository.getSpecimenDetailById(updated.spcmId!!) ?: throw RuntimeException("TestItemSpecimen not found after update")
     }
 
     override suspend fun deleteSpecimen(id: String, adminId: String) {

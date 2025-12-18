@@ -33,7 +33,7 @@ interface TestItemRepository {
     suspend fun findSpecimenById(spcmId: String): TestItemSpecimen?
     suspend fun deleteSpecimenById(id: String)
     fun findSpecimensByTestCd(tstCd: String): Flow<TestItemSpecimen>
-    suspend fun getSpecimenDetailById(spcmId: String, tstCd: String): TestItemSpecimenDetailResponse?
+    suspend fun getSpecimenDetailById(spcmId: String): TestItemSpecimenDetailResponse?
     fun getSpecimenDetailsByTestCd(tstCd: String): Flow<TestItemSpecimenListResponse>
 
     // --- TestItemRefItem ---

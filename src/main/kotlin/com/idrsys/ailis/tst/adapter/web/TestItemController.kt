@@ -114,12 +114,21 @@ class TestItemController(
     }
 
     @Operation(summary = "검사 검사종목 검체 조회")
-    @GetMapping("/api/bts/spcm/{tstCd}/{spcmId}")
+    @GetMapping("/api/bts/spcm/{spcmId}")
     fun getSpecimen(
         @PathVariable spcmId: String,
-        @PathVariable tstCd: String
     ): Mono<TestItemSpecimenDetailResponse> = mono {
-        useCase.getSpecimen(spcmId, tstCd)
+        useCase.getSpecimen(spcmId)
+    }
+
+    @Operation(summary = "검사 검사종목 검체 수정")
+    @PutMapping("/api/bts/spcm/{spcmId}")
+    fun updateSpecimen(
+        @PathVariable spcmId: String,
+        @RequestBody request: TestItemSpecimenUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemSpecimenDetailResponse> = mono {
+        useCase.updateSpecimen(spcmId, request, auth.adminId)
     }
 
     @Operation(summary = "검사 항목별 검체 삭제")

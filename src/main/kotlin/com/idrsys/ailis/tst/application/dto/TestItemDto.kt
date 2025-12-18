@@ -212,10 +212,30 @@ data class TestItemSpecimenRegisterRequest(
     val spcmCntnCd: String
 )
 
+data class TestItemSpecimenUpdateRequest(
+    val sortOrder: Int,
+    val estlYn: Boolean,
+    val takeQnty: String,
+    val engTakeQnty: String,
+    val useQnty: String,
+    val engUseQnty: String,
+    val strgMethodCd: String,
+    val spcmStbl: String?,
+    val engSpcmStbl: String?,
+    val takeMethod: String?,
+    val engTakeMethod: String?,
+    val spcmDesc: String,
+    val engDesc: String?,
+    val caution: String,
+    val engCaution: String,
+    val spcmCntnCd: String
+)
+
 data class TestItemSpecimenDetailResponse(
     val spcmId: String,
     val tstCd: String,
     val spcmCd: String,
+    val spcmNm: String?,
     val spcmCateCd: String?,
     val sortOrder: Int,
     val estlYn: Boolean,

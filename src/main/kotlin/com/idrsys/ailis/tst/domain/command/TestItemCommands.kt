@@ -69,6 +69,25 @@ data class TestItemUpdateCommand(
     val insuCateNo: String?
 )
 
+data class TestItemSpecimenUpdateCommand(
+    val sortOrder: Int,
+    val estlYn: Boolean,
+    val takeQnty: String,
+    val engTakeQnty: String,
+    val useQnty: String,
+    val engUseQnty: String,
+    val strgMethodCd: String,
+    val spcmStbl: String?,
+    val engSpcmStbl: String?,
+    val takeMethod: String?,
+    val engTakeMethod: String?,
+    val spcmDesc: String,
+    val engDesc: String?,
+    val caution: String,
+    val engCaution: String,
+    val spcmCntnCd: String
+)
+
 data class TestItemGeneCreateCommand(
     val tstCd: String,
     val geneCd: String
