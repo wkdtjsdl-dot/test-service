@@ -16,7 +16,9 @@ import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
 import com.idrsys.ailis.tst.domain.model.TestItemHst
+import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
 import kotlinx.coroutines.flow.toList
+import java.time.LocalDateTime
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
@@ -32,7 +34,7 @@ class TestItemService(
 
     override suspend fun registerItem(request: TestItemRegisterRequest, adminId: String): TestItemResponse {
         val command = commandMapper.toCreateCommand(request)
-        val now = java.time.LocalDateTime.now()
+        val now = LocalDateTime.now()
         val domain = TestItem.create(command, adminId, now)
         val saved = repository.save(domain)
         return mapper.toResponse(saved)
@@ -52,7 +54,7 @@ class TestItemService(
         repository.saveTestItemHistory(hist)
 
         val command = commandMapper.toUpdateCommand(request)
-        val now = java.time.LocalDateTime.now()
+        val now = LocalDateTime.now()
         existing.update(command, adminId, now)
         val saved = repository.save(existing)
 
@@ -81,7 +83,7 @@ class TestItemService(
 
     override suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse {
         val command = commandMapper.toCreateCommand(request)
-        val now = java.time.LocalDateTime.now()
+        val now = LocalDateTime.now()
         val domain = StandardCharge.create(command, adminId, now)
         val saved = repository.saveCharge(domain)
         return mapper.toResponse(saved)
@@ -100,7 +102,7 @@ class TestItemService(
     override suspend fun updateCharge(id: String, request: StandardChargeUpdateRequest,adminId: String): StandardChargeResponse {
         val existing = repository.findChargeById(id) ?: throw RuntimeException("StandardCharge not found with id: $id")
         val command = commandMapper.toUpdateCommand(request)
-        val now = java.time.LocalDateTime.now()
+        val now = LocalDateTime.now()
         existing.update(command, adminId, now)
         val saved = repository.saveCharge(existing)
         return mapper.toResponse(saved)
@@ -115,7 +117,7 @@ class TestItemService(
 
     override suspend fun registerSpecimen(request: TestItemSpecimenRegisterRequest, adminId: String): TestItemSpecimenDetailResponse {
         val command = commandMapper.toCreateCommand(request)
-        val now = java.time.LocalDateTime.now()
+        val now = LocalDateTime.now()
         val domain = TestItemSpecimen.create(command, adminId, now)
         val saved = repository.saveSpecimen(domain)
         return repository.getSpecimenDetailById(saved.spcmId!!) ?: throw RuntimeException("TestItemSpecimen not found after save")
@@ -132,9 +134,14 @@ class TestItemService(
         request: TestItemSpecimenUpdateRequest,
         adminId: String
     ): TestItemSpecimenDetailResponse {
-        val command = commandMapper.toUpdateCommand(request)
-        val now = java.time.LocalDateTime.now()
         val existing = repository.findSpecimenById(spcmId) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
+
+        // 변경 전 데이터를 히스토리로 저장
+        val hist = mapper.toDomain(existing, request.updateReason ?: "").apply { setAsNew() }
+        repository.saveTestItemSpecimenHistory(hist)
+
+        val command = commandMapper.toUpdateCommand(request)
+        val now = LocalDateTime.now()
         existing.update(command, adminId, now)
         val updated = repository.saveSpecimen(existing)
         return repository.getSpecimenDetailById(updated.spcmId!!) ?: throw RuntimeException("TestItemSpecimen not found after update")
@@ -158,7 +165,7 @@ class TestItemService(
 
     override suspend fun registerRefItem(request: TestItemRefItemRegisterRequest, adminId: String): TestItemRefItemResponse {
         val command = commandMapper.toCreateCommand(request)
-        val now = java.time.LocalDateTime.now()
+        val now = LocalDateTime.now()
         val domain = TestItemRefItem.create(command, adminId, now)
         val saved = repository.saveRefItem(domain)
         return mapper.toResponse(saved)
@@ -172,7 +179,7 @@ class TestItemService(
     override suspend fun updateRefItem(refItemId: String, request: TestItemRefItemUpdateRequest, adminId: String): TestItemRefItemResponse {
         val existing = repository.findRefItemById(refItemId) ?: throw RuntimeException("TestItemRefItem not found with id: $refItemId")
         val command = commandMapper.toUpdateCommand(request)
-        val now = java.time.LocalDateTime.now()
+        val now = LocalDateTime.now()
         existing.update(command, adminId, now)
         val saved = repository.saveRefItem(existing)
         return mapper.toResponse(saved)
@@ -201,7 +208,7 @@ class TestItemService(
 
     override suspend fun registerGene(request: TestItemGeneRegisterRequest, adminId: String): TestItemGeneResponse {
         val command = commandMapper.toCreateCommand(request)
-        val now = java.time.LocalDateTime.now()
+        val now = LocalDateTime.now()
         val domain = TestItemGene.create(command, adminId, now)
         val saved = repository.saveGene(domain)
         return mapper.toResponse(saved)
@@ -220,7 +227,7 @@ class TestItemService(
 
     override suspend fun registerEssentialDoc(request: TestItemEssentialDocRegisterRequest, adminId: String): TestItemEssentialDocResponse {
         val command = commandMapper.toCreateCommand(request)
-        val now = java.time.LocalDateTime.now()
+        val now = LocalDateTime.now()
         val domain = TestItemEssentialDoc.create(command, adminId, now)
         val saved = repository.saveEssentialDoc(domain)
         return mapper.toResponse(saved)
@@ -237,7 +244,7 @@ class TestItemService(
         val domain = repository.findEssentialDocById(itemEstlDocId)
             ?: throw IllegalArgumentException("TestItemEssentialDoc not found: $itemEstlDocId")
         val command = commandMapper.toUpdateCommand(request)
-        val now = java.time.LocalDateTime.now()
+        val now = LocalDateTime.now()
         domain.update(command)
         val saved = repository.saveEssentialDoc(domain)
         return mapper.toResponse(saved)
@@ -320,6 +327,64 @@ class TestItemService(
 
             val diffString = diffs.toString().trimEnd()
             mapper.toLogsEditResponse(oldLog, newLog, diffString)
+        }
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getTestItemSpecimenHistoryLogList(searchParam: TestItemSpecimenLogsSearchParam): List<TestItemSpecimenLogsResponse> {
+        val logs = repository.findTestItemSpecimenHistoryByTstCdAndSpcmCd(searchParam.tstCd, searchParam.spcmCd).toList()
+        if (logs.size < 2) return emptyList()
+
+        val propertyNameMap: Map<String, String> = mapOf(
+            "spcmHstId" to "검체 변경이력 아이디",
+            "tstCd" to "검사코드",
+            "spcmCd" to "검체코드",
+            "sortOrder" to "정렬순서",
+            "estlYn" to "필수여부",
+            "takeQnty" to "채취량(한글)",
+            "engTakeQnty" to "채취량(영문)",
+            "useQnty" to "사용량(한글)",
+            "engUseQnty" to "사용량(영문)",
+            "strgMethod" to "보관방법(한글)",
+            "engStrgMethod" to "보관방법(영문)",
+            "spcmStbl" to "안정성(한글)",
+            "engSpcmStbl" to "안정성(영문)",
+            "takeMethod" to "채취방법(한글)",
+            "engTakeMethod" to "채취방법(영문)",
+            "spcmDesc" to "설명(한글)",
+            "engDesc" to "설명(영문)",
+            "caution" to "주의사항(한글)",
+            "engCaution" to "주의사항(영문)",
+            "spcmCntnCd" to "검체용기코드",
+            "creator" to "생성자",
+            "createDtime" to "생성일시",
+            "updater" to "수정자",
+            "updateDtime" to "수정일시"
+        )
+
+        return logs.windowed(size = 2, step = 1).map { (newLog, oldLog) ->
+            val diffs = StringBuilder()
+            val propertiesToIgnore = setOf(
+                "spcmHstId", "tstCd", "spcmCd",
+                "updater", "updateDtime", "creator", "createDtime",
+                "isNew", "hstDesc"
+            )
+
+            TestItemSpecimenHst::class.memberProperties.forEach { prop ->
+                prop.isAccessible = true
+                if (prop.name !in propertiesToIgnore) {
+                    val getter = prop.getter
+                    val oldValue = getter.call(oldLog)
+                    val newValue = getter.call(newLog)
+                    if (oldValue != newValue) {
+                        val koreanName = propertyNameMap[prop.name] ?: prop.name
+                        diffs.append("${koreanName}: '${oldValue ?: ""}' -> '${newValue ?: ""}'\n")
+                    }
+                }
+            }
+
+            val diffString = diffs.toString().trimEnd()
+            mapper.toSpecimenLogsResponse(oldLog, newLog, diffString)
         }
     }
 }

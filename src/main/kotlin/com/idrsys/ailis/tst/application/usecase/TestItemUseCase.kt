@@ -53,4 +53,7 @@ interface TestItemUseCase {
 
     // --- TestItemHst ---
     suspend fun getTestItemHistoryLogList(searchParam: TestItemLogsSearchParam): List<TestItemLogsResponse>
+
+    // --- TestItemSpecimenHst ---
+    suspend fun getTestItemSpecimenHistoryLogList(searchParam: TestItemSpecimenLogsSearchParam): List<TestItemSpecimenLogsResponse>
 }

@@ -10,6 +10,7 @@ import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
 import com.idrsys.ailis.tst.domain.model.TestItemHst
+import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
 import kotlinx.coroutines.flow.Flow
 
 interface TestItemRepository {
@@ -62,4 +63,8 @@ interface TestItemRepository {
     // --- TestItemHst ---
     suspend fun saveTestItemHistory(entity: TestItemHst): TestItemHst
     suspend fun findTestItemHistoryByTstCd(tstCd: String): Flow<TestItemHst>
+
+    // --- TestItemSpecimenHst ---
+    suspend fun saveTestItemSpecimenHistory(entity: TestItemSpecimenHst): TestItemSpecimenHst
+    suspend fun findTestItemSpecimenHistoryByTstCdAndSpcmCd(tstCd: String, spcmCd: String): Flow<TestItemSpecimenHst>
 }
