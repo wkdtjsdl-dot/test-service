@@ -739,7 +739,9 @@ class TestItemRepositoryImpl(
     override fun getGenes(request: TestGeneRequest): Flow<TestGene> {
         val table = BbsGene.BBS_GENE
         val itemTable = BtsItemGene.BTS_ITEM_GENE
-        if (request.geneCd.isBlank()) return emptyFlow()
+        if (request.geneCd.isBlank() || request.geneCd.length < 3) {
+            return emptyFlow()
+        }
 
         val keyword = request.geneCd.uppercase()
 
