@@ -43,6 +43,9 @@ interface TestItemEssentialDocDataRepository : CoroutineCrudRepository<TestItemE
 interface TestItemHstDataRepository : CoroutineCrudRepository<TestItemHst, String>
 
 @Repository
+interface TestItemSpecimenHstDataRepository : CoroutineCrudRepository<TestItemSpecimenHst, String>
+
+@Repository
 class TestItemRepositoryImpl(
     private val itemDataRepo: TestItemDataRepository,
     private val chargeDataRepo: StandardChargeDataRepository,
@@ -51,6 +54,7 @@ class TestItemRepositoryImpl(
     private val geneDataRepo: TestItemGeneDataRepository,
     private val essentialDocDataRepo: TestItemEssentialDocDataRepository,
     private val testItemHstDataRepo: TestItemHstDataRepository,
+    private val testItemSpecimenHstDataRepo: TestItemSpecimenHstDataRepository,
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient
 ) : TestItemRepository {
@@ -255,6 +259,34 @@ class TestItemRepositoryImpl(
             .all()
             .map { row -> toStandardCharge(row) }
             .asFlow()
+    }
+
+    override suspend fun getEqualDate(entity: StandardCharge): Flow<StandardCharge> {
+        val table = BtsStndCharge.BTS_STND_CHARGE
+
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(
+                table.TST_CD.eq(entity.tstCd)
+                    .and(table.APPLY_START_DT.le(entity.applyEndDt))
+                    .and(table.APPLY_END_DT.ge(entity.applyStartDt))
+            )
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+        .fetch()
+        .all()
+        .map { row -> toStandardCharge(row) }
+        .asFlow()
     }
 
     // --- TestItemSpecimen ---
@@ -991,6 +1023,64 @@ class TestItemRepositoryImpl(
             insuApplyCd = row["insu_apply_cd"] as String?,
             insuCd = row["insu_cd"] as String?,
             insuCateNo = row["insu_cate_no"] as String?,
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDtime = row["update_dtime"] as LocalDateTime
+        )
+    }
+
+    // --- TestItemSpecimenHst ---
+    override suspend fun saveTestItemSpecimenHistory(entity: TestItemSpecimenHst): TestItemSpecimenHst =
+        testItemSpecimenHstDataRepo.save(entity)
+
+    override suspend fun findTestItemSpecimenHistoryByTstCdAndSpcmCd(tstCd: String, spcmCd: String): Flow<TestItemSpecimenHst> {
+        val table = BtsSpcmHst.BTS_SPCM_HST
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(table.TST_CD.eq(tstCd).and(table.SPCM_CD.eq(spcmCd)))
+            .orderBy(table.UPDATE_DTIME.desc())
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestItemSpecimenHst(row) }
+            .asFlow()
+    }
+
+    private fun toTestItemSpecimenHst(row: Map<String, Any>): TestItemSpecimenHst {
+        return TestItemSpecimenHst(
+            spcmHstId = row["spcm_hst_id"] as String,
+            hstDesc = row["hst_desc"] as String,
+            tstCd = row["tst_cd"] as String,
+            spcmCd = row["spcm_cd"] as String,
+            sortOrder = (row["sort_order"] as Number).toInt(),
+            estlYn = row["estl_yn"] as Boolean,
+            takeQnty = row["take_qnty"] as String,
+            engTakeQnty = row["eng_take_qnty"] as String,
+            useQnty = row["use_qnty"] as String,
+            engUseQnty = row["eng_use_qnty"] as String,
+            strgMethod = row["strg_method"] as String,
+            engStrgMethod = row["eng_strg_method"] as String,
+            spcmStbl = row["spcm_stbl"] as String?,
+            engSpcmStbl = row["eng_spcm_stbl"] as String?,
+            takeMethod = row["take_method"] as String?,
+            engTakeMethod = row["eng_take_method"] as String?,
+            spcmDesc = row["spcm_desc"] as String,
+            engDesc = row["eng_desc"] as String?,
+            caution = row["caution"] as String,
+            engCaution = row["eng_caution"] as String,
+            spcmCntnCd = row["spcm_cntn_cd"] as String,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String,

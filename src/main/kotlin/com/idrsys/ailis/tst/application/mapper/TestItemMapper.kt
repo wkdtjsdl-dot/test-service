@@ -9,6 +9,7 @@ import com.idrsys.ailis.tst.domain.model.TestItemGene
 import com.idrsys.ailis.tst.domain.model.TestItemHst
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
+import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Mappings
@@ -57,4 +58,21 @@ interface TestItemMapper {
         Mapping(source = "oldLog.tstNm", target = "tstNm")
     )
     fun toLogsEditResponse(oldLog: TestItemHst, newLog: TestItemHst, diffString: String): TestItemLogsResponse
+
+    // --- TestItemSpecimenHst ---
+    @Mappings(
+        Mapping(target = "spcmHstId", ignore = true),
+        Mapping(target = "hstDesc", source = "updateReason")
+    )
+    fun toDomain(specimen: TestItemSpecimen, updateReason: String = ""): TestItemSpecimenHst
+    @Mappings(
+        Mapping(source = "newLog.spcmHstId", target = "spcmHstId"),
+        Mapping(source = "newLog.updater", target = "editBy"),
+        Mapping(source = "newLog.updateDtime", target = "editAt"),
+        Mapping(source = "newLog.hstDesc", target = "hstDesc"),
+        Mapping(source = "diffString", target = "editContents"),
+        Mapping(source = "oldLog.tstCd", target = "tstCd"),
+        Mapping(source = "oldLog.spcmCd", target = "spcmCd")
+    )
+    fun toSpecimenLogsResponse(oldLog: TestItemSpecimenHst, newLog: TestItemSpecimenHst, diffString: String): TestItemSpecimenLogsResponse
 }

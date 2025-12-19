@@ -18,16 +18,6 @@ class Specimen(
     spcmAbbrNm: String?,
     spcmEngNm: String,
     spcmEngAbbrNm: String?,
-    collAmt: String?,
-    engCollAmt: String?,
-    spcmStrg: String?,
-    engSpcmStrg: String?,
-    spcmSafe: String?,
-    engSpcmSafe: String?,
-    caution: String?,
-    engCaution: String?,
-    ref: String?,
-    engRef: String?,
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
@@ -60,46 +50,6 @@ class Specimen(
 
     @Column("spcm_eng_abbr_nm")
     var spcmEngAbbrNm: String? = spcmEngAbbrNm
-        private set
-
-    @Column("coll_amt")
-    var collAmt: String? = collAmt
-        private set
-
-    @Column("eng_coll_amt")
-    var engCollAmt: String? = engCollAmt
-        private set
-
-    @Column("spcm_strg")
-    var spcmStrg: String? = spcmStrg
-        private set
-
-    @Column("eng_spcm_strg")
-    var engSpcmStrg: String? = engSpcmStrg
-        private set
-
-    @Column("spcm_safe")
-    var spcmSafe: String? = spcmSafe
-        private set
-
-    @Column("eng_spcm_safe")
-    var engSpcmSafe: String? = engSpcmSafe
-        private set
-
-    @Column("caution")
-    var caution: String? = caution
-        private set
-
-    @Column("eng_caution")
-    var engCaution: String? = engCaution
-        private set
-
-    @Column("ref")
-    var ref: String? = ref
-        private set
-
-    @Column("eng_ref")
-    var engRef: String? = engRef
         private set
 
     @Column("creator")
@@ -140,16 +90,6 @@ class Specimen(
         this.spcmAbbrNm = command.spcmAbbrNm
         this.spcmEngNm = command.spcmEngNm
         this.spcmEngAbbrNm = command.spcmEngAbbrNm
-        this.collAmt = command.collAmt
-        this.engCollAmt = command.engCollAmt
-        this.spcmStrg = command.spcmStrg
-        this.engSpcmStrg = command.engSpcmStrg
-        this.spcmSafe = command.spcmSafe
-        this.engSpcmSafe = command.engSpcmSafe
-        this.caution = command.caution
-        this.engCaution = command.engCaution
-        this.ref = command.ref
-        this.engRef = command.engRef
         this.updater = updater
         this.updateDtime = updateDtime
     }
@@ -174,16 +114,6 @@ class Specimen(
                 spcmAbbrNm = command.spcmAbbrNm,
                 spcmEngNm = command.spcmEngNm,
                 spcmEngAbbrNm = command.spcmEngAbbrNm,
-                collAmt = command.collAmt,
-                engCollAmt = command.engCollAmt,
-                spcmStrg = command.spcmStrg,
-                engSpcmStrg = command.engSpcmStrg,
-                spcmSafe = command.spcmSafe,
-                engSpcmSafe = command.engSpcmSafe,
-                caution = command.caution,
-                engCaution = command.engCaution,
-                ref = command.ref,
-                engRef = command.engRef,
                 creator = creator,
                 createDtime = now,
                 updater = creator,

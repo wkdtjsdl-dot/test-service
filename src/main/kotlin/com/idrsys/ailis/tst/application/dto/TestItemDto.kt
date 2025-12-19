@@ -230,7 +230,8 @@ data class TestItemSpecimenUpdateRequest(
     val engDesc: String?,
     val caution: String,
     val engCaution: String,
-    val spcmCntnCd: String
+    val spcmCntnCd: String,
+    val updateReason: String?
 )
 
 data class TestItemSpecimenDetailResponse(
@@ -409,6 +410,23 @@ data class TestItemLogsResponse(
     val hstDesc: String,
     val tstCd: String,
     val tstNm: String,
+    val editContents: String,
+    val editBy: String,
+    val editAt: LocalDateTime
+)
+
+// --- Test Item Specimen History ---
+
+data class TestItemSpecimenLogsSearchParam(
+    val tstCd: String,
+    val spcmCd: String
+)
+
+data class TestItemSpecimenLogsResponse(
+    val spcmHstId: String,
+    val hstDesc: String,
+    val tstCd: String,
+    val spcmCd: String,
     val editContents: String,
     val editBy: String,
     val editAt: LocalDateTime

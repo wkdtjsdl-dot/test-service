@@ -8,16 +8,6 @@ data class SpecimenCreateCommand(
     val spcmAbbrNm: String?,
     val spcmEngNm: String,
     val spcmEngAbbrNm: String?,
-    val collAmt: String?,
-    val engCollAmt: String?,
-    val spcmStrg: String?,
-    val engSpcmStrg: String?,
-    val spcmSafe: String?,
-    val engSpcmSafe: String?,
-    val caution: String?,
-    val engCaution: String?,
-    val ref: String?,
-    val engRef: String?
 )
 
 data class SpecimenUpdateCommand(
@@ -27,14 +17,4 @@ data class SpecimenUpdateCommand(
     val spcmAbbrNm: String?,
     val spcmEngNm: String,
     val spcmEngAbbrNm: String?,
-    val collAmt: String?,
-    val engCollAmt: String?,
-    val spcmStrg: String?,
-    val engSpcmStrg: String?,
-    val spcmSafe: String?,
-    val engSpcmSafe: String?,
-    val caution: String?,
-    val engCaution: String?,
-    val ref: String?,
-    val engRef: String?
 )
