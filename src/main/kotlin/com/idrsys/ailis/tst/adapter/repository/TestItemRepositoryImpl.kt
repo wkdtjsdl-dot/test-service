@@ -261,6 +261,34 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
+    override suspend fun getEqualDate(entity: StandardCharge): Flow<StandardCharge> {
+        val table = BtsStndCharge.BTS_STND_CHARGE
+
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(
+                table.TST_CD.eq(entity.tstCd)
+                    .and(table.APPLY_START_DT.le(entity.applyEndDt))
+                    .and(table.APPLY_END_DT.ge(entity.applyStartDt))
+            )
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+        .fetch()
+        .all()
+        .map { row -> toStandardCharge(row) }
+        .asFlow()
+    }
+
     // --- TestItemSpecimen ---
     override suspend fun saveSpecimen(entity: TestItemSpecimen): TestItemSpecimen = specimenDataRepo.save(entity)
     override suspend fun findSpecimenById(spcmId: String): TestItemSpecimen? = specimenDataRepo.findById(spcmId)

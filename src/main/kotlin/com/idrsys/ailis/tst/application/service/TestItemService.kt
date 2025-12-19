@@ -83,9 +83,15 @@ class TestItemService(
 
     override suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse {
         val command = commandMapper.toCreateCommand(request)
-        val now = LocalDateTime.now()
-        val domain = StandardCharge.create(command, adminId, now)
-        val saved = repository.saveCharge(domain)
+        val now = java.time.LocalDateTime.now()
+        val newDomain = StandardCharge.create(command, adminId, now)
+        val overlapped = repository.getEqualDate(newDomain).toList()
+
+        require(overlapped.isEmpty()) {
+            "이미 해당 기간과 겹치는 요금 데이터가 존재합니다."
+        }
+
+        val saved = repository.saveCharge(newDomain)
         return mapper.toResponse(saved)
     }
 
@@ -111,6 +117,14 @@ class TestItemService(
     @Transactional(readOnly = true)
     override suspend fun getChargesByTest(tstCd: String): Flow<StandardChargeResponse> {
         return repository.findChargesByTestCd(tstCd).map { mapper.toResponse(it) }
+    }
+
+    @Transactional(readOnly = true)
+    suspend fun getEqualDate(request: StandardChargeRegisterRequest, adminId: String): Flow<StandardCharge> {
+        val command = commandMapper.toCreateCommand(request)
+        val now = java.time.LocalDateTime.now()
+        val domain = StandardCharge.create(command, adminId, now)
+        return repository.getEqualDate(domain)
     }
 
     // --- TestItemSpecimen ---
