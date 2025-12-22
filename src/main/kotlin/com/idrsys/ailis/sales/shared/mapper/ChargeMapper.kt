@@ -20,7 +20,7 @@ interface ChargeMapper {
 
     @Mappings(
         Mapping(target = "custChargeId", source = "custChargeId"),
-        Mapping(target = "apprInfoId", ignore = true),
+        Mapping(target = "apprInfoNo", ignore = true),
         Mapping(target = "currApprSeq", ignore = true),
         Mapping(target = "apprSubmsEmpNo", ignore = true),
         Mapping(target = "apprSubmsDtime", ignore = true),
