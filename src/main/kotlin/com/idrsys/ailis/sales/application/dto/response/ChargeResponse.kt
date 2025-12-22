@@ -35,7 +35,7 @@ data class ChargeResponse(
     val lastApprStatCd: String,
     val stndPrice: Long? = null,
     val remark: String? = null,
-    val apprInfoId: String? = null,
+    val apprInfoNo: String? = null,
     val currApprSeq: Int? = null,
     val apprSubmsEmpNo: String? = null,
     val apprSubmsDtime: LocalDateTime? = null,

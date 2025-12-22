@@ -23,7 +23,7 @@ class Charge(
     supval: Long?,
     addtax: Long?,
     remark: String?,
-    apprInfoId: String? = null,
+    apprInfoNo: String? = null,
     currApprSeq: Int? = null,
     apprSubmsEmpNo: String? = null,
     apprSubmsDtime: LocalDateTime? = null,
@@ -83,8 +83,8 @@ class Charge(
     var remark: String? = remark
         private set
 
-    @Column("appr_info_id")
-    var apprInfoId: String? = apprInfoId
+    @Column("appr_info_no")
+    var apprInfoNo: String? = apprInfoNo
         private set
 
     @Column("curr_appr_seq")
