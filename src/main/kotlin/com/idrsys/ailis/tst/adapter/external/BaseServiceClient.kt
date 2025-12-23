@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.adapter.external
 
 import com.idrsys.ailis.tst.application.dto.DepartmentSimpleDto
+import com.idrsys.ailis.tst.infrastructure.config.AppConfig
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
@@ -14,9 +15,17 @@ import org.springframework.web.reactive.function.client.bodyToMono
  */
 @Component
 class BaseServiceClient(
-    private val baseServiceWebClient: WebClient
+    webClientBuilder: WebClient.Builder,
+    appConfig: AppConfig
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
+    private val client: WebClient
+
+    init {
+        val serviceEndpoint = appConfig.services.find { it.name == "base-service" }?.endPoint
+            ?: throw IllegalStateException("base-service endpoint not found in configuration")
+        client = webClientBuilder.baseUrl(serviceEndpoint).build()
+    }
 
     /**
      * 부서 코드 목록으로 부서 정보 조회
@@ -31,7 +40,7 @@ class BaseServiceClient(
         return try {
             val deptCdsParam = deptCds.joinToString(",")
 
-            val departments = baseServiceWebClient.get()
+            val departments = client.get()
                 .uri { uriBuilder ->
                     uriBuilder
                         .path("/api/inner/departments/byDeptCds")
@@ -50,7 +59,7 @@ class BaseServiceClient(
         }
     }
 
-    /**
+     /**
      * 단일 부서 코드로 부서명 조회
      * @param deptCd 부서 코드
      * @return 부서명 (조회 실패 시 null)
