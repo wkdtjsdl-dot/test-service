@@ -9,6 +9,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.TbsTstReport.TBS_TST_REPORT
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.DSLContext
+import org.slf4j.LoggerFactory
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
@@ -72,10 +73,12 @@ class TestReportRepositoryImpl(
             report.TST_REQ_DT.between(params.reqStartDt, params.reqEndDt)
         )
 
-        // 보고일 조건
+        // 보고일 조건 (날짜 범위로 검색)
         params.reportDt?.let {
+            val startOfDay = it.atStartOfDay()
+            val endOfDay = it.plusDays(1).atStartOfDay()
             conditions.add(
-                report.DELIVERY_DTIME.eq(it.atStartOfDay())
+                report.DELIVERY_DTIME.between(startOfDay, endOfDay)
             )
         }
 
@@ -83,8 +86,10 @@ class TestReportRepositoryImpl(
         params.reqNoFrom?.let { conditions.add(report.TST_REQ_NO.ge(it)) }
         params.reqNoTo?.let { conditions.add(report.TST_REQ_NO.le(it)) }
 
-        // 검사코드 조건
-        params.tstCd?.let { conditions.add(report.TST_CD.eq(it)) }
+        // 검사코드 조건 (빈 문자열 체크)
+        params.tstCd?.takeIf { it.isNotBlank() }?.let {
+            conditions.add(report.TST_CD.eq(it))
+        }
 
         // jOOQ DSL로 쿼리 생성
         val query = dslContext
