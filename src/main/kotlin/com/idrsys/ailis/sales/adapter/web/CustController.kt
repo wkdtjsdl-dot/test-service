@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
+import com.idrsys.ailis.sales.application.dto.request.cust.CustAtchFileUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
@@ -116,6 +117,17 @@ class CustController(
         @PathVariable custCd: String
     ): Boolean {
         return custUseCase.isCustCdExists(custCd)
+    }
+
+    @PatchMapping("/attach-file/{custMstId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "updateCustAtchFile", description = "고객 첨부파일 그룹 ID 업데이트")
+    suspend fun updateCustAtchFile(
+        @PathVariable custMstId: String,
+        @RequestBody command: CustAtchFileUpdateCommand,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ) {
+        custUseCase.updateCustAtchFile(custMstId, command, auth.adminId)
     }
 
     @GetMapping("/autoComplete/custCdNm")

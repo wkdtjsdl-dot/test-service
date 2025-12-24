@@ -6,6 +6,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
+import com.idrsys.ailis.sales.application.dto.request.cust.CustAtchFileUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemSearchParam
 import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
@@ -184,6 +185,20 @@ class CustService(
         custMstHistRepository.save(hist)
 
         return updatedCust
+    }
+
+    override suspend fun updateCustAtchFile(
+        custMstId: String,
+        command: CustAtchFileUpdateCommand,
+        updater: String
+    ) {
+        val cust = custRepository.findByCustMstId(custMstId)
+            ?: throw UserDefinedException("CUST_NOT_FOUND", "고객 정보를 찾을 수 없습니다")
+
+        // atchFileGrupId만 업데이트
+        cust.updateAtchFileGrupId(command.atchFileGrupId, updater)
+
+        custRepository.save(cust)
     }
 
     @Transactional(readOnly = true)

@@ -467,4 +467,10 @@ class Cust(
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }
+
+    fun updateAtchFileGrupId(newAtchFileGrupId: String?, updater: String) {
+        this.atchFileGrupId = newAtchFileGrupId
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
 }
