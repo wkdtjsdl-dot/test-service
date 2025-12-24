@@ -67,9 +67,9 @@ class TestReportService(
                 deptCd = requestInfo?.deptCd,
                 deptNm = requestInfo?.deptCd?.let { deptNames[it] } ?: "",
                 tstStatusCd = requestInfo?.tstReqStatCd ?: "",
-                tstStatusNm = null, // TODO: base-service에서 코드명 조회
-                reportStatusCd = "", // TODO: 검사 항목별 상태는 추후 구현
-                reportStatusNm = null // TODO: base-service에서 코드명 조회
+                tstStatusNm = null, // TODO
+                reportStatusCd = "", // TODO
+                reportStatusNm = null // TODO
             )
         }
     }
@@ -158,7 +158,6 @@ class TestReportService(
         val filePath = report.rstFilePath
             ?: throw IllegalStateException("No file path for report: $reportId")
 
-        // TODO: 실제 파일 저장 경로 설정 필요 (application.yml 등에서 설정)
         val fileSystemPath = Paths.get("/var/data/reports", filePath)
         val resource = FileSystemResource(fileSystemPath)
 
