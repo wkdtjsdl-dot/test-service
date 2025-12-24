@@ -41,7 +41,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("com.idrsys.comm-on:ko-r2dbc-lib:0.0.2")
-    implementation("com.idrsys.comm-on:kowebflux-lib:0.0.3")
+    implementation("com.idrsys.comm-on:kowebflux-lib:0.0.4")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
     implementation("org.springdoc:springdoc-openapi-starter-webflux-api:2.8.13")
     implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.13")
