@@ -14,6 +14,7 @@ internal fun Row.toCustBasicInfo(): CustBasicInfo {
         custNm = this.get("cust_nm", String::class.java)!!,
         telNo = this.get("tel_no", String::class.java),
         branchCd = this.get("branch_cd", String::class.java),
-        bzoffiCd = this.get("bzoffi_cd", String::class.java)
+        bzoffiCd = this.get("bzoffi_cd", String::class.java),
+        useLangCd = this.get("use_lang_cd", String::class.java)!!
     )
 }

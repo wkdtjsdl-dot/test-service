@@ -24,6 +24,12 @@ Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
+### 고객 목록 inner simple
+GET {{sales-service}}/api/inner/custs?custCds=G004156
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
 ### 고객 목록 심플 조회
 GET {{api-service}}/api/sals/custs/simple-list?brachCd=91300000&bzoffiCd=91300800&reqPossYn=true
 Content-Type: application/json

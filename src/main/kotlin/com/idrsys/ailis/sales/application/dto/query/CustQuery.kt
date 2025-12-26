@@ -140,5 +140,6 @@ data class CustBasicInfo(
     val custNm: String,      // 고객명
     val telNo: String?,     // 전화번호
     val branchCd: String?,  // 지점코드
-    val bzoffiCd: String?   // 영업소코드
+    val bzoffiCd: String?,  // 영업소코드
+    val useLangCd: String   // 사용자언어코드
 )
