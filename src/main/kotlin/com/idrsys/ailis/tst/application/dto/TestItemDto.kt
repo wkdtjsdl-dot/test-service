@@ -455,3 +455,14 @@ data class TestItemRefItemsResponse(
     val tstCd: String,
     val refItems: List<RefItemSimple>
 )
+
+// --- Test Item AutoComplete ---
+
+/**
+ * 검사종목 자동완성 응답 DTO
+ */
+data class TestItemAutoCompleteResponse(
+    val tstCd: String,       // 검사코드
+    val tstNm: String,       // 검사명
+    val tstAbbrNm: String?   // 검사약어명
+)

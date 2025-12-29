@@ -12,8 +12,10 @@ import org.springframework.stereotype.Component
  *
  * 실제 req-service와의 통신 없이 더미 데이터를 반환합니다.
  * 향후 실제 WebClient 기반 구현으로 교체 가능합니다.
+ *
+ * NOTE: RequestServiceClient로 대체되어 비활성화됨
  */
-@Component
+// @Component
 class MockReqServiceClient : ReqServiceClient {
 
     // Mock 데이터: 거래처명 매핑

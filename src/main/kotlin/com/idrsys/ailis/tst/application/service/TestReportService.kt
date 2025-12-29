@@ -1,7 +1,7 @@
 package com.idrsys.ailis.tst.application.service
 
+import com.idrsys.ailis.tst.adapter.external.BaseServiceClient
 import com.idrsys.ailis.tst.application.dto.*
-import com.idrsys.ailis.tst.application.dto.inner.TestItemKey
 import com.idrsys.ailis.tst.application.dto.inner.TestRequestKey
 import com.idrsys.ailis.tst.application.mapper.TestReportCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestReportMapper
@@ -24,7 +24,7 @@ class TestReportService(
     private val testReportRepository: TestReportRepository,
     private val testReportMapper: TestReportMapper,
     private val commandMapper: TestReportCommandMapper,
-    private val baseServiceClient: com.idrsys.ailis.tst.adapter.external.BaseServiceClient,
+    private val baseServiceClient: BaseServiceClient,
     private val reqServiceClient: ReqServiceClient
 ) : TestReportUseCase {
 
@@ -37,19 +37,16 @@ class TestReportService(
             return emptyList()
         }
 
-        // 2. req-service Inner API로 의뢰 정보 조회 (Mock)
+        // 2. req-service Inner API로 의뢰 정보 조회 (1번만 호출로 최적화)
         val requestKeys = reports.map { TestRequestKey(it.tstReqDt, it.tstReqNo) }.distinct()
         val requestInfoList = reqServiceClient.getTestRequestsByKeys(requestKeys)
-        val requestInfoMap = requestInfoList.associateBy { TestRequestKey(it.tstReqDt, it.tstReqNo) }
 
-        // 3. req-service Inner API로 검사 항목 상태 조회 (Mock)
-        val itemKeys = reports.map { TestItemKey(it.tstReqDt, it.tstReqNo, it.tstCd) }
-        val itemStatusList = reqServiceClient.getTestItemsStatus(itemKeys)
-        val itemStatusMap = itemStatusList.associateBy {
-            TestItemKey(it.tstReqDt, it.tstReqNo, it.tstCd)
+        // 의뢰 정보 Map (빠른 조회용)
+        val requestInfoMap = requestInfoList.associateBy {
+            TestRequestKey(it.tstReqDt, it.tstReqNo)
         }
 
-        // 4. base-service Inner API로 부서명 조회
+        // 3. base-service Inner API로 부서명 조회
         val deptCds = requestInfoList.mapNotNull { it.deptCd }.distinct()
         val deptNames = if (deptCds.isNotEmpty()) {
             baseServiceClient.getDepartmentsByDeptCds(deptCds)
@@ -57,13 +54,10 @@ class TestReportService(
             emptyMap()
         }
 
-        // 5. 데이터 병합
+        // 4. 데이터 병합 (getTestItemsStatus 호출 제거로 중복 API 호출 방지)
         return reports.map { report ->
             val requestKey = TestRequestKey(report.tstReqDt, report.tstReqNo)
-            val itemKey = TestItemKey(report.tstReqDt, report.tstReqNo, report.tstCd)
-
             val requestInfo = requestInfoMap[requestKey]
-            val itemStatus = itemStatusMap[itemKey]
 
             report.copy(
                 // req-service에서 조회한 데이터로 업데이트
@@ -72,10 +66,10 @@ class TestReportService(
                 hospNm = requestInfo?.hospNm ?: "",
                 deptCd = requestInfo?.deptCd,
                 deptNm = requestInfo?.deptCd?.let { deptNames[it] } ?: "",
-                tstStatusCd = itemStatus?.tstStat1Cd ?: "",
-                tstStatusNm = null, // TODO: base-service에서 코드명 조회
-                reportStatusCd = itemStatus?.tstStat2Cd ?: "",
-                reportStatusNm = null // TODO: base-service에서 코드명 조회
+                tstStatusCd = requestInfo?.tstReqStatCd ?: "",
+                tstStatusNm = null, // TODO
+                reportStatusCd = "", // TODO
+                reportStatusNm = null // TODO
             )
         }
     }
@@ -164,7 +158,6 @@ class TestReportService(
         val filePath = report.rstFilePath
             ?: throw IllegalStateException("No file path for report: $reportId")
 
-        // TODO: 실제 파일 저장 경로 설정 필요 (application.yml 등에서 설정)
         val fileSystemPath = Paths.get("/var/data/reports", filePath)
         val resource = FileSystemResource(fileSystemPath)
 
