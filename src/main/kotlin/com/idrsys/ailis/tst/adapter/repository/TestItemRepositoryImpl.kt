@@ -93,7 +93,7 @@ class TestItemRepositoryImpl(
                 )
         }
 
-        val query = selectFrom.where(condition)
+        val query = selectFrom.where(condition).orderBy(tstItem.TST_CD.asc())
 
         // SQL과 바인딩 값 준비
         var executeSpec = databaseClient.sql(query.sql)
