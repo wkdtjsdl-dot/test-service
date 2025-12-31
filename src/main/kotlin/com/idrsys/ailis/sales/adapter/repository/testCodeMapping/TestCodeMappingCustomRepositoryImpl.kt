@@ -87,7 +87,7 @@ class TestCodeMappingCustomRepositoryImpl(
         val custOrConditions = mutableListOf<Condition>()
 
         searchParam.custCd?.takeIf { it.isNotBlank() }?.let { custOrConditions.add(SCS_CUST_TST_CD_MPG.CUST_CD.equalIgnoreCase(it)) }
-        searchParam.custNm?.takeIf { it.isNotBlank() }?.let { custOrConditions.add(SCS_CUST_MST.CUST_NM.likeIgnoreCase("%${it}%")) }
+        searchParam.custCdNm?.takeIf { it.isNotBlank() }?.let { keyword -> custOrConditions.add(SCS_CUST_MST.CUST_CD.likeIgnoreCase("%$keyword%").or(SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$keyword%"))) }
 
         if (custOrConditions.isNotEmpty()) {
             conds.add(custOrConditions.reduce { acc, condition -> acc.or(condition) })
