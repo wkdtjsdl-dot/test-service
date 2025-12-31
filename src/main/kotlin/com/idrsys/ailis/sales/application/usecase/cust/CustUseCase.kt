@@ -25,4 +25,5 @@ interface CustUseCase {
     fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse>
     fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteResponse>
     suspend fun getCustList(searchParam: CustSearchParam): List<CustBasicResponse>
+    suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse>
 }

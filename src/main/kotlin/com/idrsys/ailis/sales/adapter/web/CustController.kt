@@ -161,4 +161,12 @@ class CustController(
     ): List<CustBasicResponse> {
         return custUseCase.getCustList(searchParam)
     }
+
+    @GetMapping("/{custMstId}/tst-cd-mpgs")
+    @Operation(summary = "findCustTstMpgsByCustMstId", description = "고객별 검사 코드 맵핑 목록")
+    suspend fun findCustTstMpgsByCustMstId(
+        @PathVariable custMstId: String
+    ): Flow<TestCodeMappingResponse> {
+        return custUseCase.findCustTstMpgsByCustMstId(custMstId)
+    }
 }

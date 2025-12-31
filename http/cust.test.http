@@ -173,3 +173,8 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "rstNtcnRecpYn": false,
   "rstNtcnRecpEmailAddr": null
 }
+
+### 고객별 검사 코드 맵핑 목록
+GET {{api-service}}/api/sals/custs/DDF7D716-E498-4EE6-8391-F03160FA4E03/tst-cd-mpgs
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

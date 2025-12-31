@@ -17,6 +17,7 @@ import com.idrsys.ailis.sales.application.required.repository.custreqposststitem
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
+import com.idrsys.ailis.sales.shared.mapper.TestCodeMappingMapper
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.*
 import org.springframework.data.domain.Page
@@ -36,7 +37,8 @@ class CustService(
     private val custMapper: CustMapper,
     private val baseServiceClient: BaseServiceClient,
     private val tstServiceClient: TstServiceClient,
-    private val hospitalDataService: HospitalDataService
+    private val hospitalDataService: HospitalDataService,
+    private val testCodeMappingMapper: TestCodeMappingMapper,
 ) : CustUseCase {
     @Transactional(readOnly = true)
     override suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable): Page<CustListResponse> {
@@ -230,6 +232,12 @@ class CustService(
         return custCustomRepository.findCustList(searchParam)
             .map(custMapper::toBasicResponse)
             .toList()
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse> {
+        return custCustomRepository.findCustTstMpgsByCustMstId(custMstId)
+            .map(testCodeMappingMapper::toResponse)
     }
 
     private suspend fun fetchLookupMaps(userIds: List<String>): LookupMaps {

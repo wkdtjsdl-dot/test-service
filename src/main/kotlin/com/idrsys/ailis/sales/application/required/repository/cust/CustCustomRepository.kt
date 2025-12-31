@@ -17,4 +17,5 @@ interface CustCustomRepository {
     fun findDirectAcctCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteInfo>
     fun findAllWithCareInstId(): Flow<CustCareInstId>
     suspend fun findCustList(searchParam: CustSearchParam): Flow<CustBasicInfo>
+    fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingQuery>
 }

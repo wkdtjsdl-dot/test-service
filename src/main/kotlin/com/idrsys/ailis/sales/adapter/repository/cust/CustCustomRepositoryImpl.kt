@@ -386,4 +386,22 @@ class CustCustomRepositoryImpl(
             .all()
             .asFlow()
     }
+
+    override fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingQuery> {
+        val query = dslContext.select(
+            SCS_CUST_TST_CD_MPG.asterisk(),
+            SCS_CUST_MST.CUST_NM
+        ).from(SCS_CUST_TST_CD_MPG)
+            .leftJoin(SCS_CUST_MST).on(SCS_CUST_TST_CD_MPG.CUST_CD.eq(SCS_CUST_MST.CUST_CD))
+            .where(SCS_CUST_TST_CD_MPG.CUST_MST_ID.eq(custMstId))
+            .orderBy(SCS_CUST_TST_CD_MPG.CREATE_DTIME.desc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toTestCodeMappingQuery() }
+            .all()
+            .asFlow()
+    }
 }
