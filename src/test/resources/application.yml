@@ -1,0 +1,87 @@
+spring:
+  application:
+    name: sales-service
+  cloud:
+    config:
+      enabled: false
+
+  # R2DBC Configuration for Test (H2 in-memory)
+  r2dbc:
+    master:
+      url: r2dbc:h2:mem:///testdb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+      username: sa
+      password:
+      pool:
+        initial-size: 1
+        max-size: 5
+        max-idle-time: 10m
+        validation-query: SELECT 1
+    slave:
+      url: r2dbc:h2:mem:///testdb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+      username: sa
+      password:
+      pool:
+        initial-size: 1
+        max-size: 5
+        max-idle-time: 10m
+        validation-query: SELECT 1
+
+  # jOOQ Configuration
+  jooq:
+    sql-dialect: h2
+
+# Custom Database Configuration
+database:
+  master:
+    enabled: true
+  slave:
+    enabled: false
+  read-only-routing: false
+
+comm-on:
+  reactive:
+    excel:
+      enabled: false
+    webflux-config:
+      enabled: true
+    exception-handler:
+      enabled: true
+
+# HIRA API Configuration (test values)
+hira:
+  api:
+    service-key: "test-key"
+    url:
+      hosp-basis: "http://localhost:8080/test/hosp-basis"
+      dgsbjt-info: "http://localhost:8080/test/dgsbjt-info"
+      med-oft-info: "http://localhost:8080/test/med-oft-info"
+      close-at-info: "http://localhost:8080/test/close-at-info"
+
+# Logging
+logging:
+  level:
+    com.idrsys.ailis.sales: DEBUG
+    org.springframework.r2dbc: DEBUG
+
+uri:
+  services:
+    - name: base-service
+      end-point: http://localhost:8200
+    - name: sales-service
+      end-point: http://localhost:8300
+    - name: tst-service
+      end-point: http://localhost:8500
+    - name: datacoll-service
+      end-point: http://localhost:8400
+    - name: req-service
+      end-point: http://localhost:8340
+    - name: examresult-service
+      end-point: http://localhost:8260
+    - name: partner-service
+      end-point: http://localhost:8160
+
+jwt:
+  access-token:
+    timeout: 3600
+  refresh-token:
+    timeout: 7200
