@@ -365,7 +365,7 @@ class CustCustomRepositoryImpl(
         // 의뢰가능여부 조건
         searchParam.reqPossYn?.let { conditions += SCS_CUST_MST.REQ_POSS_YN.eq(it)}
 
-        searchParam.custCds?.takeIf { it.isNotEmpty() }?.let {
+        searchParam.custCds.takeIf { it.isNotEmpty() }?.let {
             conditions += SCS_CUST_MST.CUST_CD.`in`(it)
 
         }

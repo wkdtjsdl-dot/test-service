@@ -6,7 +6,9 @@ import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface IfCustInfoDataRepository : CoroutineCrudRepository<IfCustInfo, String>
+interface IfCustInfoDataRepository : CoroutineCrudRepository<IfCustInfo, String> {
+    suspend fun deleteByCustMstId(custMstId: String)
+}
 
 @Repository
 class IfCustInfoRepositoryImpl(
@@ -22,5 +24,9 @@ class IfCustInfoRepositoryImpl(
 
     override suspend fun deleteById(id: String) {
         ifCustInfoDataRepository.deleteById(id)
+    }
+
+    override suspend fun deleteByCustMstId(custMstId: String) {
+        ifCustInfoDataRepository.deleteByCustMstId(custMstId)
     }
 }

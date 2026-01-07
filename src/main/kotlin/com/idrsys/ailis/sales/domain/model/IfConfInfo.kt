@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.domain.model
 
+import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -20,6 +21,7 @@ class IfConfInfo(
 ) : Persistable<String> {
 
     @Id
+    @UuidGeneratedId(idFieldName = "ifConfInfoId")
     @Column("if_conf_info_id")
     val ifConfInfoId: String? = ifConfInfoId
 

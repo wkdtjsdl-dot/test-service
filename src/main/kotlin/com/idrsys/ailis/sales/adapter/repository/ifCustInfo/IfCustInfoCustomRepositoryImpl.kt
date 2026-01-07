@@ -85,6 +85,17 @@ class IfCustInfoCustomRepositoryImpl(
         return sql.map { row, _ -> row.toIfCustInfo() }.one().awaitSingleOrNull()
     }
 
+    override suspend fun findByCustMstId(custMstId: String): IfCustInfo? {
+        val query = dslContext.select(SCS_IF_CUST_INFO.asterisk())
+            .from(SCS_IF_CUST_INFO)
+            .where(SCS_IF_CUST_INFO.CUST_MST_ID.eq(custMstId))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.toIfCustInfo() }.one().awaitSingleOrNull()
+    }
+
     private fun applyPaging(q: SelectLimitStep<*>, pageable: Pageable?): Query {
         if (pageable == null || pageable.isUnpaged) return q
         else return q.limit(pageable.pageSize).offset(pageable.offset)
@@ -98,6 +109,7 @@ class IfCustInfoCustomRepositoryImpl(
         searchParam.custCd?.takeIf { it.isNotBlank() }?.let {
             conds += SCS_IF_CUST_INFO.CUST_CD.eq(it)
         }
+
         return conds
     }
 }
