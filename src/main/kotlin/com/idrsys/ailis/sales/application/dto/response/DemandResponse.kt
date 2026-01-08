@@ -9,7 +9,7 @@ import java.time.LocalDateTime
  * Demand Response DTO
  */
 data class DemandResponse(
-    val demandId: String,
+    val demandId: String?,
     val custCd: String,
     val custNm: String? = null,
     val branchNm: String? = null,
@@ -85,19 +85,4 @@ data class SendSalesStatementResponse(
     val slstmtNo: String,
     val slstmtSendDt: LocalDate,
     val sentToErp: Boolean
-)
-
-/**
- * Unsettled Demand Summary (for customer grouping)
- */
-data class UnsettledDemandSummary(
-    val custCd: String,
-    val custNm: String? = null,
-    val branchNm: String? = null,
-    val demandStndDt: LocalDate,
-    val stndPrice: BigDecimal,
-    val supval: BigDecimal,
-    val addtax: BigDecimal,
-    val demandCharge: BigDecimal,
-    val requestCount: Int
 )

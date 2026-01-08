@@ -2,10 +2,12 @@ package com.idrsys.ailis.sales.adapter.external
 
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceRefItemsResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceUnbilledDemandPage
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
+import java.time.LocalDate
 
 @Component
 class TstServiceClient(
@@ -69,6 +71,41 @@ class TstServiceClient(
                 }
                 .retrieve()
                 .awaitBody<List<TstServiceTstItemsResponse>>()
+        } catch (ex: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Get unbilled demand summary from tst-service
+     *
+     * @param startDt Start date
+     * @param endDt End date
+     * @param custCd Customer code (optional)
+     * @param page Page number
+     * @param size Page size
+     * @return Page of unbilled demand summaries
+     */
+    suspend fun getUnbilledDemandSummary(
+        startDt: LocalDate,
+        endDt: LocalDate,
+        custCd: String? = null,
+        page: Int = 0,
+        size: Int = 15
+    ): TstServiceUnbilledDemandPage? {
+        return try {
+            client.get()
+                .uri { uriBuilder ->
+                    val builder = uriBuilder.path("/api/inner/bts/item/unbilled-demands")
+                    builder.queryParam("startDt", startDt.toString())
+                    builder.queryParam("endDt", endDt.toString())
+                    custCd?.let { builder.queryParam("custCd", it) }
+                    builder.queryParam("page", page)
+                    builder.queryParam("size", size)
+                    builder.build()
+                }
+                .retrieve()
+                .awaitBody<TstServiceUnbilledDemandPage>()
         } catch (ex: Exception) {
             null
         }

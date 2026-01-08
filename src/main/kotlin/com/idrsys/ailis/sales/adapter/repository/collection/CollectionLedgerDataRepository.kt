@@ -1,4 +1,4 @@
-package com.idrsys.ailis.sales.adapter.repository.billing
+package com.idrsys.ailis.sales.adapter.repository.collection
 
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
 import kotlinx.coroutines.flow.Flow
@@ -32,14 +32,4 @@ interface CollectionLedgerDataRepository : CoroutineCrudRepository<CollectionLed
      * Find ledger entries by division code (0: demand, 1: collection)
      */
     fun findByColbillDivCd(divisionCode: String): Flow<CollectionLedger>
-
-    /**
-     * Delete ledger entries by demand ID
-     */
-    suspend fun deleteByDemandId(demandId: String): Long
-
-    /**
-     * Delete ledger entries by collection bill ID
-     */
-    suspend fun deleteByColbillId(colbillId: String): Long
 }

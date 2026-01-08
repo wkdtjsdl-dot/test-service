@@ -7,8 +7,8 @@ import com.idrsys.ailis.sales.application.dto.response.BankDepositResponse
 import com.idrsys.ailis.sales.application.dto.response.CardPaymentResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerTransaction
-import com.idrsys.ailis.sales.application.required.repository.collection.BankDepositCustomRepository
-import com.idrsys.ailis.sales.application.required.repository.collection.CardPaymentCustomRepository
+import com.idrsys.ailis.sales.application.required.repository.collection.BankDepositRepository
+import com.idrsys.ailis.sales.application.required.repository.collection.CardPaymentRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionLedgerRepository
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionQueryUseCase
 import kotlinx.coroutines.flow.map
@@ -28,8 +28,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class CollectionQueryService(
     private val collectionLedgerRepository: CollectionLedgerRepository,
-    private val cardPaymentCustomRepository: CardPaymentCustomRepository,
-    private val bankDepositCustomRepository: BankDepositCustomRepository,
+    private val cardPaymentRepository: CardPaymentRepository,
+    private val bankDepositRepository: BankDepositRepository,
 ) : CollectionQueryUseCase {
 
     /**
@@ -85,10 +85,10 @@ class CollectionQueryService(
         searchParam: CardPaymentSearchParam,
         pageable: Pageable
     ): Page<CardPaymentResponse> {
-        val total = cardPaymentCustomRepository.countCardPayments(searchParam)
+        val total = cardPaymentRepository.countCardPayments(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val cardPayments = cardPaymentCustomRepository.findCardPayments(searchParam, pageable)
+        val cardPayments = cardPaymentRepository.findCardPayments(searchParam, pageable)
             .map { CardPaymentResponse.from(it) }
             .toList()
         return PageImpl(cardPayments, pageable, total)
@@ -101,10 +101,10 @@ class CollectionQueryService(
         searchParam: BankDepositSearchParam,
         pageable: Pageable
     ): Page<BankDepositResponse> {
-        val total = bankDepositCustomRepository.countBankDeposits(searchParam)
+        val total = bankDepositRepository.countBankDeposits(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val bankDeposits = bankDepositCustomRepository.findBankDeposits(searchParam, pageable)
+        val bankDeposits = bankDepositRepository.findBankDeposits(searchParam, pageable)
             .map { BankDepositResponse.from(it) }
             .toList()
         return PageImpl(bankDeposits, pageable, total)

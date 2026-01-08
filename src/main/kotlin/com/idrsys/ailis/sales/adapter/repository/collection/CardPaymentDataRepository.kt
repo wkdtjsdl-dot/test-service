@@ -1,4 +1,4 @@
-package com.idrsys.ailis.sales.adapter.repository.billing
+package com.idrsys.ailis.sales.adapter.repository.collection
 
 import com.idrsys.ailis.sales.domain.model.CardPayment
 import kotlinx.coroutines.flow.Flow

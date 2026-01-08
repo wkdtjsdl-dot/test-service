@@ -2,7 +2,6 @@ package com.idrsys.ailis.sales.application.service.estimate
 
 import com.idrsys.ailis.sales.application.dto.request.estimate.EstimateSearchParam
 import com.idrsys.ailis.sales.application.dto.response.EstimateResponse
-import com.idrsys.ailis.sales.application.required.repository.estimate.EstimateCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.estimate.EstimateItemRepository
 import com.idrsys.ailis.sales.application.required.repository.estimate.EstimateRepository
 import com.idrsys.ailis.sales.application.usecase.estimate.EstimateQueryUseCase
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional
 class EstimateQueryService(
     private val estimateRepository: EstimateRepository,
     private val estimateItemRepository: EstimateItemRepository,
-    private val estimateCustomRepository: EstimateCustomRepository,
 ) : EstimateQueryUseCase {
 
     /**
@@ -35,10 +33,10 @@ class EstimateQueryService(
         searchParam: EstimateSearchParam,
         pageable: Pageable
     ): Page<EstimateResponse> {
-        val total = estimateCustomRepository.countEstimates(searchParam)
+        val total = estimateRepository.countEstimates(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val estimates = estimateCustomRepository.findEstimates(searchParam, pageable)
+        val estimates = estimateRepository.findEstimates(searchParam, pageable)
             .map { estimate ->
                 val items = estimateItemRepository.findByEstimateId(estimate.estimateId!!).toList()
                 EstimateResponse.from(estimate, items)

@@ -1,6 +1,8 @@
 package com.idrsys.ailis.sales.adapter.repository
 
 import com.idrsys.ailis.sales.adapter.repository.billing.DemandDataRepository
+import com.idrsys.ailis.sales.config.TestConfig
+import com.idrsys.ailis.sales.config.TestDatabaseConfig
 import com.idrsys.ailis.sales.domain.model.Demand
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.test.context.TestPropertySource
 import org.springframework.transaction.reactive.TransactionalOperator
@@ -24,10 +27,12 @@ import kotlin.test.assertNull
  * Testing reactive R2DBC repository operations
  */
 @SpringBootTest
+@Import(TestConfig::class, TestDatabaseConfig::class)
 @TestPropertySource(
     properties = [
         "spring.cloud.config.enabled=false",
-        "spring.config.import="
+        "spring.config.import=",
+        "spring.profiles.active=test"
     ]
 )
 class DemandRepositoryIntegrationTest {
@@ -64,7 +69,7 @@ class DemandRepositoryIntegrationTest {
         // Assert
         assertNotNull(found)
         assertEquals("CUST001", found.custCd)
-        assertEquals(BigDecimal("9900000"), found.demandCharge)
+        assertEquals(0, BigDecimal("9900000").compareTo(found.demandCharge))
     }
 
     @Test
@@ -140,6 +145,7 @@ class DemandRepositoryIntegrationTest {
         val demand = createTestDemand()
         demand.setAsNew()
         val saved = demandDataRepository.save(demand)
+        saved.setAsExisting()
 
         // Act
         saved.recalculateCharges(
@@ -152,9 +158,9 @@ class DemandRepositoryIntegrationTest {
 
         // Assert
         assertNotNull(found)
-        assertEquals(BigDecimal("8500000"), found.supval)
-        assertEquals(BigDecimal("850000"), found.addtax)
-        assertEquals(BigDecimal("9350000"), found.demandCharge)
+        assertEquals(0, BigDecimal("8500000").compareTo(found.supval))
+        assertEquals(0, BigDecimal("850000").compareTo(found.addtax))
+        assertEquals(0, BigDecimal("9350000").compareTo(found.demandCharge))
     }
 
     @Test
@@ -163,6 +169,7 @@ class DemandRepositoryIntegrationTest {
         val demand = createTestDemand()
         demand.setAsNew()
         val saved = demandDataRepository.save(demand)
+        saved.setAsExisting()
 
         // Act
         saved.sendSalesStatement("SL-2025-001", "EMP001")
@@ -182,7 +189,7 @@ class DemandRepositoryIntegrationTest {
         demandStndDt: LocalDate = LocalDate.of(2025, 12, 31)
     ): Demand {
         return Demand(
-            demandId = UUID.randomUUID().toString(),
+            demandId = null,  // Let UuidIdGeneratorCallback generate the ID
             demandDt = demandStndDt,
             custCd = custCd,
             demandStartDt = demandStartDt,

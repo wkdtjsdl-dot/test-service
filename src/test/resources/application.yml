@@ -4,39 +4,32 @@ spring:
   cloud:
     config:
       enabled: false
+  main:
+    allow-bean-definition-overriding: true  # 테스트에서 bean override 허용
 
   # R2DBC Configuration for Test (H2 in-memory)
   r2dbc:
-    master:
-      url: r2dbc:h2:mem:///testdb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-      username: sa
-      password:
-      pool:
-        initial-size: 1
-        max-size: 5
-        max-idle-time: 10m
-        validation-query: SELECT 1
-    slave:
-      url: r2dbc:h2:mem:///testdb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-      username: sa
-      password:
-      pool:
-        initial-size: 1
-        max-size: 5
-        max-idle-time: 10m
-        validation-query: SELECT 1
+    url: r2dbc:h2:mem:///testdb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
+    pool:
+      initial-size: 1
+      max-size: 5
+      max-idle-time: 10m
+
+  # SQL init (schema.sql auto-execution)
+  sql:
+    init:
+      mode: embedded
+      schema-locations: classpath:schema.sql
 
   # jOOQ Configuration
   jooq:
     sql-dialect: h2
 
-# Custom Database Configuration
+# Database Configuration
 database:
-  master:
-    enabled: true
-  slave:
-    enabled: false
-  read-only-routing: false
+  enable-master-slave: false  # 테스트 환경에서는 Master/Slave 설정 비활성화
 
 comm-on:
   reactive:
@@ -81,6 +74,7 @@ uri:
       end-point: http://localhost:8160
 
 jwt:
+  secretkey: "JYSmhuti3jpyvv4kr6sitUntbDNY4EKrktXPoO3Iwj18y6exZF"
   access-token:
     timeout: 3600
   refresh-token:

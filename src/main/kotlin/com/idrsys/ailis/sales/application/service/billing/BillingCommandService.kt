@@ -117,8 +117,7 @@ class BillingCommandService(
 
         // 2. Check if cancellation is allowed
         if (!demand.canCancel()) {
-            throw UserDefinedException(
-                "INVALID_OPERATION",
+            throw IllegalArgumentException(
                 "ERP 매출전표가 생성된 청구서는 취소할 수 없습니다: ${demand.slstmtNo}"
             )
         }

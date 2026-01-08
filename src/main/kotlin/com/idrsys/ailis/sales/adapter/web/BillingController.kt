@@ -18,7 +18,9 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 
 /**
  * Billing Controller
@@ -88,6 +90,8 @@ class BillingController(
     /**
      * Get demand list (청구 리스트 조회)
      *
+     * Returns unified DemandResponse type for both SETTLED and UNSETTLED cases
+     *
      * @param searchParam Search parameters
      * @param pageable Pagination parameters
      * @return Page of DemandResponse
@@ -97,7 +101,7 @@ class BillingController(
     suspend fun getDemandList(
         @ModelAttribute searchParam: DemandSearchParam,
         @PageableDefault(size = 15) pageable: Pageable
-    ): Page<*> {
+    ): Page<DemandResponse> {
         return billingQueryUseCase.getDemandList(searchParam, pageable)
     }
 
@@ -111,7 +115,10 @@ class BillingController(
     @GetMapping("/demands/{demandId}")
     suspend fun getDemandDetail(
         @PathVariable demandId: String
-    ): DemandResponse {
-        return billingQueryUseCase.getDemandDetail(demandId)
+    ): ResponseEntity<DemandResponse> {
+//        return billingQueryUseCase.getDemandDetail(demandId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "청구서를 찾을 수 없습니다: $demandId")
+        return billingQueryUseCase.getDemandDetail(demandId)?.let {
+            ResponseEntity.ok(it)
+        } ?: ResponseEntity.notFound().build()
     }
 }

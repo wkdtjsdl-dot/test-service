@@ -1,7 +1,6 @@
 package com.idrsys.ailis.sales.application.required.repository.billing
 
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
-import com.idrsys.ailis.sales.application.dto.response.UnsettledDemandSummary
 import com.idrsys.ailis.sales.domain.model.Demand
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Pageable
@@ -38,14 +37,4 @@ interface DemandRepository {
      * Find demand by ID
      */
     suspend fun findDemandById(demandId: String): Demand?
-
-    /**
-     * Find unsettled demand summary (grouped by customer)
-     */
-    fun findUnsettledDemandSummary(searchParam: DemandSearchParam, pageable: Pageable): Flow<UnsettledDemandSummary>
-
-    /**
-     * Count unsettled demand summary
-     */
-    suspend fun countUnsettledDemandSummary(searchParam: DemandSearchParam): Long
 }

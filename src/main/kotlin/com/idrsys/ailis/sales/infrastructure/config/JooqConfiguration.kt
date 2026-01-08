@@ -5,14 +5,21 @@ import org.jooq.SQLDialect
 import org.jooq.conf.ParamType
 import org.jooq.conf.Settings
 import org.jooq.impl.DSL
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
+
+/**
+ * jOOQ Configuration for PostgreSQL (Production/Dev environments)
+ *
+ * @ConditionalOnMissingBean을 사용하여 테스트 환경에서
+ * TestDatabaseConfig의 dslContext bean이 있으면 이 bean을 생성하지 않습니다.
+ */
 @Configuration
 class JooqConfiguration {
 
     @Bean
-    @Primary
+    @ConditionalOnMissingBean(DSLContext::class)
     fun dslContext(): DSLContext {
         return createDslContext()
     }

@@ -1,0 +1,155 @@
+### 관리자 Login 요청
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {%
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+### 거래내역 조회 (청구수금원장)
+GET {{api-service}}/api/v1/collections/ledger/CUST001?startDt=2025-12-01&endDt=2025-12-31
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 카드 입금내역 조회
+GET {{api-service}}/api/v1/collections/card-payments?startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 카드 입금내역 조회 (승인만)
+GET {{api-service}}/api/v1/collections/card-payments?startDt=2025-12-01&endDt=2025-12-31&payDivCd=10&page=0&size=15
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 카드 입금내역 조회 (미등록만)
+GET {{api-service}}/api/v1/collections/card-payments?startDt=2025-12-01&endDt=2025-12-31&regYn=false&page=0&size=15
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 은행 입금내역 조회
+GET {{api-service}}/api/v1/collections/bank-deposits?startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 은행 입금내역 조회 (미등록만)
+GET {{api-service}}/api/v1/collections/bank-deposits?startDt=2025-12-01&endDt=2025-12-31&regYn=false&page=0&size=15
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 카드 입금 등록
+POST {{api-service}}/api/v1/collections
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "custCd": "CUST001",
+  "colbillDt": "2026-01-05",
+  "payMethodCd": "CARD",
+  "payAmt": 5000000,
+  "cardPayId": "card-payment-uuid-test",
+  "bankDepositId": null,
+  "advreceYn": false,
+  "remark": "1월 카드 입금 테스트"
+}
+
+> {%
+    client.global.set("colbillId", response.body.colbillId);
+    client.log("Created colbillId: " + client.global.get("colbillId"));
+%}
+
+### 은행 입금 등록
+POST {{api-service}}/api/v1/collections
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "custCd": "CUST001",
+  "colbillDt": "2026-01-05",
+  "payMethodCd": "BANK",
+  "payAmt": 10000000,
+  "cardPayId": null,
+  "bankDepositId": "bank-deposit-uuid-test",
+  "advreceYn": false,
+  "remark": "1월 은행 입금 테스트"
+}
+
+> {%
+    client.global.set("colbillId2", response.body.colbillId);
+    client.log("Created colbillId2: " + client.global.get("colbillId2"));
+%}
+
+### 카드 입금 분할등록
+POST {{api-service}}/api/v1/collections/card-payments/split
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "cardPayId": "card-payment-uuid-for-split",
+  "splits": [
+    {
+      "custCd": "CUST001",
+      "payAmt": 3000000,
+      "colbillDt": "2026-01-05"
+    },
+    {
+      "custCd": "CUST002",
+      "payAmt": 2000000,
+      "colbillDt": "2026-01-05"
+    }
+  ]
+}
+
+> {%
+    client.log("Split card payment registered: " + JSON.stringify(response.body));
+%}
+
+### 은행 입금 분할등록
+POST {{api-service}}/api/v1/collections/bank-deposits/split
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "bankDepositId": "bank-deposit-uuid-for-split",
+  "splits": [
+    {
+      "custCd": "CUST001",
+      "payAmt": 6000000,
+      "colbillDt": "2026-01-05"
+    },
+    {
+      "custCd": "CUST002",
+      "payAmt": 4000000,
+      "colbillDt": "2026-01-05"
+    }
+  ]
+}
+
+> {%
+    client.log("Split bank deposit registered: " + JSON.stringify(response.body));
+%}
+
+### ERP 전송
+POST {{api-service}}/api/v1/collections/send-to-erp
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "colbillIds": [
+    "{{colbillId}}",
+    "{{colbillId2}}"
+  ]
+}
+
+> {%
+    client.log("ERP send result: " + JSON.stringify(response.body));
+%}
+
+### 입금 삭제
+DELETE {{api-service}}/api/v1/collections/{{colbillId}}
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

@@ -2,13 +2,18 @@ package com.idrsys.ailis.sales.adapter.web
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandCommand
+import com.idrsys.ailis.sales.config.JwtTestHelper
+import com.idrsys.ailis.sales.config.TestConfig
+import com.idrsys.ailis.sales.config.TestDatabaseConfig
 import com.idrsys.ailis.sales.domain.model.Demand
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
@@ -25,10 +30,12 @@ import java.util.*
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
+@Import(TestConfig::class, TestDatabaseConfig::class)
 @TestPropertySource(
     properties = [
         "spring.cloud.config.enabled=false",
-        "spring.config.import="
+        "spring.config.import=",
+        "spring.profiles.active=test"
     ]
 )
 class BillingControllerIntegrationTest {
@@ -45,8 +52,19 @@ class BillingControllerIntegrationTest {
     @Autowired
     private lateinit var transactionalOperator: TransactionalOperator
 
+    @Value("\${jwt.secretkey}")
+    private lateinit var jwtSecretKey: String
+
+    private lateinit var accessToken: String
+
     @BeforeEach
     fun setUp(): Unit = runBlocking {
+        // Generate JWT access token for test
+        accessToken = JwtTestHelper.createAccessToken(
+            adminId = "test-admin",
+            secretKey = jwtSecretKey
+        )
+
         // Clean up test data
         r2dbcEntityTemplate
             .delete(Demand::class.java)
@@ -72,6 +90,7 @@ class BillingControllerIntegrationTest {
             .post()
             .uri("/api/v1/billing/demands")
             .contentType(MediaType.APPLICATION_JSON)
+            .cookie("accessToken", accessToken)  // JWT 토큰을 cookie에 추가
             .bodyValue(command)
             .exchange()
             .expectStatus().isCreated
@@ -82,7 +101,7 @@ class BillingControllerIntegrationTest {
     }
 
     @Test
-    fun `should get demand list via GET endpoint`() = runBlocking {
+    fun `should get demand list via GET endpoint`(): Unit = runBlocking {
         // Arrange - Create test demand
         val demand = createTestDemand()
         demand.setAsNew()
@@ -107,7 +126,7 @@ class BillingControllerIntegrationTest {
     }
 
     @Test
-    fun `should get demand detail via GET endpoint`() = runBlocking {
+    fun `should get demand detail via GET endpoint`(): Unit = runBlocking {
         // Arrange - Create test demand
         val demand = createTestDemand()
         demand.setAsNew()
@@ -125,7 +144,7 @@ class BillingControllerIntegrationTest {
     }
 
     @Test
-    fun `should cancel demand via DELETE endpoint`() = runBlocking {
+    fun `should cancel demand via DELETE endpoint`(): Unit = runBlocking {
         // Arrange - Create test demand without sales statement
         val demand = createTestDemand()
         demand.setAsNew()
@@ -135,6 +154,7 @@ class BillingControllerIntegrationTest {
         webTestClient
             .delete()
             .uri("/api/v1/billing/demands/${saved.demandId}")
+            .cookie("accessToken", accessToken)  // JWT 토큰을 cookie에 추가
             .exchange()
             .expectStatus().isOk
             .expectBody()
@@ -143,7 +163,7 @@ class BillingControllerIntegrationTest {
     }
 
     @Test
-    fun `should send sales statement via POST endpoint`() = runBlocking {
+    fun `should send sales statement via POST endpoint`(): Unit = runBlocking {
         // Arrange - Create test demand
         val demand = createTestDemand()
         demand.setAsNew()
@@ -153,6 +173,7 @@ class BillingControllerIntegrationTest {
         webTestClient
             .post()
             .uri("/api/v1/billing/demands/${saved.demandId}/sales-statements")
+            .cookie("accessToken", accessToken)  // JWT 토큰을 cookie에 추가
             .exchange()
             .expectStatus().isOk
             .expectBody()
@@ -175,11 +196,12 @@ class BillingControllerIntegrationTest {
     }
 
     @Test
-    fun `should return 400 when cancelling already sent demand`() = runBlocking {
+    fun `should return 400 when cancelling already sent demand`(): Unit = runBlocking {
         // Arrange - Create demand with sales statement
         val demand = createTestDemand()
         demand.setAsNew()
         val saved = r2dbcEntityTemplate.insert(demand).block()!!
+        saved.setAsExisting()
 
         // Send sales statement first
         saved.sendSalesStatement("SL-2025-001", "admin")
@@ -189,13 +211,14 @@ class BillingControllerIntegrationTest {
         webTestClient
             .delete()
             .uri("/api/v1/billing/demands/${saved.demandId}")
+            .cookie("accessToken", accessToken)  // JWT 토큰을 cookie에 추가
             .exchange()
             .expectStatus().isBadRequest
     }
 
     private fun createTestDemand(): Demand {
         return Demand(
-            demandId = UUID.randomUUID().toString(),
+            demandId = null,  // Let UuidIdGeneratorCallback generate the ID
             demandDt = LocalDate.of(2025, 12, 31),
             custCd = "CUST001",
             demandStartDt = LocalDate.of(2025, 12, 1),
