@@ -29,7 +29,7 @@ import org.springframework.web.server.ResponseStatusException
  */
 @Tag(name = "Billing", description = "청구 관리 API")
 @RestController
-@RequestMapping("/api/v1/billing")
+@RequestMapping("/api/billing")
 class BillingController(
     private val billingCommandUseCase: BillingCommandUseCase,
     private val billingQueryUseCase: BillingQueryUseCase

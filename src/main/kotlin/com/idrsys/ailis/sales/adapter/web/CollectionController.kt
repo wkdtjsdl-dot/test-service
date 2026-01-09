@@ -28,7 +28,7 @@ import java.time.LocalDate
  */
 @Tag(name = "Collection", description = "수금 관리 API")
 @RestController
-@RequestMapping("/api/v1/collections")
+@RequestMapping("/api/collections")
 class CollectionController(
     private val collectionCommandUseCase: CollectionCommandUseCase,
     private val collectionQueryUseCase: CollectionQueryUseCase

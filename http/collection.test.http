@@ -19,31 +19,31 @@ Accept: application/json
 %}
 
 ### 거래내역 조회 (청구수금원장)
-GET {{api-service}}/api/v1/collections/ledger/CUST001?startDt=2025-12-01&endDt=2025-12-31
+GET {{api-service}}/api/sales/collections/ledger/CUST001?startDt=2025-12-01&endDt=2025-12-31
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 카드 입금내역 조회
-GET {{api-service}}/api/v1/collections/card-payments?startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
+GET {{api-service}}/api/sales/collections/card-payments?startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 카드 입금내역 조회 (승인만)
-GET {{api-service}}/api/v1/collections/card-payments?startDt=2025-12-01&endDt=2025-12-31&payDivCd=10&page=0&size=15
+GET {{api-service}}/api/sales/collections/card-payments?startDt=2025-12-01&endDt=2025-12-31&payDivCd=10&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 카드 입금내역 조회 (미등록만)
-GET {{api-service}}/api/v1/collections/card-payments?startDt=2025-12-01&endDt=2025-12-31&regYn=false&page=0&size=15
+GET {{api-service}}/api/sales/collections/card-payments?startDt=2025-12-01&endDt=2025-12-31&regYn=false&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 은행 입금내역 조회
-GET {{api-service}}/api/v1/collections/bank-deposits?startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
+GET {{api-service}}/api/sales/collections/bank-deposits?startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 은행 입금내역 조회 (미등록만)
-GET {{api-service}}/api/v1/collections/bank-deposits?startDt=2025-12-01&endDt=2025-12-31&regYn=false&page=0&size=15
+GET {{api-service}}/api/sales/collections/bank-deposits?startDt=2025-12-01&endDt=2025-12-31&regYn=false&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 카드 입금 등록
-POST {{api-service}}/api/v1/collections
+POST {{api-service}}/api/sales/collections
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
@@ -64,7 +64,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 %}
 
 ### 은행 입금 등록
-POST {{api-service}}/api/v1/collections
+POST {{api-service}}/api/sales/collections
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
@@ -85,7 +85,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 %}
 
 ### 카드 입금 분할등록
-POST {{api-service}}/api/v1/collections/card-payments/split
+POST {{api-service}}/api/sales/collections/card-payments/split
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
@@ -110,7 +110,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 %}
 
 ### 은행 입금 분할등록
-POST {{api-service}}/api/v1/collections/bank-deposits/split
+POST {{api-service}}/api/sales/collections/bank-deposits/split
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
@@ -135,7 +135,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 %}
 
 ### ERP 전송
-POST {{api-service}}/api/v1/collections/send-to-erp
+POST {{api-service}}/api/sales/collections/send-to-erp
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
@@ -151,5 +151,5 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 %}
 
 ### 입금 삭제
-DELETE {{api-service}}/api/v1/collections/{{colbillId}}
+DELETE {{api-service}}/api/sales/collections/{{colbillId}}
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

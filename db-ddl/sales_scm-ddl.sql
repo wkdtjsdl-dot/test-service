@@ -730,8 +730,6 @@ create table scs_if_cust_info
             primary key,
     cust_mst_id     varchar(50),
     cust_cd         varchar(50) not null,
-    apply_start_dt  date        not null,
-    apply_end_dt    date,
     header_incl_yn  boolean,
     if_desc         varchar(500),
     skip_row_cnt    integer,
@@ -751,10 +749,6 @@ comment on column scs_if_cust_info.cust_mst_id is '고객마스터아이디';
 
 comment on column scs_if_cust_info.cust_cd is '고객코드';
 
-comment on column scs_if_cust_info.apply_start_dt is '적용시작일자';
-
-comment on column scs_if_cust_info.apply_end_dt is '적용종료일자';
-
 comment on column scs_if_cust_info.header_incl_yn is '헤더포함여부';
 
 comment on column scs_if_cust_info.if_desc is '연동설명';
@@ -771,6 +765,9 @@ comment on column scs_if_cust_info.update_dtime is '수정일시';
 
 alter table scs_if_cust_info
     owner to ailis_user;
+
+create unique index "UK_scs_if_cust_info_cust_mst_id"
+    on scs_if_cust_info (cust_mst_id);
 
 create table scs_if_field_info
 (
@@ -1589,7 +1586,8 @@ create table sbl_demand
     creator               varchar(50)           not null,
     create_dtime          timestamp             not null,
     updater               varchar(50)           not null,
-    update_dtime          timestamp             not null
+    update_dtime          timestamp             not null,
+    colledger_id          varchar(50)
 );
 
 comment on table sbl_demand is '청구';
@@ -1647,6 +1645,8 @@ comment on column sbl_demand.create_dtime is '생성일시';
 comment on column sbl_demand.updater is '수정자';
 
 comment on column sbl_demand.update_dtime is '수정일시';
+
+comment on column sbl_demand.colledger_id is '청구수금원장아이디';
 
 alter table sbl_demand
     owner to ailis_user;
@@ -1823,85 +1823,6 @@ comment on column sbl_card_pay.updater is '수정자';
 comment on column sbl_card_pay.update_dtime is '수정일시';
 
 alter table sbl_card_pay
-    owner to ailis_user;
-
-create table sbl_colbill
-(
-    colbill_id       varchar(50)           not null
-        constraint "PK_sbl_colbill"
-            primary key,
-    cust_cd          varchar(50)           not null,
-    colbill_dt       date                  not null,
-    pay_method_cd    varchar(50)           not null,
-    card_comp_cd     varchar(50),
-    card_comp_nm     varchar(50),
-    pay_amt          numeric,
-    card_appr_no     varchar(50),
-    card_no          varchar(50),
-    card_pay_id      varchar(50),
-    card_bill_no     varchar(50),
-    instl_month      varchar(2),
-    bank_deposit_id  varchar(50),
-    account_year     varchar(4),
-    surecp_slstmt_no varchar(20),
-    sales_slstmt_no  varchar(20),
-    advrece_yn       boolean default false,
-    send_yn          boolean default false not null,
-    creator          varchar(50)           not null,
-    create_dtime     timestamp             not null,
-    updater          varchar(50)           not null,
-    update_dtime     timestamp             not null
-);
-
-comment on table sbl_colbill is '수금';
-
-comment on column sbl_colbill.colbill_id is '수금아이디 UUID';
-
-comment on constraint "PK_sbl_colbill" on sbl_colbill is '수금 기본키';
-
-comment on column sbl_colbill.cust_cd is '고객코드';
-
-comment on column sbl_colbill.colbill_dt is '수금일자';
-
-comment on column sbl_colbill.pay_method_cd is '결제메소드(방법)코드';
-
-comment on column sbl_colbill.card_comp_cd is '카드회사코드';
-
-comment on column sbl_colbill.card_comp_nm is '카드회사명';
-
-comment on column sbl_colbill.pay_amt is '결제금액';
-
-comment on column sbl_colbill.card_appr_no is '카드결재(승인)번호';
-
-comment on column sbl_colbill.card_no is '카드번호';
-
-comment on column sbl_colbill.card_pay_id is '카드결제아이디';
-
-comment on column sbl_colbill.card_bill_no is '카드계산서번호';
-
-comment on column sbl_colbill.instl_month is '할부(개)월';
-
-comment on column sbl_colbill.bank_deposit_id is '은행입금아이디';
-
-comment on column sbl_colbill.account_year is '회계년도';
-
-comment on column sbl_colbill.surecp_slstmt_no is '가수금전표번호';
-
-comment on column sbl_colbill.sales_slstmt_no is '매출전표번호';
-
-comment on column sbl_colbill.advrece_yn is '선수금여부';
-
-comment on column sbl_colbill.send_yn is '발송(전송)여부';
-
-comment on column sbl_colbill.creator is '생성자';
-
-comment on column sbl_colbill.create_dtime is '생성일시';
-
-comment on column sbl_colbill.updater is '수정자';
-
-comment on column sbl_colbill.update_dtime is '수정일시';
-
-alter table sbl_colbill
     owner to ailis_user;
 
 create table sbl_estimate_dtl
@@ -2106,5 +2027,89 @@ create table scs_gcgn_sals_pic_info_kyt
 );
 
 alter table scs_gcgn_sals_pic_info_kyt
+    owner to ailis_user;
+
+create table sbl_colbill
+(
+    colbill_id       varchar(50)           not null
+        constraint "PK_sbl_colbill"
+            primary key,
+    cust_cd          varchar(50)           not null,
+    colbill_dt       date                  not null,
+    pay_method_cd    varchar(50)           not null,
+    card_comp_cd     varchar(50),
+    card_comp_nm     varchar(50),
+    pay_amt          numeric,
+    card_appr_no     varchar(50),
+    card_no          varchar(50),
+    card_pay_id      varchar(50),
+    card_bill_no     varchar(50),
+    instl_month      varchar(2),
+    bank_deposit_id  varchar(50),
+    account_year     varchar(4),
+    surecp_slstmt_no varchar(20),
+    sales_slstmt_no  varchar(20),
+    advrece_yn       boolean default false,
+    closing_cd       varchar(50),
+    send_yn          boolean default false not null,
+    creator          varchar(50)           not null,
+    create_dtime     timestamp             not null,
+    updater          varchar(50)           not null,
+    update_dtime     timestamp             not null,
+    colledger_id     varchar(50)
+);
+
+comment on column sbl_colbill.colledger_id is '청구수금원장아이디';
+
+alter table sbl_colbill
+    owner to ailis_user;
+
+create table scs_if_field_info_test
+(
+    if_field_info_id varchar(50) not null
+        constraint "PK_scs_if_field_info_test"
+            primary key,
+    if_field_nm      varchar(100),
+    if_field_col_nm  varchar(100),
+    if_field_exps    varchar(500),
+    if_field_desc    varchar(500),
+    stat_cd          varchar(50),
+    semantic_cd      varchar(50),
+    ref_cd           varchar(50),
+    creator          varchar(50) not null,
+    create_dtime     timestamp   not null,
+    updater          varchar(50) not null,
+    update_dtime     timestamp   not null
+);
+
+comment on table scs_if_field_info_test is '연동필드정보(테스트)';
+
+comment on column scs_if_field_info_test.if_field_info_id is '연동필드아이디';
+
+comment on constraint "PK_scs_if_field_info_test" on scs_if_field_info_test is '연동필드정보(테스트) 기본키';
+
+comment on column scs_if_field_info_test.if_field_nm is '연동필드명';
+
+comment on column scs_if_field_info_test.if_field_col_nm is '연동필드열(컬럼)명';
+
+comment on column scs_if_field_info_test.if_field_exps is '연동필드표현식';
+
+comment on column scs_if_field_info_test.if_field_desc is '연동필드설명';
+
+comment on column scs_if_field_info_test.stat_cd is '구분코드(환자/검체/의뢰/추가 등)';
+
+comment on column scs_if_field_info_test.semantic_cd is '매핑코드(내부 매핑키)';
+
+comment on column scs_if_field_info_test.ref_cd is '참조코드(규격코드)';
+
+comment on column scs_if_field_info_test.creator is '생성자';
+
+comment on column scs_if_field_info_test.create_dtime is '생성일시';
+
+comment on column scs_if_field_info_test.updater is '수정자';
+
+comment on column scs_if_field_info_test.update_dtime is '수정일시';
+
+alter table scs_if_field_info_test
     owner to ailis_user;
 

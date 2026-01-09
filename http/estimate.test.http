@@ -19,23 +19,23 @@ Accept: application/json
 %}
 
 ### 견적서 목록 조회 (전체)
-GET {{api-service}}/api/v1/estimates?startDt=2026-01-01&endDt=2026-01-31&page=0&size=15
+GET {{api-service}}/api/sales/estimates?startDt=2026-01-01&endDt=2026-01-31&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 견적서 목록 조회 (견적서만)
-GET {{api-service}}/api/v1/estimates?startDt=2026-01-01&endDt=2026-01-31&docType=EST&page=0&size=15
+GET {{api-service}}/api/sales/estimates?startDt=2026-01-01&endDt=2026-01-31&docType=EST&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 견적서 목록 조회 (거래명세서만)
-GET {{api-service}}/api/v1/estimates?startDt=2026-01-01&endDt=2026-01-31&docType=TRN&page=0&size=15
+GET {{api-service}}/api/sales/estimates?startDt=2026-01-01&endDt=2026-01-31&docType=TRN&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 견적서 목록 조회 (수신처 검색)
-GET {{api-service}}/api/v1/estimates?startDt=2026-01-01&endDt=2026-01-31&receiver=서울대학교병원&page=0&size=15
+GET {{api-service}}/api/sales/estimates?startDt=2026-01-01&endDt=2026-01-31&receiver=서울대학교병원&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 견적서 생성 (견적서)
-POST {{api-service}}/api/v1/estimates
+POST {{api-service}}/api/sales/estimates
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
@@ -69,7 +69,7 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 %}
 
 ### 견적서 생성 (거래명세서)
-POST {{api-service}}/api/v1/estimates
+POST {{api-service}}/api/sales/estimates
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
@@ -98,11 +98,11 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 %}
 
 ### 견적서 상세 조회
-GET {{api-service}}/api/v1/estimates/{{estimateId}}
+GET {{api-service}}/api/sales/estimates/{{estimateId}}
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 견적서 수정
-PUT {{api-service}}/api/v1/estimates/{{estimateId}}
+PUT {{api-service}}/api/sales/estimates/{{estimateId}}
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
@@ -140,5 +140,5 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 %}
 
 ### 견적서 삭제
-DELETE {{api-service}}/api/v1/estimates/{{estimateId2}}
+DELETE {{api-service}}/api/sales/estimates/{{estimateId2}}
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

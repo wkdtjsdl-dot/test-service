@@ -88,7 +88,7 @@ class BillingControllerIntegrationTest {
         // Act & Assert
         webTestClient
             .post()
-            .uri("/api/v1/billing/demands")
+            .uri("/api/billing/demands")
             .contentType(MediaType.APPLICATION_JSON)
             .cookie("accessToken", accessToken)  // JWT 토큰을 cookie에 추가
             .bodyValue(command)
@@ -112,7 +112,7 @@ class BillingControllerIntegrationTest {
             .get()
             .uri { uriBuilder ->
                 uriBuilder
-                    .path("/api/v1/billing/demands")
+                    .path("/api/billing/demands")
                     .queryParam("demandType", "SETTLED")
                     .queryParam("startDt", "2025-12-01")
                     .queryParam("endDt", "2025-12-31")
@@ -135,7 +135,7 @@ class BillingControllerIntegrationTest {
         // Act & Assert
         webTestClient
             .get()
-            .uri("/api/v1/billing/demands/${saved.demandId}")
+            .uri("/api/billing/demands/${saved.demandId}")
             .exchange()
             .expectStatus().isOk
             .expectBody()
@@ -153,7 +153,7 @@ class BillingControllerIntegrationTest {
         // Act & Assert
         webTestClient
             .delete()
-            .uri("/api/v1/billing/demands/${saved.demandId}")
+            .uri("/api/billing/demands/${saved.demandId}")
             .cookie("accessToken", accessToken)  // JWT 토큰을 cookie에 추가
             .exchange()
             .expectStatus().isOk
@@ -172,7 +172,7 @@ class BillingControllerIntegrationTest {
         // Act & Assert
         webTestClient
             .post()
-            .uri("/api/v1/billing/demands/${saved.demandId}/sales-statements")
+            .uri("/api/billing/demands/${saved.demandId}/sales-statements")
             .cookie("accessToken", accessToken)  // JWT 토큰을 cookie에 추가
             .exchange()
             .expectStatus().isOk
@@ -190,7 +190,7 @@ class BillingControllerIntegrationTest {
         // Act & Assert
         webTestClient
             .get()
-            .uri("/api/v1/billing/demands/$nonExistentId")
+            .uri("/api/billing/demands/$nonExistentId")
             .exchange()
             .expectStatus().isNotFound
     }
@@ -210,7 +210,7 @@ class BillingControllerIntegrationTest {
         // Act & Assert
         webTestClient
             .delete()
-            .uri("/api/v1/billing/demands/${saved.demandId}")
+            .uri("/api/billing/demands/${saved.demandId}")
             .cookie("accessToken", accessToken)  // JWT 토큰을 cookie에 추가
             .exchange()
             .expectStatus().isBadRequest

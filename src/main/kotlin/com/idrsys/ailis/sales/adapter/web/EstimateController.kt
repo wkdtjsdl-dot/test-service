@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*
  */
 @Tag(name = "Estimate", description = "견적서 관리 API")
 @RestController
-@RequestMapping("/api/v1/estimates")
+@RequestMapping("/api/estimates")
 class EstimateController(
     private val estimateCommandUseCase: EstimateCommandUseCase,
     private val estimateQueryUseCase: EstimateQueryUseCase
