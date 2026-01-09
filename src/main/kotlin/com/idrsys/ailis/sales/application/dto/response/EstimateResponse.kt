@@ -53,26 +53,36 @@ data class EstimateResponse(
  * Estimate Item Response DTO
  */
 data class EstimateItemResponse(
-    val estimateItemId: String,
+    val estimateDtlId: String,
     val estimateId: String,
-    val itemNm: String,
-    val qty: BigDecimal,
+    val seq: Int,
+    val item: String,
+    val qnty: BigDecimal,
     val unitPrice: BigDecimal,
     val supval: BigDecimal,
     val addtax: BigDecimal,
-    val totalAmt: BigDecimal
+    val demandCharge: BigDecimal,
+    val creator: String,
+    val createDtime: LocalDateTime,
+    val updater: String,
+    val updateDtime: LocalDateTime
 ) {
     companion object {
         fun from(item: EstimateItem): EstimateItemResponse {
             return EstimateItemResponse(
-                estimateItemId = item.estimateItemId,
+                estimateDtlId = item.estimateDtlId!!,
                 estimateId = item.estimateId,
-                itemNm = item.itemNm,
-                qty = item.qty,
+                seq = item.seq,
+                item = item.item,
+                qnty = item.qnty,
                 unitPrice = item.unitPrice,
                 supval = item.supval,
                 addtax = item.addtax,
-                totalAmt = item.totalAmt
+                demandCharge = item.demandCharge,
+                creator = item.creator,
+                createDtime = item.createDtime,
+                updater = item.updater,
+                updateDtime = item.updateDtime
             )
         }
     }

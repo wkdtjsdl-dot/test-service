@@ -15,4 +15,11 @@ interface EstimateItemRepository {
     // Custom query operations
     fun findByEstimateId(estimateId: String): Flow<EstimateItem>
     suspend fun deleteByEstimateId(estimateId: String)
+
+    /**
+     * Find maximum sequence number for a given estimate ID
+     * @param estimateId Estimate ID
+     * @return Maximum sequence number, or null if no items exist
+     */
+    suspend fun findMaxSeqByEstimateId(estimateId: String): Int?
 }

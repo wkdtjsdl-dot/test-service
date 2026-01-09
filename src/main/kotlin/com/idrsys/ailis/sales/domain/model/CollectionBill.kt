@@ -41,6 +41,8 @@ class CollectionBill(
     surecpSlstmtNo: String? = null,
     salesSlstmtNo: String? = null,
     advreceYn: Boolean = false,
+    closingCd: String? = null,
+    colledgerId: String? = null,
     sendYn: Boolean = false,
     creator: String,
     createDtime: LocalDateTime = LocalDateTime.now(),
@@ -120,6 +122,14 @@ class CollectionBill(
 
     @Column("advrece_yn")
     var advreceYn: Boolean = advreceYn
+        private set
+
+    @Column("closing_cd")
+    var closingCd: String? = closingCd
+        private set
+
+    @Column("colledger_id")
+    var colledgerId: String? = colledgerId
         private set
 
     @Column("send_yn")

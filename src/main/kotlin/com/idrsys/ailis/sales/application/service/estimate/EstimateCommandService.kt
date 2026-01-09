@@ -68,13 +68,15 @@ class EstimateCommandService(
 
         val savedEstimate = estimateRepository.save(estimate)
 
-        // 4. Create estimate items
-        val items = command.items.map { itemCommand ->
+        // 4. Create estimate items with auto-incremented seq
+        val items = command.items.mapIndexed { index, itemCommand ->
             EstimateItem.create(
                 estimateId = savedEstimate.estimateId ?: throw UserDefinedException("INVALID_STATE", "Estimate ID is null"),
-                itemNm = itemCommand.itemNm,
-                qty = itemCommand.qty,
-                unitPrice = itemCommand.unitPrice
+                seq = index + 1,  // 1-based sequence
+                item = itemCommand.item,
+                qnty = itemCommand.qnty,
+                unitPrice = itemCommand.unitPrice,
+                creator = adminId
             )
         }
 
@@ -116,13 +118,15 @@ class EstimateCommandService(
         // 4. Delete old items
         estimateItemRepository.deleteByEstimateId(estimateId)
 
-        // 5. Create new items
-        val newItems = command.items.map { itemCommand ->
+        // 5. Create new items with auto-incremented seq
+        val newItems = command.items.mapIndexed { index, itemCommand ->
             EstimateItem.create(
                 estimateId = estimate.estimateId ?: throw UserDefinedException("INVALID_STATE", "Estimate ID is null"),
-                itemNm = itemCommand.itemNm,
-                qty = itemCommand.qty,
-                unitPrice = itemCommand.unitPrice
+                seq = index + 1,  // 1-based sequence
+                item = itemCommand.item,
+                qnty = itemCommand.qnty,
+                unitPrice = itemCommand.unitPrice,
+                creator = adminId
             )
         }
 

@@ -83,15 +83,19 @@ class EstimateTest {
         val items = listOf(
             EstimateItem.create(
                 estimateId = "estimate-uuid-001",
-                itemNm = "BRCA1/2",
-                qty = BigDecimal("100"),
-                unitPrice = BigDecimal("90000")
+                seq = 1,
+                item = "BRCA1/2",
+                qnty = BigDecimal("100"),
+                unitPrice = BigDecimal("90000"),
+                creator = "admin"
             ),
             EstimateItem.create(
                 estimateId = "estimate-uuid-001",
-                itemNm = "KRAS",
-                qty = BigDecimal("50"),
-                unitPrice = BigDecimal("50000")
+                seq = 2,
+                item = "KRAS",
+                qnty = BigDecimal("50"),
+                unitPrice = BigDecimal("50000"),
+                creator = "admin"
             )
         )
 

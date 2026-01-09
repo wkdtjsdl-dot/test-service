@@ -55,7 +55,7 @@ class Estimate(
     @Column("estimate_id")
     val estimateId: String? = estimateId
 
-    @Column("doc_type")
+    @Column("doc_type_nm")
     var docType: String = docType
         private set
 
@@ -63,27 +63,27 @@ class Estimate(
     var docNo: String = docNo
         private set
 
-    @Column("reg_dt")
+    @Column("publ_dt")
     var regDt: LocalDate = regDt
         private set
 
-    @Column("title")
+    @Column("doc_title")
     var title: String = title
         private set
 
-    @Column("receiver")
+    @Column("recp_person")
     var receiver: String? = receiver
         private set
 
-    @Column("reference")
+    @Column("ref_person")
     var reference: String? = reference
         private set
 
-    @Column("writer_emp_no")
+    @Column("worker")
     var writerEmpNo: String? = writerEmpNo
         private set
 
-    @Column("dept_cd")
+    @Column("work_dept")
     var deptCd: String? = deptCd
         private set
 
@@ -91,19 +91,19 @@ class Estimate(
     var remark: String? = remark
         private set
 
-    @Column("note")
+    @Column("spnote")
     var note: String? = note
         private set
 
-    @Column("total_supval")
+    @Column("supval")
     var totalSupval: BigDecimal = totalSupval
         private set
 
-    @Column("total_addtax")
+    @Column("addtax")
     var totalAddtax: BigDecimal = totalAddtax
         private set
 
-    @Column("total_amt")
+    @Column("demand_charge")
     var totalAmt: BigDecimal = totalAmt
         private set
 
@@ -139,12 +139,12 @@ class Estimate(
      * Business Rule:
      * - Total supply value = Σ(item supply values)
      * - Total VAT = Σ(item VATs)
-     * - Total amount = Σ(item total amounts)
+     * - Total amount = Σ(item demand charges)
      */
     fun recalculateTotals(items: List<EstimateItem>) {
-        this.totalSupval = items.sumOf { it.supval }
-        this.totalAddtax = items.sumOf { it.addtax }
-        this.totalAmt = items.sumOf { it.totalAmt }
+        this.totalSupval = items.fold(BigDecimal.ZERO) { acc, item -> acc.add(item.supval) }
+        this.totalAddtax = items.fold(BigDecimal.ZERO) { acc, item -> acc.add(item.addtax) }
+        this.totalAmt = items.fold(BigDecimal.ZERO) { acc, item -> acc.add(item.demandCharge) }
         this.updateDtime = LocalDateTime.now()
     }
 
