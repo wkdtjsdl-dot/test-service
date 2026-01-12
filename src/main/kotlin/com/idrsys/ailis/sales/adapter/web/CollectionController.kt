@@ -14,9 +14,7 @@ import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
-import org.springframework.data.web.PageableDefault
+import kotlinx.coroutines.flow.Flow
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
@@ -151,8 +149,7 @@ class CollectionController(
      * @param endDt End date
      * @param payDivCd Payment division code (10: approved, 20: cancelled)
      * @param regYn Registration status
-     * @param pageable Pagination parameters
-     * @return Page of CardPaymentResponse
+     * @return Flow of CardPaymentResponse
      */
     @Operation(summary = "카드 입금내역 조회", description = "신용카드 입금내역 조회 (VAN사로부터 수신한 데이터)")
     @GetMapping("/card-payments")
@@ -160,16 +157,15 @@ class CollectionController(
         @RequestParam startDt: LocalDate,
         @RequestParam endDt: LocalDate,
         @RequestParam(required = false) payDivCd: String?,
-        @RequestParam(required = false) regYn: Boolean?,
-        @PageableDefault(size = 15) pageable: Pageable
-    ): Page<CardPaymentResponse> {
+        @RequestParam(required = false) regYn: Boolean?
+    ): Flow<CardPaymentResponse> {
         val searchParam = CardPaymentSearchParam(
             startDt = startDt,
             endDt = endDt,
             payDivCd = payDivCd,
             regYn = regYn
         )
-        return collectionQueryUseCase.getCardPaymentList(searchParam, pageable)
+        return collectionQueryUseCase.getCardPaymentList(searchParam)
     }
 
     /**
@@ -178,22 +174,20 @@ class CollectionController(
      * @param startDt Start date
      * @param endDt End date
      * @param regYn Registration status
-     * @param pageable Pagination parameters
-     * @return Page of BankDepositResponse
+     * @return Flow of BankDepositResponse
      */
     @Operation(summary = "은행 입금내역 조회", description = "은행계좌 입금내역 조회 (ERP로부터 수신한 가수금 데이터)")
     @GetMapping("/bank-deposits")
     suspend fun getBankDepositList(
         @RequestParam startDt: LocalDate,
         @RequestParam endDt: LocalDate,
-        @RequestParam(required = false) regYn: Boolean?,
-        @PageableDefault(size = 15) pageable: Pageable
-    ): Page<BankDepositResponse> {
+        @RequestParam(required = false) regYn: Boolean?
+    ): Flow<BankDepositResponse> {
         val searchParam = BankDepositSearchParam(
             startDt = startDt,
             endDt = endDt,
             regYn = regYn
         )
-        return collectionQueryUseCase.getBankDepositList(searchParam, pageable)
+        return collectionQueryUseCase.getBankDepositList(searchParam)
     }
 }

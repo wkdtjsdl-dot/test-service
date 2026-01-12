@@ -46,7 +46,6 @@ class Demand(
     sapCustCd: String? = null,
     billPublYn: Boolean = false,
     invcRecpEmailAddr: String? = null,
-    exrtId: Long? = null,
     creator: String,
     createDtime: LocalDateTime = LocalDateTime.now(),
     updater: String = creator,
@@ -147,10 +146,6 @@ class Demand(
 
     @Column("invc_recp_email_addr")
     var invcRecpEmailAddr: String? = invcRecpEmailAddr
-        private set
-
-    @Column("exrt_id")
-    var exrtId: Long? = exrtId
         private set
 
     @Column("creator")

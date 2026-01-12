@@ -107,22 +107,15 @@ class BillingControllerIntegrationTest {
         demand.setAsNew()
         r2dbcEntityTemplate.insert(demand).block()
 
-        // Act & Assert
+        // Act & Assert - Flow returns JSON array directly (no pagination wrapper)
         webTestClient
             .get()
-            .uri { uriBuilder ->
-                uriBuilder
-                    .path("/api/billing/demands")
-                    .queryParam("demandType", "SETTLED")
-                    .queryParam("startDt", "2025-12-01")
-                    .queryParam("endDt", "2025-12-31")
-                    .build()
-            }
+            .uri("/api/billing/demands?demandType=SETTLED&startDt=2025-12-01&endDt=2025-12-31")
             .exchange()
             .expectStatus().isOk
             .expectBody()
-            .jsonPath("$.content").isArray
-            .jsonPath("$.totalElements").exists()
+            .jsonPath("$").isArray
+            .jsonPath("$[0].custCd").isEqualTo("CUST001")
     }
 
     @Test

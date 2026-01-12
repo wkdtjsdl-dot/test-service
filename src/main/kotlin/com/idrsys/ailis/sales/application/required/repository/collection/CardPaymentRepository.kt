@@ -3,7 +3,6 @@ package com.idrsys.ailis.sales.application.required.repository.collection
 import com.idrsys.ailis.sales.application.dto.request.collection.CardPaymentSearchParam
 import com.idrsys.ailis.sales.domain.model.CardPayment
 import kotlinx.coroutines.flow.Flow
-import org.springframework.data.domain.Pageable
 
 /**
  * Card Payment Repository (Port Interface)
@@ -18,14 +17,9 @@ interface CardPaymentRepository {
 
     // Custom query operations
     /**
-     * Find card payments with pagination
+     * Find card payments
      */
-    fun findCardPayments(searchParam: CardPaymentSearchParam, pageable: Pageable): Flow<CardPayment>
-
-    /**
-     * Count card payments
-     */
-    suspend fun countCardPayments(searchParam: CardPaymentSearchParam): Long
+    fun findCardPayments(searchParam: CardPaymentSearchParam): Flow<CardPayment>
 
     /**
      * Find card payment by ID

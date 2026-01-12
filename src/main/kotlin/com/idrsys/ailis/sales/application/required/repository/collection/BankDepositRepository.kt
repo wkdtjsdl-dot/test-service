@@ -3,7 +3,6 @@ package com.idrsys.ailis.sales.application.required.repository.collection
 import com.idrsys.ailis.sales.application.dto.request.collection.BankDepositSearchParam
 import com.idrsys.ailis.sales.domain.model.BankDeposit
 import kotlinx.coroutines.flow.Flow
-import org.springframework.data.domain.Pageable
 
 /**
  * Bank Deposit Repository (Port Interface)
@@ -18,14 +17,9 @@ interface BankDepositRepository {
 
     // Custom query operations
     /**
-     * Find bank deposits with pagination
+     * Find bank deposits
      */
-    fun findBankDeposits(searchParam: BankDepositSearchParam, pageable: Pageable): Flow<BankDeposit>
-
-    /**
-     * Count bank deposits
-     */
-    suspend fun countBankDeposits(searchParam: BankDepositSearchParam): Long
+    fun findBankDeposits(searchParam: BankDepositSearchParam): Flow<BankDeposit>
 
     /**
      * Find bank deposit by ID

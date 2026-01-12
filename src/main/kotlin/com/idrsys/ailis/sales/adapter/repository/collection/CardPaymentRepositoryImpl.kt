@@ -6,7 +6,6 @@ import com.idrsys.ailis.sales.domain.model.CardPayment
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import org.jooq.DSLContext
-import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 
@@ -31,14 +30,9 @@ class CardPaymentRepositoryImpl(
     }
 
     // Custom query operations (implemented with jOOQ)
-    override fun findCardPayments(searchParam: CardPaymentSearchParam, pageable: Pageable): Flow<CardPayment> {
+    override fun findCardPayments(searchParam: CardPaymentSearchParam): Flow<CardPayment> {
         // TODO: Implement with jOOQ when needed
         return emptyFlow()
-    }
-
-    override suspend fun countCardPayments(searchParam: CardPaymentSearchParam): Long {
-        // TODO: Implement with jOOQ when needed
-        return 0L
     }
 
     override suspend fun findCardPaymentById(cardPayId: String): CardPayment? {

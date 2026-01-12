@@ -6,8 +6,7 @@ import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearc
 import com.idrsys.ailis.sales.application.dto.response.BankDepositResponse
 import com.idrsys.ailis.sales.application.dto.response.CardPaymentResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerResponse
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Collection Query Use Case
@@ -23,10 +22,10 @@ interface CollectionQueryUseCase {
     /**
      * Get card payment list (unregistered or all)
      */
-    suspend fun getCardPaymentList(searchParam: CardPaymentSearchParam, pageable: Pageable): Page<CardPaymentResponse>
+    fun getCardPaymentList(searchParam: CardPaymentSearchParam): Flow<CardPaymentResponse>
 
     /**
      * Get bank deposit list (unregistered or all)
      */
-    suspend fun getBankDepositList(searchParam: BankDepositSearchParam, pageable: Pageable): Page<BankDepositResponse>
+    fun getBankDepositList(searchParam: BankDepositSearchParam): Flow<BankDepositResponse>
 }

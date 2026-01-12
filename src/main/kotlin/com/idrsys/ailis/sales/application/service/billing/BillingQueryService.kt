@@ -7,11 +7,10 @@ import com.idrsys.ailis.sales.application.dto.response.DemandResponse
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.application.usecase.billing.BillingQueryUseCase
 import com.idrsys.ailis.sales.shared.mapper.toDemandResponse
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -34,21 +33,16 @@ class BillingQueryService(
      * 1. SETTLED: Demands that have been created (청구 완료) - from sales-service DB
      * 2. UNSETTLED: Test requests not yet included in demands (미청구) - from req-service API
      */
-    override suspend fun getDemandList(searchParam: DemandSearchParam, pageable: Pageable): Page<DemandResponse> {
+    override fun getDemandList(searchParam: DemandSearchParam): Flow<DemandResponse> {
         return when (searchParam.demandType) {
             DemandType.SETTLED -> {
                 // Get created demands from sales-service DB
-                val total = demandRepository.countDemands(searchParam)
-                if (total == 0L) return PageImpl(emptyList(), pageable, 0)
-
-                val demands = demandRepository.findDemands(searchParam, pageable)
+                demandRepository.findDemands(searchParam)
                     .map { DemandResponse.from(it) }
-                    .toList()
-                PageImpl(demands, pageable, total)
             }
             DemandType.UNSETTLED -> {
                 // Get unbilled demand summary from req-service API
-                getUnbilledDemandSummaryFromReqService(searchParam, pageable)
+                getUnbilledDemandSummaryFromReqService(searchParam)
             }
         }
     }
@@ -66,28 +60,19 @@ class BillingQueryService(
      * Business Rules:
      * 1. Call req-service API to get unbilled test items (closingCd = "CLCD_N")
      * 2. Map response to DemandResponse format
-     * 3. Return empty page if req-service call fails
+     * 3. Return empty flow if req-service call fails
      */
-    private suspend fun getUnbilledDemandSummaryFromReqService(
-        searchParam: DemandSearchParam,
-        pageable: Pageable
-    ): Page<DemandResponse> {
-        val reqServicePage = reqServiceClient.getUnbilledDemandSummary(
+    private fun getUnbilledDemandSummaryFromReqService(
+        searchParam: DemandSearchParam
+    ): Flow<DemandResponse> = flow {
+        val summaries = reqServiceClient.getUnbilledDemandSummary(
             startDt = searchParam.startDt,
             endDt = searchParam.endDt,
-            custCd = searchParam.custCd,
-            page = pageable.pageNumber,
-            size = pageable.pageSize
-        ) ?: return PageImpl(emptyList(), pageable, 0)
-
-        val demandResponses = reqServicePage.content.map {
-            it.toDemandResponse(searchParam.startDt)
-        }
-
-        return PageImpl(
-            demandResponses,
-            pageable,
-            reqServicePage.totalElements
+            custCd = searchParam.custCd
         )
+
+        summaries.forEach { summary ->
+            emit(summary.toDemandResponse(searchParam.startDt))
+        }
     }
 }

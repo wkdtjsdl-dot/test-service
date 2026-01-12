@@ -31,7 +31,6 @@ fun TstServiceUnbilledDemandSummary.toDemandResponse(
         slstmtNo = null,                        // No statement number before closing
         slstmtSendDt = null,                    // No send date before closing
         billPublYn = false,
-        exrtId = null,
         creator = "-",                          // Not yet created
         createDtime = LocalDateTime.now(),      // Query time
         colledgerId = null,                     // Not set before closing
@@ -63,7 +62,6 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
         slstmtNo = null,                        // No statement number before closing
         slstmtSendDt = null,                    // No send date before closing
         billPublYn = false,
-        exrtId = null,
         creator = "-",                          // Not yet created
         createDtime = LocalDateTime.now(),      // Query time
         colledgerId = null,                     // Not set before closing

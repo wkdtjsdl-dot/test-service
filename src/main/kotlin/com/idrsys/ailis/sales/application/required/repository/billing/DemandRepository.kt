@@ -3,7 +3,6 @@ package com.idrsys.ailis.sales.application.required.repository.billing
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.domain.model.Demand
 import kotlinx.coroutines.flow.Flow
-import org.springframework.data.domain.Pageable
 import java.time.LocalDate
 
 /**
@@ -24,14 +23,9 @@ interface DemandRepository {
 
     // Custom query operations
     /**
-     * Find demands (settled) with pagination
+     * Find demands (settled)
      */
-    fun findDemands(searchParam: DemandSearchParam, pageable: Pageable): Flow<Demand>
-
-    /**
-     * Count demands (settled)
-     */
-    suspend fun countDemands(searchParam: DemandSearchParam): Long
+    fun findDemands(searchParam: DemandSearchParam): Flow<Demand>
 
     /**
      * Find demand by ID

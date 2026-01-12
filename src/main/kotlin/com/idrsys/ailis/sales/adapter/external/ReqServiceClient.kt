@@ -1,6 +1,6 @@
 package com.idrsys.ailis.sales.adapter.external
 
-import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandPage
+import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -26,17 +26,13 @@ class ReqServiceClient(
      * @param startDt Start date
      * @param endDt End date
      * @param custCd Customer code (optional)
-     * @param page Page number
-     * @param size Page size
-     * @return Page of unbilled demand summaries
+     * @return List of unbilled demand summaries
      */
     suspend fun getUnbilledDemandSummary(
         startDt: LocalDate,
         endDt: LocalDate,
-        custCd: String? = null,
-        page: Int = 0,
-        size: Int = 15
-    ): ReqServiceUnbilledDemandPage? {
+        custCd: String? = null
+    ): List<ReqServiceUnbilledDemandSummary> {
         return try {
             client.get()
                 .uri { uriBuilder ->
@@ -44,14 +40,12 @@ class ReqServiceClient(
                     builder.queryParam("startDt", startDt.toString())
                     builder.queryParam("endDt", endDt.toString())
                     custCd?.let { builder.queryParam("custCd", it) }
-                    builder.queryParam("page", page)
-                    builder.queryParam("size", size)
                     builder.build()
                 }
                 .retrieve()
-                .awaitBody<ReqServiceUnbilledDemandPage>()
+                .awaitBody<List<ReqServiceUnbilledDemandSummary>>()
         } catch (ex: Exception) {
-            null
+            emptyList()
         }
     }
 }

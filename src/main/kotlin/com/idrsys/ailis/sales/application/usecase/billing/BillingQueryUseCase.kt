@@ -2,8 +2,7 @@ package com.idrsys.ailis.sales.application.usecase.billing
 
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Billing Query Use Case
@@ -16,7 +15,7 @@ interface BillingQueryUseCase {
      *
      * Returns unified DemandResponse type for both cases
      */
-    suspend fun getDemandList(searchParam: DemandSearchParam, pageable: Pageable): Page<DemandResponse>
+    fun getDemandList(searchParam: DemandSearchParam): Flow<DemandResponse>
 
     /**
      * Get demand detail

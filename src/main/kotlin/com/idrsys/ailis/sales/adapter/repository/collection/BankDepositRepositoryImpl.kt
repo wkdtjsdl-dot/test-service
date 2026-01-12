@@ -6,7 +6,6 @@ import com.idrsys.ailis.sales.domain.model.BankDeposit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import org.jooq.DSLContext
-import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 
@@ -31,14 +30,9 @@ class BankDepositRepositoryImpl(
     }
 
     // Custom query operations (implemented with jOOQ)
-    override fun findBankDeposits(searchParam: BankDepositSearchParam, pageable: Pageable): Flow<BankDeposit> {
+    override fun findBankDeposits(searchParam: BankDepositSearchParam): Flow<BankDeposit> {
         // TODO: Implement with jOOQ when needed
         return emptyFlow()
-    }
-
-    override suspend fun countBankDeposits(searchParam: BankDepositSearchParam): Long {
-        // TODO: Implement with jOOQ when needed
-        return 0L
     }
 
     override suspend fun findBankDepositById(bankDepositId: String): BankDeposit? {

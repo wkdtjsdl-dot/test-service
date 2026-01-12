@@ -11,11 +11,9 @@ import com.idrsys.ailis.sales.application.required.repository.collection.BankDep
 import com.idrsys.ailis.sales.application.required.repository.collection.CardPaymentRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionLedgerRepository
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionQueryUseCase
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -81,32 +79,20 @@ class CollectionQueryService(
     /**
      * Get card payment list (unregistered or all)
      */
-    override suspend fun getCardPaymentList(
-        searchParam: CardPaymentSearchParam,
-        pageable: Pageable
-    ): Page<CardPaymentResponse> {
-        val total = cardPaymentRepository.countCardPayments(searchParam)
-        if (total == 0L) return PageImpl(emptyList(), pageable, 0)
-
-        val cardPayments = cardPaymentRepository.findCardPayments(searchParam, pageable)
+    override fun getCardPaymentList(
+        searchParam: CardPaymentSearchParam
+    ): Flow<CardPaymentResponse> {
+        return cardPaymentRepository.findCardPayments(searchParam)
             .map { CardPaymentResponse.from(it) }
-            .toList()
-        return PageImpl(cardPayments, pageable, total)
     }
 
     /**
      * Get bank deposit list (unregistered or all)
      */
-    override suspend fun getBankDepositList(
-        searchParam: BankDepositSearchParam,
-        pageable: Pageable
-    ): Page<BankDepositResponse> {
-        val total = bankDepositRepository.countBankDeposits(searchParam)
-        if (total == 0L) return PageImpl(emptyList(), pageable, 0)
-
-        val bankDeposits = bankDepositRepository.findBankDeposits(searchParam, pageable)
+    override fun getBankDepositList(
+        searchParam: BankDepositSearchParam
+    ): Flow<BankDepositResponse> {
+        return bankDepositRepository.findBankDeposits(searchParam)
             .map { BankDepositResponse.from(it) }
-            .toList()
-        return PageImpl(bankDeposits, pageable, total)
     }
 }

@@ -33,7 +33,6 @@ CREATE TABLE sales_scm.sbl_demand (
     sap_cust_cd VARCHAR(255),
     bill_publ_yn BOOLEAN NOT NULL DEFAULT FALSE,
     invc_recp_email_addr VARCHAR(255),
-    exrt_id BIGINT,
     creator VARCHAR(255) NOT NULL,
     create_dtime TIMESTAMP NOT NULL,
     updater VARCHAR(255) NOT NULL,

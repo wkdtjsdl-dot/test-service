@@ -3,7 +3,9 @@ package com.idrsys.ailis.sales.adapter.web
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
 import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandCommand
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
+import com.idrsys.ailis.sales.application.dto.request.billing.DemandType
 import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementCommand
+import java.time.LocalDate
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
@@ -14,13 +16,10 @@ import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
-import org.springframework.data.web.PageableDefault
+import kotlinx.coroutines.flow.Flow
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 
 /**
  * Billing Controller
@@ -92,17 +91,30 @@ class BillingController(
      *
      * Returns unified DemandResponse type for both SETTLED and UNSETTLED cases
      *
-     * @param searchParam Search parameters
-     * @param pageable Pagination parameters
-     * @return Page of DemandResponse
+     * @param demandType Demand type (SETTLED or UNSETTLED)
+     * @param startDt Start date
+     * @param endDt End date
+     * @param custCd Customer code (optional)
+     * @param branchCd Branch code (optional)
+     * @return Flow of DemandResponse
      */
     @Operation(summary = "청구 리스트 조회", description = "청구 마감된 리스트 또는 미청구 리스트 조회")
     @GetMapping("/demands")
-    suspend fun getDemandList(
-        @ModelAttribute searchParam: DemandSearchParam,
-        @PageableDefault(size = 15) pageable: Pageable
-    ): Page<DemandResponse> {
-        return billingQueryUseCase.getDemandList(searchParam, pageable)
+    fun getDemandList(
+        @RequestParam demandType: DemandType,
+        @RequestParam startDt: LocalDate,
+        @RequestParam endDt: LocalDate,
+        @RequestParam(required = false) custCd: String?,
+        @RequestParam(required = false) branchCd: String?
+    ): Flow<DemandResponse> {
+        val searchParam = DemandSearchParam(
+            demandType = demandType,
+            startDt = startDt,
+            endDt = endDt,
+            custCd = custCd,
+            branchCd = branchCd
+        )
+        return billingQueryUseCase.getDemandList(searchParam)
     }
 
     /**

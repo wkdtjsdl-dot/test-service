@@ -65,7 +65,6 @@ class BillingCommandService(
             addtax = addtax,
             demandCharge = demandCharge,
             dscntRate = dscntRate,
-            exrtId = command.exrtId,
             creator = adminId,
             createDtime = LocalDateTime.now(),
             updater = adminId,

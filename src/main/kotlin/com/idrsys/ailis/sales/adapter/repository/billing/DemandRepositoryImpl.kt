@@ -2,7 +2,6 @@ package com.idrsys.ailis.sales.adapter.repository.billing
 
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toDemand
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
-import com.idrsys.ailis.sales.application.dto.request.billing.DemandType
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.domain.model.Demand
 import com.idrsys.ailis.sales.generated.jooq.Tables.SBL_DEMAND
@@ -11,9 +10,6 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
 import org.jooq.DSLContext
-import org.jooq.Query
-import org.jooq.SelectLimitStep
-import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
@@ -51,30 +47,17 @@ class DemandRepositoryImpl(
     }
 
     // Custom query operations (implemented with jOOQ)
-    override fun findDemands(searchParam: DemandSearchParam, pageable: Pageable): Flow<Demand> {
+    override fun findDemands(searchParam: DemandSearchParam): Flow<Demand> {
         val conditions = buildConditions(searchParam)
         val query = dslContext.select(SBL_DEMAND.asterisk())
             .from(SBL_DEMAND)
             .where(conditions)
             .orderBy(SBL_DEMAND.DEMAND_DT.desc())
-            .let { applyPaging(it, pageable) }
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
         return sql.map { row, _ -> row.toDemand() }.all().asFlow()
-    }
-
-    override suspend fun countDemands(searchParam: DemandSearchParam): Long {
-        val conditions = buildConditions(searchParam)
-        val query = dslContext.selectCount()
-            .from(SBL_DEMAND)
-            .where(conditions)
-
-        var sql = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
-
-        return sql.map { row, _ -> row.get(0, java.lang.Long::class.java)!!.toLong() }.one().awaitSingleOrNull() ?: 0L
     }
 
     override suspend fun findDemandById(demandId: String): Demand? {
@@ -88,11 +71,6 @@ class DemandRepositoryImpl(
         return sql.map { row, _ -> row.toDemand() }.one().awaitSingleOrNull()
     }
 
-    private fun applyPaging(q: SelectLimitStep<*>, pageable: Pageable): Query {
-        if (pageable.isUnpaged) return q
-        return q.limit(pageable.pageSize).offset(pageable.offset)
-    }
-
     private fun buildConditions(searchParam: DemandSearchParam): List<Condition> {
         val conds = mutableListOf<Condition>()
 
@@ -104,11 +82,8 @@ class DemandRepositoryImpl(
             conds += SBL_DEMAND.CUST_CD.eq(it)
         }
 
-        // Demand type filter (settled only - unsettled is now from tst-service)
-        if (searchParam.demandType == DemandType.SETTLED) {
-            // Settled demands have sales statement number
-            conds += SBL_DEMAND.SLSTMT_NO.isNotNull
-        }
+        // Note: SETTLED demands are all records in SBL_DEMAND table
+        // (SLSTMT_NO is only set after SAP transmission, not at billing close time)
 
         return conds
     }
