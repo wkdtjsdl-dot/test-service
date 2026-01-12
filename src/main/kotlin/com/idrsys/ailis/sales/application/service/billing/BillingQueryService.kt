@@ -1,13 +1,12 @@
 package com.idrsys.ailis.sales.application.service.billing
 
-import com.idrsys.ailis.sales.adapter.external.TstServiceClient
+import com.idrsys.ailis.sales.adapter.external.ReqServiceClient
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandType
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.application.usecase.billing.BillingQueryUseCase
 import com.idrsys.ailis.sales.shared.mapper.toDemandResponse
-import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Page
@@ -25,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class BillingQueryService(
     private val demandRepository: DemandRepository,
-    private val tstServiceClient: TstServiceClient
+    private val reqServiceClient: ReqServiceClient
 ) : BillingQueryUseCase {
 
     /**
@@ -33,7 +32,7 @@ class BillingQueryService(
      *
      * Business Rules:
      * 1. SETTLED: Demands that have been created (청구 완료) - from sales-service DB
-     * 2. UNSETTLED: Test requests not yet included in demands (미청구) - from tst-service API
+     * 2. UNSETTLED: Test requests not yet included in demands (미청구) - from req-service API
      */
     override suspend fun getDemandList(searchParam: DemandSearchParam, pageable: Pageable): Page<DemandResponse> {
         return when (searchParam.demandType) {
@@ -48,8 +47,8 @@ class BillingQueryService(
                 PageImpl(demands, pageable, total)
             }
             DemandType.UNSETTLED -> {
-                // Get unbilled demand summary from tst-service API
-                getUnbilledDemandSummaryFromTstService(searchParam, pageable)
+                // Get unbilled demand summary from req-service API
+                getUnbilledDemandSummaryFromReqService(searchParam, pageable)
             }
         }
     }
@@ -62,18 +61,18 @@ class BillingQueryService(
     }
 
     /**
-     * Get unbilled demand summary from tst-service
+     * Get unbilled demand summary from req-service
      *
      * Business Rules:
-     * 1. Call tst-service API to get unbilled test items (closingCd = "CLCD_N")
+     * 1. Call req-service API to get unbilled test items (closingCd = "CLCD_N")
      * 2. Map response to DemandResponse format
-     * 3. Return empty page if tst-service call fails
+     * 3. Return empty page if req-service call fails
      */
-    private suspend fun getUnbilledDemandSummaryFromTstService(
+    private suspend fun getUnbilledDemandSummaryFromReqService(
         searchParam: DemandSearchParam,
         pageable: Pageable
     ): Page<DemandResponse> {
-        val tstServicePage = tstServiceClient.getUnbilledDemandSummary(
+        val reqServicePage = reqServiceClient.getUnbilledDemandSummary(
             startDt = searchParam.startDt,
             endDt = searchParam.endDt,
             custCd = searchParam.custCd,
@@ -81,14 +80,14 @@ class BillingQueryService(
             size = pageable.pageSize
         ) ?: return PageImpl(emptyList(), pageable, 0)
 
-        val demandResponses = tstServicePage.content.map {
+        val demandResponses = reqServicePage.content.map {
             it.toDemandResponse(searchParam.startDt)
         }
 
         return PageImpl(
             demandResponses,
             pageable,
-            tstServicePage.totalElements
+            reqServicePage.totalElements
         )
     }
 }

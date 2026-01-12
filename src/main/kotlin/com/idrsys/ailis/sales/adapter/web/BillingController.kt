@@ -116,7 +116,6 @@ class BillingController(
     suspend fun getDemandDetail(
         @PathVariable demandId: String
     ): ResponseEntity<DemandResponse> {
-//        return billingQueryUseCase.getDemandDetail(demandId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "청구서를 찾을 수 없습니다: $demandId")
         return billingQueryUseCase.getDemandDetail(demandId)?.let {
             ResponseEntity.ok(it)
         } ?: ResponseEntity.notFound().build()

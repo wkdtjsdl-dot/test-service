@@ -75,39 +75,4 @@ class TstServiceClient(
             null
         }
     }
-
-    /**
-     * Get unbilled demand summary from tst-service
-     *
-     * @param startDt Start date
-     * @param endDt End date
-     * @param custCd Customer code (optional)
-     * @param page Page number
-     * @param size Page size
-     * @return Page of unbilled demand summaries
-     */
-    suspend fun getUnbilledDemandSummary(
-        startDt: LocalDate,
-        endDt: LocalDate,
-        custCd: String? = null,
-        page: Int = 0,
-        size: Int = 15
-    ): TstServiceUnbilledDemandPage? {
-        return try {
-            client.get()
-                .uri { uriBuilder ->
-                    val builder = uriBuilder.path("/api/inner/bts/item/unbilled-demands")
-                    builder.queryParam("startDt", startDt.toString())
-                    builder.queryParam("endDt", endDt.toString())
-                    custCd?.let { builder.queryParam("custCd", it) }
-                    builder.queryParam("page", page)
-                    builder.queryParam("size", size)
-                    builder.build()
-                }
-                .retrieve()
-                .awaitBody<TstServiceUnbilledDemandPage>()
-        } catch (ex: Exception) {
-            null
-        }
-    }
 }
