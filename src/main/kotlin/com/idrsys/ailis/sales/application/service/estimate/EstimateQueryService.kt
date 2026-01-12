@@ -6,7 +6,7 @@ import com.idrsys.ailis.sales.application.required.repository.estimate.EstimateI
 import com.idrsys.ailis.sales.application.required.repository.estimate.EstimateRepository
 import com.idrsys.ailis.sales.application.usecase.estimate.EstimateQueryUseCase
 import com.idrsys.web.exception.UserDefinedException
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -31,18 +31,19 @@ class EstimateQueryService(
      */
     override suspend fun getEstimateList(
         searchParam: EstimateSearchParam,
-        pageable: Pageable
-    ): Page<EstimateResponse> {
-        val total = estimateRepository.countEstimates(searchParam)
-        if (total == 0L) return PageImpl(emptyList(), pageable, 0)
+    ): Flow<EstimateResponse> {
+//        val total = estimateRepository.countEstimates(searchParam)
+//        if (total == 0L) return PageImpl(emptyList(), pageable, 0)
+//
+//        val estimates = estimateRepository.findEstimates(searchParam, pageable)
+//            .map { estimate ->
+//                val items = estimateItemRepository.findByEstimateId(estimate.estimateId!!).toList()
+//                EstimateResponse.from(estimate, items)
+//            }
+//            .toList()
+//        return PageImpl(estimates, pageable, total)
+        return estimateRepository.findEstimates(searchParam)
 
-        val estimates = estimateRepository.findEstimates(searchParam, pageable)
-            .map { estimate ->
-                val items = estimateItemRepository.findByEstimateId(estimate.estimateId!!).toList()
-                EstimateResponse.from(estimate, items)
-            }
-            .toList()
-        return PageImpl(estimates, pageable, total)
     }
 
     /**
