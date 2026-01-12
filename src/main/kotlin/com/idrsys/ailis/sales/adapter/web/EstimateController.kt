@@ -12,6 +12,7 @@ import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -93,9 +94,8 @@ class EstimateController(
     @GetMapping
     suspend fun getEstimateList(
         @ModelAttribute searchParam: EstimateSearchParam,
-        @PageableDefault(size = 15) pageable: Pageable
-    ): Page<EstimateResponse> {
-        return estimateQueryUseCase.getEstimateList(searchParam, pageable)
+    ): Flow<EstimateResponse> {
+        return estimateQueryUseCase.getEstimateList(searchParam)
     }
 
     /**
