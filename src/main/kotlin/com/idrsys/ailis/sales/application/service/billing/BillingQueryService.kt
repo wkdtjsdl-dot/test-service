@@ -2,13 +2,12 @@ package com.idrsys.ailis.sales.application.service.billing
 
 import com.idrsys.ailis.sales.adapter.external.ReqServiceClient
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
-import com.idrsys.ailis.sales.application.dto.request.billing.DemandType
+import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.application.usecase.billing.BillingQueryUseCase
 import com.idrsys.ailis.sales.shared.mapper.toDemandResponse
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import org.springframework.stereotype.Service
@@ -34,13 +33,13 @@ class BillingQueryService(
      * 2. UNSETTLED: Test requests not yet included in demands (미청구) - from req-service API
      */
     override fun getDemandList(searchParam: DemandSearchParam): Flow<DemandResponse> {
-        return when (searchParam.demandType) {
-            DemandType.SETTLED -> {
+        return when (searchParam.clcdYn) {
+            CLCD.CLCD_Y -> {
                 // Get created demands from sales-service DB
                 demandRepository.findDemands(searchParam)
                     .map { DemandResponse.from(it) }
             }
-            DemandType.UNSETTLED -> {
+            CLCD.CLCD_N -> {
                 // Get unbilled demand summary from req-service API
                 getUnbilledDemandSummaryFromReqService(searchParam)
             }

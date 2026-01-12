@@ -19,15 +19,15 @@ Accept: application/json
 %}
 
 ### 청구 리스트 조회 (이전청구)
-GET {{api-service}}/api/sales/billing/demands?demandType=SETTLED&startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
+GET {{api-service}}/api/sales/billing/demands?clcdYn=CLCD_Y&startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 청구 리스트 조회 (미청구)
-GET {{api-service}}/api/sales/billing/demands?demandType=UNSETTLED&startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
+GET {{api-service}}/api/sales/billing/demands?clcdYn=CLCD_N&startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 청구 리스트 조회 (거래처 필터링)
-GET {{api-service}}/api/sales/billing/demands?demandType=SETTLED&startDt=2025-12-01&endDt=2025-12-31&custCd=CUST001&page=0&size=15
+GET {{api-service}}/api/sales/billing/demands?clcdYn=CLCD_Y&startDt=2025-12-01&endDt=2025-12-31&custCd=CUST001&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 청구서 생성 (마감)

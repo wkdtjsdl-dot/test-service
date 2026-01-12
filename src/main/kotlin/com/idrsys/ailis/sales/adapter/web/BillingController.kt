@@ -3,7 +3,7 @@ package com.idrsys.ailis.sales.adapter.web
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
 import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandCommand
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
-import com.idrsys.ailis.sales.application.dto.request.billing.DemandType
+import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
 import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementCommand
 import java.time.LocalDate
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -91,7 +92,7 @@ class BillingController(
      *
      * Returns unified DemandResponse type for both SETTLED and UNSETTLED cases
      *
-     * @param demandType Demand type (SETTLED or UNSETTLED)
+     * @param CLCD Demand type (SETTLED or UNSETTLED)
      * @param startDt Start date
      * @param endDt End date
      * @param custCd Customer code (optional)
@@ -101,19 +102,8 @@ class BillingController(
     @Operation(summary = "청구 리스트 조회", description = "청구 마감된 리스트 또는 미청구 리스트 조회")
     @GetMapping("/demands")
     fun getDemandList(
-        @RequestParam demandType: DemandType,
-        @RequestParam startDt: LocalDate,
-        @RequestParam endDt: LocalDate,
-        @RequestParam(required = false) custCd: String?,
-        @RequestParam(required = false) branchCd: String?
+        @ParameterObject searchParam: DemandSearchParam,
     ): Flow<DemandResponse> {
-        val searchParam = DemandSearchParam(
-            demandType = demandType,
-            startDt = startDt,
-            endDt = endDt,
-            custCd = custCd,
-            branchCd = branchCd
-        )
         return billingQueryUseCase.getDemandList(searchParam)
     }
 

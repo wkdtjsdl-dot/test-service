@@ -110,7 +110,7 @@ class BillingControllerIntegrationTest {
         // Act & Assert - Flow returns JSON array directly (no pagination wrapper)
         webTestClient
             .get()
-            .uri("/api/billing/demands?demandType=SETTLED&startDt=2025-12-01&endDt=2025-12-31")
+            .uri("/api/billing/demands?clcdYn=CLCD_Y&startDt=2025-12-01&endDt=2025-12-31")
             .exchange()
             .expectStatus().isOk
             .expectBody()

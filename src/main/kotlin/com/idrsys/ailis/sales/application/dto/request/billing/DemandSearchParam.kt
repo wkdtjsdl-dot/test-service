@@ -8,14 +8,14 @@ import java.time.LocalDate
  * Parameters for querying demand list (settled or unsettled)
  */
 data class DemandSearchParam(
-    val demandType: DemandType,
+    val clcdYn: CLCD,
     val startDt: LocalDate,
     val endDt: LocalDate,
     val custCd: String? = null,
     val branchCd: String? = null
 )
 
-enum class DemandType {
-    SETTLED,    // 이전청구 (마감완료)
-    UNSETTLED   // 미청구
+enum class CLCD {
+    CLCD_Y,    // 마감완료(이전청구)
+    CLCD_N   // 마감전(미청구)
 }
