@@ -1,10 +1,10 @@
 ### 관리자 Login 요청
-POST {{api-service}}/api/sales/auth/adminLogin
+POST {{api-service}}/api/auth/adminLogin
 Content-Type: application/json
 Accept: application/json
 
 {
-  "adminId": "TEST003",
+  "adminId": "TEST001",
   "passwd": "test1234"
 }
 
@@ -19,19 +19,20 @@ Accept: application/json
 %}
 
 ### 청구 리스트 조회 (이전청구)
-GET {{api-service}}/api/sales/billing/demands?clcdYn=CLCD_Y&startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
+GET {{api-service}}/api/sals/billing/demands?clcdYn=CLCD_Y&startDt=2024-12-01&endDt=2025-12-31&page=0&size=15
+Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 청구 리스트 조회 (미청구)
-GET {{api-service}}/api/sales/billing/demands?clcdYn=CLCD_N&startDt=2025-12-01&endDt=2025-12-31&page=0&size=15
+GET {{api-service}}/api/sals/billing/demands?clcdYn=CLCD_N&startDt=2024-12-01&endDt=2025-12-31&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 청구 리스트 조회 (거래처 필터링)
-GET {{api-service}}/api/sales/billing/demands?clcdYn=CLCD_Y&startDt=2025-12-01&endDt=2025-12-31&custCd=CUST001&page=0&size=15
+GET {{api-service}}/api/sals/billing/demands?clcdYn=CLCD_Y&startDt=2025-12-01&endDt=2025-12-31&custCd=CUST001&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 청구서 생성 (마감)
-POST {{api-service}}/api/sales/billing/demands
+POST {{api-service}}/api/sals/billing/demands
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
@@ -50,11 +51,11 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 %}
 
 ### 청구 상세 조회
-GET {{api-service}}/api/sales/billing/demands/{{demandId}}
+GET {{api-service}}/api/sals/billing/demands/{{demandId}}
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 매출전표 생성
-POST {{api-service}}/api/sales/billing/demands/{{demandId}}/sales-statements
+POST {{api-service}}/api/sals/billing/demands/{{demandId}}/sales-statements
 Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
@@ -64,5 +65,5 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 %}
 
 ### 청구서 취소 (매출전표 생성 전에만 가능)
-DELETE {{api-service}}/api/sales/billing/demands/{{demandId}}
+DELETE {{api-service}}/api/sals/billing/demands/{{demandId}}
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
