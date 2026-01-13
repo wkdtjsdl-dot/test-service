@@ -301,9 +301,9 @@ class StandardCharge(
     insuCd: String?,
     insuCateNo: String?,
     relatValuePoint: Double?,
-    insuCharge: Double,
+    insurePrice: Double,
     qladCharge: Double,
-    stndCharge: Double,
+    stndPrice: Double,
     lowestCharge: Double,
     qladCd: String?,
     relatValueQladPoint: Double,
@@ -344,16 +344,16 @@ class StandardCharge(
     var relatValuePoint: Double? = relatValuePoint
         private set
 
-    @Column("insu_charge")
-    var insuCharge: Double = insuCharge
+    @Column("insure_price")
+    var insurePrice: Double = insurePrice
         private set
 
     @Column("qlad_charge")
     var qladCharge: Double = qladCharge
         private set
 
-    @Column("stnd_charge")
-    var stndCharge: Double = stndCharge
+    @Column("stnd_price")
+    var stndPrice: Double = stndPrice
         private set
 
     @Column("lowest_charge")
@@ -413,9 +413,9 @@ class StandardCharge(
         this.insuCd = command.insuCd
         this.insuCateNo = command.insuCateNo
         this.relatValuePoint = command.relatValuePoint
-        this.insuCharge = command.insuCharge
+        this.insurePrice = command.insurePrice
         this.qladCharge = command.qladCharge
-        this.stndCharge = command.stndCharge
+        this.stndPrice = command.stndPrice
         this.lowestCharge = command.lowestCharge
         this.qladCd = command.qladCd
         this.relatValueQladPoint = command.relatValueQladPoint
@@ -451,9 +451,9 @@ class StandardCharge(
             insuCd = this.insuCd,
             insuCateNo = this.insuCateNo,
             relatValuePoint = this.relatValuePoint,
-            insuCharge = this.insuCharge,
+            insurePrice = this.insurePrice,
             qladCharge = this.qladCharge,
-            stndCharge = this.stndCharge,
+            stndPrice = this.stndPrice,
             lowestCharge = this.lowestCharge,
             qladCd = this.qladCd,
             relatValueQladPoint = this.relatValueQladPoint,
@@ -480,9 +480,9 @@ class StandardCharge(
                 insuCd = command.insuCd,
                 insuCateNo = command.insuCateNo,
                 relatValuePoint = command.relatValuePoint,
-                insuCharge = command.insuCharge,
+                insurePrice = command.insurePrice,
                 qladCharge = command.qladCharge,
-                stndCharge = command.stndCharge,
+                stndPrice = command.stndPrice,
                 lowestCharge = command.lowestCharge,
                 qladCd = command.qladCd,
                 relatValueQladPoint = command.relatValueQladPoint,
