@@ -54,7 +54,7 @@ class Demand(
 
     init {
         require(custCd.isNotBlank()) { "Customer code cannot be empty" }
-        require(demandCharge >= BigDecimal.ZERO) { "Demand charge must be non-negative" }
+//        require(demandCharge >= BigDecimal.ZERO) { "Demand charge must be non-negative" } -> 수기로 수정하는 데이터의 경우, (-) 금액이 있을 수 있음.
         require(demandStartDt <= demandStndDt) { "Start date must be before or equal to end date" }
         require(creator.isNotBlank()) { "Creator is required" }
     }
@@ -190,7 +190,7 @@ class Demand(
         newAddtax: BigDecimal,
         updater: String
     ) {
-        require(newAddtax >= BigDecimal.ZERO) { "VAT cannot be negative" }
+//        require(newAddtax >= BigDecimal.ZERO) { "VAT cannot be negative" } -> 수기로 조정하는 금액의 경우 (-) 세금이 있을 수 있음
 
         this.supval = newSupval
         this.addtax = newAddtax
