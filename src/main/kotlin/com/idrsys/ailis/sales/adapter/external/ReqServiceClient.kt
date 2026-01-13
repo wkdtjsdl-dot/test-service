@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.adapter.external
 
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary
+import com.idrsys.ailis.sales.application.required.port.ReqServicePort
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -11,7 +12,7 @@ import java.time.LocalDate
 class ReqServiceClient(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
-) {
+) : ReqServicePort {
     final private val client: WebClient
 
     init {
@@ -28,10 +29,10 @@ class ReqServiceClient(
      * @param custCd Customer code (optional)
      * @return List of unbilled demand summaries
      */
-    suspend fun getUnbilledDemandSummary(
+    override suspend fun getUnbilledDemandSummary(
         startDt: LocalDate,
         endDt: LocalDate,
-        custCd: String? = null
+        custCd: String?
     ): List<ReqServiceUnbilledDemandSummary> {
         return try {
             client.get()

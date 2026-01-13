@@ -1,9 +1,9 @@
 package com.idrsys.ailis.sales.application.service.billing
 
-import com.idrsys.ailis.sales.adapter.external.ReqServiceClient
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
+import com.idrsys.ailis.sales.application.required.port.ReqServicePort
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.application.usecase.billing.BillingQueryUseCase
 import com.idrsys.ailis.sales.shared.mapper.toDemandResponse
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class BillingQueryService(
     private val demandRepository: DemandRepository,
-    private val reqServiceClient: ReqServiceClient
+    private val reqServicePort: ReqServicePort
 ) : BillingQueryUseCase {
 
     /**
@@ -64,7 +64,7 @@ class BillingQueryService(
     private fun getUnbilledDemandSummaryFromReqService(
         searchParam: DemandSearchParam
     ): Flow<DemandResponse> = flow {
-        val summaries = reqServiceClient.getUnbilledDemandSummary(
+        val summaries = reqServicePort.getUnbilledDemandSummary(
             startDt = searchParam.startDt,
             endDt = searchParam.endDt,
             custCd = searchParam.custCd
