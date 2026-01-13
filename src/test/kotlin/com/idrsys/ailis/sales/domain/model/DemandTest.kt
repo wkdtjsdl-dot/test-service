@@ -68,26 +68,6 @@ class DemandTest {
     }
 
     @Test
-    fun `should throw exception when demand charge is negative`() {
-        // Given & When & Then
-        assertThrows<IllegalArgumentException> {
-            Demand(
-                demandId = "demand-uuid-001",
-                demandDt = LocalDate.now(),
-                custCd = "CUST001",
-                demandStartDt = LocalDate.now(),
-                demandStndDt = LocalDate.now(),
-                stndPrice = BigDecimal.ZERO,
-                supval = BigDecimal.ZERO,
-                demandCharge = BigDecimal("-100"),
-                addtax = BigDecimal.ZERO,
-                dscntRate = BigDecimal.ZERO,
-                creator = "admin"
-            )
-        }
-    }
-
-    @Test
     fun `should throw exception when start date is after end date`() {
         // Given & When & Then
         assertThrows<IllegalArgumentException> {

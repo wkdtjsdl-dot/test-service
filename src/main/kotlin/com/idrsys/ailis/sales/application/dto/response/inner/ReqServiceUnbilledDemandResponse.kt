@@ -6,7 +6,7 @@ import java.math.BigDecimal
  * Unbilled demand summary from req-service (Inner API)
  */
 data class ReqServiceUnbilledDemandSummary(
-    val custCd: String,
+    val directAcctCd: String,
     val custNm: String?,
     val branchNm: String?,
     val stndPrice: BigDecimal,
