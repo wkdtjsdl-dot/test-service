@@ -96,7 +96,7 @@ class EstimateItem(
         private set
 
     @Transient
-    private var _isNew: Boolean = true
+    private var _isNew: Boolean = false
 
     fun setAsNew() {
         this._isNew = true

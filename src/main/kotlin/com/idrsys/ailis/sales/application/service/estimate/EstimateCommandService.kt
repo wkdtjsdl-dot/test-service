@@ -35,6 +35,60 @@ class EstimateCommandService(
      * 2. Item amounts auto-calculated
      * 3. Totals auto-calculated from items
      */
+//    override suspend fun createEstimate(command: CreateEstimateCommand, adminId: String): EstimateResponse {
+//        // 1. Validate items
+//        if (command.items.isEmpty()) {
+//            throw UserDefinedException("INVALID_REQUEST", "최소 1개 이상의 항목이 필요합니다")
+//        }
+//
+//        // 2. Generate document number
+//        val docNo = generateDocumentNumber(command.docType, command.regDt)
+//
+//        // 3. Create estimate entity
+//        val estimate = Estimate(
+//            docType = command.docType,
+//            docNo = docNo,
+//            regDt = command.regDt,
+//            title = command.title,
+//            receiver = command.receiver,
+//            reference = command.reference,
+//            writerEmpNo = command.writerEmpNo,
+//            deptCd = command.deptCd,
+//            totalSupval = java.math.BigDecimal.ZERO,
+//            totalAddtax = java.math.BigDecimal.ZERO,
+//            totalAmt = java.math.BigDecimal.ZERO,
+//            remark = command.remark,
+//            note = command.note,
+//            creator = adminId,
+//            createDtime = LocalDateTime.now(),
+//            updater = adminId,
+//            updateDtime = LocalDateTime.now()
+//        ).apply { setAsNew() }
+//
+//        val savedEstimate = estimateRepository.save(estimate)
+//
+//        // 4. Create estimate items with auto-incremented seq
+//        val items = command.items.mapIndexed { index, itemCommand ->
+//            EstimateItem.create(
+//                estimateId = savedEstimate.estimateId ?: throw UserDefinedException("INVALID_STATE", "Estimate ID is null"),
+//                seq = index + 1,  // 1-based sequence
+//                item = itemCommand.item,
+//                qnty = itemCommand.qnty,
+//                unitPrice = itemCommand.unitPrice,
+//                creator = adminId
+//            )
+//        }
+//
+//        val savedItems = items.map { estimateItemRepository.save(it) }
+//
+//        // 5. Recalculate totals
+//        estimate.recalculateTotals(savedItems)
+//        estimateRepository.save(estimate)
+//
+//        // 6. Return response
+//        return EstimateResponse.from(estimate, savedItems)
+//    }
+
     override suspend fun createEstimate(command: CreateEstimateCommand, adminId: String): EstimateResponse {
         // 1. Validate items
         if (command.items.isEmpty()) {
@@ -44,9 +98,28 @@ class EstimateCommandService(
         // 2. Generate document number
         val docNo = generateDocumentNumber(command.docType, command.regDt)
 
-        // 3. Create estimate entity
+        // 3. Create estimate items first (총액 계산을 위해)
+        val tempEstimateId = java.util.UUID.randomUUID().toString()
+
+        val items = command.items.mapIndexed { index, itemCommand ->
+            EstimateItem.create(
+                estimateId = tempEstimateId,
+                seq = index + 1,
+                item = itemCommand.item,
+                qnty = itemCommand.qnty,
+                unitPrice = itemCommand.unitPrice,
+                creator = adminId
+            )
+        }
+
+        // 4. Calculate totals from items
+        val totalSupval = items.fold(java.math.BigDecimal.ZERO) { acc, item -> acc.add(item.supval) }
+        val totalAddtax = items.fold(java.math.BigDecimal.ZERO) { acc, item -> acc.add(item.addtax) }
+        val totalAmt = items.fold(java.math.BigDecimal.ZERO) { acc, item -> acc.add(item.demandCharge) }
+
+        // 5. Create estimate entity with calculated totals
         val estimate = Estimate(
-            estimateId = null,
+            estimateId = tempEstimateId,
             docType = command.docType,
             docNo = docNo,
             regDt = command.regDt,
@@ -55,39 +128,24 @@ class EstimateCommandService(
             reference = command.reference,
             writerEmpNo = command.writerEmpNo,
             deptCd = command.deptCd,
-            totalSupval = java.math.BigDecimal.ZERO,
-            totalAddtax = java.math.BigDecimal.ZERO,
-            totalAmt = java.math.BigDecimal.ZERO,
+            totalSupval = totalSupval,
+            totalAddtax = totalAddtax,
+            totalAmt = totalAmt,
             remark = command.remark,
             note = command.note,
             creator = adminId,
             createDtime = LocalDateTime.now(),
             updater = adminId,
             updateDtime = LocalDateTime.now()
-        )
+        ).apply { setAsNew() }
 
         val savedEstimate = estimateRepository.save(estimate)
 
-        // 4. Create estimate items with auto-incremented seq
-        val items = command.items.mapIndexed { index, itemCommand ->
-            EstimateItem.create(
-                estimateId = savedEstimate.estimateId ?: throw UserDefinedException("INVALID_STATE", "Estimate ID is null"),
-                seq = index + 1,  // 1-based sequence
-                item = itemCommand.item,
-                qnty = itemCommand.qnty,
-                unitPrice = itemCommand.unitPrice,
-                creator = adminId
-            )
-        }
-
+        // 6. Save estimate items
         val savedItems = items.map { estimateItemRepository.save(it) }
 
-        // 5. Recalculate totals
-        estimate.recalculateTotals(savedItems)
-        estimateRepository.save(estimate)
-
-        // 6. Return response
-        return EstimateResponse.from(estimate, savedItems)
+        // 7. Return response
+        return EstimateResponse.from(savedEstimate, savedItems)
     }
 
     /**
