@@ -39,7 +39,7 @@ class Demand(
     dscntRate: BigDecimal,
     demandCreateDtime: LocalDateTime = LocalDateTime.now(),
     demandCreatorEmpNo: String? = null,
-    insuPrice: BigDecimal? = null,
+    insurePrice: BigDecimal? = null,
     invcOutputDtime: LocalDateTime? = null,
     invcOutputEmpno: String? = null,
     demandMemo: String? = null,
@@ -108,8 +108,8 @@ class Demand(
     var demandCreatorEmpNo: String? = demandCreatorEmpNo
         private set
 
-    @Column("insu_price")
-    var insuPrice: BigDecimal? = insuPrice
+    @Column("insure_price")
+    var insurePrice: BigDecimal? = insurePrice
         private set
 
     @Column("invc_output_dtime")

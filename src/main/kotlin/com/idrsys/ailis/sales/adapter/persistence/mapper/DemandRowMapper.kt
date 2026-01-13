@@ -20,7 +20,7 @@ internal fun Row.toDemand(): Demand {
         dscntRate = this.get("dscnt_rate", BigDecimal::class.java)!!,
         demandCreateDtime = this.get("demand_create_dtime", LocalDateTime::class.java)!!,
         demandCreatorEmpNo = this.get("demand_creator_emp_no", String::class.java),
-        insuPrice = this.get("insu_price", BigDecimal::class.java),
+        insurePrice = this.get("insure_price", BigDecimal::class.java),
         invcOutputDtime = this.get("invc_output_dtime", LocalDateTime::class.java),
         invcOutputEmpno = this.get("invc_output_empno", String::class.java),
         demandMemo = this.get("demand_memo", String::class.java),
