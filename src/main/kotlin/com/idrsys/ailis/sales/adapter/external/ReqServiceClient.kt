@@ -40,7 +40,7 @@ class ReqServiceClient(
                     val builder = uriBuilder.path("/api/inner/rbs/tst-item/unbilled-demands")
                     builder.queryParam("startDt", startDt.toString())
                     builder.queryParam("endDt", endDt.toString())
-                    custCd?.let { builder.queryParam("custCd", it) }
+                    custCd?.let { builder.queryParam("directAcctCd", it) }  // custCd를 직접거래처코드로 맵핑
                     builder.build()
                 }
                 .retrieve()

@@ -71,7 +71,7 @@ class BillingQueryService(
         )
 
         summaries.forEach { summary ->
-            emit(summary.toDemandResponse(searchParam.startDt))
+            emit(summary.toDemandResponse(searchParam.startDt, searchParam.endDt))
         }
     }
 }

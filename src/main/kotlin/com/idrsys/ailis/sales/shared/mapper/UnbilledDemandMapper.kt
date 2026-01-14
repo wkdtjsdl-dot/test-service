@@ -44,16 +44,17 @@ fun TstServiceUnbilledDemandSummary.toDemandResponse(
  * Since this is unbilled (before closing), some fields are set to null or default values
  */
 fun ReqServiceUnbilledDemandSummary.toDemandResponse(
-    searchStartDt: LocalDate
+    searchStartDt: LocalDate,
+    searchEndDt: LocalDate,
 ): DemandResponse {
     return DemandResponse(
         demandId = null,                        // No ID before closing
-        custCd = this.custCd,
+        custCd = this.directAcctCd,
         custNm = this.custNm,
         branchNm = this.branchNm,
         demandDt = LocalDate.now(),             // Query date
         demandStartDt = searchStartDt,          // Search start date
-        demandStndDt = LocalDate.now(),         // Demand standard date (current date)
+        demandStndDt = searchEndDt,             // Demand standard date (Search end date)
         stndPrice = this.stndPrice,
         supval = this.supval,
         addtax = this.addtax,

@@ -23,7 +23,7 @@ CREATE TABLE sales_scm.sbl_demand (
     dscnt_rate DECIMAL(19, 4) NOT NULL,
     demand_create_dtime TIMESTAMP NOT NULL,
     demand_creator_emp_no VARCHAR(255),
-    insu_price DECIMAL(19, 2),
+    insure_price DECIMAL(19, 2),
     invc_output_dtime TIMESTAMP,
     invc_output_empno VARCHAR(255),
     slstmt_no VARCHAR(255),
