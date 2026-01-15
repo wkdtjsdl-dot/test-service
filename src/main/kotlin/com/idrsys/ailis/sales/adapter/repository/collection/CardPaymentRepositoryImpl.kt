@@ -69,7 +69,7 @@ class CardPaymentRepositoryImpl(
                     instlMonth = row[table.INSTL_MONTH.name] as String?,
                     payAmt = row[table.PAY_AMT.name] as BigDecimal,
                     payDt = row[table.PAY_DT.name] as String,
-                    payTime = row[table.PAY_DT.name] as String?,
+                    payTime = row[table.PAY_TIME.name] as String?,
                     cardApprNo = row[table.CARD_APPR_NO.name] as String?,
                     payDivCd = row[table.PAY_DIV_CD.name] as String,
                     regYn = row[table.REG_YN.name] as Boolean,
