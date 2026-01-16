@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.domain.model
 
+import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -24,7 +25,7 @@ import java.time.LocalDateTime
  */
 @Table("sales_scm.sbl_estimate")
 class Estimate(
-    estimateId: String?,
+    estimateId: String? = null,
     docType: String,
     docNo: String,
     regDt: LocalDate,
@@ -52,6 +53,7 @@ class Estimate(
     }
 
     @Id
+    @UuidGeneratedId("estimateId")
     @Column("estimate_id")
     val estimateId: String? = estimateId
 
@@ -124,7 +126,7 @@ class Estimate(
         private set
 
     @Transient
-    private var _isNew: Boolean = true
+    private var _isNew: Boolean = false
 
     fun setAsNew() {
         this._isNew = true
@@ -132,6 +134,37 @@ class Estimate(
 
     override fun getId(): String? = estimateId
     override fun isNew(): Boolean = _isNew
+
+    /**
+     * Update estimate basic info and recalculate totals
+     *
+     * Business Rule:
+     * - Updates basic info (title, receiver, reference, etc.)
+     * - Recalculates totals from items
+     */
+    fun update(
+        title: String,
+        receiver: String?,
+        reference: String?,
+        writerEmpNo: String?,
+        deptCd: String?,
+        remark: String?,
+        note: String?,
+        items: List<EstimateItem>,
+        updater: String
+    ) {
+        require(title.isNotBlank()) { "Title is required" }
+
+        this.title = title
+        this.receiver = receiver
+        this.reference = reference
+        this.writerEmpNo = writerEmpNo
+        this.deptCd = deptCd
+        this.remark = remark
+        this.note = note
+        this.updater = updater
+        recalculateTotals(items)
+    }
 
     /**
      * Recalculate totals from items
@@ -149,7 +182,7 @@ class Estimate(
     }
 
     companion object {
-        const val DOC_TYPE_ESTIMATE = "EST"  // 견적서
-        const val DOC_TYPE_TRANSACTION = "TRN"  // 거래명세서
+        const val DOC_TYPE_ESTIMATE = "견적서"  // 견적서
+        const val DOC_TYPE_TRANSACTION = "거래명세서"  // 거래명세서
     }
 }
