@@ -73,7 +73,10 @@ data class CardPayment(
     val updater: String,
 
     @Column("update_dtime")
-    val updateDtime: LocalDateTime
+    val updateDtime: LocalDateTime,
+
+    @Column("outamt")
+    val outamt: BigDecimal
 ) {
     companion object {
         const val PAY_DIV_APPROVED = "10"  // 승인

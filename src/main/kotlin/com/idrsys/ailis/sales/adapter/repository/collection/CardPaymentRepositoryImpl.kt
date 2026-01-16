@@ -77,6 +77,7 @@ class CardPaymentRepositoryImpl(
                     createDtime = row[table.CREATE_DTIME.name] as LocalDateTime,
                     updater = row[table.UPDATER.name] as String,
                     updateDtime = row[table.UPDATE_DTIME.name] as LocalDateTime,
+                    outamt = row[table.OUTAMT.name] as BigDecimal
                 )
             }
             .asFlow()
