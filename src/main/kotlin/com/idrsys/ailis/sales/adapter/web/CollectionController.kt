@@ -154,8 +154,8 @@ class CollectionController(
     @Operation(summary = "카드 입금내역 조회", description = "신용카드 입금내역 조회 (VAN사로부터 수신한 데이터)")
     @GetMapping("/card-payments")
     suspend fun getCardPaymentList(
-        @RequestParam startDt: LocalDate,
-        @RequestParam endDt: LocalDate,
+        @RequestParam startDt: String,
+        @RequestParam endDt: String,
         @RequestParam(required = false) payDivCd: String?,
         @RequestParam(required = false) regYn: Boolean?
     ): Flow<CardPaymentResponse> {
