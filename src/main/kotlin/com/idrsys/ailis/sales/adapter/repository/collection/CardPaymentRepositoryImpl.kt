@@ -40,8 +40,8 @@ class CardPaymentRepositoryImpl(
 
         condition = condition.and(table.PAY_DT.ge(searchParam.startDt.toString()))
         condition = condition.and(table.PAY_DT.le(searchParam.endDt.toString()))
-        searchParam.payDivCd?.let {
-            condition = condition.and(table.PAY_DIV_CD.eq(it))
+        if (!searchParam.payDivCd.isNullOrBlank()) {
+            condition = condition.and(table.PAY_DIV_CD.eq(searchParam.payDivCd))
         }
         searchParam.regYn?.let {
             condition = condition.and(table.REG_YN.eq(it))
