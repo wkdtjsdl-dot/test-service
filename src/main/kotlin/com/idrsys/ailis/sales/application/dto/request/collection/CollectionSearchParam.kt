@@ -25,8 +25,8 @@ data class CollectionLedgerSearchParam(
  * Card Payment Search Parameters
  */
 data class CardPaymentSearchParam(
-    val startDt: LocalDate,
-    val endDt: LocalDate,
+    val startDt: String,
+    val endDt: String,
     val payDivCd: String? = null,  // "10": approved, "20": cancelled
     val regYn: Boolean? = null
 )

@@ -126,7 +126,8 @@ data class CardPaymentResponse(
     val payAmt: BigDecimal,
     val payDt: String,
     val payTime: String? = null,
-    val cardApprNo: String? = null
+    val cardApprNo: String? = null,
+    val outamt: BigDecimal
 ) {
     companion object {
         fun from(cardPayment: CardPayment): CardPaymentResponse {
@@ -144,7 +145,8 @@ data class CardPaymentResponse(
                 payAmt = cardPayment.payAmt,
                 payDt = cardPayment.payDt,
                 payTime = cardPayment.payTime,
-                cardApprNo = cardPayment.cardApprNo
+                cardApprNo = cardPayment.cardApprNo,
+                outamt = cardPayment.outamt
             )
         }
     }
