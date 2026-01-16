@@ -13,6 +13,7 @@ import com.idrsys.ailis.sales.shared.mapper.toDemandResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -93,23 +94,31 @@ class BillingQueryService(
      *
      * Business Rules:
      * 1. Call req-service API to get individual test item records
-     * 2. Map custCd to directAcctCd for req-service API call
-     * 3. Return individual rows (non-aggregated)
+     * 2. Batch query custNm from scs_cust_mst by distinct custCd list
+     * 3. Map custCd to directAcctCd for req-service API call
+     * 4. Return individual rows (non-aggregated) with custNm
      */
     override fun getBillingRequests(
         searchParam: BillingRequestSearchParam
-    ): Flow<BillingRequestResponse> {
+    ): Flow<BillingRequestResponse> = flow {
         // custCd를 directAcctCd로 맵핑하여 req-service 호출
-        return reqServicePort.getBillingRequests(
+        val details = reqServicePort.getBillingRequests(
             startDt = searchParam.startDt,
             endDt = searchParam.endDt,
             directAcctCd = searchParam.custCd,  // custCd → directAcctCd 맵핑
             closingCd = searchParam.closingCd
-        ).map { detail ->
-            BillingRequestResponse(
+        ).toList()
+
+        // Batch query custNm from scs_cust_mst
+        val custCds = details.mapNotNull { it.custCd }.distinct()
+        val custNmMap = custCustomRepository.findCustNmMapByCustCds(custCds)
+
+        details.forEach { detail ->
+            emit(BillingRequestResponse(
                 tstReqDt = detail.tstReqDt,
                 tstReqNo = detail.tstReqNo.toString(),
                 custCd = detail.custCd,
+                custNm = detail.custCd?.let { custNmMap[it] },
                 patNm = detail.patNm,
                 hospChartNo = detail.hospChartNo,
                 tstMediumCateCd = detail.tstMediumCateCd,
@@ -123,7 +132,7 @@ class BillingQueryService(
                 creator = detail.creator,
                 createDtime = detail.createDtime,
                 closingMemo = detail.closingMemo
-            )
+            ))
         }
     }
 }

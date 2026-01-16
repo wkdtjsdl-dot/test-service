@@ -13,6 +13,7 @@ data class BillingRequestResponse(
     val tstReqDt: LocalDate,
     val tstReqNo: String,
     val custCd: String?,
+    val custNm: String? = null,
     val patNm: String?,
     val hospChartNo: String?,
     val tstMediumCateCd: String?,
