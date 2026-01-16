@@ -1,6 +1,8 @@
 package com.idrsys.ailis.sales.application.required.port
 
+import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceBillingRequestDetail
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 /**
@@ -23,4 +25,20 @@ interface ReqServicePort {
         endDt: LocalDate,
         custCd: String? = null
     ): List<ReqServiceUnbilledDemandSummary>
+
+    /**
+     * Get billing request details from req-service
+     *
+     * @param startDt Start date
+     * @param endDt End date
+     * @param directAcctCd Direct account code (= custCd)
+     * @param closingCd Closing code (optional)
+     * @return Flow of billing request details
+     */
+    fun getBillingRequests(
+        startDt: LocalDate,
+        endDt: LocalDate,
+        directAcctCd: String,
+        closingCd: String? = null
+    ): Flow<ReqServiceBillingRequestDetail>
 }
