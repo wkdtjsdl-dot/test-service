@@ -8,6 +8,18 @@ DROP TABLE IF EXISTS sales_scm.sbl_estimate_item CASCADE;
 DROP TABLE IF EXISTS sales_scm.sbl_estimate CASCADE;
 DROP TABLE IF EXISTS sales_scm.sbl_colledger CASCADE;
 DROP TABLE IF EXISTS sales_scm.sbl_demand CASCADE;
+DROP TABLE IF EXISTS sales_scm.scs_cust_mst CASCADE;
+
+-- scs_cust_mst (고객마스터)
+CREATE TABLE sales_scm.scs_cust_mst (
+    cust_mst_id VARCHAR(255) PRIMARY KEY,
+    cust_cd VARCHAR(50) NOT NULL UNIQUE,
+    cust_nm VARCHAR(100) NOT NULL,
+    creator VARCHAR(50) NOT NULL,
+    create_dtime TIMESTAMP NOT NULL,
+    updater VARCHAR(50) NOT NULL,
+    update_dtime TIMESTAMP NOT NULL
+);
 
 -- sbl_demand (청구마스터)
 CREATE TABLE sales_scm.sbl_demand (
@@ -33,6 +45,7 @@ CREATE TABLE sales_scm.sbl_demand (
     sap_cust_cd VARCHAR(255),
     bill_publ_yn BOOLEAN NOT NULL DEFAULT FALSE,
     invc_recp_email_addr VARCHAR(255),
+    colledger_id VARCHAR(255),
     creator VARCHAR(255) NOT NULL,
     create_dtime TIMESTAMP NOT NULL,
     updater VARCHAR(255) NOT NULL,

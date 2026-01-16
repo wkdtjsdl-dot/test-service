@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.application.required.repository.billing
 
+import com.idrsys.ailis.sales.application.dto.query.DemandWithCustInfo
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.domain.model.Demand
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +27,11 @@ interface DemandRepository {
      * Find demands (settled)
      */
     fun findDemands(searchParam: DemandSearchParam): Flow<Demand>
+
+    /**
+     * Find demands with customer info (JOIN with scs_cust_mst)
+     */
+    fun findDemandsWithCustInfo(searchParam: DemandSearchParam): Flow<DemandWithCustInfo>
 
     /**
      * Find demand by ID

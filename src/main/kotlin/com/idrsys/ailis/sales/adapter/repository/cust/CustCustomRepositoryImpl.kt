@@ -404,4 +404,32 @@ class CustCustomRepositoryImpl(
             .all()
             .asFlow()
     }
+
+    override suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, String> {
+        if (custCds.isEmpty()) return emptyMap()
+
+        val result = mutableMapOf<String, String>()
+
+        // IN절 성능을 위해 BATCH_QUERY_SIZE 개씩 분할하여 쿼리 수행
+        custCds.chunked(BATCH_QUERY_SIZE).forEach { chunk ->
+            val query = dslContext.select(SCS_CUST_MST.CUST_CD, SCS_CUST_MST.CUST_NM)
+                .from(SCS_CUST_MST)
+                .where(SCS_CUST_MST.CUST_CD.`in`(chunk))
+
+            var sql = databaseClient.sql(query.sql)
+            query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+            val chunkResult = sql.map { row, _ ->
+                row.get("cust_cd", String::class.java)!! to row.get("cust_nm", String::class.java)!!
+            }.all().collectList().awaitSingle()
+
+            result.putAll(chunkResult)
+        }
+
+        return result
+    }
+
+    companion object {
+        private const val BATCH_QUERY_SIZE = 200
+    }
 }

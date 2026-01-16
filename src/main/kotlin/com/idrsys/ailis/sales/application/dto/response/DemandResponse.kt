@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.application.dto.response
 
+import com.idrsys.ailis.sales.application.dto.query.DemandWithCustInfo
 import com.idrsys.ailis.sales.domain.model.Demand
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -49,6 +50,28 @@ data class DemandResponse(
                 createDtime = demand.createDtime,
                 colledgerId = colledgerId,
                 createdRequestCount = createdRequestCount
+            )
+        }
+
+        fun from(demandWithCust: DemandWithCustInfo): DemandResponse {
+            return DemandResponse(
+                demandId = demandWithCust.demandId,
+                custCd = demandWithCust.custCd,
+                custNm = demandWithCust.custNm,
+                demandDt = demandWithCust.demandDt,
+                demandStartDt = demandWithCust.demandStartDt,
+                demandStndDt = demandWithCust.demandStndDt,
+                stndPrice = demandWithCust.stndPrice,
+                supval = demandWithCust.supval,
+                addtax = demandWithCust.addtax,
+                demandCharge = demandWithCust.demandCharge,
+                dscntRate = demandWithCust.dscntRate,
+                slstmtNo = demandWithCust.slstmtNo,
+                slstmtSendDt = demandWithCust.slstmtSendDt,
+                billPublYn = demandWithCust.billPublYn,
+                creator = demandWithCust.creator,
+                createDtime = demandWithCust.createDtime,
+                colledgerId = demandWithCust.colledgerId
             )
         }
     }

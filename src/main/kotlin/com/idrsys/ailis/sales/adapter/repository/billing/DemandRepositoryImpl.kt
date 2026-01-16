@@ -1,10 +1,13 @@
 package com.idrsys.ailis.sales.adapter.repository.billing
 
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toDemand
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toDemandWithCustInfo
+import com.idrsys.ailis.sales.application.dto.query.DemandWithCustInfo
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.domain.model.Demand
 import com.idrsys.ailis.sales.generated.jooq.Tables.SBL_DEMAND
+import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -58,6 +61,23 @@ class DemandRepositoryImpl(
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
         return sql.map { row, _ -> row.toDemand() }.all().asFlow()
+    }
+
+    override fun findDemandsWithCustInfo(searchParam: DemandSearchParam): Flow<DemandWithCustInfo> {
+        val conditions = buildConditions(searchParam)
+        val query = dslContext.select(
+            SBL_DEMAND.asterisk(),
+            SCS_CUST_MST.CUST_NM
+        )
+            .from(SBL_DEMAND)
+            .leftJoin(SCS_CUST_MST).on(SBL_DEMAND.CUST_CD.eq(SCS_CUST_MST.CUST_CD))
+            .where(conditions)
+            .orderBy(SBL_DEMAND.DEMAND_DT.desc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.toDemandWithCustInfo() }.all().asFlow()
     }
 
     override suspend fun findDemandById(demandId: String): Demand? {

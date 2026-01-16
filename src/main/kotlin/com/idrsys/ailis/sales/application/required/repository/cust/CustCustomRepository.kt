@@ -18,4 +18,11 @@ interface CustCustomRepository {
     fun findAllWithCareInstId(): Flow<CustCareInstId>
     suspend fun findCustList(searchParam: CustSearchParam): Flow<CustBasicInfo>
     fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingQuery>
+
+    /**
+     * Find customer names by customer codes (batch query)
+     * @param custCds list of customer codes
+     * @return map of custCd to custNm
+     */
+    suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, String>
 }
