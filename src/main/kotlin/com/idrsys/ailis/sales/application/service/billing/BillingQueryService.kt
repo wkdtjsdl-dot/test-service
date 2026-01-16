@@ -1,7 +1,9 @@
 package com.idrsys.ailis.sales.application.service.billing
 
+import com.idrsys.ailis.sales.application.dto.request.billing.BillingRequestSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
+import com.idrsys.ailis.sales.application.dto.response.BillingRequestResponse
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
 import com.idrsys.ailis.sales.application.required.port.ReqServicePort
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
@@ -72,6 +74,45 @@ class BillingQueryService(
 
         summaries.forEach { summary ->
             emit(summary.toDemandResponse(searchParam.startDt, searchParam.endDt))
+        }
+    }
+
+    /**
+     * Get billing request details (의뢰내역 조회)
+     *
+     * Business Rules:
+     * 1. Call req-service API to get individual test item records
+     * 2. Map custCd to directAcctCd for req-service API call
+     * 3. Return individual rows (non-aggregated)
+     */
+    override fun getBillingRequests(
+        searchParam: BillingRequestSearchParam
+    ): Flow<BillingRequestResponse> {
+        // custCd를 directAcctCd로 맵핑하여 req-service 호출
+        return reqServicePort.getBillingRequests(
+            startDt = searchParam.startDt,
+            endDt = searchParam.endDt,
+            directAcctCd = searchParam.custCd,  // custCd → directAcctCd 맵핑
+            closingCd = searchParam.closingCd
+        ).map { detail ->
+            BillingRequestResponse(
+                tstReqDt = detail.tstReqDt,
+                tstReqNo = detail.tstReqNo.toString(),
+                custCd = detail.custCd,
+                patNm = detail.patNm,
+                hospChartNo = detail.hospChartNo,
+                tstMediumCateCd = detail.tstMediumCateCd,
+                tstCd = detail.tstCd,
+                tstNm = detail.tstNm,
+                stndPrice = detail.stndPrice,
+                closingSupval = detail.closingSupval,
+                closingAddtax = detail.closingAddtax,
+                closingSpecialCharge = detail.closingSpecialCharge,
+                discountRate = detail.discountRate,
+                creator = detail.creator,
+                createDtime = detail.createDtime,
+                closingMemo = detail.closingMemo
+            )
         }
     }
 }

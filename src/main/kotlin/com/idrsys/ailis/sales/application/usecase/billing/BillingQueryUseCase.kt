@@ -1,6 +1,8 @@
 package com.idrsys.ailis.sales.application.usecase.billing
 
+import com.idrsys.ailis.sales.application.dto.request.billing.BillingRequestSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
+import com.idrsys.ailis.sales.application.dto.response.BillingRequestResponse
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
 import kotlinx.coroutines.flow.Flow
 
@@ -21,4 +23,11 @@ interface BillingQueryUseCase {
      * Get demand detail
      */
     suspend fun getDemandDetail(demandId: String): DemandResponse?
+
+    /**
+     * Get billing request details (의뢰내역 조회)
+     *
+     * Returns individual test item records (non-aggregated)
+     */
+    fun getBillingRequests(searchParam: BillingRequestSearchParam): Flow<BillingRequestResponse>
 }

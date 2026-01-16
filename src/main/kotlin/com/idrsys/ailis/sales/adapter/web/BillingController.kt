@@ -1,11 +1,13 @@
 package com.idrsys.ailis.sales.adapter.web
 
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
+import com.idrsys.ailis.sales.application.dto.request.billing.BillingRequestSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandCommand
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
 import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementCommand
 import java.time.LocalDate
+import com.idrsys.ailis.sales.application.dto.response.BillingRequestResponse
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
@@ -121,5 +123,19 @@ class BillingController(
         return billingQueryUseCase.getDemandDetail(demandId)?.let {
             ResponseEntity.ok(it)
         } ?: ResponseEntity.notFound().build()
+    }
+
+    /**
+     * Get billing request details (의뢰내역 조회)
+     *
+     * @param searchParam BillingRequestSearchParam
+     * @return Flow of BillingRequestResponse
+     */
+    @Operation(summary = "의뢰내역 조회", description = "청구 대상 의뢰내역 조회 (미청구 건의 원본 데이터)")
+    @GetMapping("/requests")
+    fun getBillingRequests(
+        @ParameterObject searchParam: BillingRequestSearchParam
+    ): Flow<BillingRequestResponse> {
+        return billingQueryUseCase.getBillingRequests(searchParam)
     }
 }
