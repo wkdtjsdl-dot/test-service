@@ -136,6 +136,37 @@ class Estimate(
     override fun isNew(): Boolean = _isNew
 
     /**
+     * Update estimate basic info and recalculate totals
+     *
+     * Business Rule:
+     * - Updates basic info (title, receiver, reference, etc.)
+     * - Recalculates totals from items
+     */
+    fun update(
+        title: String,
+        receiver: String?,
+        reference: String?,
+        writerEmpNo: String?,
+        deptCd: String?,
+        remark: String?,
+        note: String?,
+        items: List<EstimateItem>,
+        updater: String
+    ) {
+        require(title.isNotBlank()) { "Title is required" }
+
+        this.title = title
+        this.receiver = receiver
+        this.reference = reference
+        this.writerEmpNo = writerEmpNo
+        this.deptCd = deptCd
+        this.remark = remark
+        this.note = note
+        this.updater = updater
+        recalculateTotals(items)
+    }
+
+    /**
      * Recalculate totals from items
      *
      * Business Rule:

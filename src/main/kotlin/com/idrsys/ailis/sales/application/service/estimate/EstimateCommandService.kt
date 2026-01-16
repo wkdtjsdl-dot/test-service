@@ -154,6 +154,7 @@ class EstimateCommandService(
      * Business Rules:
      * 1. Items are replaced entirely (not merged)
      * 2. Totals always reflect current items
+     * 3. Basic info (title, receiver, etc.) is updated
      */
     override suspend fun updateEstimate(
         estimateId: String,
@@ -169,14 +170,10 @@ class EstimateCommandService(
             throw UserDefinedException("INVALID_REQUEST", "최소 1개 이상의 항목이 필요합니다")
         }
 
-        // 3. Update estimate basic info
-        // Note: Estimate entity doesn't have an update method,
-        // we need to manually set fields or create a new instance
-
-        // 4. Delete old items
+        // 3. Delete old items
         estimateItemRepository.deleteByEstimateId(estimateId)
 
-        // 5. Create new items with auto-incremented seq
+        // 4. Create new items with auto-incremented seq
         val newItems = command.items.mapIndexed { index, itemCommand ->
             EstimateItem.create(
                 estimateId = estimate.estimateId ?: throw UserDefinedException("INVALID_STATE", "Estimate ID is null"),
@@ -190,11 +187,21 @@ class EstimateCommandService(
 
         val savedItems = newItems.map { estimateItemRepository.save(it) }
 
-        // 6. Recalculate totals
-        estimate.recalculateTotals(savedItems)
+        // 5. Update estimate basic info and recalculate totals
+        estimate.update(
+            title = command.title,
+            receiver = command.receiver,
+            reference = command.reference,
+            writerEmpNo = command.writerEmpNo,
+            deptCd = command.deptCd,
+            remark = command.remark,
+            note = command.note,
+            items = savedItems,
+            updater = adminId
+        )
         val updatedEstimate = estimateRepository.save(estimate)
 
-        // 7. Return response
+        // 6. Return response
         return EstimateResponse.from(updatedEstimate, savedItems)
     }
 
