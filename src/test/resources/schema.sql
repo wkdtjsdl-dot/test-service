@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS sales_scm.sbl_estimate_item CASCADE;
 DROP TABLE IF EXISTS sales_scm.sbl_estimate CASCADE;
 DROP TABLE IF EXISTS sales_scm.sbl_colledger CASCADE;
 DROP TABLE IF EXISTS sales_scm.sbl_demand CASCADE;
+DROP TABLE IF EXISTS sales_scm.sbl_sales_target CASCADE;
 DROP TABLE IF EXISTS sales_scm.scs_cust_mst CASCADE;
 
 -- scs_cust_mst (고객마스터)
@@ -15,6 +16,22 @@ CREATE TABLE sales_scm.scs_cust_mst (
     cust_mst_id VARCHAR(255) PRIMARY KEY,
     cust_cd VARCHAR(50) NOT NULL UNIQUE,
     cust_nm VARCHAR(100) NOT NULL,
+    direct_acct_cd VARCHAR(50),
+    creator VARCHAR(50) NOT NULL,
+    create_dtime TIMESTAMP NOT NULL,
+    updater VARCHAR(50) NOT NULL,
+    update_dtime TIMESTAMP NOT NULL
+);
+
+-- sbl_sales_target (고객매출목표)
+CREATE TABLE sales_scm.sbl_sales_target (
+    sales_target_id VARCHAR(50) PRIMARY KEY,
+    cust_cd VARCHAR(50) NOT NULL,
+    sales_year VARCHAR(4) NOT NULL,
+    sales_month VARCHAR(2) NOT NULL,
+    sals_team_cd VARCHAR(50) NOT NULL,
+    month_sales_target_amt DECIMAL(19, 2) NOT NULL DEFAULT 0,
+    past_year_month_sales_amt DECIMAL(19, 2) NOT NULL DEFAULT 0,
     creator VARCHAR(50) NOT NULL,
     create_dtime TIMESTAMP NOT NULL,
     updater VARCHAR(50) NOT NULL,
@@ -110,3 +127,6 @@ CREATE INDEX idx_demand_slstmt_no ON sales_scm.sbl_demand(slstmt_no);
 CREATE INDEX idx_estimate_doc_type ON sales_scm.sbl_estimate(doc_type);
 CREATE INDEX idx_estimate_reg_dt ON sales_scm.sbl_estimate(reg_dt);
 CREATE INDEX idx_estimate_item_estimate_id ON sales_scm.sbl_estimate_item(estimate_id);
+CREATE INDEX idx_sales_target_cust_cd ON sales_scm.sbl_sales_target(cust_cd);
+CREATE INDEX idx_sales_target_year ON sales_scm.sbl_sales_target(sales_year);
+CREATE INDEX idx_cust_mst_direct_acct_cd ON sales_scm.scs_cust_mst(direct_acct_cd);
