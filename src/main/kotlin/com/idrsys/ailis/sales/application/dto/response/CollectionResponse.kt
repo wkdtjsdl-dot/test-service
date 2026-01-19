@@ -8,6 +8,34 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+
+data class CollectionBillListResponse(
+   val colbillId: String?,
+   val custCd: String,
+   val colbillDt: LocalDate,
+   val payMethodCd: String,
+   val payAmt: BigDecimal,
+   val cardPayId: String? = null,
+   val bankDepositId: String? = null,
+   val cardCompCd: String? = null,
+   val cardCompNm: String? = null,
+   val cardApprNo: String? = null,
+   val cardNo: String? = null,
+   val cardBillNo: String? = null,
+   val instlMonth: String? = null,
+   val accountYear: String? = null,
+   val surecpSlstmtNo: String? = null,
+   val salesSlstmtNo: String? = null,
+   val advreceYn: Boolean = false,
+   val closingCd: String? = null,
+   val colledgerId: String? = null,
+   val sendYn: Boolean = false,
+   val sapCustCd: String? = null,
+    val bzoffiCd: String? = null,
+    val custNm: String? = null,
+    val accountNo: String? = null,
+    val remark: String? = null,
+)
 /**
  * Collection Bill Response DTO
  */
