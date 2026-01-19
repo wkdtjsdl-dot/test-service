@@ -38,8 +38,8 @@ class CardPaymentRepositoryImpl(
         val table = SblCardPay.SBL_CARD_PAY
         var condition = DSL.noCondition()
 
-        condition = condition.and(table.PAY_DT.ge(searchParam.startDt.toString()))
-        condition = condition.and(table.PAY_DT.le(searchParam.endDt.toString()))
+        condition = condition.and(table.PAY_DT.ge(searchParam.startDt))
+        condition = condition.and(table.PAY_DT.le(searchParam.endDt))
         if (!searchParam.payDivCd.isNullOrBlank()) {
             condition = condition.and(table.PAY_DIV_CD.eq(searchParam.payDivCd))
         }
