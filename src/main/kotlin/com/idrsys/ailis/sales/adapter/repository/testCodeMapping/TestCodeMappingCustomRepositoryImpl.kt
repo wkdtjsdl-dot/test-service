@@ -99,4 +99,20 @@ class TestCodeMappingCustomRepositoryImpl(
         if(pageable.isUnpaged) return q
         else return q.limit(pageable.pageSize).offset(pageable.offset)
     }
+
+    override suspend fun findTstCdByCustCdAndCustTstCd(custCd: String, custTstCd: String): String? {
+        val query = dslContext.select(SCS_CUST_TST_CD_MPG.TST_CD)
+            .from(SCS_CUST_TST_CD_MPG)
+            .where(
+                SCS_CUST_TST_CD_MPG.CUST_CD.eq(custCd)
+                    .and(SCS_CUST_TST_CD_MPG.CUST_TST_CD.eq(custTstCd))
+            )
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.get("tst_cd", String::class.java) }
+            .one()
+            .awaitSingleOrNull()
+    }
 }

@@ -100,4 +100,7 @@ class TestCodeMappingService(
             .map { testCodeMapping ->
                 testCodeMappingMapper.toResponse(testCodeMapping)
             }
+
+    override suspend fun getTstCdByCustCdAndCustTstCd(custCd: String, custTstCd: String): String? =
+        testCodeMappingCustomRepository.findTstCdByCustCdAndCustTstCd(custCd, custTstCd)
 }
