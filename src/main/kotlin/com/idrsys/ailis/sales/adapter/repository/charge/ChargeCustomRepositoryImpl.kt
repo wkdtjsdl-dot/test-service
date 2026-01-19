@@ -2,13 +2,15 @@ package com.idrsys.ailis.sales.adapter.repository.charge
 
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCharge
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toChargeWithDetail
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustChargeInnerResponse
 import com.idrsys.ailis.sales.application.dto.query.ChargeWithDetails
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
+import com.idrsys.ailis.sales.application.dto.response.inner.CustChargeInnerResponse
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCustomRepository
 import com.idrsys.ailis.sales.domain.model.Charge
-import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_CHARGE
-import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
-import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustCharge.SCS_CUST_CHARGE
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustMst.SCS_CUST_MST
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsGcgnSalsPicInfo.SCS_GCGN_SALS_PIC_INFO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
@@ -211,6 +213,40 @@ class ChargeCustomRepositoryImpl(
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
         return sql.map { row, _ -> row.toCharge() }
+            .all()
+            .asFlow()
+            .toList()
+    }
+
+    override suspend fun findCustChargesByConditions(
+        custCds: List<String>,
+        tstCds: List<String>,
+        startDt: LocalDate,
+        endDt: LocalDate
+    ): List<CustChargeInnerResponse> {
+        if (custCds.isEmpty() || tstCds.isEmpty()) return emptyList()
+
+        val query = dslContext.select(
+            SCS_CUST_CHARGE.CUST_CD,
+            SCS_CUST_CHARGE.TST_CD,
+            SCS_CUST_CHARGE.APPLY_START_DT,
+            SCS_CUST_CHARGE.APPLY_END_DT,
+            SCS_CUST_CHARGE.STND_PRICE,
+            SCS_CUST_CHARGE.SUPVAL,
+            SCS_CUST_CHARGE.ADDTAX
+        )
+            .from(SCS_CUST_CHARGE)
+            .where(SCS_CUST_CHARGE.CUST_CD.`in`(custCds))
+            .and(SCS_CUST_CHARGE.TST_CD.`in`(tstCds))
+            .and(SCS_CUST_CHARGE.APPLY_START_DT.lessOrEqual(endDt))
+            .and(SCS_CUST_CHARGE.APPLY_END_DT.greaterOrEqual(startDt))
+            .orderBy(SCS_CUST_CHARGE.CUST_CD.asc(), SCS_CUST_CHARGE.TST_CD.asc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustChargeInnerResponse() }
             .all()
             .asFlow()
             .toList()

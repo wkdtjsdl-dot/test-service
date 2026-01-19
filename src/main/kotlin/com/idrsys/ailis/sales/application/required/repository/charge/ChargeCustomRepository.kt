@@ -2,6 +2,7 @@ package com.idrsys.ailis.sales.application.required.repository.charge
 
 import com.idrsys.ailis.sales.application.dto.query.ChargeWithDetails
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
+import com.idrsys.ailis.sales.application.dto.response.inner.CustChargeInnerResponse
 import com.idrsys.ailis.sales.domain.model.Charge
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Pageable
@@ -28,4 +29,12 @@ interface ChargeCustomRepository {
         endDt: LocalDate,
         excludeId: String? = null
     ): List<Charge>
+
+    // 청구수가 재계산용 고객수가 조회
+    suspend fun findCustChargesByConditions(
+        custCds: List<String>,
+        tstCds: List<String>,
+        startDt: LocalDate,
+        endDt: LocalDate
+    ): List<CustChargeInnerResponse>
 }
