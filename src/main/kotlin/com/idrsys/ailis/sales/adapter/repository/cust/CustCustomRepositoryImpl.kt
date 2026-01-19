@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.adapter.persistence.mapper.*
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.*
+import com.idrsys.ailis.sales.application.dto.response.IfFieldInfoResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.generated.jooq.Tables.*
 import kotlinx.coroutines.flow.Flow
@@ -401,6 +402,146 @@ class CustCustomRepositoryImpl(
 
         return sql
             .map { row, _ -> row.toTestCodeMappingQuery() }
+            .all()
+            .asFlow()
+    }
+
+    override suspend fun findInterfaceConfigByCustCd(custCd: String): ExcelConfigQuery? {
+        val query = dslContext.select(
+            SCS_IF_CUST_INFO.HEADER_INCL_YN,
+            SCS_IF_CUST_INFO.SKIP_ROW_CNT
+        )
+            .from(SCS_IF_CUST_INFO)
+            .where(SCS_IF_CUST_INFO.CUST_CD.eq(custCd))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toExcelConfigQuery() }
+            .one()
+            .awaitSingleOrNull()
+    }
+
+    override fun findExcelFieldsByCustCd(custCd: String): Flow<IfFieldInfoResponse> {
+        val f = SCS_IF_FIELD_INFO.`as`("f")
+        val c = SCS_IF_CONF_INFO.`as`("c")
+        val a = SCS_IF_CUST_INFO.`as`("a")
+
+        val query = dslContext
+            .select(
+                f.IF_FIELD_INFO_ID,
+                f.IF_FIELD_NM,
+                f.IF_FIELD_COL_NM,
+                f.IF_FIELD_DESC,
+                f.COL_TYPE,
+                f.TARGET_PATH,
+                f.STAT_DTL_CD,
+                f.IF_FIELD_EXPS,
+                c.COL_IDX
+            )
+            .from(f)
+            .join(c).on(f.IF_FIELD_INFO_ID.eq(c.IF_FIELD_INFO_ID))
+            .join(a).on(a.IF_CUST_INFO_ID.eq(c.IF_CUST_INFO_ID))
+            .where(a.CUST_CD.eq(custCd))      // SQL: WHERE a.cust_cd = ?
+            .orderBy(c.COL_IDX.asc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toIfFieldInfoResponse() }
+            .all()
+            .asFlow()
+    }
+
+        override fun findMyCustList(searchParam: CustSearchParam, empUserId: String): Flow<CustBasicInfo> {
+            val conditions = mutableListOf<Condition>()
+            searchParam.custCdNm?.takeIf { it.isNotBlank() }?.let { keyword ->
+                conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword)
+                    .or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
+            }
+            searchParam.bzoffiCd?.takeIf { it.isNotBlank() }?.let {
+                conditions += SCS_CUST_MST.BZOFFI_CD.eq(it)
+            }
+            searchParam.reqPossYn?.let { conditions += SCS_CUST_MST.REQ_POSS_YN.eq(it)}
+            searchParam.custCds.takeIf { it.isNotEmpty() }?.let {
+                conditions += SCS_CUST_MST.CUST_CD.`in`(it)
+            }
+
+            // 1. 내 고객 ID 목록을 서브쿼리로 조회
+            val myCustIds = dslContext.selectDistinct(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID)
+                .from(SCS_GCGN_SALS_PIC_INFO)
+                .where(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(empUserId))
+
+            // 2. 메인 조건에 서브쿼리 결과를 IN 조건으로 추가
+            conditions += SCS_CUST_MST.CUST_MST_ID.`in`(myCustIds)
+            val query = dslContext.select(
+                SCS_CUST_MST.asterisk(),
+            )
+                .from(SCS_CUST_MST)
+                .where(conditions)
+
+            var sql = databaseClient.sql(query.sql)
+            query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+            return sql
+                .map { row, _ -> row.toCustBasicInfo() }
+                .all()
+                .asFlow()
+        }
+
+    override fun findMyDirectAcctCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam, empUserId: String): Flow<DirectAcctCdNmAutoCompleteInfo> {
+        val conditions = mutableListOf<Condition>()
+        val keyword = searchParam.directAcctCdNm?.takeIf { it.isNotBlank() } ?: return emptyFlow()
+
+        conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
+        conditions += SCS_CUST_MST.CUST_DIV_CD.eq("CSDV_DA") // 직접거래처
+
+        // 내 고객 필터링
+        conditions += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(empUserId)
+
+        val query = dslContext.selectDistinct(
+            SCS_CUST_MST.CUST_CD.`as`("direct_acct_cd"),
+            SCS_CUST_MST.CUST_NM.`as`("direct_acct_nm")
+        )
+            .from(SCS_CUST_MST)
+            .join(SCS_GCGN_SALS_PIC_INFO).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID))
+            .where(conditions)
+            .orderBy(SCS_CUST_MST.CUST_CD.asc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toDirectAcctCdNmAutoCompleteInfo() }
+            .all()
+            .asFlow()
+    }
+
+    override fun findMyCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam, empUserId: String): Flow<CustCdNmAutoCompleteInfo> {
+        val conditions = mutableListOf<Condition>()
+        val keyword = searchParam.custCdNm?.takeIf { it.isNotBlank() } ?: return emptyFlow()
+
+        conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
+
+        // 내 고객 필터링
+        conditions += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(empUserId)
+
+        val query = dslContext.selectDistinct(
+            SCS_CUST_MST.CUST_MST_ID,
+            SCS_CUST_MST.CUST_CD,
+            SCS_CUST_MST.CUST_NM
+        )
+            .from(SCS_CUST_MST)
+            .join(SCS_GCGN_SALS_PIC_INFO).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID))
+            .where(conditions)
+            .orderBy(SCS_CUST_MST.CUST_CD.asc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustCdNmAutoCompleteInfo() }
             .all()
             .asFlow()
     }

@@ -215,9 +215,59 @@ class CustService(
     }
 
     @Transactional(readOnly = true)
+    override fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<CustCdNmAutoCompleteResponse> {
+        return if (isUserAdmin(roles)) {
+            val autoCompleteList = custCustomRepository.findCustCdNmAutoComplete(searchParam)
+            autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
+        } else {
+            val autoCompleteList = custCustomRepository.findMyCustCdNmAutoComplete(searchParam, empUserId)
+            autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
+        }
+    }
+
+    @Transactional(readOnly = true)
     override fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse> {
         val autoCompleteList = custCustomRepository.findRprsCustCdNmAutoComplete(searchParam)
         return autoCompleteList.map(custMapper::toRprsCustCdNmAutoCompleteResponse)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<DirectAcctCdNmAutoCompleteResponse> {
+        return if (roles.contains("ADMIN")) {
+            val autoCompleteList = custCustomRepository.findDirectAcctCdNmAutoComplete(searchParam)
+            autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
+        } else {
+            val autoCompleteList = custCustomRepository.findMyDirectAcctCdNmAutoComplete(searchParam, empUserId)
+            autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
+        }
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getCustList(searchParam: CustSearchParam, empUserId: String, roles: List<String>): List<CustBasicResponse> {
+        // join 없는 cust_mst 최소한의 데이터
+        return if (roles.contains("ADMIN")) {
+            custCustomRepository.findCustList(searchParam)
+                .map(custMapper::toBasicResponse)
+                .toList()
+        } else {
+            custCustomRepository.findMyCustList(searchParam, empUserId)
+                .map(custMapper::toBasicResponse)
+                .toList()
+        }
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse> {
+        return custCustomRepository.findCustTstMpgsByCustMstId(custMstId)
+            .map(testCodeMappingMapper::toResponse)
+    }
+
+    companion object {
+        private val ADMIN_ROLE_CODES = setOf("RO_DPP")
+    }
+
+    private fun isUserAdmin(roles: List<String>): Boolean {
+        return ADMIN_ROLE_CODES.any { roles.contains(it) }
     }
 
     @Transactional(readOnly = true)
@@ -228,16 +278,25 @@ class CustService(
 
     @Transactional(readOnly = true)
     override suspend fun getCustList(searchParam: CustSearchParam): List<CustBasicResponse> {
-        // join 없는 cust_mst 최소한의 데이터
         return custCustomRepository.findCustList(searchParam)
             .map(custMapper::toBasicResponse)
             .toList()
     }
 
     @Transactional(readOnly = true)
-    override suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse> {
-        return custCustomRepository.findCustTstMpgsByCustMstId(custMstId)
-            .map(testCodeMappingMapper::toResponse)
+    override suspend fun getInterfaceConfigByCustCd(custCd: String): ExcelConfigResponse {
+        val configQuery = custCustomRepository.findInterfaceConfigByCustCd(custCd)
+        return configQuery?.let {
+            ExcelConfigResponse(
+                headerInclYn = it.headerInclYn,
+                skipRowCnt = it.skipRowCnt
+            )
+        } ?: ExcelConfigResponse(headerInclYn = false, skipRowCnt = 0)
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getExcelFieldsByCustCd(custCd: String): Flow<IfFieldInfoResponse> {
+        return custCustomRepository.findExcelFieldsByCustCd(custCd)
     }
 
     private suspend fun fetchLookupMaps(userIds: List<String>): LookupMaps {

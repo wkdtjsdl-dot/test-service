@@ -40,8 +40,17 @@ class IfCustInfoService(
         val total = ifCustInfoCustomRepository.countIfCustInfos(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val ifCustInfos = ifCustInfoCustomRepository.findIfCustInfos(searchParam, pageable).map {
-            ifCustInfoMapper.toResponseFromQuery(it)
+        val ifCustInfos = ifCustInfoCustomRepository.findIfCustInfos(searchParam, pageable).map { custInfoQuery ->
+            // 1. 부모 객체를 Response DTO로 변환
+            val response = ifCustInfoMapper.toResponseFromQuery(custInfoQuery)
+
+            // 2. 자식(컬럼 매핑) 목록을 조회 (이미 필드명 포함)
+            val confInfoList = ifConfInfoCustomRepository.findByIfCustInfoId(custInfoQuery.ifCustInfoId!!)
+                .map { confInfoQuery -> ifConfInfoMapper.toResponseFromQuery(confInfoQuery) }
+                .toList()
+
+            // 3. 부모 DTO에 자식 목록을 결합하여 반환
+            response.copy(confInfoList = confInfoList)
         }.toList()
 
         return PageImpl(ifCustInfos, pageable, total)
