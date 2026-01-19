@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
+import kotlin.Boolean
 
 @Repository
 class CustCustomRepositoryImpl(
@@ -405,14 +406,14 @@ class CustCustomRepositoryImpl(
             .asFlow()
     }
 
-    override suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, String> {
+    override suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, Triple<String, Boolean, String>> {
         if (custCds.isEmpty()) return emptyMap()
 
-        val result = mutableMapOf<String, String>()
+        val result = mutableMapOf<String, Triple<String, Boolean, String>>()
 
         // IN절 성능을 위해 BATCH_QUERY_SIZE 개씩 분할하여 쿼리 수행
         custCds.chunked(BATCH_QUERY_SIZE).forEach { chunk ->
-            val query = dslContext.select(SCS_CUST_MST.CUST_CD, SCS_CUST_MST.CUST_NM)
+            val query = dslContext.select(SCS_CUST_MST.CUST_CD, SCS_CUST_MST.CUST_NM, SCS_CUST_MST.INVC_EMAIL_RECP_YN, SCS_CUST_MST.INVC_RECP_EMAIL_ADDR)
                 .from(SCS_CUST_MST)
                 .where(SCS_CUST_MST.CUST_CD.`in`(chunk))
 
@@ -420,7 +421,12 @@ class CustCustomRepositoryImpl(
             query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
             val chunkResult = sql.map { row, _ ->
-                row.get("cust_cd", String::class.java)!! to row.get("cust_nm", String::class.java)!!
+                row.get("cust_cd", String::class.java)!! to
+                        Triple(
+                            row.get("cust_nm", String::class.java)!!,
+                            row.get("invc_email_recp_yn") as? Boolean ?: false,
+                            row.get("invc_recp_email_addr", String::class.java) ?: ""
+                        )
             }.all().collectList().awaitSingle()
 
             result.putAll(chunkResult)

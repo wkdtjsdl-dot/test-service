@@ -15,14 +15,3 @@ data class ReqServiceUnbilledDemandSummary(
     val demandCharge: BigDecimal,
     val requestCount: Int
 )
-
-/**
- * Page response for unbilled demand summaries from req-service
- */
-data class ReqServiceUnbilledDemandPage(
-    val content: List<ReqServiceUnbilledDemandSummary>,
-    val totalElements: Long,
-    val totalPages: Int,
-    val size: Int,
-    val number: Int
-)

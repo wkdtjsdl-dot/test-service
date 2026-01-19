@@ -25,6 +25,7 @@ data class DemandResponse(
     val slstmtNo: String? = null,
     val slstmtSendDt: LocalDate? = null,
     val billPublYn: Boolean,
+    val invcRecpEmailAddr: String? = null,
     val creator: String,
     val createDtime: LocalDateTime,
     val colledgerId: String? = null,
@@ -69,6 +70,7 @@ data class DemandResponse(
                 slstmtNo = demandWithCust.slstmtNo,
                 slstmtSendDt = demandWithCust.slstmtSendDt,
                 billPublYn = demandWithCust.billPublYn,
+                invcRecpEmailAddr = demandWithCust.invcRecpEmailAddr,
                 creator = demandWithCust.creator,
                 createDtime = demandWithCust.createDtime,
                 colledgerId = demandWithCust.colledgerId

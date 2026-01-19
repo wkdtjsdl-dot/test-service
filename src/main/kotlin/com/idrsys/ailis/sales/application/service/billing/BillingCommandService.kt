@@ -45,13 +45,8 @@ class BillingCommandService(
         // 2. Check for duplicate demand in the same period
         // TODO: Implement duplicate check when custom repository is available
 
-        // 3. Calculate demand amounts from test requests
-        // TODO: Implement when test request repository is available
-        val stndPrice = java.math.BigDecimal.ZERO
-        val supval = java.math.BigDecimal.ZERO
-        val addtax = java.math.BigDecimal.ZERO
-        val demandCharge = supval.add(addtax)
-        val dscntRate = java.math.BigDecimal.ZERO
+        // 3. Calculate demand charge from command data
+        val demandCharge = command.supval.add(command.addtax)
 
         // 4. Create demand entity
         val demand = Demand(
@@ -60,11 +55,15 @@ class BillingCommandService(
             demandStartDt = command.demandStartDt,
             demandStndDt = command.demandStndDt,
             custCd = command.custCd,
-            stndPrice = stndPrice,
-            supval = supval,
-            addtax = addtax,
+            stndPrice = command.stndPrice,
+            supval = command.supval,
+            addtax = command.addtax,
             demandCharge = demandCharge,
-            dscntRate = dscntRate,
+            dscntRate = command.dscntRate,
+            insurePrice = command.insurePrice,
+            sapCustCd = command.sapCustCd,
+            invcRecpEmailAddr = command.invcRecpEmailAddr,
+            demandMemo = command.demandMemo,
             creator = adminId,
             createDtime = LocalDateTime.now(),
             updater = adminId,
