@@ -18,4 +18,12 @@ interface TestCodeMappingUseCase {
     suspend fun createTestCodeMappingByExcel(commands: List<TestCodeMappingCommand>, adminId: String): Flow<TestCodeMappingResponse>
 
     suspend fun searchTestCodeMappingList(searchParam: TestCodeMappingSearchParam): Flow<TestCodeMappingResponse>
+
+    /**
+     * 고객코드 + 고객검사코드로 내부 검사코드 조회 (Inner API용)
+     * @param custCd 고객코드
+     * @param custTstCd 고객검사코드
+     * @return 내부 검사코드 (없으면 null)
+     */
+    suspend fun getTstCdByCustCdAndCustTstCd(custCd: String, custTstCd: String): String?
 }

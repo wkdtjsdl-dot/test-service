@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.adapter.persistence.mapper
 
+import com.idrsys.ailis.sales.application.dto.query.ExcelConfigQuery
 import com.idrsys.ailis.sales.application.dto.query.IfCustInfoQuery
 import com.idrsys.ailis.sales.domain.model.IfCustInfo
 import io.r2dbc.spi.Row
@@ -30,4 +31,9 @@ internal fun Row.toIfCustInfoQuery(): IfCustInfoQuery = IfCustInfoQuery(
     createDtime = this.get("create_dtime", LocalDateTime::class.java)!!,
     updater = this.get("updater", String::class.java)!!,
     updateDtime = this.get("update_dtime", LocalDateTime::class.java)!!
+)
+
+internal fun Row.toExcelConfigQuery(): ExcelConfigQuery = ExcelConfigQuery(
+    headerInclYn = this.get("header_incl_yn", Boolean::class.java)!!,
+    skipRowCnt = this.get("skip_row_cnt", Integer::class.java)?.toInt() ?: 0
 )

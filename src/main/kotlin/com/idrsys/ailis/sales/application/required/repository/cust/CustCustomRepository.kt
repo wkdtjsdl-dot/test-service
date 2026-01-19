@@ -3,6 +3,7 @@ package com.idrsys.ailis.sales.application.required.repository.cust
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.*
+import com.idrsys.ailis.sales.application.dto.response.IfFieldInfoResponse
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Pageable
 
@@ -18,4 +19,10 @@ interface CustCustomRepository {
     fun findAllWithCareInstId(): Flow<CustCareInstId>
     suspend fun findCustList(searchParam: CustSearchParam): Flow<CustBasicInfo>
     fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingQuery>
+
+    fun findMyCustList(searchParam: CustSearchParam, empUserId: String): Flow<CustBasicInfo>
+    fun findMyDirectAcctCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam, empUserId: String): Flow<DirectAcctCdNmAutoCompleteInfo>
+    fun findMyCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam, empUserId: String): Flow<CustCdNmAutoCompleteInfo>
+    suspend fun findInterfaceConfigByCustCd(custCd: String): ExcelConfigQuery?
+    fun findExcelFieldsByCustCd(custCd: String): Flow<IfFieldInfoResponse>
 }

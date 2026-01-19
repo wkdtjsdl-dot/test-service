@@ -22,8 +22,13 @@ interface CustUseCase {
     suspend fun updateCustAtchFile(custMstId: String, command: CustAtchFileUpdateCommand, updater: String)
     suspend fun isCustCdExists(custCd: String): Boolean
     fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteResponse>
+    fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<CustCdNmAutoCompleteResponse>
     fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse>
     fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteResponse>
     suspend fun getCustList(searchParam: CustSearchParam): List<CustBasicResponse>
+    fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<DirectAcctCdNmAutoCompleteResponse>
+    suspend fun getCustList(searchParam: CustSearchParam, empUserId: String, roles: List<String>): List<CustBasicResponse>
     suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse>
+    suspend fun getInterfaceConfigByCustCd(custCd: String): ExcelConfigResponse
+    suspend fun getExcelFieldsByCustCd(custCd: String): Flow<IfFieldInfoResponse>
 }
