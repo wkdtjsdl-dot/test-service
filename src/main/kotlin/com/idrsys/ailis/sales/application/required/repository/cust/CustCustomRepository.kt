@@ -24,5 +24,5 @@ interface CustCustomRepository {
      * @param custCds list of customer codes
      * @return map of custCd to custNm
      */
-    suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, String>
+    suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, Triple<String, Boolean, String>>
 }

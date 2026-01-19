@@ -5,6 +5,7 @@ import com.idrsys.ailis.sales.application.dto.request.charge.ChargeRegisterComma
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
 import com.idrsys.ailis.sales.application.dto.response.ChargeResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.CustChargeInnerResponse
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeRepository
 import com.idrsys.ailis.sales.application.usecase.charge.ChargeUseCase
@@ -272,5 +273,14 @@ class ChargeService(
             )
 
         return chargeMapper.toResponse(chargeWithDetails)
+    }
+
+    override suspend fun getCustChargesForBilling(
+        custCds: List<String>,
+        tstCds: List<String>,
+        startDt: LocalDate,
+        endDt: LocalDate
+    ): List<CustChargeInnerResponse> {
+        return chargeCustomRepository.findCustChargesByConditions(custCds, tstCds, startDt, endDt)
     }
 }

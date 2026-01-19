@@ -57,6 +57,7 @@ internal fun Row.toDemandWithCustInfo(): DemandWithCustInfo {
         slstmtNo = this.get("slstmt_no", String::class.java),
         slstmtSendDt = this.get("slstmt_send_dt", LocalDate::class.java),
         billPublYn = (this.get("bill_publ_yn") as? Boolean) ?: false,
+        invcRecpEmailAddr = this.get("invc_recp_email_addr", String::class.java),
         creator = this.get("creator", String::class.java)!!,
         createDtime = this.get("create_dtime", LocalDateTime::class.java)!!,
         colledgerId = this.get("colledger_id", String::class.java),

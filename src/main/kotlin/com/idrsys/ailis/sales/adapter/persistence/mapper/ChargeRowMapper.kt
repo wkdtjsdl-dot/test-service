@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.adapter.persistence.mapper
 
+import com.idrsys.ailis.sales.application.dto.response.inner.CustChargeInnerResponse
 import com.idrsys.ailis.sales.domain.model.Charge
 import io.r2dbc.spi.Row
 import java.time.LocalDate
@@ -28,4 +29,14 @@ internal fun Row.toCharge(): Charge = Charge(
     createDtime = this.get("create_dtime", LocalDateTime::class.java)!!,
     updater = this.get("updater", String::class.java)!!,
     updateDtime = this.get("update_dtime", LocalDateTime::class.java)!!
+)
+
+internal fun Row.toCustChargeInnerResponse(): CustChargeInnerResponse = CustChargeInnerResponse(
+    custCd = this.get("cust_cd", String::class.java)!!,
+    tstCd = this.get("tst_cd", String::class.java)!!,
+    applyStartDt = this.get("apply_start_dt", LocalDate::class.java)!!,
+    applyEndDt = this.get("apply_end_dt", LocalDate::class.java)!!,
+    stndPrice = this.get("stnd_price", java.lang.Long::class.java)?.toLong(),
+    supval = this.get("supval", java.lang.Long::class.java)?.toLong(),
+    addtax = this.get("addtax", java.lang.Long::class.java)?.toLong()
 )

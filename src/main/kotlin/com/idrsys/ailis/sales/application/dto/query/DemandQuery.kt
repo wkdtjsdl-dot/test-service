@@ -22,6 +22,7 @@ data class DemandWithCustInfo(
     val slstmtNo: String?,
     val slstmtSendDt: LocalDate?,
     val billPublYn: Boolean,
+    val invcRecpEmailAddr: String?,
     val creator: String,
     val createDtime: LocalDateTime,
     val colledgerId: String?,

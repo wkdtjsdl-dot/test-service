@@ -81,6 +81,10 @@ class BillingControllerIntegrationTest {
             demandDt = LocalDate.of(2025, 12, 31),
             demandStartDt = LocalDate.of(2025, 12, 1),
             demandStndDt = LocalDate.of(2025, 12, 31),
+            stndPrice = BigDecimal("10000000"),
+            supval = BigDecimal("9000000"),
+            addtax = BigDecimal("900000"),
+            dscntRate = BigDecimal("1.00"),
             exrtId = null,
             demandMemo = "12월 정산"
         )
