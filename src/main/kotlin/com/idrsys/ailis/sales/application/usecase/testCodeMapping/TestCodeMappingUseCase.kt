@@ -13,6 +13,10 @@ interface TestCodeMappingUseCase {
 
     suspend fun createTestCodeMapping(command: TestCodeMappingCommand, adminId: String): TestCodeMappingResponse
 
+    suspend fun updateTestCodeMapping(custTstCdMpgId:String, command: TestCodeMappingCommand, adminId: String): TestCodeMappingResponse
+
+    suspend fun deleteTestCodeMapping(custTstCdMpgId:String)
+
     suspend fun validTestCodeMappingByExcel(commands: List<TestCodeMappingCommand>): Flow<TestCodeMappingExcelValidResponse>
 
     suspend fun createTestCodeMappingByExcel(commands: List<TestCodeMappingCommand>, adminId: String): Flow<TestCodeMappingResponse>
