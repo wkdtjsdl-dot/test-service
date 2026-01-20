@@ -49,15 +49,15 @@ class TestItemService(
     override suspend fun updateItem(tstCd: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse {
         val existing = repository.findById(tstCd) ?: throw RuntimeException("TestItem not found with id: $tstCd")
 
-        // Save history
-        val hist = mapper.toDomain(existing, request.updateReason ?: "").apply { setAsNew() }
-        repository.saveTestItemHistory(hist)
+
 
         val command = commandMapper.toUpdateCommand(request)
         val now = LocalDateTime.now()
         existing.update(command, adminId, now)
         val saved = repository.save(existing)
-
+        // Save history
+        val hist = mapper.toDomain(existing, request.updateReason ?: "").apply { setAsNew() }
+        repository.saveTestItemHistory(hist)
         return mapper.toResponse(saved)
     }
 
@@ -150,14 +150,13 @@ class TestItemService(
     ): TestItemSpecimenDetailResponse {
         val existing = repository.findSpecimenById(spcmId) ?: throw RuntimeException("TestItemSpecimen not found with id: $spcmId")
 
-        // 변경 전 데이터를 히스토리로 저장
-        val hist = mapper.toDomain(existing, request.updateReason ?: "").apply { setAsNew() }
-        repository.saveTestItemSpecimenHistory(hist)
-
         val command = commandMapper.toUpdateCommand(request)
         val now = LocalDateTime.now()
         existing.update(command, adminId, now)
         val updated = repository.saveSpecimen(existing)
+        // 히스토리 저장
+        val hist = mapper.toDomain(existing, request.updateReason ?: "").apply { setAsNew() }
+        repository.saveTestItemSpecimenHistory(hist)
         return repository.getSpecimenDetailById(updated.spcmId!!) ?: throw RuntimeException("TestItemSpecimen not found after update")
     }
 
