@@ -3,6 +3,7 @@ package com.idrsys.ailis.sales.application.required.port
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceBillingRequestDetail
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary
 import kotlinx.coroutines.flow.Flow
+import java.math.BigDecimal
 import java.time.LocalDate
 
 /**
@@ -41,4 +42,46 @@ interface ReqServicePort {
         directAcctCd: String,
         closingCd: String? = null
     ): Flow<ReqServiceBillingRequestDetail>
+
+    /**
+     * Update test item closing information
+     *
+     * @param directAcctCd Direct account code (= custCd)
+     * @param startDt Start date
+     * @param endDt End date
+     * @param closingSupval Closing supply value
+     * @param closingAddtax Closing additional tax
+     * @param closingDemandCharge Closing demand charge
+     * @param exrtId Exchange rate ID (optional)
+     * @param closingMemo Closing memo (optional)
+     * @param closingUser Closing user
+     * @return Number of updated test items
+     */
+    suspend fun updateTstItemClosingInfo(
+        directAcctCd: String,
+        startDt: LocalDate,
+        endDt: LocalDate,
+        closingSupval: BigDecimal,
+        closingAddtax: BigDecimal,
+        closingDemandCharge: BigDecimal,
+        exrtId: Long?,
+        closingMemo: String?,
+        closingUser: String
+    ): Int
+
+    /**
+     * Release test item closing information
+     *
+     * @param directAcctCd Direct account code (= custCd)
+     * @param startDt Start date
+     * @param endDt End date
+     * @param updater Updater
+     * @return Number of released test items
+     */
+    suspend fun releaseTstItemClosingInfo(
+        directAcctCd: String,
+        startDt: LocalDate,
+        endDt: LocalDate,
+        updater: String
+    ): Int
 }

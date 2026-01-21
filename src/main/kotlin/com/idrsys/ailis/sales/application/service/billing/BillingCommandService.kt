@@ -5,6 +5,7 @@ import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatement
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementResponse
+import com.idrsys.ailis.sales.application.required.port.ReqServicePort
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionLedgerRepository
 import com.idrsys.ailis.sales.application.usecase.billing.BillingCommandUseCase
@@ -26,6 +27,7 @@ import java.time.LocalDateTime
 class BillingCommandService(
     private val demandRepository: DemandRepository,
     private val collectionLedgerRepository: CollectionLedgerRepository,
+    private val reqServicePort: ReqServicePort,
 ) : BillingCommandUseCase {
 
     /**
@@ -83,11 +85,20 @@ class BillingCommandService(
 
         val savedLedger = collectionLedgerRepository.save(ledger)
 
-        // 5. Update test requests with closing information
-        // TODO: Implement when test request repository is available
-        val createdRequestCount = 0 // Placeholder
+        // 6. Update test requests with closing information
+        val createdRequestCount = reqServicePort.updateTstItemClosingInfo(
+            directAcctCd = command.custCd,
+            startDt = command.demandStartDt,
+            endDt = command.demandStndDt,
+            closingSupval = command.supval,
+            closingAddtax = command.addtax,
+            closingDemandCharge = demandCharge,
+            exrtId = command.exrtId,
+            closingMemo = command.demandMemo,
+            closingUser = adminId
+        )
 
-        // 6. Return response
+        // 7. Return response
         return CreateDemandResponse(
             demandId = savedDemand.demandId.toString(),
             custCd = savedDemand.custCd,
@@ -135,8 +146,12 @@ class BillingCommandService(
         }
 
         // 4. Release test requests (reset closing information)
-        // TODO: Implement when test request repository is available
-        val releasedRequestCount = 0 // Placeholder
+        val releasedRequestCount = reqServicePort.releaseTstItemClosingInfo(
+            directAcctCd = demand.custCd,
+            startDt = demand.demandStartDt,
+            endDt = demand.demandStndDt,
+            updater = adminId
+        )
 
         // 5. Delete demand
         demandRepository.delete(demand)
