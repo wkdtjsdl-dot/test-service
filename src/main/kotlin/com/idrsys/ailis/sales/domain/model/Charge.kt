@@ -182,14 +182,4 @@ class Charge(
         this.updateDtime = LocalDateTime.now()
     }
 
-    /**
-     * 반려 (결재중 → 임시저장)
-     */
-    fun rejectApproval(updater: String) {
-        this.lastApprStatCd = "LAST_T"  // 임시저장
-        this.apprInfoNo = null
-        this.currApprSeq = null
-        this.updater = updater
-        this.updateDtime = LocalDateTime.now()
-    }
 }

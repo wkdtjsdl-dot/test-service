@@ -28,4 +28,32 @@ interface ChargeCustomRepository {
         endDt: LocalDate,
         excludeId: String? = null
     ): List<Charge>
+
+    // --- Approval CAS Methods ---
+    suspend fun updateToInProgressWithCAS(
+        custChargeId: String,
+        apprInfoNo: Long,
+        currApprSeq: Int,
+        apprSubmsEmpNo: String,
+        apprLvlCd: String,
+        updater: String
+    ): Int
+
+    suspend fun incrementApprSeqWithCAS(
+        custChargeId: String,
+        currentSeq: Int,
+        newSeq: Int,
+        updater: String
+    ): Int
+
+    suspend fun completeApprovalWithCAS(
+        custChargeId: String,
+        currentSeq: Int,
+        updater: String
+    ): Int
+
+    suspend fun deleteWithCAS(
+        custChargeId: String,
+        currentSeq: Int
+    ): Int
 }

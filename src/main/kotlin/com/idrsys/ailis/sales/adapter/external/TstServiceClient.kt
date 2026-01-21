@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.adapter.external
 
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceRefItemsResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceStndChargeResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
 import org.springframework.stereotype.Component
@@ -12,7 +13,7 @@ class TstServiceClient(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
 ) {
-    final private val client: WebClient
+    private val client: WebClient
 
     init {
         val serviceEndpoint = appConfig.services.find { it.name == "tst-service" }?.endPoint
@@ -69,6 +70,21 @@ class TstServiceClient(
                 }
                 .retrieve()
                 .awaitBody<List<TstServiceTstItemsResponse>>()
+        } catch (ex: Exception) {
+            null
+        }
+    }
+
+    suspend fun getStandardCharges(tstCd: String): List<TstServiceStndChargeResponse>? {
+        return try {
+            client.get()
+                .uri { uriBuilder ->
+                    uriBuilder.path("/api/inner/bts/item/stnd-charge")
+                        .queryParam("tstCd", tstCd)
+                        .build()
+                }
+                .retrieve()
+                .awaitBody<List<TstServiceStndChargeResponse>>()
         } catch (ex: Exception) {
             null
         }

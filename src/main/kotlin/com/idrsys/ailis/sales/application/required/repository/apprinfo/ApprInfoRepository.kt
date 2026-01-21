@@ -10,4 +10,5 @@ interface ApprInfoRepository {
     suspend fun findById(id: String): ApprInfo?
     suspend fun deleteById(id: String)
     suspend fun findAllByApprInfoNo(apprInfoNo: Long): List<ApprInfo>
+    suspend fun deleteAllByApprInfoNo(apprInfoNo: Long)
 }

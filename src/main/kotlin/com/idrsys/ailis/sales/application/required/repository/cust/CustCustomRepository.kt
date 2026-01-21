@@ -10,7 +10,9 @@ import org.springframework.data.domain.Pageable
 interface CustCustomRepository {
     suspend fun findCustMstIdByCustCd(custCd: String): String?
     fun findCustsWithSalsPicInfo(searchParam: CustSearchParam,pageable: Pageable): Flow<CustWithSalsPicInfo>
+    fun findMyCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable, empUserId: String): Flow<CustWithSalsPicInfo>
     suspend fun countCusts(searchParam: CustSearchParam): Long
+    suspend fun countMyCusts(searchParam: CustSearchParam, empUserId: String): Long
     suspend fun existByCustCd(custCd: String): Boolean
     fun findCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteInfo>
     fun findRprsCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteInfo>

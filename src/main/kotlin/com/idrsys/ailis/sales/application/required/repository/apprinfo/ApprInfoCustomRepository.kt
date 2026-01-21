@@ -16,6 +16,11 @@ interface ApprInfoCustomRepository {
     fun findByApprInfoNo(apprInfoNo: Long): Flow<ApprInfo>
 
     /**
+     * 결재정보번호와 순번으로 단건 조회
+     */
+    suspend fun findByApprInfoNoAndSeq(apprInfoNo: Long, apprSeq: Int): ApprInfo?
+
+    /**
      * 현재 결재 대기 중인 항목 조회
      */
     suspend fun findPendingApprovalByChargeId(custChargeId: String): ApprInfo?
@@ -53,4 +58,14 @@ interface ApprInfoCustomRepository {
      * @return 승인 상세 DTO + 결재선 목록
      */
     suspend fun findApprovalChargeWithLines(custChargeId: String): Pair<ChargeApproveQuery, List<ApprInfo>>?
+
+    /**
+     * 다음 결재 정보 번호 조회 (시퀀스)
+     */
+    suspend fun getNextApprInfoNo(): Long
+
+    /**
+     * 해당 사용자가 이미 결재선에 승인했는지 여부 확인
+     */
+    suspend fun hasUserApproved(apprInfoNo: Long, empNo: String): Boolean
 }

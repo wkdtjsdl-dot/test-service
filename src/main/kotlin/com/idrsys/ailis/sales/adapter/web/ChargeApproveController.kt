@@ -47,14 +47,14 @@ class ChargeApproveController(
         return chargeApproveUseCase.approve(command, auth.adminId)
     }
 
-    @PostMapping("/reject")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "reject", description = "고객수가 반려")
-    suspend fun reject(
-        @RequestBody command: ChargeApproveActionCommand,
+    @DeleteMapping("/{custChargeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "deleteCharge", description = "고객수가 삭제 (임시저장) 또는 반려 (결재중)")
+    suspend fun deleteCharge(
+        @PathVariable custChargeId: String,
         @JwtAuthorization auth: AuthenticationAdmin
-    ): ChargeApproveResponse {
-        return chargeApproveUseCase.reject(command, auth.adminId)
+    ) {
+        chargeApproveUseCase.deleteCharge(custChargeId, auth.adminId)
     }
 
     @GetMapping

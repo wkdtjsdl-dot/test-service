@@ -1,11 +1,14 @@
 package com.idrsys.ailis.sales.application.service
 
+import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCustomRepository
+import com.idrsys.ailis.sales.shared.mapper.ChargeApproveMapper
+import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
+import com.idrsys.ailis.sales.adapter.external.TstServiceClient
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveActionCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveRequestCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveSearchParam
 import com.idrsys.ailis.sales.application.dto.response.ChargeApproveResponse
 import com.idrsys.ailis.sales.application.required.client.ApprovalLineClient
-import com.idrsys.ailis.sales.application.required.client.TestChargeClient
 import com.idrsys.ailis.sales.application.required.client.UserClient
 import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoRepository
@@ -20,6 +23,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.util.*
 
 /**
@@ -33,22 +37,32 @@ class ChargeApproveService(
     private val apprInfoCustomRepository: ApprInfoCustomRepository,
     private val userClient: UserClient,
     private val approvalLineClient: ApprovalLineClient,
-    private val testChargeClient: TestChargeClient,
-    private val baseServiceClient: com.idrsys.ailis.sales.adapter.external.BaseServiceClient,
-    private val tstServiceClient: com.idrsys.ailis.sales.adapter.external.TstServiceClient,
-    private val chargeApproveMapper: com.idrsys.ailis.sales.shared.mapper.ChargeApproveMapper
+    private val tstServiceClient: TstServiceClient,
+    private val baseServiceClient: BaseServiceClient,
+    private val chargeCustomRepository: ChargeCustomRepository,
+    private val chargeApproveMapper: ChargeApproveMapper
 ) : ChargeApproveUseCase {
 
     companion object {
         private const val APPR_DOC_TYPE_CD = "APDC_CC"  // 고객수가
-        private const val APPR_LVL_TEAM_LEADER = "AL_TL"  // 팀장 전결
-        private const val APPR_LVL_MULTI = "AL_MULTI"  // 다단계 승인
-        private const val APPR_STAT_WAITING = "APST_W"  // 대기중
+
+        // Approval Levels
+        private const val APLV_1 = "APLV_1" // 팀장 전결
+        private const val APLV_8 = "APLV_8" // 대표이사까지
+
+        // Approval Status
+        private const val APST_W = "APST_W"  // 대기
+
+        // Charge Status
+        private const val LAST_T = "LAST_T" // 임시저장
+        private const val LAST_I = "LAST_I" // 결재중
+        private const val LAST_C = "LAST_C" // 결재완료
     }
 
     /**
      * 승인 요청
      */
+    @Transactional
     override suspend fun requestApproval(
         command: ChargeApproveRequestCommand,
         userId: String
@@ -60,42 +74,38 @@ class ChargeApproveService(
                 ChargeApproveErrorCode.CHARGE_NOT_FOUND_MESSAGE
             )
 
-        // 2. 이미 승인 요청된 경우 체크
-        if (charge.lastApprStatCd != "LAST_T") {  // 임시저장이 아니면
+        // 2. 임시저장 상태가 아니면 에러
+        if (charge.lastApprStatCd != LAST_T) {
             throw UserDefinedException(
-                ChargeApproveErrorCode.ALREADY_REQUESTED_CODE,
-                ChargeApproveErrorCode.ALREADY_REQUESTED_MESSAGE
+                "ALREADY_REQUESTED", // TODO: Add to ErrorCode
+                "임시저장 상태인 수가만 승인 요청할 수 있습니다."
             )
         }
 
         // 3. 최저수가 조회
-        val standardCharges = testChargeClient.getStandardCharges(charge.tstCd)
-        val lowestCharge = standardCharges.firstOrNull()?.lowestCharge?.toLong()
+        val lowestChargeDouble = tstServiceClient.getStandardCharges(charge.tstCd)?.firstOrNull()?.lowestCharge
             ?: throw UserDefinedException(
-                ChargeApproveErrorCode.LOWEST_CHARGE_FETCH_FAILED_CODE,
-                ChargeApproveErrorCode.LOWEST_CHARGE_FETCH_FAILED_MESSAGE
+                ChargeApproveErrorCode.LOWEST_CHARGE_NOT_FOUND_CODE,
+                ChargeApproveErrorCode.LOWEST_CHARGE_NOT_FOUND_MESSAGE
             )
 
-        // 4. 특별수가 vs 최저수가 비교하여 결재 레벨 결정
-        val apprLvlCd = if (charge.specialCharge >= lowestCharge) {
-            APPR_LVL_TEAM_LEADER  // 팀장 전결
-        } else {
-            APPR_LVL_MULTI  // 다단계 승인
-        }
+        // 4. 특별수가 vs 최저수가 비교하여 결재 레벨 결정 (BigDecimal 사용)
+        val lowestCharge = BigDecimal.valueOf(lowestChargeDouble)
+        val specialCharge = BigDecimal.valueOf(charge.specialCharge)
+        val apprLvlCd = if (specialCharge >= lowestCharge) APLV_1 else APLV_8
 
         // 5. 결재선 조회
-        val apprDocDtlNo = if (apprLvlCd == APPR_LVL_TEAM_LEADER) "0" else "1"
+        val apprDocDtlNo = apprLvlCd.substringAfterLast('_') // "APLV_1" -> "1"
         val approvalLines = approvalLineClient.getApprovalLines(userId, APPR_DOC_TYPE_CD, apprDocDtlNo)
-
         if (approvalLines.isEmpty()) {
             throw UserDefinedException(
-                ChargeApproveErrorCode.APPROVAL_LINE_FETCH_FAILED_CODE,
-                ChargeApproveErrorCode.APPROVAL_LINE_FETCH_FAILED_MESSAGE
+                "APPR_LINE_NOT_FOUND", // TODO: Add to ErrorCode
+                "결재선을 찾을 수 없습니다."
             )
         }
 
         // 6. 결재정보번호 생성 (시퀀스)
-        val apprInfoNo = System.currentTimeMillis()  // TODO: 실제 시퀀스로 교체 필요
+        val apprInfoNo = apprInfoCustomRepository.getNextApprInfoNo()
 
         // 7. 결재정보 생성
         approvalLines.forEach { line ->
@@ -105,7 +115,7 @@ class ChargeApproveService(
                 apprSeq = line.apprSeq,
                 apprDocTypeCd = APPR_DOC_TYPE_CD,
                 apprPersonEmpNo = line.apprPersonEmpNo,
-                apprStatCd = APPR_STAT_WAITING,
+                apprStatCd = APST_W,
                 creator = userId,
                 updater = userId,
             )
@@ -113,173 +123,166 @@ class ChargeApproveService(
             apprInfoRepository.save(apprInfo)
         }
 
-        // 8. 고객수가 상태 업데이트
-        charge.requestApproval(apprInfoNo, userId, apprLvlCd, userId)
-        chargeRepository.save(charge)
-
-        // 9. 응답 생성
-        return ChargeApproveResponse(
+        // 8. 고객수가 상태 업데이트 (CAS 적용)
+        val rowsUpdated = chargeCustomRepository.updateToInProgressWithCAS(
             custChargeId = charge.custChargeId,
-            custCd = charge.custCd,
-            custNm = null,
-            tstCd = charge.tstCd,
-            tstNm = null,
-            applyStartDt = charge.applyStartDt,
-            applyEndDt = charge.applyEndDt,
-            specialCharge = charge.specialCharge,
-            stndPrice = charge.stndPrice,
-            lowestCharge = lowestCharge,
-            supval = charge.supval,
-            addtax = charge.addtax,
-            remark = charge.remark,
             apprInfoNo = apprInfoNo,
-            currApprSeq = charge.currApprSeq,
-            apprSubmsEmpNo = charge.apprSubmsEmpNo,
-            apprSubmsDtime = charge.apprSubmsDtime,
-            lastApprStatCd = charge.lastApprStatCd,
-            lastApprStatNm = null,
-            apprLvlCd = charge.apprLvlCd,
-            apprLvlNm = null,
+            currApprSeq = 1, // 첫 결재 순서는 항상 1
+            apprSubmsEmpNo = userId,
+            apprLvlCd = apprLvlCd,
+            updater = userId
         )
+
+        if (rowsUpdated == 0) {
+            throw UserDefinedException(
+                ChargeApproveErrorCode.APPROVAL_REQUEST_CAS_CONFLICT_CODE,
+                ChargeApproveErrorCode.APPROVAL_REQUEST_CAS_CONFLICT_MESSAGE
+            )
+        }
+
+        // 9. 상세조회 결과를 반환하여 최신 상태 응답
+        return getApprovalDetail(charge.custChargeId, userId)
     }
 
     /**
      * 승인
      */
+    @Transactional
     override suspend fun approve(
         command: ChargeApproveActionCommand,
         userId: String
     ): ChargeApproveResponse {
-        // 1. 고객수가 조회
+        // 1. 고객수가 및 현재 결재정보 조회
         val charge = chargeRepository.findById(command.custChargeId)
             ?: throw UserDefinedException(
                 ChargeApproveErrorCode.CHARGE_NOT_FOUND_CODE,
                 ChargeApproveErrorCode.CHARGE_NOT_FOUND_MESSAGE
             )
 
-        // 2. 현재 결재 대기 중인 ApprInfo 조회
+        if (charge.lastApprStatCd != LAST_I) {
+            throw UserDefinedException(ChargeApproveErrorCode.NOT_IN_PROGRESS_CODE, ChargeApproveErrorCode.NOT_IN_PROGRESS_MESSAGE)
+        }
+
         val currentApprInfo = apprInfoCustomRepository.findPendingApprovalByChargeId(command.custChargeId)
             ?: throw UserDefinedException(
                 ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_CODE,
                 ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_MESSAGE
             )
 
-        // 3. 결재 권한 확인
-        val user = userClient.getUser(userId)
+        // 2. 결재 권한 확인
+        val user = userClient.getUser(userId) ?: throw UserDefinedException(
+            ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+            "사용자 정보를 찾을 수 없습니다."
+        )
         if (currentApprInfo.apprPersonEmpNo != user.empNo) {
             throw UserDefinedException(
-                ChargeApproveErrorCode.NO_APPROVAL_AUTHORITY_CODE,
-                ChargeApproveErrorCode.NO_APPROVAL_AUTHORITY_MESSAGE
+                ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+                ChargeApproveErrorCode.NO_AUTHORITY_MESSAGE
             )
         }
 
-        // 4. 승인 처리
+        // 3. 현재 결재선 승인 처리
         currentApprInfo.approve(command.apprMemo, userId)
         apprInfoRepository.save(currentApprInfo)
 
-        // 5. 전체 결재선 조회
-        val allApprInfos = apprInfoRepository.findAllByApprInfoNo(currentApprInfo.apprInfoNo)
+        // 4. 다음 결재 단계가 있는지 확인
+        val nextApprInfo = apprInfoCustomRepository.findByApprInfoNoAndSeq(currentApprInfo.apprInfoNo, currentApprInfo.apprSeq + 1)
 
-        // 6. 마지막 결재자인지 확인
-        val isLastApprover = allApprInfos.size == currentApprInfo.apprSeq
-
-        if (isLastApprover) {
-            // 결재 완료
-            charge.completeApproval(userId)
+        val rowsUpdated = if (nextApprInfo == null) {
+            // 마지막 결재자: 결재 완료 처리
+            chargeCustomRepository.completeApprovalWithCAS(
+                custChargeId = charge.custChargeId,
+                currentSeq = currentApprInfo.apprSeq,
+                updater = userId
+            )
         } else {
-            // 다음 결재자로 이동
-            charge.proceedToNextApprover(userId)
+            // 다음 결재자로 상태 변경
+            chargeCustomRepository.incrementApprSeqWithCAS(
+                custChargeId = charge.custChargeId,
+                currentSeq = currentApprInfo.apprSeq,
+                newSeq = nextApprInfo.apprSeq,
+                updater = userId
+            )
         }
-        chargeRepository.save(charge)
 
-        // 7. 응답 생성
-        return ChargeApproveResponse(
-            custChargeId = charge.custChargeId,
-            custCd = charge.custCd,
-            custNm = null,
-            tstCd = charge.tstCd,
-            tstNm = null,
-            applyStartDt = charge.applyStartDt,
-            applyEndDt = charge.applyEndDt,
-            specialCharge = charge.specialCharge,
-            stndPrice = charge.stndPrice,
-            lowestCharge = null,
-            supval = charge.supval,
-            addtax = charge.addtax,
-            remark = charge.remark,
-            apprInfoNo = charge.apprInfoNo?.toLongOrNull(),
-            currApprSeq = charge.currApprSeq,
-            apprSubmsEmpNo = charge.apprSubmsEmpNo,
-            apprSubmsDtime = charge.apprSubmsDtime,
-            lastApprStatCd = charge.lastApprStatCd,
-            lastApprStatNm = null,
-            apprLvlCd = charge.apprLvlCd,
-            apprLvlNm = null,
-        )
+        if (rowsUpdated == 0) {
+            throw UserDefinedException(
+                ChargeApproveErrorCode.APPROVE_CAS_CONFLICT_CODE,
+                ChargeApproveErrorCode.APPROVE_CAS_CONFLICT_MESSAGE
+            )
+        }
+
+        // 5. 상세조회 결과를 반환하여 최신 상태 응답
+        return getApprovalDetail(charge.custChargeId, userId)
     }
 
     /**
-     * 반려
+     * 고객 수가 삭제 (상태에 따라 분기: 임시저장 건 삭제 / 결재중인 건 반려)
      */
-    override suspend fun reject(
-        command: ChargeApproveActionCommand,
-        userId: String
-    ): ChargeApproveResponse {
-        // 1. 고객수가 조회
-        val charge = chargeRepository.findById(command.custChargeId)
+    @Transactional
+    override suspend fun deleteCharge(custChargeId: String, userId: String) {
+        val charge = chargeRepository.findById(custChargeId)
             ?: throw UserDefinedException(
                 ChargeApproveErrorCode.CHARGE_NOT_FOUND_CODE,
                 ChargeApproveErrorCode.CHARGE_NOT_FOUND_MESSAGE
             )
 
-        // 2. 현재 결재 대기 중인 ApprInfo 조회
-        val currentApprInfo = apprInfoCustomRepository.findPendingApprovalByChargeId(command.custChargeId)
-            ?: throw UserDefinedException(
-                ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_CODE,
-                ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_MESSAGE
-            )
-
-        // 3. 결재 권한 확인
-        val user = userClient.getUser(userId)
-        if (currentApprInfo.apprPersonEmpNo != user.empNo) {
-            throw UserDefinedException(
-                ChargeApproveErrorCode.NO_APPROVAL_AUTHORITY_CODE,
-                ChargeApproveErrorCode.NO_APPROVAL_AUTHORITY_MESSAGE
-            )
-        }
-
-        // 4. 반려 처리
-        currentApprInfo.reject(command.apprMemo, userId)
-        apprInfoRepository.save(currentApprInfo)
-
-        // 5. 고객수가 반려 처리
-        charge.rejectApproval(userId)
-        chargeRepository.save(charge)
-
-        // 6. 응답 생성
-        return ChargeApproveResponse(
-            custChargeId = charge.custChargeId,
-            custCd = charge.custCd,
-            custNm = null,
-            tstCd = charge.tstCd,
-            tstNm = null,
-            applyStartDt = charge.applyStartDt,
-            applyEndDt = charge.applyEndDt,
-            specialCharge = charge.specialCharge,
-            stndPrice = charge.stndPrice,
-            lowestCharge = null,
-            supval = charge.supval,
-            addtax = charge.addtax,
-            remark = charge.remark,
-            apprInfoNo = null,
-            currApprSeq = null,
-            apprSubmsEmpNo = null,
-            apprSubmsDtime = null,
-            lastApprStatCd = charge.lastApprStatCd,
-            lastApprStatNm = null,
-            apprLvlCd = null,
-            apprLvlNm = null,
+        val user = userClient.getUser(userId) ?: throw UserDefinedException(
+            ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+            "사용자 정보를 찾을 수 없습니다."
         )
+
+        when (charge.lastApprStatCd) {
+            LAST_T -> {
+                // 임시저장 상태: 단순 삭제
+                // TODO: 임시저장도 본인만 삭제 가능한지 등 권한 정책 확정 필요
+                chargeRepository.deleteById(charge.custChargeId)
+            }
+            LAST_I -> {
+                // 결재중 상태: 반려(삭제) 로직 수행
+                val apprInfoNo = charge.apprInfoNo?.toLongOrNull()
+                    ?: throw UserDefinedException(ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_CODE, "결재 정보가 없는 수가입니다.")
+
+                // 현재 결재자 또는 상위 결재자만 반려 가능 (정책에 따라)
+                // 여기서는 현재 결재자만 가능하다고 가정
+                val currentApprInfo = apprInfoCustomRepository.findPendingApprovalByChargeId(charge.custChargeId)
+                    ?: throw UserDefinedException(
+                        ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_CODE,
+                        ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_MESSAGE
+                    )
+                if (currentApprInfo.apprPersonEmpNo != user.empNo) {
+                    throw UserDefinedException(
+                        ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+                        "현재 결재 담당자가 아니므로 반려할 수 없습니다."
+                    )
+                }
+
+                // 이미 승인한 건은 반려 불가
+                val hasAlreadyApproved = apprInfoCustomRepository.hasUserApproved(apprInfoNo, user.empNo!!)
+                if (hasAlreadyApproved) {
+                    throw UserDefinedException(
+                        ChargeApproveErrorCode.ALREADY_APPROVED_CODE,
+                        ChargeApproveErrorCode.ALREADY_APPROVED_MESSAGE
+                    )
+                }
+
+                // 데이터 삭제
+                apprInfoRepository.deleteAllByApprInfoNo(apprInfoNo)
+                val rowsDeleted = chargeCustomRepository.deleteWithCAS(
+                    custChargeId = charge.custChargeId,
+                    currentSeq = charge.currApprSeq!!
+                )
+                if (rowsDeleted == 0) {
+                    throw UserDefinedException(
+                        ChargeApproveErrorCode.REJECT_CAS_CONFLICT_CODE,
+                        ChargeApproveErrorCode.REJECT_CAS_CONFLICT_MESSAGE
+                    )
+                }
+            }
+            else -> {
+                throw UserDefinedException("CANNOT_DELETE", "임시저장 또는 결재중인 수가만 삭제할 수 있습니다.")
+            }
+        }
     }
 
     /**
@@ -291,7 +294,10 @@ class ChargeApproveService(
         pageable: Pageable
     ): Page<ChargeApproveResponse> {
         // 1. Get user role
-        val user = userClient.getUser(userId)
+        val user = userClient.getUser(userId) ?: throw UserDefinedException(
+            ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+            "사용자 정보를 찾을 수 없습니다."
+        )
 
         // 2. Count total
         val total = apprInfoCustomRepository.countApprovalCharges(
@@ -326,7 +332,10 @@ class ChargeApproveService(
         userId: String
     ): List<ChargeApproveResponse> {
         // 1. Get user role
-        val user = userClient.getUser(userId)
+        val user = userClient.getUser(userId) ?: throw UserDefinedException(
+            ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+            "사용자 정보를 찾을 수 없습니다."
+        )
 
         // 2. Fetch all approval charges
         val charges = apprInfoCustomRepository.findApprovalCharges(
@@ -386,8 +395,8 @@ class ChargeApproveService(
         // 6. Fetch lowest charge if needed
         val lowestCharge = if (chargeQuery.tstCd.isNotBlank()) {
             try {
-                testChargeClient.getStandardCharges(chargeQuery.tstCd)
-                    .firstOrNull()?.lowestCharge?.toLong()
+                tstServiceClient.getStandardCharges(chargeQuery.tstCd)
+                    ?.firstOrNull()?.lowestCharge?.toLong()
             } catch (ex: Exception) {
                 null
             }

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable
 
 interface CustUseCase {
     suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable): Page<CustListResponse> // list
+    suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable, empUserId: String, roleCodes: List<String>): Page<CustListResponse> // list with auth
     suspend fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> // excel
     suspend fun findCustByCustMstId(custMstId: String): CustResponse
     suspend fun findTstItemsByCustMstId(custMstId: String): Flow<TstServiceTstItemsResponse>
