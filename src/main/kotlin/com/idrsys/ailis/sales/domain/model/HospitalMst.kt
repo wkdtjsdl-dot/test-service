@@ -14,6 +14,7 @@ class HospitalMst(
     careInstNo: String?,
     careInstNm: String,
     asrtCd: String?,
+    asrtNm: String?,
     estbDivNm: String?,
     sidoCd: String?,
     sidoNm: String?,
@@ -52,6 +53,9 @@ class HospitalMst(
 
     @Column("asrt_cd")
     var asrtCd: String? = asrtCd
+
+    @Column("asrt_nm")
+    var asrtNm: String? = asrtNm
 
     @Column("estb_div_nm")
     var estbDivNm: String? = estbDivNm

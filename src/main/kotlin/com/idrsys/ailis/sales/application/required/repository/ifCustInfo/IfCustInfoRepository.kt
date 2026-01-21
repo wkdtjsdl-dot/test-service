@@ -6,4 +6,5 @@ interface IfCustInfoRepository {
     suspend fun save(ifCustInfo: IfCustInfo): IfCustInfo
     suspend fun findById(id: String): IfCustInfo?
     suspend fun deleteById(id: String)
+    suspend fun deleteByCustMstId(custMstId: String)
 }

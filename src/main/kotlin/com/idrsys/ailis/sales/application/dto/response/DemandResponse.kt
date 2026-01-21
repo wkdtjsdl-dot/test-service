@@ -74,6 +74,7 @@ data class DemandResponse(
                 slstmtSendDt = demandWithCust.slstmtSendDt,
                 billPublYn = demandWithCust.billPublYn,
                 invcRecpEmailAddr = demandWithCust.invcRecpEmailAddr,
+                demandMemo = demandWithCust.demandMemo,
                 creator = demandWithCust.creator,
                 createDtime = demandWithCust.createDtime,
                 colledgerId = demandWithCust.colledgerId

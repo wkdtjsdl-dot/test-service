@@ -10,6 +10,7 @@ internal fun Row.toHospitalMst(): HospitalMst = HospitalMst(
     careInstNo = this.get("care_inst_no", String::class.java),
     careInstNm = this.get("care_inst_nm", String::class.java)!!,
     asrtCd = this.get("asrt_cd", String::class.java),
+    asrtNm = this.get("asrt_nm", String::class.java),
     estbDivNm = this.get("estb_div_nm", String::class.java),
     sidoCd = this.get("sido_cd", String::class.java),
     sidoNm = this.get("sido_nm", String::class.java),

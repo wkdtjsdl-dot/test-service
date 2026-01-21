@@ -15,6 +15,7 @@ import com.idrsys.ailis.sales.application.required.repository.cust.CustMstHstRep
 import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
 import com.idrsys.ailis.sales.application.required.repository.custreqposststitem.CustReqPossTstItemCustomRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
+import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
 import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
 import com.idrsys.ailis.sales.shared.mapper.TestCodeMappingMapper
@@ -59,6 +60,52 @@ class CustService(
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
         val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(finalSearchParam, pageable).toList()
+
+        val userIds = custsFromRepo.flatMap { cust ->
+            cust.salsPicInfo?.split(",")
+                ?.mapNotNull { pair ->
+                    val parts = pair.split("=")
+                    if (parts.size == 2) parts[1] else null
+                } ?: emptyList()
+        }.distinct()
+
+        val (deptNameById, userNameById) = fetchLookupMaps(userIds)
+
+        val responses = custsFromRepo.map { custWithSalsPicInfo ->
+            val initialResponse = custMapper.toListResponse(custWithSalsPicInfo)
+            transformCustListResponse(initialResponse, deptNameById, userNameById, systemCodeMaps)
+        }
+
+        return PageImpl(responses, pageable, total)
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable, empUserId: String, roleCodes: List<String>): Page<CustListResponse> {
+        val systemCodeMaps = fetchSystemCodeMaps()
+
+        // 검색어에서 받아온 값(name or id)을 id로 정리해서 쿼리에 던짐
+        var finalSearchParam = searchParam
+        if (!searchParam.empUserIdNm.isNullOrBlank()) {
+            val users = baseServiceClient.getUsers() ?: emptyList()
+            val matchedUserIds = users
+                .filter { it.userNm.contains(searchParam.empUserIdNm, ignoreCase = true) ||
+                        it.userId.contains(searchParam.empUserIdNm, ignoreCase = true) }
+                .map { it.userId }
+            finalSearchParam = searchParam.copy(empUserIds = matchedUserIds)
+        }
+
+        val total: Long
+        val custsFromRepo: List<CustWithSalsPicInfo>
+
+        if (isUserAdmin(roleCodes)) {
+            total = custCustomRepository.countCusts(finalSearchParam)
+            if (total == 0L) return PageImpl(emptyList(), pageable, 0)
+            custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(finalSearchParam, pageable).toList()
+        } else {
+            total = custCustomRepository.countMyCusts(finalSearchParam, empUserId)
+            if (total == 0L) return PageImpl(emptyList(), pageable, 0)
+            custsFromRepo = custCustomRepository.findMyCustsWithSalsPicInfo(finalSearchParam, pageable, empUserId).toList()
+        }
 
         val userIds = custsFromRepo.flatMap { cust ->
             cust.salsPicInfo?.split(",")
@@ -215,9 +262,59 @@ class CustService(
     }
 
     @Transactional(readOnly = true)
+    override fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<CustCdNmAutoCompleteResponse> {
+        return if (isUserAdmin(roles)) {
+            val autoCompleteList = custCustomRepository.findCustCdNmAutoComplete(searchParam)
+            autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
+        } else {
+            val autoCompleteList = custCustomRepository.findMyCustCdNmAutoComplete(searchParam, empUserId)
+            autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
+        }
+    }
+
+    @Transactional(readOnly = true)
     override fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse> {
         val autoCompleteList = custCustomRepository.findRprsCustCdNmAutoComplete(searchParam)
         return autoCompleteList.map(custMapper::toRprsCustCdNmAutoCompleteResponse)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<DirectAcctCdNmAutoCompleteResponse> {
+        return if (isUserAdmin(roles)) {
+            val autoCompleteList = custCustomRepository.findDirectAcctCdNmAutoComplete(searchParam)
+            autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
+        } else {
+            val autoCompleteList = custCustomRepository.findMyDirectAcctCdNmAutoComplete(searchParam, empUserId)
+            autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
+        }
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getCustList(searchParam: CustSearchParam, empUserId: String, roles: List<String>): List<CustBasicResponse> {
+        // join 없는 cust_mst 최소한의 데이터
+        return if (isUserAdmin(roles)) {
+            custCustomRepository.findCustList(searchParam)
+                .map(custMapper::toBasicResponse)
+                .toList()
+        } else {
+            custCustomRepository.findMyCustList(searchParam, empUserId)
+                .map(custMapper::toBasicResponse)
+                .toList()
+        }
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse> {
+        return custCustomRepository.findCustTstMpgsByCustMstId(custMstId)
+            .map(testCodeMappingMapper::toResponse)
+    }
+
+    companion object {
+        private val ADMIN_ROLE_CODES = setOf("RO_DPP")
+    }
+
+    private fun isUserAdmin(roles: List<String>): Boolean {
+        return ADMIN_ROLE_CODES.any { roles.contains(it) }
     }
 
     @Transactional(readOnly = true)
@@ -228,16 +325,25 @@ class CustService(
 
     @Transactional(readOnly = true)
     override suspend fun getCustList(searchParam: CustSearchParam): List<CustBasicResponse> {
-        // join 없는 cust_mst 최소한의 데이터
         return custCustomRepository.findCustList(searchParam)
             .map(custMapper::toBasicResponse)
             .toList()
     }
 
     @Transactional(readOnly = true)
-    override suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse> {
-        return custCustomRepository.findCustTstMpgsByCustMstId(custMstId)
-            .map(testCodeMappingMapper::toResponse)
+    override suspend fun getInterfaceConfigByCustCd(custCd: String): ExcelConfigResponse {
+        val configQuery = custCustomRepository.findInterfaceConfigByCustCd(custCd)
+        return configQuery?.let {
+            ExcelConfigResponse(
+                headerInclYn = it.headerInclYn,
+                skipRowCnt = it.skipRowCnt
+            )
+        } ?: ExcelConfigResponse(headerInclYn = false, skipRowCnt = 0)
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getExcelFieldsByCustCd(custCd: String): Flow<IfFieldInfoResponse> {
+        return custCustomRepository.findExcelFieldsByCustCd(custCd)
     }
 
     private suspend fun fetchLookupMaps(userIds: List<String>): LookupMaps {
@@ -250,7 +356,6 @@ class CustService(
             emptyList()
         }
         val userNameById = users.associate { it.userId to it.userNm }
-
         return LookupMaps(deptNameById, userNameById)
     }
 

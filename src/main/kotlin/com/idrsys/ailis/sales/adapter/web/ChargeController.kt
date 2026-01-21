@@ -11,6 +11,7 @@ import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import kotlinx.coroutines.flow.Flow
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.core.io.buffer.DataBuffer
@@ -36,7 +37,7 @@ class ChargeController(
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "registerCharge", description = "고객 검사코드 수가정보 등록")
     suspend fun registerCharge(
-        @RequestBody command: ChargeRegisterCommand,
+        @Valid @RequestBody command: ChargeRegisterCommand,
         @JwtAuthorization auth: AuthenticationAdmin,
     ): ChargeResponse {
         return chargeUseCase.registerCharge(command, auth.adminId)

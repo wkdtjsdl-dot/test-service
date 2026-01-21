@@ -11,4 +11,5 @@ interface IfCustInfoCustomRepository {
     suspend fun countIfCustInfos(searchParam: IfCustInfoSearchParam): Long
     suspend fun findIfCustInfoById(ifCustInfoId: String): IfCustInfoQuery?
     suspend fun findDomainById(id: String): IfCustInfo?
+    suspend fun findByCustMstId(custMstId: String): IfCustInfo?
 }

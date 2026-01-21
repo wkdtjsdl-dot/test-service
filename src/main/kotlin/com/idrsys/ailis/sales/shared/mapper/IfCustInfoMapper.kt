@@ -14,8 +14,6 @@ interface IfCustInfoMapper {
     @Mapping(target = "ifCustInfoId", ignore = true)
     @Mapping(target = "custMstId", source = "command.custMstId")
     @Mapping(target = "custCd", source = "command.custCd")
-    @Mapping(target = "applyStartDt", source = "command.applyStartDt")
-    @Mapping(target = "applyEndDt", source = "command.applyEndDt")
     @Mapping(target = "headerInclYn", source = "command.headerInclYn")
     @Mapping(target = "skipRowCnt", source = "command.skipRowCnt")
     @Mapping(target = "ifDesc", source = "command.ifDesc")

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable
 
 interface CustUseCase {
     suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable): Page<CustListResponse> // list
+    suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable, empUserId: String, roleCodes: List<String>): Page<CustListResponse> // list with auth
     suspend fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> // excel
     suspend fun findCustByCustMstId(custMstId: String): CustResponse
     suspend fun findTstItemsByCustMstId(custMstId: String): Flow<TstServiceTstItemsResponse>
@@ -22,8 +23,13 @@ interface CustUseCase {
     suspend fun updateCustAtchFile(custMstId: String, command: CustAtchFileUpdateCommand, updater: String)
     suspend fun isCustCdExists(custCd: String): Boolean
     fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteResponse>
+    fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<CustCdNmAutoCompleteResponse>
     fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse>
     fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteResponse>
     suspend fun getCustList(searchParam: CustSearchParam): List<CustBasicResponse>
+    fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<DirectAcctCdNmAutoCompleteResponse>
+    suspend fun getCustList(searchParam: CustSearchParam, empUserId: String, roles: List<String>): List<CustBasicResponse>
     suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse>
+    suspend fun getInterfaceConfigByCustCd(custCd: String): ExcelConfigResponse
+    suspend fun getExcelFieldsByCustCd(custCd: String): Flow<IfFieldInfoResponse>
 }

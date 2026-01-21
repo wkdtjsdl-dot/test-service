@@ -89,6 +89,7 @@ class SalesTargetService(
         }
 
         return SalesTargetResponse(
+            rowId = rowId,
             year = salesYear.toInt(),
             custCd = custCd,
             custNm = custNm,
@@ -102,6 +103,7 @@ class SalesTargetService(
 
     private fun SalesTargetDetailQuery.toResponse(): SalesTargetDetailResponse {
         return SalesTargetDetailResponse(
+            rowId = rowId,
             year = salesYear.toInt(),
             custCd = custCd,
             custNm = custNm,

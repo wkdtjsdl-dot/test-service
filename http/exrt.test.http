@@ -45,7 +45,7 @@ Content-Type: application/json
 ]
 
 ### 환율 목록 조회 (날짜 범위 + 통화코드)
-GET {{api-service}}/api/sals/custs/exrt?stndDtFrom=2025-02-01&stndDtTo=2025-02-28&crcyCd=USD&page=0&size=15
+GET {{api-service}}/api/sals/custs/exrt?stndDtFrom=2025-02-01&stndDtTo=2026-12-28&crcyCd=USD&page=0&size=15
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 환율 목록 조회 (전체)
