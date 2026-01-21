@@ -23,7 +23,7 @@ class Charge(
     supval: Long?,
     addtax: Long?,
     remark: String?,
-    apprInfoNo: String? = null,
+    apprInfoNo: Long? = null,
     currApprSeq: Int? = null,
     apprSubmsEmpNo: String? = null,
     apprSubmsDtime: LocalDateTime? = null,
@@ -84,7 +84,7 @@ class Charge(
         private set
 
     @Column("appr_info_no")
-    var apprInfoNo: String? = apprInfoNo
+    var apprInfoNo: Long? = apprInfoNo
         private set
 
     @Column("curr_appr_seq")
@@ -154,7 +154,7 @@ class Charge(
         apprLvlCd: String,
         updater: String
     ) {
-        this.apprInfoNo = apprInfoNo.toString()
+        this.apprInfoNo = apprInfoNo
         this.currApprSeq = 1
         this.apprSubmsEmpNo = apprSubmsEmpNo
         this.apprSubmsDtime = LocalDateTime.now()

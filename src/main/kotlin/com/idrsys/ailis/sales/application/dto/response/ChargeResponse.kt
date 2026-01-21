@@ -35,7 +35,7 @@ data class ChargeResponse(
     val lastApprStatCd: String,
     val stndPrice: Long? = null,
     val remark: String? = null,
-    val apprInfoNo: String? = null,
+    val apprInfoNo: Long? = null,
     val currApprSeq: Int? = null,
     val apprSubmsEmpNo: String? = null,
     val apprSubmsDtime: LocalDateTime? = null,
@@ -50,4 +50,21 @@ data class SalesPicInfo(
     val empUserId: String,
     val custMstId: String,
     val empUserNm: String? = null
+)
+
+data class ExcelRegisterValidationResponse(
+    val isValid: Boolean,
+    val totalCount: Int,
+    val validCount: Int,
+    val invalidCount: Int,
+    val errors: List<ValidationError>
+)
+
+data class ValidationError(
+    val rowNumber: Int,
+    val custCd: String?,
+    val tstCd: String?,
+    val fieldName: String,
+    val errorCode: String,
+    val errorMessage: String
 )

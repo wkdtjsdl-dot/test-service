@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable
 
 interface CustCustomRepository {
     suspend fun findCustMstIdByCustCd(custCd: String): String?
+    suspend fun findCustMstIdsByCustCds(custCds: List<String>): Map<String, String>
     fun findCustsWithSalsPicInfo(searchParam: CustSearchParam,pageable: Pageable): Flow<CustWithSalsPicInfo>
     suspend fun countCusts(searchParam: CustSearchParam): Long
     suspend fun existByCustCd(custCd: String): Boolean

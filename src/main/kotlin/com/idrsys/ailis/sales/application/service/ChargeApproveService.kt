@@ -207,7 +207,7 @@ class ChargeApproveService(
             supval = charge.supval,
             addtax = charge.addtax,
             remark = charge.remark,
-            apprInfoNo = charge.apprInfoNo?.toLongOrNull(),
+            apprInfoNo = charge.apprInfoNo,
             currApprSeq = charge.currApprSeq,
             apprSubmsEmpNo = charge.apprSubmsEmpNo,
             apprSubmsDtime = charge.apprSubmsDtime,
