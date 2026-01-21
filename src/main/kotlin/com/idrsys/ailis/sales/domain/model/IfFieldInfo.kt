@@ -14,6 +14,9 @@ class IfFieldInfo(
     ifFieldColNm: String?,
     ifFieldExps: String?,
     ifFieldDesc: String?,
+    colType: String?,
+    targetPath: String?,
+    statDtlCd: String?,
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
@@ -38,6 +41,18 @@ class IfFieldInfo(
 
     @Column("if_field_desc")
     var ifFieldDesc: String? = ifFieldDesc
+        private set
+
+    @Column("col_type")
+    var colType: String? = colType
+        private set
+
+    @Column("target_path")
+    var targetPath: String? = targetPath
+        private set
+
+    @Column("stat_dtl_cd")
+    var statDtlCd: String? = statDtlCd
         private set
 
     @Column("creator")

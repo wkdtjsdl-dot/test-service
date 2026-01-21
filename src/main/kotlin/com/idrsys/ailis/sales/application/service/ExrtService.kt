@@ -101,7 +101,7 @@ class ExrtService(
 
     override suspend fun deleteExrt(exrtId: Long) {
         // 존재 여부 확인
-        val exrt = exrtCustomRepository.findExrtById(exrtId)
+        exrtCustomRepository.findExrtById(exrtId)
             ?: throw NoSuchElementException("Exrt not found with id: $exrtId")
 
         exrtRepository.deleteById(exrtId)

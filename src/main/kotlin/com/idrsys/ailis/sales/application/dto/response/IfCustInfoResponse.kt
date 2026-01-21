@@ -1,6 +1,5 @@
 package com.idrsys.ailis.sales.application.dto.response
 
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class IfCustInfoResponse(
@@ -8,8 +7,6 @@ data class IfCustInfoResponse(
     val custMstId: String,
     val custCd: String,
     val custNm: String?,
-    val applyStartDt: LocalDate,
-    val applyEndDt: LocalDate?,
     val headerInclYn: Boolean,
     val skipRowCnt: Int?,
     val ifDesc: String?,

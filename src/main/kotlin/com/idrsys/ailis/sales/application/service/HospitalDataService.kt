@@ -189,6 +189,7 @@ class HospitalDataService(
         if (existing != null) {
             val updated = existing.apply {
                 this.asrtCd = hospitalInfo.clCd
+                this.asrtNm = hospitalInfo.clCdNm
                 this.encpCareInstNo = hospitalInfo.ykiho
                 this.careInstNm = hospitalInfo.yadmNm
                 this.addr = hospitalInfo.addr
@@ -233,6 +234,7 @@ class HospitalDataService(
                 updateDtime = now,
                 emd = hospitalInfo.emdongNm,
                 asrtCd = hospitalInfo.clCd,
+                asrtNm = hospitalInfo.clCdNm,
                 closeDt = null,    // 문닫은 날 없음
                 estbDivNm = null,  // 설립구분명이라는데 이런 값이 없음
                 sickbedCnt = null, // 병상수 없음

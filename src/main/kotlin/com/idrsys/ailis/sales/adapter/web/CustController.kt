@@ -42,9 +42,10 @@ class CustController(
     @Operation(summary = "custPage" ,description = "고객 관리 목록")
     suspend fun getCustList(
         @ParameterObject @Parameter(hidden = true) searchParam: CustSearchParam,
-        @PageableDefault(page = 0, size = 15) pageable: Pageable
+        @PageableDefault(page = 0, size = 15) pageable: Pageable,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Page<CustListResponse> {
-        return custUseCase.getCustPage(searchParam,pageable)
+        return custUseCase.getCustPage(searchParam, pageable, auth.adminId, auth.roleCodes)
     }
 
     @GetMapping("/excel")
@@ -133,9 +134,10 @@ class CustController(
     @GetMapping("/autoComplete/custCdNm")
     @Operation(summary = "getCustCdNmAutoCompleteList", description = "고객코드/명 자동완성 조회")
     fun getCustCdNmAutoCompleteList(
-        @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam
+        @ParameterObject @Parameter(hidden = true) searchParam: CustAutoCompleteSearchParam,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ) : Flow<CustCdNmAutoCompleteResponse> {
-        return custUseCase.getCustCdNmAutoCompleteList(searchParam)
+        return custUseCase.getCustCdNmAutoCompleteList(searchParam, auth.adminId, auth.roleCodes)
     }
 
     @GetMapping("/autoComplete/rprsCustCdNm")

@@ -47,6 +47,24 @@ class TestCodeMappingController(
         return testCodeMappingUseCase.createTestCodeMapping(command, auth.adminId)
     }
 
+    @PutMapping("/{custTstCdMpgId}")
+    @Operation(summary = "updateTestCodeMapping", description = "고객 검사 코드 맵핑 수정")
+    suspend fun updateTestCodeMapping(
+        @PathVariable custTstCdMpgId: String,
+        @RequestBody command: TestCodeMappingCommand,
+        @JwtAuthorization auth: AuthenticationAdmin,
+    ): TestCodeMappingResponse {
+        return testCodeMappingUseCase.updateTestCodeMapping(custTstCdMpgId, command, auth.adminId)
+    }
+
+    @DeleteMapping("/{custTstCdMpgId}")
+    @Operation(summary = "deleteTestCodeMapping", description = "고객 검사 코드 맵핑 삭제")
+    suspend fun deleteTestCodeMapping(
+        @PathVariable custTstCdMpgId: String,
+    ) {
+        return testCodeMappingUseCase.deleteTestCodeMapping(custTstCdMpgId)
+    }
+
     @PostMapping("/excel-valid")
     @Operation(summary = "validExcelTestCodeMapping", description = "고객 검사코드맵핑 엑셀일괄등록 검증")
     suspend fun validTestCodeMappingByExcel(

@@ -40,8 +40,17 @@ class IfCustInfoService(
         val total = ifCustInfoCustomRepository.countIfCustInfos(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        val ifCustInfos = ifCustInfoCustomRepository.findIfCustInfos(searchParam, pageable).map {
-            ifCustInfoMapper.toResponseFromQuery(it)
+        val ifCustInfos = ifCustInfoCustomRepository.findIfCustInfos(searchParam, pageable).map { custInfoQuery ->
+            // 1. 부모 객체를 Response DTO로 변환
+            val response = ifCustInfoMapper.toResponseFromQuery(custInfoQuery)
+
+            // 2. 자식(컬럼 매핑) 목록을 조회 (이미 필드명 포함)
+            val confInfoList = ifConfInfoCustomRepository.findByIfCustInfoId(custInfoQuery.ifCustInfoId!!)
+                .map { confInfoQuery -> ifConfInfoMapper.toResponseFromQuery(confInfoQuery) }
+                .toList()
+
+            // 3. 부모 DTO에 자식 목록을 결합하여 반환
+            response.copy(confInfoList = confInfoList)
         }.toList()
 
         return PageImpl(ifCustInfos, pageable, total)
@@ -73,19 +82,29 @@ class IfCustInfoService(
         adminId: String
     ): IfCustInfoResponse {
         validateCommand(command)
-
         val now = LocalDateTime.now()
 
-        // 1. 마스터 저장
+        // 1. 기존 데이터 삭제 (custMstId 기준)
+        ifCustInfoRepository.deleteByCustMstId(command.custMstId)
+
+        // 2. 기존 매핑도 함께 삭제될 수 있도록 처리 (FK 제약조건에 따라)
+        // 또는 명시적으로 삭제 필요 시 아래 로직 추가
+        // val existingConfig = ifCustInfoCustomRepository.findByCustMstId(command.custMstId)
+        // if (existingConfig != null) {
+        //     ifConfInfoRepository.deleteByIfCustInfoId(existingConfig.ifCustInfoId!!)
+        // }
+
+        // 3. 신규 데이터 INSERT
         val ifCustInfo = ifCustInfoMapper.toDomain(command, adminId, now)
             .apply { setAsNew() }
+
         val savedIfCustInfo = ifCustInfoRepository.save(ifCustInfo)
 
-        // 2. 컬럼 매핑 저장
+        // 4. 컬럼 매핑 저장
         saveConfInfoList(savedIfCustInfo.ifCustInfoId!!, command.confInfoList, adminId, now)
 
-        // 3. 조회 후 반환
-        return getIfCustInfoDetail(savedIfCustInfo.ifCustInfoId!!)
+        // 5. 조회 후 반환
+        return getIfCustInfoDetail(savedIfCustInfo.ifCustInfoId)
     }
 
     @Transactional
@@ -94,28 +113,8 @@ class IfCustInfoService(
         command: IfCustInfoCommand,
         adminId: String
     ): IfCustInfoResponse {
-        validateCommand(command)
-
-        val now = LocalDateTime.now()
-
-        // 1. 마스터 조회 및 수정
-        val ifCustInfo = ifCustInfoRepository.findById(ifCustInfoId)
-            ?: throw UserDefinedException(
-                IfCustInfoErrorCode.NOT_FOUND_CODE,
-                IfCustInfoErrorCode.NOT_FOUND_MESSAGE
-            )
-
-        ifCustInfo.update(command, adminId)
-        ifCustInfoRepository.save(ifCustInfo)
-
-        // 2. 기존 매핑 전체 삭제 (전략 1: 전체 삭제 후 재생성)
-        ifConfInfoRepository.deleteByIfCustInfoId(ifCustInfoId)
-
-        // 3. 신규 매핑 재생성
-        saveConfInfoList(ifCustInfoId, command.confInfoList, adminId, now)
-
-        // 4. 조회 후 반환
-        return getIfCustInfoDetail(ifCustInfoId)
+        // 단순 DELETE → INSERT 방식이므로 createIfCustInfo와 동일
+        return createIfCustInfo(command, adminId)
     }
 
     @Transactional

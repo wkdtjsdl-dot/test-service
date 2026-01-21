@@ -144,4 +144,42 @@ class Charge(
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }
+
+    /**
+     * 승인 요청 (임시저장 → 결재중)
+     */
+    fun requestApproval(
+        apprInfoNo: Long,
+        apprSubmsEmpNo: String,
+        apprLvlCd: String,
+        updater: String
+    ) {
+        this.apprInfoNo = apprInfoNo.toString()
+        this.currApprSeq = 1
+        this.apprSubmsEmpNo = apprSubmsEmpNo
+        this.apprSubmsDtime = LocalDateTime.now()
+        this.lastApprStatCd = "LAST_I"  // 결재중
+        this.apprLvlCd = apprLvlCd
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
+
+    /**
+     * 결재 진행 중 (다음 결재자로 이동)
+     */
+    fun proceedToNextApprover(updater: String) {
+        this.currApprSeq = (this.currApprSeq ?: 0) + 1
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
+
+    /**
+     * 결재 완료
+     */
+    fun completeApproval(updater: String) {
+        this.lastApprStatCd = "LAST_C"  // 결재완료
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
+
 }

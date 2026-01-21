@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.adapter.persistence.mapper.toTestCodeMappingQuery
 import com.idrsys.ailis.sales.application.dto.query.TestCodeMappingQuery
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingSearchParam
 import com.idrsys.ailis.sales.application.required.repository.testCodeMapping.TestCodeMappingCustomRepository
+import com.idrsys.ailis.sales.domain.model.CustTestCodeMapping
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_TST_CD_MPG
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Repository
 class TestCodeMappingCustomRepositoryImpl(
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient,
+    private val custTestCodeDataRepository: CustTestCodeDataRepository
 ): TestCodeMappingCustomRepository {
 
     override fun findTestCodeMappings(searchParam: TestCodeMappingSearchParam, pageable: Pageable): Flow<TestCodeMappingQuery> {
@@ -67,6 +69,14 @@ class TestCodeMappingCustomRepositoryImpl(
         return sql.map { row, _ -> row.toTestCodeMappingQuery() }.all().asFlow()
     }
 
+    override suspend fun deleteById(id: String) {
+        return custTestCodeDataRepository.deleteById(id)
+    }
+
+    override suspend fun findById(id: String): CustTestCodeMapping? {
+        return custTestCodeDataRepository.findById(id)
+    }
+
     override suspend fun countTestCodeMapping(searchParam: TestCodeMappingSearchParam): Long {
         val conditions = buildConditions(searchParam)
 
@@ -98,5 +108,21 @@ class TestCodeMappingCustomRepositoryImpl(
     private fun applyPaging(q: SelectLimitStep<out org.jooq.Record>, pageable: Pageable): Query {
         if(pageable.isUnpaged) return q
         else return q.limit(pageable.pageSize).offset(pageable.offset)
+    }
+
+    override suspend fun findTstCdByCustCdAndCustTstCd(custCd: String, custTstCd: String): String? {
+        val query = dslContext.select(SCS_CUST_TST_CD_MPG.TST_CD)
+            .from(SCS_CUST_TST_CD_MPG)
+            .where(
+                SCS_CUST_TST_CD_MPG.CUST_CD.eq(custCd)
+                    .and(SCS_CUST_TST_CD_MPG.CUST_TST_CD.eq(custTstCd))
+            )
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.get("tst_cd", String::class.java) }
+            .one()
+            .awaitSingleOrNull()
     }
 }
