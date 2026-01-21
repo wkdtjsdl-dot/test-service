@@ -7,7 +7,7 @@ import java.math.BigDecimal
  * 년도별 고객별 salesTeamCd별 집계 결과
  */
 data class SalesTargetQuery(
-    val salesTargetId: String,
+    val rowId: String,
     val salesYear: String,
     val custCd: String,
     val custNm: String,
@@ -22,7 +22,7 @@ data class SalesTargetQuery(
  * custCd별 년월별 salesTeamCd별 집계 결과
  */
 data class SalesTargetDetailQuery(
-    val salesTargetId: String,
+    val rowId: String,
     val salesYear: String,
     val salesMonth: String,
     val custCd: String,

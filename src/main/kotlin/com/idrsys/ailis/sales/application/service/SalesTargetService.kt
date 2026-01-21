@@ -89,7 +89,7 @@ class SalesTargetService(
         }
 
         return SalesTargetResponse(
-            salesTargetId = salesTargetId,
+            rowId = rowId,
             year = salesYear.toInt(),
             custCd = custCd,
             custNm = custNm,
@@ -103,7 +103,7 @@ class SalesTargetService(
 
     private fun SalesTargetDetailQuery.toResponse(): SalesTargetDetailResponse {
         return SalesTargetDetailResponse(
-            salesTargetId = salesTargetId,
+            rowId = rowId,
             year = salesYear.toInt(),
             custCd = custCd,
             custNm = custNm,

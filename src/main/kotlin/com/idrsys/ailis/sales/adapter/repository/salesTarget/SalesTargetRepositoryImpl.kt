@@ -54,7 +54,13 @@ class SalesTargetRepositoryImpl(
         val conditions = buildConditions(searchParam)
 
         val query = dslContext.select(
-            SBL_SALES_TARGET.SALES_TARGET_ID,
+            DSL.concat(
+                SBL_SALES_TARGET.SALES_YEAR.cast(String::class.java),
+                DSL.inline("_"),
+                SBL_SALES_TARGET.CUST_CD,
+                DSL.inline("_"),
+                SBL_SALES_TARGET.SALS_TEAM_CD
+            ).`as`("row_id"),
             SBL_SALES_TARGET.SALES_YEAR,
             SBL_SALES_TARGET.CUST_CD,
             SCS_CUST_MST.CUST_NM,
@@ -67,7 +73,6 @@ class SalesTargetRepositoryImpl(
             .join(SCS_CUST_MST).on(SBL_SALES_TARGET.CUST_CD.eq(SCS_CUST_MST.CUST_CD))
             .where(conditions)
             .groupBy(
-                SBL_SALES_TARGET.SALES_TARGET_ID,
                 SBL_SALES_TARGET.SALES_YEAR,
                 SBL_SALES_TARGET.CUST_CD,
                 SCS_CUST_MST.CUST_NM,
@@ -88,7 +93,11 @@ class SalesTargetRepositoryImpl(
         val conditions = buildDetailConditions(searchParam)
 
         val query = dslContext.select(
-            SBL_SALES_TARGET.SALES_TARGET_ID,
+            DSL.concat(
+                SBL_SALES_TARGET.SALES_MONTH.cast(String::class.java),
+                DSL.inline("_"),
+                SBL_SALES_TARGET.SALS_TEAM_CD
+            ).`as`("row_id"),
             SBL_SALES_TARGET.SALES_YEAR,
             SBL_SALES_TARGET.SALES_MONTH,
             SBL_SALES_TARGET.CUST_CD,

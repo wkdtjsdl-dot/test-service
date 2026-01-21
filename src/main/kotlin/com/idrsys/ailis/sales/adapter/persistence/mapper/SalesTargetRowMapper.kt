@@ -22,7 +22,7 @@ internal fun Row.toSalesTarget(): SalesTarget = SalesTarget(
 )
 
 internal fun Row.toSalesTargetQuery(): SalesTargetQuery = SalesTargetQuery(
-    salesTargetId = this.get("sales_target_id", String::class.java)!!,
+    rowId = this.get("row_id", String::class.java)!!,
     salesYear = this.get("sales_year", String::class.java)!!,
     custCd = this.get("cust_cd", String::class.java)!!,
     custNm = this.get("cust_nm", String::class.java)!!,
@@ -33,7 +33,7 @@ internal fun Row.toSalesTargetQuery(): SalesTargetQuery = SalesTargetQuery(
 )
 
 internal fun Row.toSalesTargetDetailQuery(): SalesTargetDetailQuery = SalesTargetDetailQuery(
-    salesTargetId = this.get("sales_target_id", String::class.java)!!,
+    rowId = this.get("row_id", String::class.java)!!,
     salesYear = this.get("sales_year", String::class.java)!!,
     salesMonth = this.get("sales_month", String::class.java)!!,
     custCd = this.get("cust_cd", String::class.java)!!,
