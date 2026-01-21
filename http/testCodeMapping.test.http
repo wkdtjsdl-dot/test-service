@@ -39,6 +39,27 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "tstNm": "지놈검사명테스트"
 }
 
+### 고객 검사 코드 맵핑 삭제
+DELETE {{api-service}}/api/sals/custs/tst-cd-mpgs/6f8c43f5-1b24-4e62-a779-493aafc225a8
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 검사 코드 맵핑 수정
+PUT {{api-service}}/api/sals/custs/tst-cd-mpgs/6f8c43f5-1b24-4e62-a779-493aafc225a8
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "custCd": "A000000",
+  "custTstCd": "TEST0",
+  "custSubTstCd": "고객부속검사코드",
+  "custTstNm": "TEST수정",
+  "tstCd": "A015수정",
+  "tstNm": "SARS-CoV-2 RdRP gene 수정"
+}
+
 ### 고객 검사코드맵핑 엑셀일괄등록 검증
 POST {{api-service}}/api/sals/custs/tst-cd-mpgs/excel-valid
 Content-Type: application/json

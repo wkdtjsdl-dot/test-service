@@ -9,7 +9,7 @@ interface UserClient {
      * @param userId 사용자 ID
      * @return UserResponse (jbpoCd 포함)
      */
-    suspend fun getUser(userId: String): UserResponse
+    suspend fun getUser(userId: String): UserResponse?
 }
 
 /**

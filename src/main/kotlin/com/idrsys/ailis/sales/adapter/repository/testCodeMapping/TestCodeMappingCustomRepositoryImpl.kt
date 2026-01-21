@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.adapter.persistence.mapper.toTestCodeMappingQuery
 import com.idrsys.ailis.sales.application.dto.query.TestCodeMappingQuery
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingSearchParam
 import com.idrsys.ailis.sales.application.required.repository.testCodeMapping.TestCodeMappingCustomRepository
+import com.idrsys.ailis.sales.domain.model.CustTestCodeMapping
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_TST_CD_MPG
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Repository
 class TestCodeMappingCustomRepositoryImpl(
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient,
+    private val custTestCodeDataRepository: CustTestCodeDataRepository
 ): TestCodeMappingCustomRepository {
 
     override fun findTestCodeMappings(searchParam: TestCodeMappingSearchParam, pageable: Pageable): Flow<TestCodeMappingQuery> {
@@ -65,6 +67,14 @@ class TestCodeMappingCustomRepositoryImpl(
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
         return sql.map { row, _ -> row.toTestCodeMappingQuery() }.all().asFlow()
+    }
+
+    override suspend fun deleteById(id: String) {
+        return custTestCodeDataRepository.deleteById(id)
+    }
+
+    override suspend fun findById(id: String): CustTestCodeMapping? {
+        return custTestCodeDataRepository.findById(id)
     }
 
     override suspend fun countTestCodeMapping(searchParam: TestCodeMappingSearchParam): Long {

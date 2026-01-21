@@ -3,10 +3,11 @@ package com.idrsys.ailis.sales.application.service
 import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
 import com.idrsys.ailis.sales.adapter.external.TstServiceClient
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeRegisterCommand
-import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeUpdateCommand
+import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
 import com.idrsys.ailis.sales.application.dto.request.charge.ExcelChargeRegisterCommand
 import com.idrsys.ailis.sales.application.dto.response.ChargeResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.CustChargeInnerResponse
 import com.idrsys.ailis.sales.application.dto.response.ExcelRegisterValidationResponse
 import com.idrsys.ailis.sales.application.dto.response.ValidationError
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCustomRepository
@@ -28,7 +29,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 @Service
 @Transactional(readOnly = false)
@@ -111,7 +112,7 @@ class ChargeService(
                 charge.copy(bzoffiNm = deptNameByCd[charge.bzoffiCd], salesPics = updatedSalesPics)
             }.toList()
     }
-    
+
     override suspend fun registerCharge(command: ChargeRegisterCommand, creator: String): ChargeResponse {
         // 검증 로직 추가
         chargeValidator.validateForCreate(
@@ -455,5 +456,15 @@ class ChargeService(
         }
 
         return registeredCharges
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getCustChargesForBilling(
+        custCds: List<String>,
+        tstCds: List<String>,
+        startDt: LocalDate,
+        endDt: LocalDate
+    ): List<CustChargeInnerResponse> {
+        return chargeCustomRepository.findCustChargesByConditions(custCds, tstCds, startDt, endDt)
     }
 }

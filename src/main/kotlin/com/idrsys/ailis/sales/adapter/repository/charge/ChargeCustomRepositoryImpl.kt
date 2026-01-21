@@ -2,13 +2,15 @@ package com.idrsys.ailis.sales.adapter.repository.charge
 
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toCharge
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toChargeWithDetail
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toCustChargeInnerResponse
 import com.idrsys.ailis.sales.application.dto.query.ChargeWithDetails
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
+import com.idrsys.ailis.sales.application.dto.response.inner.CustChargeInnerResponse
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCustomRepository
 import com.idrsys.ailis.sales.domain.model.Charge
-import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_CHARGE
-import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
-import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_GCGN_SALS_PIC_INFO
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustCharge.SCS_CUST_CHARGE
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustMst.SCS_CUST_MST
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsGcgnSalsPicInfo.SCS_GCGN_SALS_PIC_INFO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
@@ -28,6 +30,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Repository
 class ChargeCustomRepositoryImpl(
@@ -216,4 +219,107 @@ class ChargeCustomRepositoryImpl(
             .toList()
     }
 
+    override suspend fun findCustChargesByConditions(
+        custCds: List<String>,
+        tstCds: List<String>,
+        startDt: LocalDate,
+        endDt: LocalDate
+    ): List<CustChargeInnerResponse> {
+        if (custCds.isEmpty() || tstCds.isEmpty()) return emptyList()
+
+        val query = dslContext.select(
+            SCS_CUST_CHARGE.CUST_CD,
+            SCS_CUST_CHARGE.TST_CD,
+            SCS_CUST_CHARGE.APPLY_START_DT,
+            SCS_CUST_CHARGE.APPLY_END_DT,
+            SCS_CUST_CHARGE.STND_PRICE,
+            SCS_CUST_CHARGE.SUPVAL,
+            SCS_CUST_CHARGE.ADDTAX
+        )
+            .from(SCS_CUST_CHARGE)
+            .where(SCS_CUST_CHARGE.CUST_CD.`in`(custCds))
+            .and(SCS_CUST_CHARGE.TST_CD.`in`(tstCds))
+            .and(SCS_CUST_CHARGE.APPLY_START_DT.lessOrEqual(endDt))
+            .and(SCS_CUST_CHARGE.APPLY_END_DT.greaterOrEqual(startDt))
+            .orderBy(SCS_CUST_CHARGE.CUST_CD.asc(), SCS_CUST_CHARGE.TST_CD.asc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustChargeInnerResponse() }
+            .all()
+            .asFlow()
+            .toList()
+    }
+
+    override suspend fun updateToInProgressWithCAS(
+        custChargeId: String,
+        apprInfoNo: Long,
+        currApprSeq: Int,
+        apprSubmsEmpNo: String,
+        apprLvlCd: String,
+        updater: String
+    ): Int {
+        val query = dslContext.update(SCS_CUST_CHARGE)
+            .set(SCS_CUST_CHARGE.LAST_APPR_STAT_CD, "LAST_I")
+            .set(SCS_CUST_CHARGE.APPR_INFO_NO, apprInfoNo)
+            .set(SCS_CUST_CHARGE.CURR_APPR_SEQ, currApprSeq)
+            .set(SCS_CUST_CHARGE.APPR_SUBMS_EMP_NO, apprSubmsEmpNo)
+            .set(SCS_CUST_CHARGE.APPR_SUBMS_DTIME, LocalDateTime.now())
+            .set(SCS_CUST_CHARGE.APPR_LVL_CD, apprLvlCd)
+            .set(SCS_CUST_CHARGE.UPDATER, updater)
+            .set(SCS_CUST_CHARGE.UPDATE_DTIME, LocalDateTime.now())
+            .where(SCS_CUST_CHARGE.CUST_CHARGE_ID.eq(custChargeId).and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("LAST_T")))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+        return sql.fetch().rowsUpdated().awaitSingle().toInt()
+    }
+
+    override suspend fun incrementApprSeqWithCAS(custChargeId: String, currentSeq: Int, newSeq: Int, updater: String): Int {
+        val query = dslContext.update(SCS_CUST_CHARGE)
+            .set(SCS_CUST_CHARGE.CURR_APPR_SEQ, newSeq)
+            .set(SCS_CUST_CHARGE.UPDATER, updater)
+            .set(SCS_CUST_CHARGE.UPDATE_DTIME, LocalDateTime.now())
+            .where(
+                SCS_CUST_CHARGE.CUST_CHARGE_ID.eq(custChargeId)
+                    .and(SCS_CUST_CHARGE.CURR_APPR_SEQ.eq(currentSeq))
+                    .and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("LAST_I"))
+            )
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+        return sql.fetch().rowsUpdated().awaitSingle().toInt()
+    }
+
+    override suspend fun completeApprovalWithCAS(custChargeId: String, currentSeq: Int, updater: String): Int {
+        val query = dslContext.update(SCS_CUST_CHARGE)
+            .set(SCS_CUST_CHARGE.LAST_APPR_STAT_CD, "LAST_C")
+            .set(SCS_CUST_CHARGE.UPDATER, updater)
+            .set(SCS_CUST_CHARGE.UPDATE_DTIME, LocalDateTime.now())
+            .where(
+                SCS_CUST_CHARGE.CUST_CHARGE_ID.eq(custChargeId)
+                    .and(SCS_CUST_CHARGE.CURR_APPR_SEQ.eq(currentSeq))
+                    .and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("LAST_I"))
+            )
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+        return sql.fetch().rowsUpdated().awaitSingle().toInt()
+    }
+
+    override suspend fun deleteWithCAS(custChargeId: String, currentSeq: Int): Int {
+        val query = dslContext.deleteFrom(SCS_CUST_CHARGE)
+            .where(
+                SCS_CUST_CHARGE.CUST_CHARGE_ID.eq(custChargeId)
+                    .and(SCS_CUST_CHARGE.CURR_APPR_SEQ.eq(currentSeq))
+                    .and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("LAST_I"))
+            )
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+        return sql.fetch().rowsUpdated().awaitSingle().toInt()
+    }
 }
+

@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
+import kotlin.Boolean
 
 @Repository
 class CustCustomRepositoryImpl(
@@ -117,6 +118,70 @@ class CustCustomRepositoryImpl(
             .asFlow()
     }
 
+    override fun findMyCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable, empUserId: String): Flow<CustWithSalsPicInfo> {
+        val conditions = buildConditions(searchParam).toMutableList()
+        val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+
+        // 계약종료일 들어올 경우 계약테이블 leftjoin
+        val needsContractJoin = !searchParam.cntrStartDt.isNullOrBlank() ||
+                !searchParam.cntrEndDt.isNullOrBlank() ||
+                !searchParam.cntrEndStartDt.isNullOrBlank() ||
+                !searchParam.cntrEndEndDt.isNullOrBlank() ||
+                !searchParam.recntrMonth.isNullOrBlank()
+
+        // 진료과목 검색 시 병원 테이블 join
+        val needsHospitalJoin = !searchParam.medicalSubj.isNullOrBlank()
+
+        val salsPicInfoField: Field<*> =
+            (stringAgg(
+                SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD.concat("=").concat(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID),
+                inline(",")
+            ) as Field<*>).`as`("sals_pic_info")
+
+        // 내 고객 필터링을 위한 서브쿼리
+        val myCustIds = dslContext.selectDistinct(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID)
+            .from(SCS_GCGN_SALS_PIC_INFO)
+            .where(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(empUserId))
+
+        conditions += SCS_CUST_MST.CUST_MST_ID.`in`(myCustIds)
+
+        var queryPart = dslContext.select(
+            SCS_CUST_MST.asterisk(),
+            rprsCustMst.CUST_NM.`as`("RPRS_CUST_NM"),
+            salsPicInfoField
+        )
+            .from(SCS_CUST_MST)
+            .leftJoin(SCS_GCGN_SALS_PIC_INFO).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID))
+            .leftJoin(rprsCustMst).on(SCS_CUST_MST.RPRS_CUST_CD.eq(rprsCustMst.CUST_CD))
+
+        // 필터링이 필요한 테이블
+        if (needsContractJoin) {
+            queryPart = queryPart.join(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
+                .and(SCS_CUST_CNTR.USE_YN.isTrue)
+        }
+
+        if (needsHospitalJoin) {
+            queryPart = queryPart
+                .join(SCS_HOSP_MST).on(SCS_CUST_MST.CARE_INST_ID.eq(SCS_HOSP_MST.CARE_INST_ID))
+                .and(SCS_HOSP_MST.USE_YN.isTrue)
+                .join(SCS_HOSP_MEDI_SBJT).on(SCS_HOSP_MST.CARE_INST_ID.eq(SCS_HOSP_MEDI_SBJT.CARE_INST_ID))
+        }
+
+        val query = queryPart
+            .where(conditions)
+            .groupBy(*SCS_CUST_MST.fields(), rprsCustMst.CUST_NM)
+            .orderBy(SCS_CUST_MST.CUST_CD.asc())
+            .let {applyPaging(it, pageable)}
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustWithSalsPicInfo() }
+            .all()
+            .asFlow()
+    }
+
     override suspend fun countCusts(searchParam: CustSearchParam): Long {
         val conditions = buildConditions(searchParam)
 
@@ -149,6 +214,52 @@ class CustCustomRepositoryImpl(
                 .join(SCS_HOSP_MEDI_SBJT).on(SCS_HOSP_MST.CARE_INST_ID.eq(SCS_HOSP_MEDI_SBJT.CARE_INST_ID))
         }
         // Note: findCustsWithSalsPicInfo 에서는 display용으로 LEFT JOIN
+        if (needsRprsCustJoin) {
+            queryPart = queryPart.join(SCS_CUST_MST.`as`("RPRS_CUST_MST")).on(SCS_CUST_MST.RPRS_CUST_CD.eq(SCS_CUST_MST.`as`("RPRS_CUST_MST").CUST_CD))
+        }
+
+        val query = queryPart.where(conditions)
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.get(0, java.lang.Long::class.java)!!.toLong() }
+            .one()
+            .awaitSingle()
+    }
+
+    override suspend fun countMyCusts(searchParam: CustSearchParam, empUserId: String): Long {
+        val conditions = buildConditions(searchParam).toMutableList()
+
+        val needsContractJoin = !searchParam.cntrStartDt.isNullOrBlank() ||
+                !searchParam.cntrEndDt.isNullOrBlank() ||
+                !searchParam.cntrEndStartDt.isNullOrBlank() ||
+                !searchParam.cntrEndEndDt.isNullOrBlank() ||
+                !searchParam.recntrMonth.isNullOrBlank()
+
+        val needsHospitalJoin = !searchParam.medicalSubj.isNullOrBlank()
+        val needsRprsCustJoin = !searchParam.rprsCustCdNm.isNullOrBlank()
+
+        // 내 고객 필터링을 위한 서브쿼리
+        val myCustIds = dslContext.selectDistinct(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID)
+            .from(SCS_GCGN_SALS_PIC_INFO)
+            .where(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(empUserId))
+
+        conditions += SCS_CUST_MST.CUST_MST_ID.`in`(myCustIds)
+
+        var queryPart = dslContext.select(countDistinct(SCS_CUST_MST.CUST_MST_ID))
+            .from(SCS_CUST_MST)
+
+        if (needsContractJoin) {
+            queryPart = queryPart.join(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
+        }
+        if (needsHospitalJoin) {
+            queryPart = queryPart
+                .join(SCS_HOSP_MST).on(SCS_CUST_MST.CARE_INST_ID.eq(SCS_HOSP_MST.CARE_INST_ID))
+                .and(SCS_HOSP_MST.USE_YN.isTrue)
+                .join(SCS_HOSP_MEDI_SBJT).on(SCS_HOSP_MST.CARE_INST_ID.eq(SCS_HOSP_MEDI_SBJT.CARE_INST_ID))
+        }
         if (needsRprsCustJoin) {
             queryPart = queryPart.join(SCS_CUST_MST.`as`("RPRS_CUST_MST")).on(SCS_CUST_MST.RPRS_CUST_CD.eq(SCS_CUST_MST.`as`("RPRS_CUST_MST").CUST_CD))
         }
@@ -568,5 +679,38 @@ class CustCustomRepositoryImpl(
             .map { row, _ -> row.toCustCdNmAutoCompleteInfo() }
             .all()
             .asFlow()
+    }
+
+    override suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, Triple<String, Boolean, String>> {
+        if (custCds.isEmpty()) return emptyMap()
+
+        val result = mutableMapOf<String, Triple<String, Boolean, String>>()
+
+        // IN절 성능을 위해 BATCH_QUERY_SIZE 개씩 분할하여 쿼리 수행
+        custCds.chunked(BATCH_QUERY_SIZE).forEach { chunk ->
+            val query = dslContext.select(SCS_CUST_MST.CUST_CD, SCS_CUST_MST.CUST_NM, SCS_CUST_MST.INVC_EMAIL_RECP_YN, SCS_CUST_MST.INVC_RECP_EMAIL_ADDR)
+                .from(SCS_CUST_MST)
+                .where(SCS_CUST_MST.CUST_CD.`in`(chunk))
+
+            var sql = databaseClient.sql(query.sql)
+            query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+            val chunkResult = sql.map { row, _ ->
+                row.get("cust_cd", String::class.java)!! to
+                        Triple(
+                            row.get("cust_nm", String::class.java)!!,
+                            row.get("invc_email_recp_yn") as? Boolean ?: false,
+                            row.get("invc_recp_email_addr", String::class.java) ?: ""
+                        )
+            }.all().collectList().awaitSingle()
+
+            result.putAll(chunkResult)
+        }
+
+        return result
+    }
+
+    companion object {
+        private const val BATCH_QUERY_SIZE = 200
     }
 }

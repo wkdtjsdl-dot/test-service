@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface ApprInfoDataRepository : CoroutineCrudRepository<ApprInfo, String> {
     suspend fun findAllByApprInfoNo(apprInfoNo: Long): List<ApprInfo>
+    suspend fun deleteAllByApprInfoNo(apprInfoNo: Long)
 }
 
 /**
@@ -35,5 +36,9 @@ class ApprInfoRepositoryImpl(
 
     override suspend fun findAllByApprInfoNo(apprInfoNo: Long): List<ApprInfo> {
         return dataRepository.findAllByApprInfoNo(apprInfoNo)
+    }
+
+    override suspend fun deleteAllByApprInfoNo(apprInfoNo: Long) {
+        dataRepository.deleteAllByApprInfoNo(apprInfoNo)
     }
 }

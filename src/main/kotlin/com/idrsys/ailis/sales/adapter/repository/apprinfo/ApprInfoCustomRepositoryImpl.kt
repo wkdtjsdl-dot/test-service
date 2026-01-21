@@ -45,6 +45,24 @@ class ApprInfoCustomRepositoryImpl(
             .asFlow()
     }
 
+    override suspend fun findByApprInfoNoAndSeq(apprInfoNo: Long, apprSeq: Int): ApprInfo? {
+        val query = dslContext
+            .select(SCS_APPR_INFO.asterisk())
+            .from(SCS_APPR_INFO)
+            .where(
+                SCS_APPR_INFO.APPR_INFO_NO.eq(apprInfoNo)
+                    .and(SCS_APPR_INFO.APPR_SEQ.eq(apprSeq))
+            )
+
+        var sql = dbClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> ApprInfoRowMapper.mapRow(row) }
+            .one()
+            .awaitSingleOrNull()
+    }
+
     override suspend fun findPendingApprovalByChargeId(custChargeId: String): ApprInfo? {
         val sql = dslContext
             .select(SCS_APPR_INFO.asterisk())
@@ -168,6 +186,33 @@ class ApprInfoCustomRepositoryImpl(
         }
 
         return Pair(charge, approvalLines)
+    }
+
+    override suspend fun getNextApprInfoNo(): Long {
+        val sql = "SELECT nextval('sales_scm.scs_appr_info_appr_info_no_seq')"
+        return dbClient.sql(sql)
+            .map { row -> row.get(0, java.lang.Long::class.java)!!.toLong() }
+            .one()
+            .awaitSingle()
+    }
+
+    override suspend fun hasUserApproved(apprInfoNo: Long, empNo: String): Boolean {
+        val query = dslContext.selectCount()
+            .from(SCS_APPR_INFO)
+            .where(
+                SCS_APPR_INFO.APPR_INFO_NO.eq(apprInfoNo)
+                    .and(SCS_APPR_INFO.APPR_PERSON_EMP_NO.eq(empNo))
+                    .and(SCS_APPR_INFO.APPR_STAT_CD.eq("APST_C"))
+            )
+
+        var sql = dbClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        val count = sql.map { row -> row.get(0, java.lang.Long::class.java)!!.toLong() }
+            .one()
+            .awaitSingle()
+
+        return count > 0
     }
 
     private fun buildApprovalConditions(

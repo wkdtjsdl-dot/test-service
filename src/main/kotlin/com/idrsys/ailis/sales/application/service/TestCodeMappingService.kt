@@ -54,6 +54,20 @@ class TestCodeMappingService(
         return testCodeMappingMapper.toResponse(savedTestCodeMapping)
     }
 
+    override suspend fun updateTestCodeMapping(custTstCdMpgId: String, command: TestCodeMappingCommand, adminId: String): TestCodeMappingResponse {
+        val mappingToUpdate = testCodeMappingCustomRepository.findById(custTstCdMpgId)
+            ?: throw NoSuchElementException("매핑 코드를 찾을 수 없습니다: $custTstCdMpgId")
+
+        mappingToUpdate.update(command, adminId)
+
+        val savedMapping = testCodeMappingRepository.save(mappingToUpdate)
+        return testCodeMappingMapper.toResponse(savedMapping)
+    }
+
+    override suspend fun deleteTestCodeMapping(custTstCdMpgId: String) {
+        return testCodeMappingCustomRepository.deleteById(custTstCdMpgId)
+    }
+
     override suspend fun validTestCodeMappingByExcel(commands: List<TestCodeMappingCommand>): Flow<TestCodeMappingExcelValidResponse> {
         return flow {
             for (command in commands) {

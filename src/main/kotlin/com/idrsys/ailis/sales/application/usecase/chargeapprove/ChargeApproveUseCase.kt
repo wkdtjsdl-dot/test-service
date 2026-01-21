@@ -22,9 +22,9 @@ interface ChargeApproveUseCase {
     suspend fun approve(command: ChargeApproveActionCommand, userId: String): ChargeApproveResponse
 
     /**
-     * 반려
+     * 고객 수가 삭제 (상태에 따라 분기: 임시저장 건 삭제 / 결재중인 건 반려)
      */
-    suspend fun reject(command: ChargeApproveActionCommand, userId: String): ChargeApproveResponse
+    suspend fun deleteCharge(custChargeId: String, userId: String)
 
     /**
      * 승인 목록 조회 (페이징)

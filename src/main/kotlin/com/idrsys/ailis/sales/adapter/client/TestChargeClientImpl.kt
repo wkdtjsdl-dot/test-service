@@ -3,8 +3,6 @@ package com.idrsys.ailis.sales.adapter.client
 import com.idrsys.ailis.sales.application.required.client.StandardChargeResponse
 import com.idrsys.ailis.sales.application.required.client.TestChargeClient
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
-import com.idrsys.ailis.sales.shared.constant.ChargeApproveErrorCode
-import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -40,10 +38,8 @@ class TestChargeClientImpl(
                 .bodyToFlow<StandardChargeResponse>()
                 .toList()
         } catch (ex: Exception) {
-            throw UserDefinedException(
-                ChargeApproveErrorCode.LOWEST_CHARGE_FETCH_FAILED_CODE,
-                ChargeApproveErrorCode.LOWEST_CHARGE_FETCH_FAILED_MESSAGE
-            )
+            // API 호출 실패 시 빈 리스트 반환, 서비스 레이어에서 처리
+            emptyList()
         }
     }
 }

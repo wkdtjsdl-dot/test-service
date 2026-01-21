@@ -11,7 +11,9 @@ interface CustCustomRepository {
     suspend fun findCustMstIdByCustCd(custCd: String): String?
     suspend fun findCustMstIdsByCustCds(custCds: List<String>): Map<String, String>
     fun findCustsWithSalsPicInfo(searchParam: CustSearchParam,pageable: Pageable): Flow<CustWithSalsPicInfo>
+    fun findMyCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable, empUserId: String): Flow<CustWithSalsPicInfo>
     suspend fun countCusts(searchParam: CustSearchParam): Long
+    suspend fun countMyCusts(searchParam: CustSearchParam, empUserId: String): Long
     suspend fun existByCustCd(custCd: String): Boolean
     fun findCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteInfo>
     fun findRprsCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteInfo>
@@ -26,4 +28,11 @@ interface CustCustomRepository {
     fun findMyCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam, empUserId: String): Flow<CustCdNmAutoCompleteInfo>
     suspend fun findInterfaceConfigByCustCd(custCd: String): ExcelConfigQuery?
     fun findExcelFieldsByCustCd(custCd: String): Flow<IfFieldInfoResponse>
+
+    /**
+     * Find customer names by customer codes (batch query)
+     * @param custCds list of customer codes
+     * @return map of custCd to custNm
+     */
+    suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, Triple<String, Boolean, String>>
 }
