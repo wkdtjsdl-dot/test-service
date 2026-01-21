@@ -1,7 +1,7 @@
 package com.idrsys.ailis.sales.adapter.client
 
 import com.idrsys.ailis.sales.application.required.client.StandardChargeResponse
-import com.idrsys.ailis.sales.application.required.client.TestChargeClient
+import com.idrsys.ailis.sales.application.required.client.TestChargePort
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.client.bodyToFlow
 class TestChargeClientImpl(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
-) : TestChargeClient {
+) : TestChargePort {
 
     private val client: WebClient
 

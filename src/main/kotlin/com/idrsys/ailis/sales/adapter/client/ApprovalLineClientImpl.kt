@@ -1,6 +1,6 @@
 package com.idrsys.ailis.sales.adapter.client
 
-import com.idrsys.ailis.sales.application.required.client.ApprovalLineClient
+import com.idrsys.ailis.sales.application.required.client.ApprovalLinePort
 import com.idrsys.ailis.sales.application.required.client.ApprovalLineResponse
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
 import kotlinx.coroutines.flow.toList
@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.client.bodyToFlow
 class ApprovalLineClientImpl(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
-) : ApprovalLineClient {
+) : ApprovalLinePort {
 
     private val client: WebClient
 
