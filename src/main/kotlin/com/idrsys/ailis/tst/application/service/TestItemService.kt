@@ -37,7 +37,10 @@ class TestItemService(
         val now = LocalDateTime.now()
         val domain = TestItem.create(command, adminId, now)
         val saved = repository.save(domain)
+        val hist = mapper.toDomain(saved,  "신규 생성").apply { setAsNew() }
+        repository.saveTestItemHistory(hist)
         return mapper.toResponse(saved)
+
     }
 
     @Transactional(readOnly = true)
@@ -134,7 +137,11 @@ class TestItemService(
         val now = LocalDateTime.now()
         val domain = TestItemSpecimen.create(command, adminId, now)
         val saved = repository.saveSpecimen(domain)
-        return repository.getSpecimenDetailById(saved.spcmId!!) ?: throw RuntimeException("TestItemSpecimen not found after save")
+
+        val hist = mapper.toDomain(saved,  "신규 생성").apply { setAsNew() }
+        repository.saveTestItemSpecimenHistory(hist)
+        return  repository.getSpecimenDetailById(saved.spcmId!!) ?: throw RuntimeException("TestItemSpecimen not found after save")
+
     }
 
     @Transactional(readOnly = true)
@@ -280,7 +287,7 @@ class TestItemService(
     @Transactional(readOnly = true)
     override suspend fun getTestItemHistoryLogList(searchParam: TestItemLogsSearchParam): List<TestItemLogsResponse> {
         val logs = repository.findTestItemHistoryByTstCd(searchParam.tstCd).toList()
-        if (logs.size < 2) return emptyList()
+        if (logs.isEmpty()) return emptyList()
 
         val propertyNameMap: Map<String, String> = mapOf(
             "itemHstId" to "검사종목 변경이력 아이디",
@@ -320,33 +327,40 @@ class TestItemService(
             "updater" to "수정자",
             "updateDtime" to "수정일시"
         )
+        val propertiesToIgnore = setOf("itemHstId", "tstCd", "updater", "updateDtime", "creator", "createDtime", "isNew", "hstDesc")
 
-        return logs.windowed(size = 2, step = 1).map { (newLog, oldLog) ->
-            val diffs = StringBuilder()
-            val propertiesToIgnore = setOf("itemHstId", "tstCd", "updater", "updateDtime", "creator", "createDtime", "isNew", "hstDesc")
+        return logs.mapIndexed { index, currentLog ->
+            if (index == logs.size - 1) {
+                // 가장 오래된 로그 (신규 생성) - 수정항목 및 내용은 빈 값
+                mapper.toLogsEditResponse(currentLog, currentLog, "")
+            } else {
+                // 이전 로그와 비교
+                val previousLog = logs[index + 1]
+                val diffs = StringBuilder()
 
-            TestItemHst::class.memberProperties.forEach { prop ->
-                prop.isAccessible = true // private backing field 강제 오픈
-                if (prop.name !in propertiesToIgnore) {
-                    val getter = prop.getter
-                    val oldValue = getter.call(oldLog)
-                    val newValue = getter.call(newLog)
-                    if (oldValue != newValue) {
-                        val koreanName = propertyNameMap[prop.name] ?: prop.name
-                        diffs.append("${koreanName}: '${oldValue ?: ""}' -> '${newValue ?: ""}'\n")
+                TestItemHst::class.memberProperties.forEach { prop ->
+                    prop.isAccessible = true
+                    if (prop.name !in propertiesToIgnore) {
+                        val getter = prop.getter
+                        val oldValue = getter.call(previousLog)
+                        val newValue = getter.call(currentLog)
+                        if (oldValue != newValue) {
+                            val koreanName = propertyNameMap[prop.name] ?: prop.name
+                            diffs.append("${koreanName}: '${oldValue ?: ""}' -> '${newValue ?: ""}'\n")
+                        }
                     }
                 }
-            }
 
-            val diffString = diffs.toString().trimEnd()
-            mapper.toLogsEditResponse(oldLog, newLog, diffString)
+                mapper.toLogsEditResponse(previousLog, currentLog, diffs.toString().trimEnd())
+            }
         }
     }
 
     @Transactional(readOnly = true)
     override suspend fun getTestItemSpecimenHistoryLogList(searchParam: TestItemSpecimenLogsSearchParam): List<TestItemSpecimenLogsResponse> {
         val logs = repository.findTestItemSpecimenHistoryByTstCdAndSpcmCd(searchParam.tstCd, searchParam.spcmCd).toList()
-        if (logs.size < 2) return emptyList()
+//        if (logs.size < 2) return emptyList()
+        if(logs.isEmpty()) return emptyList()
 
         val propertyNameMap: Map<String, String> = mapOf(
             "spcmHstId" to "검체 변경이력 아이디",
@@ -374,30 +388,36 @@ class TestItemService(
             "updater" to "수정자",
             "updateDtime" to "수정일시"
         )
+        val propertiesToIgnore = setOf(
+            "spcmHstId", "tstCd", "spcmCd",
+            "updater", "updateDtime", "creator", "createDtime",
+            "isNew", "hstDesc"
+        )
 
-        return logs.windowed(size = 2, step = 1).map { (newLog, oldLog) ->
-            val diffs = StringBuilder()
-            val propertiesToIgnore = setOf(
-                "spcmHstId", "tstCd", "spcmCd",
-                "updater", "updateDtime", "creator", "createDtime",
-                "isNew", "hstDesc"
-            )
+        return logs.mapIndexed { index, currentLog ->
+            if (index == logs.size - 1) {
+                // 가장 오래된 로그 (신규 생성)
+                mapper.toSpecimenLogsResponse(currentLog, currentLog, "")
+            } else {
+                // 이전 로그와 비교
+                val previousLog = logs[index + 1]
+                val diffs = StringBuilder()
 
-            TestItemSpecimenHst::class.memberProperties.forEach { prop ->
-                prop.isAccessible = true
-                if (prop.name !in propertiesToIgnore) {
-                    val getter = prop.getter
-                    val oldValue = getter.call(oldLog)
-                    val newValue = getter.call(newLog)
-                    if (oldValue != newValue) {
-                        val koreanName = propertyNameMap[prop.name] ?: prop.name
-                        diffs.append("${koreanName}: '${oldValue ?: ""}' -> '${newValue ?: ""}'\n")
+                TestItemSpecimenHst::class.memberProperties.forEach { prop ->
+                    prop.isAccessible = true
+                    if (prop.name !in propertiesToIgnore) {
+                        val getter = prop.getter
+                        val oldValue = getter.call(previousLog)
+                        val newValue = getter.call(currentLog)
+                        if (oldValue != newValue) {
+                            val koreanName = propertyNameMap[prop.name] ?: prop.name
+                            diffs.append("${koreanName}: '${oldValue ?: ""}' -> '${newValue ?: ""}'\n")
+                        }
                     }
                 }
-            }
 
-            val diffString = diffs.toString().trimEnd()
-            mapper.toSpecimenLogsResponse(oldLog, newLog, diffString)
+                mapper.toSpecimenLogsResponse(previousLog, currentLog, diffs.toString().trimEnd())
+            }
         }
-    }
+}
 }
