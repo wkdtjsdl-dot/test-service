@@ -6,7 +6,7 @@ import com.idrsys.ailis.tst.application.dto.inner.TestRequestInfo
 import com.idrsys.ailis.tst.application.dto.inner.TestRequestKey
 import com.idrsys.ailis.tst.application.dto.inner.TstRequestDetailResponse
 import com.idrsys.ailis.tst.application.dto.inner.toTestRequestInfo
-import com.idrsys.ailis.tst.application.required.ReqServiceClient
+import com.idrsys.ailis.tst.application.required.external.ReqServicePort
 import com.idrsys.ailis.tst.infrastructure.config.AppConfig
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
@@ -20,10 +20,10 @@ import org.springframework.web.reactive.function.client.bodyToMono
  * - 검사 항목 상태 조회
  */
 @Component
-class RequestServiceClient(
+class ReqServiceClient(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
-) : ReqServiceClient {
+) : ReqServicePort {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val client: WebClient
 

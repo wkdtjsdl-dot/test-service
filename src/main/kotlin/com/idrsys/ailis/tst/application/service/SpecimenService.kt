@@ -5,7 +5,7 @@ import com.idrsys.ailis.tst.application.dto.SpecimenResponse
 import com.idrsys.ailis.tst.application.dto.SpecimenUpdateRequest
 import com.idrsys.ailis.tst.application.mapper.SpecimenCommandMapper
 import com.idrsys.ailis.tst.application.mapper.SpecimenMapper
-import com.idrsys.ailis.tst.application.required.SpecimenRepository
+import com.idrsys.ailis.tst.application.required.repository.SpecimenRepository
 import com.idrsys.ailis.tst.application.usecase.SpecimenUseCase
 import com.idrsys.ailis.tst.domain.model.Specimen
 import kotlinx.coroutines.flow.Flow
@@ -48,11 +48,11 @@ class SpecimenService(
     override suspend fun updateSpecimen(spcmCd: String, request: SpecimenUpdateRequest, adminId: String): SpecimenResponse {
         val specimen = specimenRepository.findById(spcmCd)
             ?: throw NoSuchElementException("Specimen not found: $spcmCd")
-        
+
         val command = commandMapper.toUpdateCommand(request)
         val now = LocalDateTime.now()
         specimen.update(command, adminId, now)
-        
+
         val saved = specimenRepository.save(specimen)
         return specimenMapper.toResponse(saved)
     }

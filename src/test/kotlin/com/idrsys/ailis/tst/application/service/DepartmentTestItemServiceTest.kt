@@ -3,7 +3,9 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemCommandMapper
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemMapper
-import com.idrsys.ailis.tst.application.required.DepartmentTestItemRepository
+import com.idrsys.ailis.tst.application.mapper.TestItemMapper
+import com.idrsys.ailis.tst.application.required.repository.DepartmentTestItemRepository
+import com.idrsys.ailis.tst.application.required.repository.TestItemRepository
 import com.idrsys.ailis.tst.domain.command.DepartmentGroupCreateCommand
 import com.idrsys.ailis.tst.domain.command.DepartmentGroupUpdateCommand
 import com.idrsys.ailis.tst.domain.model.DepartmentGroup
@@ -27,7 +29,13 @@ class DepartmentTestItemServiceTest {
     lateinit var repository: DepartmentTestItemRepository
 
     @Mock
+    lateinit var testItemRepository: TestItemRepository
+
+    @Mock
     lateinit var mapper: DepartmentTestItemMapper
+
+    @Mock
+    lateinit var testItemMapper: TestItemMapper
 
     @Mock
     lateinit var commandMapper: DepartmentTestItemCommandMapper

@@ -5,7 +5,7 @@ import com.idrsys.ailis.tst.application.dto.RequestDocumentResponse
 import com.idrsys.ailis.tst.application.dto.RequestDocumentUpdateRequest
 import com.idrsys.ailis.tst.application.mapper.RequestDocumentCommandMapper
 import com.idrsys.ailis.tst.application.mapper.RequestDocumentMapper
-import com.idrsys.ailis.tst.application.required.RequestDocumentRepository
+import com.idrsys.ailis.tst.application.required.repository.RequestDocumentRepository
 import com.idrsys.ailis.tst.application.usecase.RequestDocumentUseCase
 import com.idrsys.ailis.tst.domain.model.RequestDocument
 import kotlinx.coroutines.flow.Flow
@@ -48,11 +48,11 @@ class RequestDocumentService(
     override suspend fun updateDocument(docCd: String, request: RequestDocumentUpdateRequest, adminId: String): RequestDocumentResponse {
         val document = requestDocumentRepository.findById(docCd)
             ?: throw NoSuchElementException("Document not found: $docCd")
-        
+
         val command = commandMapper.toUpdateCommand(request)
         val now = LocalDateTime.now()
         document.update(command, adminId, now)
-        
+
         val saved = requestDocumentRepository.save(document)
         return requestDocumentMapper.toResponse(saved)
     }

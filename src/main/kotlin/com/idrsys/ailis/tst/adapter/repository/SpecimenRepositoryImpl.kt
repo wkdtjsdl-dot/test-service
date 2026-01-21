@@ -1,6 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
-import com.idrsys.ailis.tst.application.required.SpecimenRepository
+import com.idrsys.ailis.tst.application.required.repository.SpecimenRepository
 import com.idrsys.ailis.tst.domain.model.Specimen
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsSpcm
 import kotlinx.coroutines.flow.Flow

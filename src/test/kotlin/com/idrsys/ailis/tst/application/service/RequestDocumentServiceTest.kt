@@ -3,7 +3,7 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.mapper.RequestDocumentCommandMapper
 import com.idrsys.ailis.tst.application.mapper.RequestDocumentMapper
-import com.idrsys.ailis.tst.application.required.RequestDocumentRepository
+import com.idrsys.ailis.tst.application.required.repository.RequestDocumentRepository
 import com.idrsys.ailis.tst.domain.command.RequestDocumentCreateCommand
 import com.idrsys.ailis.tst.domain.command.RequestDocumentUpdateCommand
 import com.idrsys.ailis.tst.domain.model.RequestDocument

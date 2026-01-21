@@ -8,8 +8,8 @@ import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestIte
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemCommandMapper
 import com.idrsys.ailis.tst.application.mapper.DepartmentTestItemMapper
 import com.idrsys.ailis.tst.application.mapper.TestItemMapper
-import com.idrsys.ailis.tst.application.required.DepartmentTestItemRepository
-import com.idrsys.ailis.tst.application.required.TestItemRepository
+import com.idrsys.ailis.tst.application.required.repository.DepartmentTestItemRepository
+import com.idrsys.ailis.tst.application.required.repository.TestItemRepository
 import com.idrsys.ailis.tst.application.usecase.DepartmentTestItemUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

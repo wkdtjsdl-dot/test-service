@@ -5,7 +5,7 @@ import com.idrsys.ailis.tst.application.dto.TestCategoryResponse
 import com.idrsys.ailis.tst.application.dto.TestCategoryUpdateRequest
 import com.idrsys.ailis.tst.application.mapper.TestCategoryCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestCategoryMapper
-import com.idrsys.ailis.tst.application.required.TestCategoryRepository
+import com.idrsys.ailis.tst.application.required.repository.TestCategoryRepository
 import com.idrsys.ailis.tst.application.usecase.TestCategoryUseCase
 import com.idrsys.ailis.tst.domain.model.TestCategory
 import kotlinx.coroutines.flow.Flow

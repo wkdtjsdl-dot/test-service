@@ -1,12 +1,12 @@
 package com.idrsys.ailis.tst.application.service
 
-import com.idrsys.ailis.tst.adapter.external.BaseServiceClient
+import com.idrsys.ailis.tst.application.required.external.BaseServicePort
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.inner.TestRequestKey
 import com.idrsys.ailis.tst.application.mapper.TestReportCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestReportMapper
-import com.idrsys.ailis.tst.application.required.ReqServiceClient
-import com.idrsys.ailis.tst.application.required.TestReportRepository
+import com.idrsys.ailis.tst.application.required.external.ReqServicePort
+import com.idrsys.ailis.tst.application.required.repository.TestReportRepository
 import com.idrsys.ailis.tst.application.usecase.TestReportUseCase
 import com.idrsys.ailis.tst.domain.model.TestReport
 import org.springframework.core.io.FileSystemResource
@@ -24,8 +24,8 @@ class TestReportService(
     private val testReportRepository: TestReportRepository,
     private val testReportMapper: TestReportMapper,
     private val commandMapper: TestReportCommandMapper,
-    private val baseServiceClient: BaseServiceClient,
-    private val reqServiceClient: ReqServiceClient
+    private val baseServiceClient: BaseServicePort,
+    private val reqServiceClient: ReqServicePort
 ) : TestReportUseCase {
 
     @Transactional(readOnly = true)

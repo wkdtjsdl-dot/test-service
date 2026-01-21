@@ -1,15 +1,28 @@
-package com.idrsys.ailis.tst.application.required
+package com.idrsys.ailis.tst.application.required.repository
 
-import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.TestGeneRequest
+import com.idrsys.ailis.tst.application.dto.TestItemAutoCompleteParam
+import com.idrsys.ailis.tst.application.dto.TestItemEssentialDocDetailResponse
+import com.idrsys.ailis.tst.application.dto.TestItemEssentialDocListResponse
+import com.idrsys.ailis.tst.application.dto.TestItemGeneResponse
+import com.idrsys.ailis.tst.application.dto.TestItemRefDetailResponse
+import com.idrsys.ailis.tst.application.dto.TestItemRefItemsResponse
+import com.idrsys.ailis.tst.application.dto.TestItemRefRequest
+import com.idrsys.ailis.tst.application.dto.TestItemRefResponse
+import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
+import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
+import com.idrsys.ailis.tst.application.dto.TestItemSpecimenDetailResponse
+import com.idrsys.ailis.tst.application.dto.TestItemSpecimenListResponse
+import com.idrsys.ailis.tst.application.dto.TestItemSpecimensResponse
 import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestGene
 import com.idrsys.ailis.tst.domain.model.TestItem
 import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
-import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
-import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
 import com.idrsys.ailis.tst.domain.model.TestItemHst
+import com.idrsys.ailis.tst.domain.model.TestItemRefItem
+import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
 import kotlinx.coroutines.flow.Flow
 
@@ -48,7 +61,7 @@ interface TestItemRepository {
     suspend fun findRefItemsByTstCds(tstCds: List<String>): Flow<TestItemRefItemsResponse>
 
     // --- TestGene ---
-     fun getGenes(request: TestGeneRequest):Flow<TestGene>
+     fun getGenes(request: TestGeneRequest): Flow<TestGene>
     // --- TestItemGene ---
     suspend fun saveGene(entity: TestItemGene): TestItemGene
     suspend fun deleteGeneById(itemGeneId: String)

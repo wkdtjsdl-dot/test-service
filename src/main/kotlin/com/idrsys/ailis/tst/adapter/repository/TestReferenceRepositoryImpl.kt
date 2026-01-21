@@ -5,7 +5,7 @@ import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteResponse
 import com.idrsys.ailis.tst.application.dto.TestReferenceByGroupParam
 import com.idrsys.ailis.tst.application.dto.TestReferenceGroupItemResponse
 import com.idrsys.ailis.tst.application.dto.TestReferenceSimpleResponse
-import com.idrsys.ailis.tst.application.required.TestReferenceRepository
+import com.idrsys.ailis.tst.application.required.repository.TestReferenceRepository
 import com.idrsys.ailis.tst.domain.model.TestReference
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroup
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem

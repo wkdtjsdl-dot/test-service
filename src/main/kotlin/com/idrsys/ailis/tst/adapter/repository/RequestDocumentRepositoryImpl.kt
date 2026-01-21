@@ -1,6 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
-import com.idrsys.ailis.tst.application.required.RequestDocumentRepository
+import com.idrsys.ailis.tst.application.required.repository.RequestDocumentRepository
 import com.idrsys.ailis.tst.domain.model.RequestDocument
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstReqDoc
 import kotlinx.coroutines.flow.Flow
@@ -40,7 +40,7 @@ class RequestDocumentRepositoryImpl(
         if (docDivCd != null) {
             query.where(table.DOC_DIV_CD.eq(docDivCd))
         }
-        
+
         query.orderBy(table.DOC_CD)
 
         var executeSpec = databaseClient.sql(query.sql)

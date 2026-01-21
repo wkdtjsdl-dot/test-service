@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.adapter.external
 
 import com.idrsys.ailis.tst.application.dto.DepartmentSimpleDto
+import com.idrsys.ailis.tst.application.required.external.BaseServicePort
 import com.idrsys.ailis.tst.infrastructure.config.AppConfig
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -17,7 +18,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 class BaseServiceClient(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
-) {
+) : BaseServicePort {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val client: WebClient
 
@@ -32,7 +33,7 @@ class BaseServiceClient(
      * @param deptCds 부서 코드 목록
      * @return 부서 코드 -> 부서명 맵
      */
-    suspend fun getDepartmentsByDeptCds(deptCds: List<String>): Map<String, String> {
+    override suspend fun getDepartmentsByDeptCds(deptCds: List<String>): Map<String, String> {
         if (deptCds.isEmpty()) {
             return emptyMap()
         }
@@ -59,12 +60,12 @@ class BaseServiceClient(
         }
     }
 
-     /**
+    /**
      * 단일 부서 코드로 부서명 조회
      * @param deptCd 부서 코드
      * @return 부서명 (조회 실패 시 null)
      */
-    suspend fun getDepartmentName(deptCd: String): String? {
+    override suspend fun getDepartmentName(deptCd: String): String? {
         return getDepartmentsByDeptCds(listOf(deptCd))[deptCd]
     }
 

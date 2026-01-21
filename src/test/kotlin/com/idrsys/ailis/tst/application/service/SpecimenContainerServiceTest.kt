@@ -3,7 +3,7 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.mapper.SpecimenContainerCommandMapper
 import com.idrsys.ailis.tst.application.mapper.SpecimenContainerMapper
-import com.idrsys.ailis.tst.application.required.SpecimenContainerRepository
+import com.idrsys.ailis.tst.application.required.repository.SpecimenContainerRepository
 import com.idrsys.ailis.tst.domain.command.SpecimenContainerCreateCommand
 import com.idrsys.ailis.tst.domain.command.SpecimenContainerUpdateCommand
 import com.idrsys.ailis.tst.domain.model.SpecimenContainer

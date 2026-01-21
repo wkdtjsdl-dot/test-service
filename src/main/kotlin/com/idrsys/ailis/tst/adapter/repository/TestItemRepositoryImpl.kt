@@ -2,7 +2,7 @@ package com.idrsys.ailis.tst.adapter.repository
 
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
-import com.idrsys.ailis.tst.application.required.TestItemRepository
+import com.idrsys.ailis.tst.application.required.repository.TestItemRepository
 import com.idrsys.ailis.tst.domain.model.*
 import com.idrsys.ailis.tst.generated.jooq.tables.*
 import kotlinx.coroutines.flow.Flow

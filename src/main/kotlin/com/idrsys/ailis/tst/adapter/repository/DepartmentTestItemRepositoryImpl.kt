@@ -6,7 +6,7 @@ import com.idrsys.ailis.tst.application.dto.DeptTestItemCategoryResponse
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentGroupItemTestSearchParam
 import com.idrsys.ailis.tst.application.dto.request.DepartmentTestItemSearchParam
-import com.idrsys.ailis.tst.application.required.DepartmentTestItemRepository
+import com.idrsys.ailis.tst.application.required.repository.DepartmentTestItemRepository
 import com.idrsys.ailis.tst.domain.model.DepartmentGroup
 import com.idrsys.ailis.tst.domain.model.DepartmentGroupItem
 import com.idrsys.ailis.tst.domain.model.DepartmentGroupItemTest

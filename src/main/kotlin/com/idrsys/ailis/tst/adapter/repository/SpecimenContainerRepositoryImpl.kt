@@ -1,6 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
-import com.idrsys.ailis.tst.application.required.SpecimenContainerRepository
+import com.idrsys.ailis.tst.application.required.repository.SpecimenContainerRepository
 import com.idrsys.ailis.tst.domain.model.SpecimenContainer
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsSpcmCntn
 import kotlinx.coroutines.flow.Flow
@@ -43,7 +43,7 @@ class SpecimenContainerRepositoryImpl(
                 lower(table.CNTN_NM).like("%${cntnNm.lowercase()}%")
             )
         }
-        
+
         query.orderBy(table.SPCM_CNTN_CD)
 
         var executeSpec = databaseClient.sql(query.sql)

@@ -1,6 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
-import com.idrsys.ailis.tst.application.required.TestCategoryRepository
+import com.idrsys.ailis.tst.application.required.repository.TestCategoryRepository
 import com.idrsys.ailis.tst.domain.model.TestCategory
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstCate
 import kotlinx.coroutines.flow.Flow

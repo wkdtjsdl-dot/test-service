@@ -2,7 +2,7 @@ package com.idrsys.ailis.tst.adapter.repository
 
 import com.idrsys.ailis.tst.application.dto.TestResultResponse
 import com.idrsys.ailis.tst.application.dto.TestResultSearchParam
-import com.idrsys.ailis.tst.application.required.TestReportRepository
+import com.idrsys.ailis.tst.application.required.repository.TestReportRepository
 import com.idrsys.ailis.tst.domain.model.TestReport
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem.BTS_ITEM
 import com.idrsys.ailis.tst.generated.jooq.tables.TbsTstReport.TBS_TST_REPORT

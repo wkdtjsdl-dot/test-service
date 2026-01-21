@@ -5,7 +5,7 @@ import com.idrsys.ailis.tst.application.dto.SpecimenContainerResponse
 import com.idrsys.ailis.tst.application.dto.SpecimenContainerUpdateRequest
 import com.idrsys.ailis.tst.application.mapper.SpecimenContainerCommandMapper
 import com.idrsys.ailis.tst.application.mapper.SpecimenContainerMapper
-import com.idrsys.ailis.tst.application.required.SpecimenContainerRepository
+import com.idrsys.ailis.tst.application.required.repository.SpecimenContainerRepository
 import com.idrsys.ailis.tst.application.usecase.SpecimenContainerUseCase
 import com.idrsys.ailis.tst.domain.model.SpecimenContainer
 import kotlinx.coroutines.flow.Flow
@@ -48,11 +48,11 @@ class SpecimenContainerService(
     override suspend fun updateContainer(spcmCntnCd: String, request: SpecimenContainerUpdateRequest, adminId: String): SpecimenContainerResponse {
         val container = specimenContainerRepository.findById(spcmCntnCd)
             ?: throw NoSuchElementException("Container not found: $spcmCntnCd")
-        
+
         val command = commandMapper.toUpdateCommand(request)
         val now = LocalDateTime.now()
         container.update(command, adminId, now)
-        
+
         val saved = specimenContainerRepository.save(container)
         return specimenContainerMapper.toResponse(saved)
     }

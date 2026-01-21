@@ -3,10 +3,11 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.mapper.TestItemCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestItemMapper
-import com.idrsys.ailis.tst.application.required.TestItemRepository
+import com.idrsys.ailis.tst.application.required.repository.TestItemRepository
 import com.idrsys.ailis.tst.domain.command.TestItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemUpdateCommand
 import com.idrsys.ailis.tst.domain.model.TestItem
+import com.idrsys.ailis.tst.domain.model.TestItemHst
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -183,8 +184,50 @@ class TestItemServiceTest {
             insuCateNo = "CATE01"
         )
 
+        val hist = TestItemHst(
+            itemHstId = null,
+            hstDesc = "신규 생성",
+            tstCd = "uuid",
+            tstLargeCateCd = "L01",
+            tstMediumCateCd = "M01",
+            startDt = LocalDate.of(2023, 1, 1),
+            endDt = LocalDate.of(9999, 12, 31),
+            useYn = true,
+            reqPossYn = true,
+            webKorYn = true,
+            webEngYn = true,
+            tstNm = "Test Item",
+            tstAbbrNm = "Test",
+            tstEngNm = "Test Item Eng",
+            tstEngAbbrNm = "Test Eng",
+            tstIntNm = "Internal Name",
+            rstTypeShortYn = true,
+            rstTypeLongYn = false,
+            rstTypeFileYn = false,
+            rstTypeUrlYn = false,
+            diseaseCd = "D01",
+            tstMethodCd = "METHOD01",
+            refVal = "Ref Val",
+            engRefVal = "Eng Ref Val",
+            clncSgnf = "Significance",
+            engClncSgnf = "Eng Significance",
+            tstDesc = "Description",
+            tstEngDesc = "Eng Description",
+            tstDayweek = "Mon",
+            tstTatday = 1,
+            insuApplyCd = "APPLY01",
+            insuCd = "INSU01",
+            insuCateNo = "CATE01",
+            creator = "admin",
+            createDtime = LocalDateTime.now(),
+            updater = "admin",
+            updateDtime = LocalDateTime.now()
+        )
+
         `when`(commandMapper.toCreateCommand(request)).thenReturn(command)
         `when`(repository.save(any())).thenReturn(domain)
+        `when`(mapper.toDomain(any<TestItem>(), any<String>())).thenReturn(hist)
+        `when`(repository.saveTestItemHistory(any())).thenReturn(hist)
         `when`(mapper.toResponse(domain)).thenReturn(response)
 
         // When
@@ -339,9 +382,51 @@ class TestItemServiceTest {
             insuCateNo = "CATE02"
         )
 
+        val hist = TestItemHst(
+            itemHstId = null,
+            hstDesc = "",
+            tstCd = id,
+            tstLargeCateCd = "L02",
+            tstMediumCateCd = "M02",
+            startDt = LocalDate.of(2023, 1, 2),
+            endDt = LocalDate.of(9999, 12, 31),
+            useYn = false,
+            reqPossYn = false,
+            webKorYn = false,
+            webEngYn = false,
+            tstNm = "Updated Item",
+            tstAbbrNm = "Updated",
+            tstEngNm = "Updated Item Eng",
+            tstEngAbbrNm = "Updated Eng",
+            tstIntNm = "Updated Internal",
+            rstTypeShortYn = false,
+            rstTypeLongYn = true,
+            rstTypeFileYn = true,
+            rstTypeUrlYn = true,
+            diseaseCd = "D02",
+            tstMethodCd = "METHOD02",
+            refVal = "Updated Ref Val",
+            engRefVal = "Updated Eng Ref Val",
+            clncSgnf = "Updated Significance",
+            engClncSgnf = "Updated Eng Significance",
+            tstDesc = "Updated Description",
+            tstEngDesc = "Updated Eng Description",
+            tstDayweek = "Tue",
+            tstTatday = 2,
+            insuApplyCd = "APPLY02",
+            insuCd = "INSU02",
+            insuCateNo = "CATE02",
+            creator = "admin",
+            createDtime = existing.createDtime,
+            updater = "admin",
+            updateDtime = LocalDateTime.now()
+        )
+
         `when`(repository.findById(id)).thenReturn(existing)
         `when`(commandMapper.toUpdateCommand(request)).thenReturn(command)
         `when`(repository.save(any())).thenReturn(existing)
+        `when`(mapper.toDomain(any<TestItem>(), any<String>())).thenReturn(hist)
+        `when`(repository.saveTestItemHistory(any())).thenReturn(hist)
         `when`(mapper.toResponse(existing)).thenReturn(response)
 
         // When

@@ -1,4 +1,4 @@
-package com.idrsys.ailis.tst.application.required
+package com.idrsys.ailis.tst.application.required.external
 
 import com.idrsys.ailis.tst.application.dto.inner.TestItemKey
 import com.idrsys.ailis.tst.application.dto.inner.TestItemStatusInfo
@@ -8,7 +8,7 @@ import com.idrsys.ailis.tst.application.dto.inner.TestRequestKey
 /**
  * req-service Inner API 클라이언트 인터페이스
  */
-interface ReqServiceClient {
+interface ReqServicePort {
 
     /**
      * 검사 의뢰 정보 일괄 조회

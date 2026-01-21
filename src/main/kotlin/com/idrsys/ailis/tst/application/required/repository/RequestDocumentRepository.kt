@@ -1,4 +1,4 @@
-package com.idrsys.ailis.tst.application.required
+package com.idrsys.ailis.tst.application.required.repository
 
 import com.idrsys.ailis.tst.domain.model.RequestDocument
 import kotlinx.coroutines.flow.Flow

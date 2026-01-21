@@ -3,7 +3,7 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.mapper.TestReferenceCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestReferenceMapper
-import com.idrsys.ailis.tst.application.required.TestReferenceRepository
+import com.idrsys.ailis.tst.application.required.repository.TestReferenceRepository
 import com.idrsys.ailis.tst.domain.command.TestReferenceCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestReferenceUpdateCommand
 import com.idrsys.ailis.tst.domain.model.TestReference

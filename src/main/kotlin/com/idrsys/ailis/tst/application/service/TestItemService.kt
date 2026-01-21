@@ -3,7 +3,7 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.mapper.TestItemCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestItemMapper
-import com.idrsys.ailis.tst.application.required.TestItemRepository
+import com.idrsys.ailis.tst.application.required.repository.TestItemRepository
 import com.idrsys.ailis.tst.application.usecase.TestItemUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

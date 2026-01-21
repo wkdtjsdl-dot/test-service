@@ -1,4 +1,4 @@
-package com.idrsys.ailis.tst.application.required
+package com.idrsys.ailis.tst.application.required.repository
 
 import com.idrsys.ailis.tst.application.dto.DepartmentGroupItemTestResponse
 import com.idrsys.ailis.tst.application.dto.DepartmentGroupItemWithCount
