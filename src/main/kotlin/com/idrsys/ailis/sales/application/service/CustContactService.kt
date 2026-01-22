@@ -6,7 +6,7 @@ import com.idrsys.ailis.sales.application.dto.response.CustContactResponse
 import com.idrsys.ailis.sales.application.required.repository.custContact.CustContactCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.custContact.CustContactRepository
 import com.idrsys.ailis.sales.application.usecase.custContact.CustContactUseCase
-import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.shared.mapper.CustContactMapper
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -21,7 +21,7 @@ class CustContactService(
     private val custContactRepository: CustContactRepository,
     private val custContactCustomRepository: CustContactCustomRepository,
     private val custContactMapper: CustContactMapper,
-    private val baseServiceClient: BaseServiceClient,
+    private val baseServicePort: BaseServicePort,
 ) : CustContactUseCase {
 
     override suspend fun getCustContactPage(searchParam: CustContactSearchParam, pageable: Pageable): Page<CustContactResponse> {
@@ -29,7 +29,7 @@ class CustContactService(
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
         val custContacts = custContactCustomRepository.findCustContacts(searchParam, pageable).map { dto ->
-            val empNm = dto.creator.let { baseServiceClient.getUser(it)?.userNm }
+            val empNm = dto.creator.let { baseServicePort.getUser(it)?.userNm }
             custContactMapper.toResponseFromQuery(dto.copy(empNm = empNm))
         }.toList()
 
@@ -40,7 +40,7 @@ class CustContactService(
         val dto = custContactCustomRepository.findCustContactById(custContactId)
             ?: throw NoSuchElementException("CustContact not found with id: $custContactId")
 
-        val empNm = dto.creator.let { baseServiceClient.getUser(it)?.userNm }
+        val empNm = dto.creator.let { baseServicePort.getUser(it)?.userNm }
         return custContactMapper.toResponseFromQuery(dto.copy(empNm = empNm))
     }
 

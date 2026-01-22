@@ -6,7 +6,7 @@ import com.idrsys.ailis.sales.application.dto.response.GcgnSalsPicInfoResponse
 import com.idrsys.ailis.sales.application.required.repository.gcgnSalsPicInfo.GcgnSalsPicInfoCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.gcgnSalsPicInfo.GcgnSalsPicInfoRepository
 import com.idrsys.ailis.sales.application.usecase.gcgnSalsPicInfo.GcgnSalsPicInfoUseCase
-import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalaPicInfoAutoSearchParam
 import com.idrsys.ailis.sales.application.dto.response.GcgnSalsPicInfoAutoResponse
 import com.idrsys.ailis.sales.shared.mapper.GcgnSalsPicInfoMapper
@@ -24,7 +24,7 @@ class GcgnSalsPicInfoService(
     private val gcgnSalsPicInfoRepository: GcgnSalsPicInfoRepository,
     private val gcgnSalsPicInfoCustomRepository: GcgnSalsPicInfoCustomRepository,
     private val gcgnSalsPicInfoMapper: GcgnSalsPicInfoMapper,
-    private val baseServiceClient: BaseServiceClient,
+    private val baseServicePort: BaseServicePort,
 ) : GcgnSalsPicInfoUseCase {
 
     override suspend fun getGcgnSalsPicInfoPage(searchParam: GcgnSalsPicInfoSearchParam, pageable: Pageable): Page<GcgnSalsPicInfoResponse> {
@@ -44,7 +44,7 @@ class GcgnSalsPicInfoService(
         // Fetch user names in batch to avoid N+1 problem
         val empUserIds = gcgnSalsPicInfoDtos.map { it.empUserId }.distinct()
         val userNameById = if (empUserIds.isNotEmpty()) {
-            baseServiceClient.getUsersByIds(empUserIds)
+            baseServicePort.getUsersByIds(empUserIds)
                 ?.associate { it.userId to it.userNm }
                 ?: emptyMap()
         } else {
@@ -64,12 +64,12 @@ class GcgnSalsPicInfoService(
             ?: throw NoSuchElementException("GcgnSalsPicInfo not found with id: $gcgnSalsPicInfoId")
 
         val response = gcgnSalsPicInfoMapper.toResponse(dto)
-        val empUserNm = dto.empUserId.let { baseServiceClient.getUser(it)?.userNm }
+        val empUserNm = dto.empUserId.let { baseServicePort.getUser(it)?.userNm }
         return response.copy(empUserNm = empUserNm)
     }
 
     override suspend fun createGcgnSalsPicInfo(command: GcgnSalsPicInfoCommand, adminId: String): GcgnSalsPicInfoResponse {
-        val user = baseServiceClient.getUser(command.empUserId)
+        val user = baseServicePort.getUser(command.empUserId)
             ?: throw IllegalArgumentException("User not found with id: ${command.empUserId}")
         val now = LocalDateTime.now()
         val gcgnSalsPicInfo = gcgnSalsPicInfoMapper.toDomain(command, adminId, now).apply { setAsNew() }
@@ -86,7 +86,7 @@ class GcgnSalsPicInfoService(
 
         val updatedGcgnSalsPicInfo = gcgnSalsPicInfoRepository.save(gcgnSalsPicInfo)
         val response = gcgnSalsPicInfoMapper.toResponse(updatedGcgnSalsPicInfo)
-        val empUserNm = response.empUserId.let { baseServiceClient.getUser(it)?.userNm }
+        val empUserNm = response.empUserId.let { baseServicePort.getUser(it)?.userNm }
         return response.copy(empUserNm = empUserNm)
     }
 
@@ -96,7 +96,7 @@ class GcgnSalsPicInfoService(
 
     override suspend fun getSalsPicAutoCompleteList(searchParam: GcgnSalaPicInfoAutoSearchParam): List<GcgnSalsPicInfoAutoResponse> {
 
-        val users = baseServiceClient.getUsers() ?: emptyList()
+        val users = baseServicePort.getUsers() ?: emptyList()
         val userNameById = users.associate { it.userId to it.userNm }
 
         val keyword = searchParam.empUserIdNm?.trim()?.takeIf { it.isNotEmpty() }

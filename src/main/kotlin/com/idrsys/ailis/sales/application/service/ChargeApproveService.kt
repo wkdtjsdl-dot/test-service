@@ -2,14 +2,12 @@ package com.idrsys.ailis.sales.application.service
 
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCustomRepository
 import com.idrsys.ailis.sales.shared.mapper.ChargeApproveMapper
-import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
-import com.idrsys.ailis.sales.adapter.external.TstServiceClient
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveActionCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveRequestCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveSearchParam
 import com.idrsys.ailis.sales.application.dto.response.ChargeApproveResponse
-import com.idrsys.ailis.sales.application.required.client.ApprovalLinePort
-import com.idrsys.ailis.sales.application.required.client.UserPort
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
+import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoRepository
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeRepository
@@ -35,10 +33,8 @@ class ChargeApproveService(
     private val chargeRepository: ChargeRepository,
     private val apprInfoRepository: ApprInfoRepository,
     private val apprInfoCustomRepository: ApprInfoCustomRepository,
-    private val userClient: UserPort,
-    private val approvalLineClient: ApprovalLinePort,
-    private val tstServiceClient: TstServiceClient,
-    private val baseServiceClient: BaseServiceClient,
+    private val baseServicePort: BaseServicePort,
+    private val tstServicePort: TstServicePort,
     private val chargeCustomRepository: ChargeCustomRepository,
     private val chargeApproveMapper: ChargeApproveMapper
 ) : ChargeApproveUseCase {
@@ -83,7 +79,7 @@ class ChargeApproveService(
         }
 
         // 3. 최저수가 조회
-        val lowestChargeDouble = tstServiceClient.getStandardCharges(charge.tstCd)?.firstOrNull()?.lowestCharge
+        val lowestChargeDouble = tstServicePort.getStandardCharges(charge.tstCd)?.firstOrNull()?.lowestCharge
             ?: throw UserDefinedException(
                 ChargeApproveErrorCode.LOWEST_CHARGE_NOT_FOUND_CODE,
                 ChargeApproveErrorCode.LOWEST_CHARGE_NOT_FOUND_MESSAGE
@@ -96,7 +92,7 @@ class ChargeApproveService(
 
         // 5. 결재선 조회
         val apprDocDtlNo = apprLvlCd.substringAfterLast('_') // "APLV_1" -> "1"
-        val approvalLines = approvalLineClient.getApprovalLines(userId, APPR_DOC_TYPE_CD, apprDocDtlNo)
+        val approvalLines = baseServicePort.getApprovalLines(userId, APPR_DOC_TYPE_CD, apprDocDtlNo)
         if (approvalLines.isEmpty()) {
             throw UserDefinedException(
                 "APPR_LINE_NOT_FOUND", // TODO: Add to ErrorCode
@@ -170,7 +166,7 @@ class ChargeApproveService(
             )
 
         // 2. 결재 권한 확인
-        val user = userClient.getUser(userId) ?: throw UserDefinedException(
+        val user = baseServicePort.getUser(userId) ?: throw UserDefinedException(
             ChargeApproveErrorCode.NO_AUTHORITY_CODE,
             "사용자 정보를 찾을 수 없습니다."
         )
@@ -227,7 +223,7 @@ class ChargeApproveService(
                 ChargeApproveErrorCode.CHARGE_NOT_FOUND_MESSAGE
             )
 
-        val user = userClient.getUser(userId) ?: throw UserDefinedException(
+        val user = baseServicePort.getUser(userId) ?: throw UserDefinedException(
             ChargeApproveErrorCode.NO_AUTHORITY_CODE,
             "사용자 정보를 찾을 수 없습니다."
         )
@@ -294,7 +290,7 @@ class ChargeApproveService(
         pageable: Pageable
     ): Page<ChargeApproveResponse> {
         // 1. Get user role
-        val user = userClient.getUser(userId) ?: throw UserDefinedException(
+        val user = baseServicePort.getUser(userId) ?: throw UserDefinedException(
             ChargeApproveErrorCode.NO_AUTHORITY_CODE,
             "사용자 정보를 찾을 수 없습니다."
         )
@@ -332,7 +328,7 @@ class ChargeApproveService(
         userId: String
     ): List<ChargeApproveResponse> {
         // 1. Get user role
-        val user = userClient.getUser(userId) ?: throw UserDefinedException(
+        val user = baseServicePort.getUser(userId) ?: throw UserDefinedException(
             ChargeApproveErrorCode.NO_AUTHORITY_CODE,
             "사용자 정보를 찾을 수 없습니다."
         )
@@ -368,17 +364,17 @@ class ChargeApproveService(
         val response = chargeApproveMapper.toResponse(chargeQuery)
 
         // 3. Fetch lookup data
-        val tstItems = tstServiceClient.findAllTstItems() ?: emptyList()
+        val tstItems = tstServicePort.findAllTstItems() ?: emptyList()
         val tstItemMap = tstItems.associateBy { it.tstCd }
 
-        val systemCodes = baseServiceClient.getChildrenSystemCodes(listOf("APST", "AL")) ?: emptyMap()
+        val systemCodes = baseServicePort.getChildrenSystemCodes(listOf("APST", "AL")) ?: emptyMap()
         val apprStatMap = systemCodes["APST"]?.associateBy { it.cd } ?: emptyMap()
         val apprLvlMap = systemCodes["AL"]?.associateBy { it.cd } ?: emptyMap()
 
         // 4. Get users for approval line
         val empNos = approvalLines.mapNotNull { it.apprPersonEmpNo }.distinct()
         val users = if (empNos.isNotEmpty()) {
-            baseServiceClient.getUsers() ?: emptyList()
+            baseServicePort.getUsers() ?: emptyList()
         } else {
             emptyList()
         }
@@ -395,7 +391,7 @@ class ChargeApproveService(
         // 6. Fetch lowest charge if needed
         val lowestCharge = if (chargeQuery.tstCd.isNotBlank()) {
             try {
-                tstServiceClient.getStandardCharges(chargeQuery.tstCd)
+                tstServicePort.getStandardCharges(chargeQuery.tstCd)
                     ?.firstOrNull()?.lowestCharge?.toLong()
             } catch (ex: Exception) {
                 null
@@ -421,10 +417,10 @@ class ChargeApproveService(
         if (queries.isEmpty()) return emptyList()
 
         // 1. Fetch all lookup data
-        val tstItems = tstServiceClient.findAllTstItems() ?: emptyList()
+        val tstItems = tstServicePort.findAllTstItems() ?: emptyList()
         val tstItemMap = tstItems.associateBy { it.tstCd }
 
-        val systemCodes = baseServiceClient.getChildrenSystemCodes(listOf("APST", "AL")) ?: emptyMap()
+        val systemCodes = baseServicePort.getChildrenSystemCodes(listOf("APST", "AL")) ?: emptyMap()
         val apprStatMap = systemCodes["APST"]?.associateBy { it.cd } ?: emptyMap()
         val apprLvlMap = systemCodes["AL"]?.associateBy { it.cd } ?: emptyMap()
 

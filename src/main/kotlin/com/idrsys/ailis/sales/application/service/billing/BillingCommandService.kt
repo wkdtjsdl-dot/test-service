@@ -5,7 +5,7 @@ import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatement
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementResponse
-import com.idrsys.ailis.sales.application.required.port.ReqServicePort
+import com.idrsys.ailis.sales.application.required.external.ReqServicePort
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionLedgerRepository
 import com.idrsys.ailis.sales.application.usecase.billing.BillingCommandUseCase

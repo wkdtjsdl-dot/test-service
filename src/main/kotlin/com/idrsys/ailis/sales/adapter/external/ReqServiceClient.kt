@@ -4,7 +4,7 @@ import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceBillingRe
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceClosingReleaseResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceClosingResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary
-import com.idrsys.ailis.sales.application.required.port.ReqServicePort
+import com.idrsys.ailis.sales.application.required.external.ReqServicePort
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.Flow

@@ -1,7 +1,7 @@
 package com.idrsys.ailis.sales.application.service
 
-import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
-import com.idrsys.ailis.sales.adapter.external.TstServiceClient
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
+import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
@@ -36,8 +36,8 @@ class CustService(
     private val custMstHistRepository: CustMstHstRepository,
     private val custReqPossTstItemCustomRepository: CustReqPossTstItemCustomRepository,
     private val custMapper: CustMapper,
-    private val baseServiceClient: BaseServiceClient,
-    private val tstServiceClient: TstServiceClient,
+    private val baseServicePort: BaseServicePort,
+    private val tstServicePort: TstServicePort,
     private val hospitalDataService: HospitalDataService,
     private val testCodeMappingMapper: TestCodeMappingMapper,
 ) : CustUseCase {
@@ -48,7 +48,7 @@ class CustService(
         // 검색어에서 받아온 값(name or id)을 id로 정리해서 쿼리에 던짐
         var finalSearchParam = searchParam
         if (!searchParam.empUserIdNm.isNullOrBlank()) {
-            val users = baseServiceClient.getUsers() ?: emptyList()
+            val users = baseServicePort.getUsers() ?: emptyList()
             val matchedUserIds = users
                 .filter { it.userNm.contains(searchParam.empUserIdNm, ignoreCase = true) ||
                           it.userId.contains(searchParam.empUserIdNm, ignoreCase = true) }
@@ -86,7 +86,7 @@ class CustService(
         // 검색어에서 받아온 값(name or id)을 id로 정리해서 쿼리에 던짐
         var finalSearchParam = searchParam
         if (!searchParam.empUserIdNm.isNullOrBlank()) {
-            val users = baseServiceClient.getUsers() ?: emptyList()
+            val users = baseServicePort.getUsers() ?: emptyList()
             val matchedUserIds = users
                 .filter { it.userNm.contains(searchParam.empUserIdNm, ignoreCase = true) ||
                         it.userId.contains(searchParam.empUserIdNm, ignoreCase = true) }
@@ -132,7 +132,7 @@ class CustService(
         // 검색어에서 받아온 값(name or id)을 id로 정리해서 쿼리에 던짐
         var finalSearchParam = searchParam
         if (!searchParam.empUserIdNm.isNullOrBlank()) {
-            val users = baseServiceClient.getUsers() ?: emptyList()
+            val users = baseServicePort.getUsers() ?: emptyList()
             val matchedUserIds = users
                 .filter { it.userNm.contains(searchParam.empUserIdNm, ignoreCase = true) ||
                           it.userId.contains(searchParam.empUserIdNm, ignoreCase = true) }
@@ -185,7 +185,7 @@ class CustService(
         val custMst = custRepository.findByCustMstId(custMstId)
 
         return if (custMst?.reqPossTstLimitYn == true) {
-            val allTestItemsMap = (tstServiceClient.findAllTstItems() ?: emptyList())
+            val allTestItemsMap = (tstServicePort.findAllTstItems() ?: emptyList())
                 .associateBy { it.tstCd }
 
             val searchParam = CustReqPossTstItemSearchParam(custMstId = custMstId)
@@ -197,7 +197,7 @@ class CustService(
                     )
                 }
         } else {
-            (tstServiceClient.findAllTstItems() ?: emptyList()).asFlow()
+            (tstServicePort.findAllTstItems() ?: emptyList()).asFlow()
         }
     }
 
@@ -347,11 +347,11 @@ class CustService(
     }
 
     private suspend fun fetchLookupMaps(userIds: List<String>): LookupMaps {
-        val depts = baseServiceClient.getDepartments() ?: emptyList()
+        val depts = baseServicePort.getDepartments() ?: emptyList()
         val deptNameById = depts.associate { it.deptCd to it.deptNm }
 
         val users = if (userIds.isNotEmpty()) {
-            baseServiceClient.getUsersByIds(userIds) ?: emptyList()
+            baseServicePort.getUsersByIds(userIds) ?: emptyList()
         } else {
             emptyList()
         }
@@ -360,7 +360,7 @@ class CustService(
     }
 
     private suspend fun fetchSystemCodeMaps(): SystemCodeMaps {
-        val systemCodes = baseServiceClient.getChildrenSystemCodes(listOf("CSDV", "CSTP", "CSST")) ?: emptyMap()
+        val systemCodes = baseServicePort.getChildrenSystemCodes(listOf("CSDV", "CSTP", "CSST")) ?: emptyMap()
 
         val custDivNameByCd = systemCodes["CSDV"]?.associate { it.cd to it.cdNm } ?: emptyMap()
         val custTypeNameByCd = systemCodes["CSTP"]?.associate { it.cd to it.cdNm } ?: emptyMap()

@@ -1,15 +1,15 @@
 package com.idrsys.ailis.sales.application.service
 
-import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
-import com.idrsys.ailis.sales.adapter.external.TstServiceClient
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeRegisterCommand
-import com.idrsys.ailis.sales.application.dto.request.charge.ChargeUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
+import com.idrsys.ailis.sales.application.dto.request.charge.ChargeUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.charge.ExcelChargeRegisterCommand
 import com.idrsys.ailis.sales.application.dto.response.ChargeResponse
-import com.idrsys.ailis.sales.application.dto.response.inner.CustChargeInnerResponse
 import com.idrsys.ailis.sales.application.dto.response.ExcelRegisterValidationResponse
 import com.idrsys.ailis.sales.application.dto.response.ValidationError
+import com.idrsys.ailis.sales.application.dto.response.inner.CustChargeInnerResponse
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
+import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
@@ -29,17 +29,17 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @Service
 @Transactional(readOnly = false)
 class ChargeService(
     private val chargeCustomRepository: ChargeCustomRepository,
     private val chargeMapper: ChargeMapper,
-    private val baseServiceClient: BaseServiceClient,
+    private val baseServicePort: BaseServicePort,
     private val chargeRepository: ChargeRepository,
     private val chargeValidator: ChargeValidator,
-    private val tstServiceClient: TstServiceClient,
+    private val tstServicePort: TstServicePort,
     private val custCustomRepository: CustCustomRepository
 ) : ChargeUseCase {
 
@@ -51,7 +51,7 @@ class ChargeService(
 
         var finalSearchParam = searchParam
 
-        val users = baseServiceClient.getUsers() ?: emptyList()
+        val users = baseServicePort.getUsers() ?: emptyList()
         val userMap = users.associateBy { it.userId }
 
         if (!searchParam.empUserIdNm.isNullOrBlank()) {
@@ -62,7 +62,7 @@ class ChargeService(
             finalSearchParam = searchParam.copy(empUserIds = userIds)
         }
 
-        val departments = baseServiceClient.getDepartments() ?: emptyList()
+        val departments = baseServicePort.getDepartments() ?: emptyList()
         val deptNameByCd = departments.associate { it.deptCd to it.deptNm }
 
         val total = chargeCustomRepository.countCharge(finalSearchParam)
@@ -89,7 +89,7 @@ class ChargeService(
     override suspend fun getCharges(searchParam: ChargeSearchParam): List<ChargeResponse> {
         var finalSearchParam = searchParam
 
-        val users = baseServiceClient.getUsers() ?: emptyList()
+        val users = baseServicePort.getUsers() ?: emptyList()
         val userMap = users.associateBy { it.userId }
 
         if (!searchParam.empUserIdNm.isNullOrBlank()) {
@@ -100,7 +100,7 @@ class ChargeService(
             finalSearchParam = searchParam.copy(empUserIds = userIds)
         }
 
-        val departments = baseServiceClient.getDepartments() ?: emptyList()
+        val departments = baseServicePort.getDepartments() ?: emptyList()
         val deptNameByCd = departments.associate { it.deptCd to it.deptNm }
 
         return chargeCustomRepository.findCharges(finalSearchParam, Pageable.unpaged())
@@ -318,7 +318,7 @@ class ChargeService(
         // 3. validation
         enrichedCommands.filterNotNull().forEach { (enriched, rowNumber) ->
             // 3-1. 검사코드 validation
-            val testItems = tstServiceClient.findTestItemByTestCode(listOf(enriched.tstCd))
+            val testItems = tstServicePort.findTestItemByTestCode(listOf(enriched.tstCd))
             if (testItems.isNullOrEmpty()) {
                 errors.add(
                     ValidationError(
