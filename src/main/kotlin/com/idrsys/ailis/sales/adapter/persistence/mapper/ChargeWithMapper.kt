@@ -34,7 +34,7 @@ internal fun Row.toChargeWithDetail(): ChargeWithDetails {
         supval          = this.get("supval", Long::class.javaObjectType),
         addtax          = this.get("addtax", Long::class.javaObjectType),
         remark          = this.get("remark", String::class.java),
-        apprInfoNo = this.get("appr_info_no", Long::class.java),
+        apprInfoNo      = this.get("appr_info_no", Long::class.javaObjectType),
         currApprSeq     = this.get("curr_appr_seq", Int::class.javaObjectType),
         apprSubmsEmpNo  = this.get("appr_subms_emp_no", String::class.java),
         apprSubmsDtime  = this.get("appr_subms_dtime", LocalDateTime::class.java),

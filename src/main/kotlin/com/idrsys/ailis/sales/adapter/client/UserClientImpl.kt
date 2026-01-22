@@ -1,6 +1,6 @@
 package com.idrsys.ailis.sales.adapter.client
 
-import com.idrsys.ailis.sales.application.required.client.UserClient
+import com.idrsys.ailis.sales.application.required.client.UserPort
 import com.idrsys.ailis.sales.application.required.client.UserResponse
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
 import org.springframework.stereotype.Component
@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.client.awaitBody
 class UserClientImpl(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
-) : UserClient {
+) : UserPort {
 
     private val client: WebClient
 

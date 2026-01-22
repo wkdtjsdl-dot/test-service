@@ -8,9 +8,8 @@ import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApprov
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveRequestCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveSearchParam
 import com.idrsys.ailis.sales.application.dto.response.ChargeApproveResponse
-import com.idrsys.ailis.sales.application.required.client.ApprovalLineClient
-import com.idrsys.ailis.sales.application.required.client.TestChargeClient
-import com.idrsys.ailis.sales.application.required.client.UserClient
+import com.idrsys.ailis.sales.application.required.client.ApprovalLinePort
+import com.idrsys.ailis.sales.application.required.client.UserPort
 import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoRepository
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeRepository
@@ -36,8 +35,8 @@ class ChargeApproveService(
     private val chargeRepository: ChargeRepository,
     private val apprInfoRepository: ApprInfoRepository,
     private val apprInfoCustomRepository: ApprInfoCustomRepository,
-    private val userClient: UserClient,
-    private val approvalLineClient: ApprovalLineClient,
+    private val userClient: UserPort,
+    private val approvalLineClient: ApprovalLinePort,
     private val tstServiceClient: TstServiceClient,
     private val baseServiceClient: BaseServiceClient,
     private val chargeCustomRepository: ChargeCustomRepository,

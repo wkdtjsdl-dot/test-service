@@ -3,7 +3,7 @@ package com.idrsys.ailis.sales.application.required.client
 /**
  * test-service 검사 기준수가 조회 Client (Port)
  */
-interface TestChargeClient {
+interface TestChargePort {
     /**
      * 검사 기준수가 조회
      * @param tstCd 검사코드
