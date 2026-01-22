@@ -72,12 +72,17 @@ class ChargeService(
             .map(chargeMapper::toResponse)
             .toList()
 
+        val tstCds = charges.map { it.tstCd }.distinct()
+        val testItems = tstServicePort.findTestItemByTestCode(tstCds) ?: emptyList()
+        val tstNameByCode = testItems.associate { it.tstCd to it.tstNm }
+
         val chargeResponses = charges.map { charge ->
             val updatedSalesPics = charge.salesPics?.map { pic ->
                 pic.copy(empUserNm = userMap[pic.empUserId]?.userNm)
             }
             charge.copy(
                 bzoffiNm = deptNameByCd[charge.bzoffiCd],
+                tstNm = tstNameByCode[charge.tstCd],
                 salesPics = updatedSalesPics
             )
         }
@@ -103,14 +108,24 @@ class ChargeService(
         val departments = baseServicePort.getDepartments() ?: emptyList()
         val deptNameByCd = departments.associate { it.deptCd to it.deptNm }
 
-        return chargeCustomRepository.findCharges(finalSearchParam, Pageable.unpaged())
+        val charges = chargeCustomRepository.findCharges(finalSearchParam, Pageable.unpaged())
             .map(chargeMapper::toResponse)
-            .map { charge ->
-                val updatedSalesPics = charge.salesPics?.map { pic ->
-                    pic.copy(empUserNm = userMap[pic.empUserId]?.userNm)
-                }
-                charge.copy(bzoffiNm = deptNameByCd[charge.bzoffiCd], salesPics = updatedSalesPics)
-            }.toList()
+            .toList()
+
+        val tstCds = charges.map { it.tstCd }.distinct()
+        val testItems = tstServicePort.findTestItemByTestCode(tstCds) ?: emptyList()
+        val tstNameByCode = testItems.associate { it.tstCd to it.tstNm }
+
+        return charges.map { charge ->
+            val updatedSalesPics = charge.salesPics?.map { pic ->
+                pic.copy(empUserNm = userMap[pic.empUserId]?.userNm)
+            }
+            charge.copy(
+                bzoffiNm = deptNameByCd[charge.bzoffiCd],
+                tstNm = tstNameByCode[charge.tstCd],
+                salesPics = updatedSalesPics
+            )
+        }
     }
 
     override suspend fun registerCharge(command: ChargeRegisterCommand, creator: String): ChargeResponse {
@@ -126,7 +141,10 @@ class ChargeService(
         val newChargeId = UUID.randomUUID().toString()
         val newCharge = chargeMapper.toDomain(command, newChargeId, creator, now).apply { setAsNew() }
         val savedCharge = chargeRepository.save(newCharge)
-        return chargeMapper.toResponse(savedCharge)
+        val chargeResponse = chargeMapper.toResponse(savedCharge)
+        val testItems = tstServicePort.findTestItemByTestCode(listOf(chargeResponse.tstCd))
+        val tstNm = testItems?.firstOrNull()?.tstNm
+        return chargeResponse.copy(tstNm = tstNm)
     }
 
     override suspend fun updateCharge(custChargeId: String, command: ChargeUpdateCommand, updater: String): ChargeResponse {
@@ -199,7 +217,10 @@ class ChargeService(
                 ).apply { setAsNew() }
 
                 val savedNewCharge = chargeRepository.save(newCharge)
-                chargeMapper.toResponse(savedNewCharge)
+                val chargeResponse = chargeMapper.toResponse(savedNewCharge)
+                val testItems = tstServicePort.findTestItemByTestCode(listOf(chargeResponse.tstCd))
+                val tstNm = testItems?.firstOrNull()?.tstNm
+                chargeResponse.copy(tstNm = tstNm)
             }
             PeriodType.FUTURE -> {
                 // 미래 구간: 단순 UPDATE (시작일 유지, 종료일/금액만 변경)
@@ -224,7 +245,10 @@ class ChargeService(
                     updater
                 )
                 val updatedCharge = chargeRepository.save(charge)
-                chargeMapper.toResponse(updatedCharge)
+                val chargeResponse = chargeMapper.toResponse(updatedCharge)
+                val testItems = tstServicePort.findTestItemByTestCode(listOf(chargeResponse.tstCd))
+                val tstNm = testItems?.firstOrNull()?.tstNm
+                chargeResponse.copy(tstNm = tstNm)
             }
         }
     }
@@ -279,7 +303,11 @@ class ChargeService(
                 ChargeErrorCode.NOT_FOUND_MESSAGE
             )
 
-        return chargeMapper.toResponse(chargeWithDetails)
+        val chargeResponse = chargeMapper.toResponse(chargeWithDetails)
+        val testItems = tstServicePort.findTestItemByTestCode(listOf(chargeResponse.tstCd))
+        val tstNm = testItems?.firstOrNull()?.tstNm
+
+        return chargeResponse.copy(tstNm = tstNm)
     }
 
 

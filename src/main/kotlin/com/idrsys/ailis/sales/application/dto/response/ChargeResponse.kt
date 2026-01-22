@@ -15,6 +15,8 @@ data class ChargeResponse(
     val bzoffiNm: String? = null,
     @ExcelColumn("검사코드")
     val tstCd: String,
+    @ExcelColumn("검사명")
+    val tstNm: String? = null,
     @ExcelColumn("시작일자")
     val applyStartDt: LocalDate,
     @ExcelColumn("종료일자")
