@@ -32,6 +32,7 @@ data class CreateDemandCommand(
     val addtax: BigDecimal,
     val dscntRate: BigDecimal = BigDecimal.ZERO,
     val exrtId: Long? = null,
+    val stndExrt: BigDecimal? = null,
     val insurePrice: BigDecimal? = null,
     val sapCustCd: String? = null,
     val invcRecpEmailAddr: String? = null,

@@ -94,6 +94,7 @@ class BillingCommandService(
             closingAddtax = command.addtax,
             closingDemandCharge = demandCharge,
             exrtId = command.exrtId,
+            stndExrt = command.stndExrt,
             closingMemo = command.demandMemo,
             closingUser = adminId
         )
