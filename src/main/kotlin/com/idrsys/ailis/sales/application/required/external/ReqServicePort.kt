@@ -1,4 +1,4 @@
-package com.idrsys.ailis.sales.application.required.port
+package com.idrsys.ailis.sales.application.required.external
 
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceBillingRequestDetail
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary

@@ -1,22 +1,26 @@
 package com.idrsys.ailis.sales.adapter.external
 
+import com.idrsys.ailis.sales.application.dto.request.attachedfile.AttachedFileGroupCreateCommand
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseAttachedFileGroupResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.BaseDepartmentDetailResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseDepartmentResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseSysCodeResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseUserResponse
+import org.springframework.http.MediaType
+import com.idrsys.ailis.sales.application.required.external.ApprovalLineResponse
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
+import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
-import com.idrsys.ailis.sales.application.dto.response.inner.BaseUserResponse
-import com.idrsys.ailis.sales.application.dto.response.inner.BaseDepartmentResponse
-import com.idrsys.ailis.sales.application.dto.response.inner.BaseAttachedFileResponse
-import com.idrsys.ailis.sales.application.dto.response.inner.BaseAttachedFileGroupResponse
-import com.idrsys.ailis.sales.application.dto.request.attachedfile.AttachedFileGroupCreateCommand
-import com.idrsys.ailis.sales.application.dto.response.inner.BaseSysCodeResponse
+import org.springframework.web.reactive.function.client.bodyToFlow
 
 @Component
 class BaseServiceClient(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
-) {
+) : BaseServicePort {
     private val client: WebClient
 
     init {
@@ -25,7 +29,7 @@ class BaseServiceClient(
         client = webClientBuilder.baseUrl(serviceEndpoint).build()
     }
 
-    suspend fun getUser(userId: String?): BaseUserResponse? {
+    override suspend fun getUser(userId: String): BaseUserResponse? {
         return try {
             client.get()
                 .uri("/api/inner/users/{userId}", userId)
@@ -37,7 +41,7 @@ class BaseServiceClient(
             null
         }
     }
-    suspend fun getUsers(): List<BaseUserResponse>? {
+    override suspend fun getUsers(): List<BaseUserResponse>? {
         return try {
             client.get()
                 .uri("/api/inner/users")
@@ -48,7 +52,7 @@ class BaseServiceClient(
         }
     }
 
-    suspend fun getUsersByIds(userIds: List<String>): List<BaseUserResponse>? {
+    override suspend fun getUsersByIds(userIds: List<String>): List<BaseUserResponse>? {
         if (userIds.isEmpty()) return emptyList()
         return try {
             client.get()
@@ -65,7 +69,7 @@ class BaseServiceClient(
         }
     }
 
-    suspend fun getDepartments(): List<BaseDepartmentDetailResponse>? {
+    override suspend fun getDepartments(): List<BaseDepartmentDetailResponse>? {
         return try {
             client.get()
                 .uri("/api/inner/departments")
@@ -76,7 +80,7 @@ class BaseServiceClient(
         }
     }
 
-    suspend fun findDepartmentById(departmentId: String?): BaseDepartmentResponse? {
+    override suspend fun findDepartmentById(departmentId: String?): BaseDepartmentResponse? {
         return try {
             client.get()
                 .uri("/api/inner/departments/{departmentId}", departmentId)
@@ -87,7 +91,7 @@ class BaseServiceClient(
         }
     }
 
-    suspend fun findDepartmentByDeptTypeCd(deptTypeCd: String?): BaseDepartmentResponse? {
+    override suspend fun findDepartmentByDeptTypeCd(deptTypeCd: String?): BaseDepartmentResponse? {
             return try {
                 client.get()
                     .uri("/api/inner/departments/by-deptType", deptTypeCd)
@@ -103,7 +107,7 @@ class BaseServiceClient(
     /**
      * 상위 코드별 하위 시스템 코드 목록 조회
      */
-    suspend fun getChildrenSystemCodes(cateCds: List<String>): Map<String, List<BaseSysCodeResponse>>? {
+    override suspend fun getChildrenSystemCodes(cateCds: List<String>): Map<String, List<BaseSysCodeResponse>>? {
         return try {
             client.get()
                 .uri { uriBuilder ->
@@ -122,43 +126,10 @@ class BaseServiceClient(
     // ========== 첨부파일 관련 메서드 ==========
 
     /**
-     * 첨부파일 상세 조회
+     * 첨부파일 그룹 생성
      */
-    suspend fun getAttachedFile(attachedFileId: String): BaseAttachedFileResponse? {
-        return try {
-            client.get()
-                .uri("/api/inner/attachments/{id}", attachedFileId)
-                .retrieve()
-                .awaitBody<BaseAttachedFileResponse>()
-        } catch (ex: Exception) {
-            null
-        }
-    }
-
-    /**
-     * 여러 첨부파일 조회
-     */
-    suspend fun getAttachedFilesByIds(ids: List<String>): List<BaseAttachedFileResponse>? {
-        return try {
-            client.get()
-                .uri { uriBuilder ->
-                    uriBuilder
-                        .path("/api/inner/attachments/byids")
-                        .queryParam("ids", ids.joinToString(","))
-                        .build()
-                }
-                .retrieve()
-                .awaitBody<List<BaseAttachedFileResponse>>()
-        } catch (ex: Exception) {
-            null
-        }
-    }
-
-    /**
-     * 첨부파일 그룹 생성 (기존 파일 재사용 + 새 파일 추가)
-     */
-    suspend fun saveAttachedFiles(
-        request: AttachedFileGroupCreateCommand,
+    override suspend fun saveAttachedFiles(
+        command: AttachedFileGroupCreateCommand,
         creatorId: String
     ): BaseAttachedFileGroupResponse? {
         return try {
@@ -169,11 +140,39 @@ class BaseServiceClient(
                         .queryParam("creatorId", creatorId)
                         .build()
                 }
-                .bodyValue(request)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(command)
                 .retrieve()
                 .awaitBody<BaseAttachedFileGroupResponse>()
         } catch (ex: Exception) {
             null
         }
     }
+
+    // ========== 결재라인 관련 메서드 ==========
+
+    override suspend fun getApprovalLines(
+        userId: String,
+        apprDocTypeCd: String,
+        apprDocDtlNo: String
+    ): List<ApprovalLineResponse> {
+        return try {
+            client.get()
+                .uri { uriBuilder ->
+                    uriBuilder
+                        .path("/api/inner/apprLine")
+                        .queryParam("userId", userId)
+                        .queryParam("apprDocTypeCd", apprDocTypeCd)
+                        .queryParam("apprDocDtlNo", apprDocDtlNo)
+                        .build()
+                }
+                .retrieve()
+                .bodyToFlow<ApprovalLineResponse>()
+                .toList()
+        } catch (ex: Exception) {
+            // API 호출 실패 시 빈 리스트 반환, 서비스 레이어에서 처리
+            emptyList()
+        }
+    }
+
 }

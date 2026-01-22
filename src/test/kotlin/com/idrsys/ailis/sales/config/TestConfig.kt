@@ -2,7 +2,7 @@ package com.idrsys.ailis.sales.config
 
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceBillingRequestDetail
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary
-import com.idrsys.ailis.sales.application.required.port.ReqServicePort
+import com.idrsys.ailis.sales.application.required.external.ReqServicePort
 import com.idrsys.reactive.excel.ReactiveExcelWriter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow

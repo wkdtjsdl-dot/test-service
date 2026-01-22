@@ -4,10 +4,10 @@ import com.idrsys.ailis.sales.application.dto.request.contract.ContractCommand
 import com.idrsys.ailis.sales.application.dto.request.contract.ContractSearchParam
 import com.idrsys.ailis.sales.application.dto.response.ContractListResponse
 import com.idrsys.ailis.sales.application.dto.response.ContractResponse
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.repository.contract.ContractCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.contract.ContractRepository
 import com.idrsys.ailis.sales.application.usecase.contract.ContractUseCase
-import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
 import com.idrsys.ailis.sales.shared.mapper.ContractMapper
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -22,7 +22,7 @@ class ContractService(
     private val contractRepository: ContractRepository,
     private val contractCustomRepository: ContractCustomRepository,
     private val contractMapper: ContractMapper,
-    private val baseServiceClient: BaseServiceClient,
+    private val baseServicePort: BaseServicePort,
 ) : ContractUseCase {
 
     override suspend fun getContractPage(searchParam: ContractSearchParam, pageable: Pageable): Page<ContractListResponse> {
@@ -30,7 +30,7 @@ class ContractService(
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
         val contracts = contractCustomRepository.findContracts(searchParam, pageable).map({ dto ->
-            val cntrPicNm = dto.cntrPicId?.let { baseServiceClient.getUser(it)?.userNm }
+            val cntrPicNm = dto.cntrPicId?.let { baseServicePort.getUser(it)?.userNm }
             contractMapper.toListResponse(dto.copy(cntrPicNm = cntrPicNm))
         }).toList()
 
@@ -41,14 +41,14 @@ class ContractService(
         val dto = contractCustomRepository.findContractById(custCntrId)
             ?: throw NoSuchElementException("Contract not found with id: $custCntrId")
 
-        val cntrPicNm = dto.cntrPicId?.let { baseServiceClient.getUser(it)?.userNm }
+        val cntrPicNm = dto.cntrPicId?.let { baseServicePort.getUser(it)?.userNm }
         return contractMapper.toResponse(dto.copy(cntrPicNm = cntrPicNm))
     }
 
     override suspend fun createContract(custMstId: String, command: ContractCommand, adminId: String): ContractResponse {
         // 1. 첨부파일 처리: atchFiles가 있으면 base-service 호출
         val finalAtchGrupId = if (command.atchFiles != null) {
-            val response = baseServiceClient.saveAttachedFiles(command.atchFiles, adminId)
+            val response = baseServicePort.saveAttachedFiles(command.atchFiles, adminId)
             response?.attachedFileGroupId ?: command.atchGrupId
         } else {
             command.atchGrupId
@@ -70,7 +70,7 @@ class ContractService(
 
         // 1. 첨부파일 처리: atchFiles가 있으면 base-service 호출
         val finalAtchGrupId = if (command.atchFiles != null) {
-            val response = baseServiceClient.saveAttachedFiles(command.atchFiles, adminId)
+            val response = baseServicePort.saveAttachedFiles(command.atchFiles, adminId)
             response?.attachedFileGroupId ?: command.atchGrupId
         } else {
             command.atchGrupId
