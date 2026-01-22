@@ -136,7 +136,7 @@ class BaseServiceClient(
             client.post()
                 .uri { uriBuilder ->
                     uriBuilder
-                        .path("/api/inner/attachments")
+                        .path("/api/attachments")
                         .queryParam("creatorId", creatorId)
                         .build()
                 }
