@@ -24,4 +24,16 @@ object ChargeErrorCode {
     // 미존재
     const val NOT_FOUND_CODE = "CHARGE_NOT_FOUND"
     const val NOT_FOUND_MESSAGE = "수가 정보를 찾을 수 없습니다"
+
+    // 고객 미존재 (Excel 업로드 시)
+    const val CUSTOMER_NOT_FOUND_CODE = "CHARGE_CUSTOMER_NOT_FOUND"
+    const val CUSTOMER_NOT_FOUND_MESSAGE = "존재하지 않는 고객 코드입니다"
+
+    // Excel 등록 실패
+    const val EXCEL_REGISTRATION_FAILED_CODE = "CHARGE_EXCEL_REGISTRATION_FAILED"
+    const val EXCEL_REGISTRATION_FAILED_MESSAGE = "엑셀 등록 중 오류가 발생했습니다"
+
+    // 검사코드 미존재
+    const val TEST_NOT_FOUND_CODE = "CHARGE_TEST_NOT_FOUND"
+    const val TEST_NOT_FOUND_MESSAGE = "존재하지 않는 검사 코드입니다"
 }
