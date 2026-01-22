@@ -3,18 +3,19 @@ package com.idrsys.ailis.sales.adapter.external
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceRefItemsResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceStndChargeResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
-import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceUnbilledDemandPage
+import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.infrastructure.config.AppConfig
+import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
-import java.time.LocalDate
+import org.springframework.web.reactive.function.client.bodyToFlow
 
 @Component
 class TstServiceClient(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
-) {
+): TstServicePort {
     private val client: WebClient
 
     init {
@@ -23,8 +24,8 @@ class TstServiceClient(
         client = webClientBuilder.baseUrl(serviceEndpoint).build()
     }
 
-    suspend fun findTestItemByTestCode(
-        tstCds: List<String>? = null
+    override suspend fun findTestItemByTestCode(
+        tstCds: List<String>?
     ): List<TstServiceTstItemsResponse>? {
         if (tstCds.isNullOrEmpty()) return emptyList()
 
@@ -42,8 +43,8 @@ class TstServiceClient(
         }
     }
 
-    suspend fun findRefItemByRefItemCode(
-        refItemCds: List<String>? = null
+    override suspend fun findRefItemByRefItemCode(
+        refItemCds: List<String>?
     ): List<TstServiceRefItemsResponse>? {
         if (refItemCds.isNullOrEmpty()) return emptyList()
 
@@ -63,7 +64,7 @@ class TstServiceClient(
         }
     }
 
-    suspend fun findAllTstItems(): List<TstServiceTstItemsResponse>? {
+    override suspend fun findAllTstItems(): List<TstServiceTstItemsResponse>? {
         return try {
             client.get()
                 .uri { uriBuilder ->
@@ -77,7 +78,7 @@ class TstServiceClient(
         }
     }
 
-    suspend fun getStandardCharges(tstCd: String): List<TstServiceStndChargeResponse>? {
+    override suspend fun getStandardCharges(tstCd: String): List<TstServiceStndChargeResponse> {
         return try {
             client.get()
                 .uri { uriBuilder ->
@@ -86,9 +87,10 @@ class TstServiceClient(
                         .build()
                 }
                 .retrieve()
-                .awaitBody<List<TstServiceStndChargeResponse>>()
+                .bodyToFlow<TstServiceStndChargeResponse>()
+                .toList()
         } catch (ex: Exception) {
-            null
+            emptyList()
         }
     }
 }

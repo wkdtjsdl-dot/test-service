@@ -1,6 +1,6 @@
 package com.idrsys.ailis.sales.application.service
 
-import com.idrsys.ailis.sales.adapter.external.TstServiceClient
+import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemCommand
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemSearchParam
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemUpdateCommand
@@ -26,7 +26,7 @@ class CustReqPossTstItemService(
     private val repository: CustReqPossTstItemRepository,
     private val customRepository: CustReqPossTstItemCustomRepository,
     private val mapper: CustReqPossTstItemMapper,
-    private val tstServiceClient: TstServiceClient
+    private val tstServicePort: TstServicePort
 ) : CustReqPossTstItemUseCase {
 
     override suspend fun findItemById(id: Long): CustReqPossTstItemResponse? {
@@ -41,7 +41,7 @@ class CustReqPossTstItemService(
         val tstCds = items.map { it.tstCd }.distinct()
 
         // 3. TstServiceClient로 검사명 조회
-        val tstItems = tstServiceClient.findTestItemByTestCode(tstCds) ?: emptyList()
+        val tstItems = tstServicePort.findTestItemByTestCode(tstCds) ?: emptyList()
         val tstNmMap = tstItems.associate { it.tstCd to it.tstNm }
 
         // 4. Query → Response 변환 시 tstNm 추가
@@ -62,7 +62,7 @@ class CustReqPossTstItemService(
         val tstCds = items.map { it.tstCd }.distinct()
 
         // 3. TstServiceClient로 검사명 조회
-        val tstItems = tstServiceClient.findTestItemByTestCode(tstCds) ?: emptyList()
+        val tstItems = tstServicePort.findTestItemByTestCode(tstCds) ?: emptyList()
         val tstNmMap = tstItems.associate { it.tstCd to it.tstNm }
 
         // 4. Query → Response 변환 시 tstNm 추가
@@ -78,7 +78,7 @@ class CustReqPossTstItemService(
     @Transactional
     override suspend fun saveItem(command: CustReqPossTstItemCommand, creator: String): CustReqPossTstItemResponse {
         // 1. 검사코드 존재 여부 검증 (test-service)
-        val tstItems = tstServiceClient.findTestItemByTestCode(listOf(command.tstCd))
+        val tstItems = tstServicePort.findTestItemByTestCode(listOf(command.tstCd))
         if (tstItems.isNullOrEmpty()) {
             throw UserDefinedException(
                 CustReqPossTstItemErrorCode.TST_CD_NOT_FOUND_CODE,
@@ -116,7 +116,7 @@ class CustReqPossTstItemService(
         // 2. tstCd 변경 시 검증
         if (existing.tstCd != command.tstCd) {
             // 2-1. 검사코드 존재 여부 검증 (test-service)
-            val tstItems = tstServiceClient.findTestItemByTestCode(listOf(command.tstCd))
+            val tstItems = tstServicePort.findTestItemByTestCode(listOf(command.tstCd))
             if (tstItems.isNullOrEmpty()) {
                 throw UserDefinedException(
                     CustReqPossTstItemErrorCode.TST_CD_NOT_FOUND_CODE,
