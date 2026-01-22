@@ -50,9 +50,10 @@ class CollectionController(
         @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
     ): CollectionBillResponse {
         return if (request.cardPayId != null) {
-            collectionCommandUseCase.registerCardPayment(request, auth.adminId)
-        } else {
             collectionCommandUseCase.registerBankDeposit(request, auth.adminId)
+
+        } else {
+            collectionCommandUseCase.registerCardPayment(request, auth.adminId)
         }
     }
 

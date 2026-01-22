@@ -142,7 +142,10 @@ class CollectionCommandService(
         )
         collectionBill.setAsNew()
 
+
+
         val savedBill = collectionBillRepository.save(collectionBill)
+        collectionBill.setAsExisting()
 
         // 3. Create collection ledger
         val ledger = CollectionLedger.createForCollection(
