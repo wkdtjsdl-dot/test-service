@@ -146,6 +146,15 @@ class Charge(
     }
 
     /**
+     * 적용종료일자 수정 (overlapping 기간 이전 데이터 적용일자 수정용)
+     */
+    fun updateEndDate(newEndDate: LocalDate, updater: String) {
+        this.applyEndDt = newEndDate
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
+
+    /**
      * 승인 요청 (임시저장 → 결재중)
      */
     fun requestApproval(
