@@ -10,6 +10,7 @@ import com.idrsys.ailis.sales.generated.jooq.Tables.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -35,6 +36,29 @@ class CustCustomRepositoryImpl(
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
         return sql.map { row, _ -> row.get("cust_mst_id", String::class.java) }.one().awaitSingleOrNull()
+    }
+
+    override suspend fun findCustMstIdsByCustCds(custCds: List<String>): Map<String, String> {
+        if (custCds.isEmpty()) return emptyMap()
+
+        val query = dslContext.select(
+            SCS_CUST_MST.CUST_CD,
+            SCS_CUST_MST.CUST_MST_ID
+        )
+        .from(SCS_CUST_MST)
+        .where(SCS_CUST_MST.CUST_CD.`in`(custCds))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ ->
+            row.get("cust_cd", String::class.java)!! to
+            row.get("cust_mst_id", String::class.java)!!
+        }
+        .all()
+        .asFlow()
+        .toList()
+        .toMap()
     }
 
     override fun findCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable): Flow<CustWithSalsPicInfo> {

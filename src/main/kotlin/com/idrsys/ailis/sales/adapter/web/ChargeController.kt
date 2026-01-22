@@ -3,15 +3,17 @@ package com.idrsys.ailis.sales.adapter.web
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeRegisterCommand
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
+import com.idrsys.ailis.sales.application.dto.request.charge.ExcelChargeRegisterCommand
 import com.idrsys.ailis.sales.application.dto.response.ChargeResponse
+import com.idrsys.ailis.sales.application.dto.response.ExcelRegisterValidationResponse
 import com.idrsys.ailis.sales.application.usecase.charge.ChargeUseCase
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
+import jakarta.validation.Valid
 import com.idrsys.reactive.excel.ReactiveExcelWriter
 import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
 import kotlinx.coroutines.flow.Flow
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.core.io.buffer.DataBuffer
@@ -110,5 +112,24 @@ class ChargeController(
             .header(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             .header("Access-Control-Expose-Headers", "Content-Disposition")
             .body(excelFlow)
+    }
+
+    @PostMapping("/excel-valid")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "validateExcelRegisterCharges", description = "고객 수가 일괄 등록 사전 검증")
+    suspend fun validateExcelCharges(
+        @Valid @RequestBody commands: List<ExcelChargeRegisterCommand>,
+    ): ExcelRegisterValidationResponse {
+        return chargeUseCase.validateExcelRegisterCharges(commands)
+    }
+
+    @PostMapping("/excel-save")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "excelRegisterCharges", description = "고객 수가 일괄 등록")
+    suspend fun excelRegisterCharges(
+        @Valid @RequestBody commands: List<ExcelChargeRegisterCommand>,
+        @JwtAuthorization auth: AuthenticationAdmin
+    ): List<ChargeResponse> {
+        return chargeUseCase.excelRegisterCharges(commands, auth.adminId)
     }
 }

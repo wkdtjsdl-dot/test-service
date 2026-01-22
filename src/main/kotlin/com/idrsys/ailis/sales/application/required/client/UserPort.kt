@@ -3,7 +3,7 @@ package com.idrsys.ailis.sales.application.required.client
 /**
  * base-service 사용자 정보 조회 Client (Port)
  */
-interface UserClient {
+interface UserPort {
     /**
      * 사용자 정보 조회
      * @param userId 사용자 ID

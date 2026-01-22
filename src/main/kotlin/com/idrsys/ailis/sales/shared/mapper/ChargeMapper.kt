@@ -2,6 +2,7 @@ package com.idrsys.ailis.sales.shared.mapper
 
 import com.idrsys.ailis.sales.application.dto.query.ChargeWithDetails
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeRegisterCommand
+import com.idrsys.ailis.sales.application.dto.request.charge.ExcelChargeRegisterCommand
 import com.idrsys.ailis.sales.application.dto.response.ChargeResponse
 import com.idrsys.ailis.sales.domain.model.Charge
 import org.mapstruct.Mapper
@@ -31,6 +32,11 @@ interface ChargeMapper {
         Mapping(target = "updateDtime", source = "now")
     )
     fun toDomain(command: ChargeRegisterCommand, custChargeId: String, creator: String, now: LocalDateTime): Charge
+
+    @Mappings(
+        Mapping(target = "custMstId", source = "custMstId")
+    )
+    fun toRegisterCommand(command: ExcelChargeRegisterCommand, custMstId: String): ChargeRegisterCommand
 
     @Mappings(
         Mapping(target = "salesPics", ignore = true),

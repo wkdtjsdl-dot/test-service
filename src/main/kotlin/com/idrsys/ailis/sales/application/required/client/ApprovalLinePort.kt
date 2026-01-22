@@ -3,7 +3,7 @@ package com.idrsys.ailis.sales.application.required.client
 /**
  * base-service 결재선 조회 Client (Port)
  */
-interface ApprovalLineClient {
+interface ApprovalLinePort {
     /**
      * 결재선 조회
      * @param userId 사용자 ID

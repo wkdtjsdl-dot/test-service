@@ -1,13 +1,18 @@
 package com.idrsys.ailis.sales.application.service
 
 import com.idrsys.ailis.sales.adapter.external.BaseServiceClient
+import com.idrsys.ailis.sales.adapter.external.TstServiceClient
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeRegisterCommand
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
+import com.idrsys.ailis.sales.application.dto.request.charge.ExcelChargeRegisterCommand
 import com.idrsys.ailis.sales.application.dto.response.ChargeResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.CustChargeInnerResponse
+import com.idrsys.ailis.sales.application.dto.response.ExcelRegisterValidationResponse
+import com.idrsys.ailis.sales.application.dto.response.ValidationError
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeRepository
+import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.usecase.charge.ChargeUseCase
 import com.idrsys.ailis.sales.shared.constant.ChargeErrorCode
 import com.idrsys.ailis.sales.shared.mapper.ChargeMapper
@@ -27,14 +32,18 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
+@Transactional(readOnly = false)
 class ChargeService(
     private val chargeCustomRepository: ChargeCustomRepository,
     private val chargeMapper: ChargeMapper,
     private val baseServiceClient: BaseServiceClient,
     private val chargeRepository: ChargeRepository,
-    private val chargeValidator: ChargeValidator
+    private val chargeValidator: ChargeValidator,
+    private val tstServiceClient: TstServiceClient,
+    private val custCustomRepository: CustCustomRepository
 ) : ChargeUseCase {
 
+    @Transactional(readOnly = true)
     override suspend fun getChargePage(
         searchParam: ChargeSearchParam,
         pageable: Pageable
@@ -75,7 +84,8 @@ class ChargeService(
 
         return PageImpl(chargeResponses, pageable, total)
     }
-    
+
+    @Transactional(readOnly = true)
     override suspend fun getCharges(searchParam: ChargeSearchParam): List<ChargeResponse> {
         var finalSearchParam = searchParam
 
@@ -102,9 +112,7 @@ class ChargeService(
                 charge.copy(bzoffiNm = deptNameByCd[charge.bzoffiCd], salesPics = updatedSalesPics)
             }.toList()
     }
-    
 
-    @Transactional
     override suspend fun registerCharge(command: ChargeRegisterCommand, creator: String): ChargeResponse {
         // 검증 로직 추가
         chargeValidator.validateForCreate(
@@ -121,7 +129,6 @@ class ChargeService(
         return chargeMapper.toResponse(savedCharge)
     }
 
-    @Transactional
     override suspend fun updateCharge(custChargeId: String, command: ChargeUpdateCommand, updater: String): ChargeResponse {
         val charge = chargeRepository.findById(custChargeId)
             ?: throw UserDefinedException(
@@ -222,7 +229,6 @@ class ChargeService(
         }
     }
 
-    @Transactional
     override suspend fun deleteCharge(custChargeId: String) {
         val charge = chargeRepository.findById(custChargeId)
             ?: throw UserDefinedException(
@@ -265,6 +271,7 @@ class ChargeService(
         }
     }
 
+    @Transactional(readOnly = true)
     override suspend fun getCharge(custChargeId: String): ChargeResponse {
         val chargeWithDetails = chargeCustomRepository.findChargeWithDetailsById(custChargeId)
             ?: throw UserDefinedException(
@@ -275,6 +282,183 @@ class ChargeService(
         return chargeMapper.toResponse(chargeWithDetails)
     }
 
+
+    @Transactional(readOnly = true)
+    override suspend fun validateExcelRegisterCharges(
+        commands: List<ExcelChargeRegisterCommand>
+    ): ExcelRegisterValidationResponse {
+        val errors = mutableListOf<ValidationError>()
+
+        // 1. Batch lookup all custMstIds in single query
+        val custCds = commands.map { it.custCd }.distinct()
+        val custMstIdMap = custCustomRepository.findCustMstIdsByCustCds(custCds)
+
+        // 2. Enrich commands with custMstId and validate customer existence
+        val enrichedCommands = commands.mapIndexed { index, command ->
+            val rowNumber = index + 2 // Excel row (헤더 제외, 1-based)
+            val custMstId = custMstIdMap[command.custCd]
+
+            if (custMstId == null) {
+                errors.add(
+                    ValidationError(
+                        rowNumber = rowNumber,
+                        custCd = command.custCd,
+                        tstCd = command.tstCd,
+                        fieldName = "custCd",
+                        errorCode = "CUST_NOT_FOUND",
+                        errorMessage = "존재하지 않는 고객 코드입니다: ${command.custCd}"
+                    )
+                )
+                null
+            } else {
+                chargeMapper.toRegisterCommand(command, custMstId) to rowNumber
+            }
+        }
+
+        // 3. Run existing validations on enriched commands
+        enrichedCommands.filterNotNull().forEach { (enriched, rowNumber) ->
+            // 2. 검사코드 validation
+            val testItems = tstServiceClient.findTestItemByTestCode(listOf(enriched.tstCd))
+            if (testItems.isNullOrEmpty()) {
+                errors.add(
+                    ValidationError(
+                        rowNumber = rowNumber,
+                        custCd = enriched.custCd,
+                        tstCd = enriched.tstCd,
+                        fieldName = "tstCd",
+                        errorCode = "TST_NOT_FOUND",
+                        errorMessage = "존재하지 않는 검사 코드입니다: ${enriched.tstCd}"
+                    )
+                )
+            }
+
+            // 3. 중복 validation (동일 고객, 기간, 검사코드)
+            val duplicate = chargeCustomRepository.existsByUniqueKey(
+                custMstId = enriched.custMstId,
+                applyStartDt = enriched.applyStartDt,
+                tstCd = enriched.tstCd,
+                excludeId = null
+            )
+            if (duplicate) {
+                errors.add(
+                    ValidationError(
+                        rowNumber = rowNumber,
+                        custCd = enriched.custCd,
+                        tstCd = enriched.tstCd,
+                        fieldName = "duplicate",
+                        errorCode = "DUPLICATE_CHARGE",
+                        errorMessage = "이미 등록된 수가입니다 (고객: ${enriched.custCd}, 검사: ${enriched.tstCd}, 시작일: ${enriched.applyStartDt})"
+                    )
+                )
+            }
+
+            // 4. 기간겹침 validation
+            val overlapping = chargeCustomRepository.findOverlappingPeriods(
+                custMstId = enriched.custMstId,
+                tstCd = enriched.tstCd,
+                startDt = enriched.applyStartDt,
+                endDt = enriched.applyEndDt ?: LocalDate.of(9999, 12, 31),
+                excludeId = null
+            )
+            if (overlapping.isNotEmpty()) {
+                errors.add(
+                    ValidationError(
+                        rowNumber = rowNumber,
+                        custCd = enriched.custCd,
+                        tstCd = enriched.tstCd,
+                        fieldName = "period",
+                        errorCode = "OVERLAPPING_PERIOD",
+                        errorMessage = "적용 기간이 기존 수가와 겹칩니다"
+                    )
+                )
+            }
+
+            // 5. 비즈니스룰 validation (날짜, 가격, 기타.)
+            if (enriched.applyEndDt != null && enriched.applyEndDt.isBefore(enriched.applyStartDt)) {
+                errors.add(
+                    ValidationError(
+                        rowNumber = rowNumber,
+                        custCd = enriched.custCd,
+                        tstCd = enriched.tstCd,
+                        fieldName = "applyEndDt",
+                        errorCode = "INVALID_DATE_RANGE",
+                        errorMessage = "적용 종료일은 시작일보다 커야 합니다"
+                    )
+                )
+            }
+
+            if (enriched.specialCharge <= 0) {
+                errors.add(
+                    ValidationError(
+                        rowNumber = rowNumber,
+                        custCd = enriched.custCd,
+                        tstCd = enriched.tstCd,
+                        fieldName = "specialCharge",
+                        errorCode = "INVALID_AMOUNT",
+                        errorMessage = "특별수가는 0보다 커야 합니다"
+                    )
+                )
+            }
+        }
+
+        val invalidRowNumbers = errors.map { it.rowNumber }.distinct()
+
+        return ExcelRegisterValidationResponse(
+            isValid = errors.isEmpty(),
+            totalCount = commands.size,
+            validCount = commands.size - invalidRowNumbers.size,
+            invalidCount = invalidRowNumbers.size,
+            errors = errors
+        )
+    }
+
+    override suspend fun excelRegisterCharges(
+        commands: List<ExcelChargeRegisterCommand>,
+        userId: String
+    ): List<ChargeResponse> {
+        // 1. Batch lookup all custMstIds in single query
+        val custCds = commands.map { it.custCd }.distinct()
+        val custMstIdMap = custCustomRepository.findCustMstIdsByCustCds(custCds)
+
+        // 2. Enrich and register
+        val registeredCharges = mutableListOf<ChargeResponse>()
+
+        commands.forEach { command ->
+            try {
+                // Resolve custMstId (fail fast if not found)
+                val custMstId = custMstIdMap[command.custCd]
+                    ?: throw UserDefinedException(
+                        "CUST_NOT_FOUND",
+                        "존재하지 않는 고객 코드입니다: ${command.custCd}"
+                    )
+
+                // Convert to ChargeRegisterCommand with custMstId
+                val registerCommand = chargeMapper.toRegisterCommand(command, custMstId)
+
+                // 수가 등록
+                val now = LocalDateTime.now()
+                val newChargeId = UUID.randomUUID().toString()
+                val newCharge = chargeMapper.toDomain(registerCommand, newChargeId, userId, now).apply {
+                    setAsNew()
+                }
+
+                val saved = chargeRepository.save(newCharge)
+                val response = chargeMapper.toResponse(saved)
+                registeredCharges.add(response)
+
+            } catch (e: Exception) {
+                // Throw exception to rollback transaction if any registration fails
+                throw UserDefinedException(
+                    "EXCEL_REGISTRATION_FAILED",
+                    "엑셀 등록 중 오류가 발생했습니다: ${e.message}"
+                )
+            }
+        }
+
+        return registeredCharges
+    }
+
+    @Transactional(readOnly = true)
     override suspend fun getCustChargesForBilling(
         custCds: List<String>,
         tstCds: List<String>,

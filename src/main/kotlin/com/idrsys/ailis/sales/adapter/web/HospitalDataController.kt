@@ -54,11 +54,4 @@ class HospitalDataController(
     ): Flow<HospitalMediSbjt> {
         return hospitalDataUseCase.getHospitalMediSbjt(careInstId)
     }
-
-    @PutMapping("/hosp-sync")
-    @Operation(summary = "hospitalSync" ,description = "고객 병원정보 심평원 데이터 연동")
-    suspend fun syncHospitalData(
-    ): Boolean {
-        return hospitalDataUseCase.executeHospitalDataSynchronization()
-    }
 }
