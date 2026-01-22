@@ -67,6 +67,7 @@ class TestConfig {
                 closingAddtax: BigDecimal,
                 closingDemandCharge: BigDecimal,
                 exrtId: Long?,
+                stndExrt: BigDecimal?,
                 closingMemo: String?,
                 closingUser: String
             ): Int = 0
