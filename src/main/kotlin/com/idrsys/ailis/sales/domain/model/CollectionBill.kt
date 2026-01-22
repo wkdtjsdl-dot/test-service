@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.domain.model
 
+import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -57,6 +58,7 @@ class CollectionBill(
     }
 
     @Id
+    @UuidGeneratedId(idFieldName = "colbillId")
     @Column("colbill_id")
     val colbillId: String? = colbillId
 
@@ -153,10 +155,14 @@ class CollectionBill(
         private set
 
     @Transient
-    private var _isNew: Boolean = true
+    private var _isNew: Boolean = false
 
     fun setAsNew() {
         this._isNew = true
+    }
+
+    fun setAsExisting() {
+        this._isNew = false
     }
 
     override fun getId(): String? = colbillId

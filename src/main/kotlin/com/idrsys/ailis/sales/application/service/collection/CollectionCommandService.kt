@@ -1,8 +1,11 @@
 package com.idrsys.ailis.sales.application.service.collection
 
+import com.idrsys.ailis.sales.application.dto.request.collection.CollectionListSearchParam
+import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearchParam
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterCollectionCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterSplitPaymentCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.SendCollectionToErpCommand
+import com.idrsys.ailis.sales.application.dto.response.CollectionBillListResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionBillResponse
 import com.idrsys.ailis.sales.application.dto.response.DeleteCollectionBillResponse
 import com.idrsys.ailis.sales.application.dto.response.SendCollectionResponse
@@ -14,6 +17,7 @@ import com.idrsys.ailis.sales.application.usecase.collection.CollectionCommandUs
 import com.idrsys.ailis.sales.domain.model.CollectionBill
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
 import com.idrsys.web.exception.UserDefinedException
+import kotlinx.coroutines.flow.Flow
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -32,6 +36,9 @@ class CollectionCommandService(
     private val bankDepositRepository: BankDepositRepository,
 ) : CollectionCommandUseCase {
 
+    override suspend fun findCollectionBills(searchParam: CollectionListSearchParam): Flow<CollectionBillListResponse> {
+        return collectionBillRepository.findCollectionBills(searchParam)
+    }
     /**
      * Register card payment to customer
      *
@@ -135,7 +142,10 @@ class CollectionCommandService(
         )
         collectionBill.setAsNew()
 
+
+
         val savedBill = collectionBillRepository.save(collectionBill)
+        collectionBill.setAsExisting()
 
         // 3. Create collection ledger
         val ledger = CollectionLedger.createForCollection(

@@ -3,6 +3,7 @@ package com.idrsys.ailis.sales.adapter.web
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
 import com.idrsys.ailis.sales.application.dto.request.collection.BankDepositSearchParam
 import com.idrsys.ailis.sales.application.dto.request.collection.CardPaymentSearchParam
+import com.idrsys.ailis.sales.application.dto.request.collection.CollectionListSearchParam
 import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearchParam
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterCollectionCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterSplitPaymentCommand
@@ -10,6 +11,7 @@ import com.idrsys.ailis.sales.application.dto.request.collection.SendCollectionT
 import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionCommandUseCase
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionQueryUseCase
+import com.idrsys.ailis.sales.domain.model.CollectionBill
 import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -32,6 +34,7 @@ class CollectionController(
     private val collectionQueryUseCase: CollectionQueryUseCase
 ) {
 
+
     /**
      * Register payment (입금 등록)
      *
@@ -47,9 +50,10 @@ class CollectionController(
         @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
     ): CollectionBillResponse {
         return if (request.cardPayId != null) {
-            collectionCommandUseCase.registerCardPayment(request, auth.adminId)
-        } else {
             collectionCommandUseCase.registerBankDeposit(request, auth.adminId)
+
+        } else {
+            collectionCommandUseCase.registerCardPayment(request, auth.adminId)
         }
     }
 
@@ -190,4 +194,24 @@ class CollectionController(
         )
         return collectionQueryUseCase.getBankDepositList(searchParam)
     }
+    @Operation(summary = "Find all collections", description = "입금 목록 조회")
+    @GetMapping
+    suspend fun getCollectionBills(
+        @RequestParam startDt: LocalDate,
+        @RequestParam endDt: LocalDate,
+        @RequestParam custCd: String?,
+        @RequestParam closingCd: String?,
+        @RequestParam bzoffiCd: String?,
+
+    ): Flow<CollectionBillListResponse> {
+        val searchParam = CollectionListSearchParam(
+            custCd = custCd,
+            startDt = startDt,
+            endDt = endDt,
+            closingCd = closingCd,
+            bzoffiCd = bzoffiCd
+        )
+        return collectionCommandUseCase.findCollectionBills(searchParam)
+    }
+
 }

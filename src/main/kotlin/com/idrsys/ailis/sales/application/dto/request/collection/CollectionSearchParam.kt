@@ -12,6 +12,14 @@ data class CollectionSearchParam(
     val sendYn: Boolean? = null
 )
 
+data class CollectionListSearchParam(
+    val startDt: LocalDate,
+    val endDt: LocalDate,
+    val custCd: String? = null,
+    val bzoffiCd: String? = null,
+    val closingCd: String? = null,
+)
+
 /**
  * Collection Ledger Search Parameters
  */
