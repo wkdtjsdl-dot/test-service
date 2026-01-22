@@ -59,7 +59,7 @@ class CustInnerController(
         return custUseCase.getDirectAcctCdNmAutoCompleteList(searchParam, auth.adminId, auth.roleCodes)
     }
 
-    @GetMapping("/by-cust-cd/{custCd}/interface-config")
+    @GetMapping("/{custCd}/interface-config")
     @Operation(summary = "getInterfaceConfigByCustCd", description = "고객별 엑셀 연동 설정 조회")
     suspend fun getInterfaceConfigByCustCd(
         @PathVariable custCd: String
@@ -67,7 +67,7 @@ class CustInnerController(
         return custUseCase.getInterfaceConfigByCustCd(custCd)
     }
 
-    @GetMapping("/by-cust-cd/{custCd}/excel-fields")
+    @GetMapping("/{custCd}/excel-fields")
     @Operation(summary = "getExcelFieldsByCustCd", description = "고객별 엑셀 필드 정보 조회")
     suspend fun getExcelFieldsByCustCd(
         @PathVariable custCd: String

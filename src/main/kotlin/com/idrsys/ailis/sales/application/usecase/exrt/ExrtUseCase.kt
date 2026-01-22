@@ -9,10 +9,12 @@ import com.idrsys.ailis.sales.application.dto.response.ExrtListResponse
 import com.idrsys.ailis.sales.application.dto.response.ExrtResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import java.time.LocalDate
 
 interface ExrtUseCase {
     suspend fun batchRegisterExrt(commands: List<ExrtBatchCommand>): ExrtBatchResponse
     suspend fun getExrtPage(searchParam: ExrtSearchParam, pageable: Pageable): Page<ExrtListResponse>
+    suspend fun getExrtsBy(stndDt: LocalDate?, crcyCd: String?): List<ExrtResponse>
     suspend fun getExrtDetail(exrtId: Long): ExrtResponse
     suspend fun updateExrt(exrtId: Long, command: ExrtUpdateCommand, adminId: String): ExrtResponse
     suspend fun createExrt(command: ExrtCommand, adminId: String): ExrtResponse
