@@ -19,6 +19,7 @@ import com.idrsys.ailis.tst.domain.model.TestItemHst
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
 import kotlinx.coroutines.flow.toList
 import java.time.LocalDateTime
+import java.util.Objects
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
@@ -342,8 +343,8 @@ class TestItemService(
                     prop.isAccessible = true
                     if (prop.name !in propertiesToIgnore) {
                         val getter = prop.getter
-                        val oldValue = getter.call(previousLog)
-                        val newValue = getter.call(currentLog)
+                        val oldValue = Objects.toString(getter.call(previousLog), "").trim()
+                        val newValue = Objects.toString(getter.call(currentLog), "").trim()
                         if (oldValue != newValue) {
                             val koreanName = propertyNameMap[prop.name] ?: prop.name
                             diffs.append("${koreanName}: '${oldValue ?: ""}' -> '${newValue ?: ""}'\n")
@@ -407,8 +408,8 @@ class TestItemService(
                     prop.isAccessible = true
                     if (prop.name !in propertiesToIgnore) {
                         val getter = prop.getter
-                        val oldValue = getter.call(previousLog)
-                        val newValue = getter.call(currentLog)
+                        val oldValue = Objects.toString(getter.call(previousLog), "").trim()
+                        val newValue = Objects.toString(getter.call(currentLog), "").trim()
                         if (oldValue != newValue) {
                             val koreanName = propertyNameMap[prop.name] ?: prop.name
                             diffs.append("${koreanName}: '${oldValue ?: ""}' -> '${newValue ?: ""}'\n")
