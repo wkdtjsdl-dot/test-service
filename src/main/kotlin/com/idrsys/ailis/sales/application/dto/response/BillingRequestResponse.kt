@@ -20,6 +20,8 @@ data class BillingRequestResponse(
     val tstCd: String,
     val tstNm: String?,
     val stndPrice: BigDecimal,
+    val supval: BigDecimal,
+    val crcyCd: String?,
     val closingSupval: BigDecimal?,
     val closingAddtax: BigDecimal?,
     val closingSpecialCharge: BigDecimal?,
