@@ -10,6 +10,7 @@ import com.idrsys.ailis.sales.application.required.repository.salesTarget.SalesT
 import com.idrsys.ailis.sales.domain.model.SalesTarget
 import com.idrsys.ailis.sales.generated.jooq.tables.SblSalesTarget.SBL_SALES_TARGET
 import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustMst.SCS_CUST_MST
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsGcgnSalsPicInfo.SCS_GCGN_SALS_PIC_INFO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.Condition
@@ -17,6 +18,7 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 
 @Repository
 class SalesTargetRepositoryImpl(
@@ -52,6 +54,7 @@ class SalesTargetRepositoryImpl(
     // Custom query operations (implemented with jOOQ)
     override fun findSalesTargets(searchParam: SalesTargetSearchParam): Flow<SalesTargetQuery> {
         val conditions = buildConditions(searchParam)
+        val referenceDate = LocalDate.of(searchParam.year, 1, 1)
 
         val query = dslContext.select(
             DSL.concat(
@@ -67,16 +70,29 @@ class SalesTargetRepositoryImpl(
             SBL_SALES_TARGET.SALS_TEAM_CD,
             DSL.inline(null as String?).`as`("sals_team_nm"),
             DSL.sum(SBL_SALES_TARGET.MONTH_SALES_TARGET_AMT).`as`("total_target"),
-            DSL.sum(SBL_SALES_TARGET.PAST_YEAR_MONTH_SALES_AMT).`as`("prev_year_sales")
+            DSL.sum(SBL_SALES_TARGET.PAST_YEAR_MONTH_SALES_AMT).`as`("prev_year_sales"),
+            SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.`as`("emp_user_id")
         )
             .from(SBL_SALES_TARGET)
             .join(SCS_CUST_MST).on(SBL_SALES_TARGET.CUST_CD.eq(SCS_CUST_MST.CUST_CD))
+            .leftJoin(SCS_GCGN_SALS_PIC_INFO).on(
+                SBL_SALES_TARGET.CUST_CD.eq(SCS_GCGN_SALS_PIC_INFO.CUST_CD)
+                    .and(SBL_SALES_TARGET.SALS_TEAM_CD.eq(SCS_GCGN_SALS_PIC_INFO.SALS_TEAM_CD))
+                    .and(SCS_GCGN_SALS_PIC_INFO.APPLY_START_DT.le(referenceDate))
+                    .and(
+                        DSL.coalesce(
+                            SCS_GCGN_SALS_PIC_INFO.APPLY_END_DT,
+                            LocalDate.of(9999, 12, 31)
+                        ).ge(referenceDate)
+                    )
+            )
             .where(conditions)
             .groupBy(
                 SBL_SALES_TARGET.SALES_YEAR,
                 SBL_SALES_TARGET.CUST_CD,
                 SCS_CUST_MST.CUST_NM,
-                SBL_SALES_TARGET.SALS_TEAM_CD
+                SBL_SALES_TARGET.SALS_TEAM_CD,
+                SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID
             )
             .orderBy(
                 SBL_SALES_TARGET.CUST_CD.asc(),

@@ -15,5 +15,7 @@ data class SalesTargetResponse(
     val salesTeamNm: String?,
     val totalTarget: BigDecimal,
     val prevYearSales: BigDecimal,
-    val targetGrowthRate: BigDecimal?
+    val targetGrowthRate: BigDecimal?,
+    val empUserId: String?,
+    val empUserNm: String?
 )

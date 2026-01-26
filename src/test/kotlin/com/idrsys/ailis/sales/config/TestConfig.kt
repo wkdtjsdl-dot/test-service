@@ -1,7 +1,15 @@
 package com.idrsys.ailis.sales.config
 
+import com.idrsys.ailis.sales.application.dto.request.attachedfile.AttachedFileGroupCreateCommand
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseAttachedFileGroupResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseDepartmentDetailResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseDepartmentResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseSysCodeResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseUserResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceBillingRequestDetail
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary
+import com.idrsys.ailis.sales.application.required.external.ApprovalLineResponse
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.external.ReqServicePort
 import com.idrsys.reactive.excel.ReactiveExcelWriter
 import kotlinx.coroutines.flow.Flow
@@ -34,6 +42,43 @@ class TestConfig {
     @Primary
     fun reactiveExcelWriter(): ReactiveExcelWriter {
         return Mockito.mock(ReactiveExcelWriter::class.java, Mockito.RETURNS_DEEP_STUBS)
+    }
+
+    /**
+     * BaseServicePort Fake implementation 제공
+     *
+     * 통합 테스트에서 base-service가 없으므로 Fake implementation으로 대체
+     * 모든 메서드가 기본값(null 또는 빈 리스트)을 반환
+     */
+    @Bean
+    @Primary
+    fun baseServicePort(): BaseServicePort {
+        return object : BaseServicePort {
+            override suspend fun getUser(userId: String): BaseUserResponse? = null
+
+            override suspend fun getUsers(): List<BaseUserResponse>? = emptyList()
+
+            override suspend fun getUsersByIds(userIds: List<String>): List<BaseUserResponse>? = emptyList()
+
+            override suspend fun getDepartments(): List<BaseDepartmentDetailResponse>? = emptyList()
+
+            override suspend fun findDepartmentById(departmentId: String?): BaseDepartmentResponse? = null
+
+            override suspend fun findDepartmentByDeptTypeCd(deptTypeCd: String?): BaseDepartmentResponse? = null
+
+            override suspend fun getChildrenSystemCodes(cateCds: List<String>): Map<String, List<BaseSysCodeResponse>>? = emptyMap()
+
+            override suspend fun getApprovalLines(
+                userId: String,
+                apprDocTypeCd: String,
+                apprDocDtlNo: String
+            ): List<ApprovalLineResponse> = emptyList()
+
+            override suspend fun saveAttachedFiles(
+                command: AttachedFileGroupCreateCommand,
+                creatorId: String
+            ): BaseAttachedFileGroupResponse? = null
+        }
     }
 
     /**

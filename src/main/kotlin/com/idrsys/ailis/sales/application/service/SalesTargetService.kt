@@ -7,6 +7,7 @@ import com.idrsys.ailis.sales.application.dto.request.salesTarget.SalesTargetSav
 import com.idrsys.ailis.sales.application.dto.request.salesTarget.SalesTargetSearchParam
 import com.idrsys.ailis.sales.application.dto.response.SalesTargetDetailResponse
 import com.idrsys.ailis.sales.application.dto.response.SalesTargetResponse
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.repository.salesTarget.SalesTargetRepository
 import com.idrsys.ailis.sales.application.usecase.salesTarget.SalesTargetUseCase
 import com.idrsys.ailis.sales.domain.model.SalesTarget
@@ -19,12 +20,22 @@ import java.time.LocalDateTime
 @Service
 class SalesTargetService(
     private val salesTargetRepository: SalesTargetRepository,
+    private val baseServicePort: BaseServicePort,
 ) : SalesTargetUseCase {
 
     override suspend fun getSalesTargets(searchParam: SalesTargetSearchParam): List<SalesTargetResponse> {
-        return salesTargetRepository.findSalesTargets(searchParam)
-            .toList()
-            .map { it.toResponse() }
+        val queryResults = salesTargetRepository.findSalesTargets(searchParam).toList()
+
+        val empUserIds = queryResults.mapNotNull { it.empUserId }.distinct()
+        val userMap = if (empUserIds.isNotEmpty()) {
+            baseServicePort.getUsersByIds(empUserIds)
+                ?.associate { it.userId to it.userNm }
+                ?: emptyMap()
+        } else {
+            emptyMap()
+        }
+
+        return queryResults.map { it.toResponse(userMap) }
     }
 
     override suspend fun getSalesTargetDetails(searchParam: SalesTargetDetailSearchParam): List<SalesTargetDetailResponse> {
@@ -79,7 +90,7 @@ class SalesTargetService(
         )
     }
 
-    private fun SalesTargetQuery.toResponse(): SalesTargetResponse {
+    private fun SalesTargetQuery.toResponse(userMap: Map<String, String>): SalesTargetResponse {
         val growthRate = if (prevYearSales > BigDecimal.ZERO) {
             (totalTarget - prevYearSales)
                 .multiply(BigDecimal(100))
@@ -97,7 +108,9 @@ class SalesTargetService(
             salesTeamNm = salsTeamNm,
             totalTarget = totalTarget,
             prevYearSales = prevYearSales,
-            targetGrowthRate = growthRate
+            targetGrowthRate = growthRate,
+            empUserId = empUserId,
+            empUserNm = empUserId?.let { userMap[it] }
         )
     }
 
