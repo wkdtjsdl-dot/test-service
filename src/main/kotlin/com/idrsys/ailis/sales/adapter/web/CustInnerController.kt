@@ -30,12 +30,21 @@ class CustInnerController(
     private val log = LoggerFactory.getLogger(javaClass)
 
     @GetMapping
-    @Operation(summary = "getCustBasicList", description = "내부용 고객 기본정보 조회 (권한 기반 필터링)")
+    @Operation(summary = "getCustBasicList", description = "내부용 고객 기본정보 조회 (전체)")
     suspend fun getCustBasicList(
+        @ParameterObject @Parameter(hidden = true) searchParam: CustSearchParam
+    ): List<CustBasicResponse> {
+        log.info("Inner API - getCustBasicList: searchParam={}", searchParam)
+        return custUseCase.getCustList(searchParam)
+    }
+
+    @GetMapping("/my")
+    @Operation(summary = "getMyCustBasicList", description = "내부용 고객 기본정보 조회 (권한 기반 필터링)")
+    suspend fun getMyCustBasicList(
         @ParameterObject @Parameter(hidden = true) searchParam: CustSearchParam,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): List<CustBasicResponse> {
-        log.info("Inner API - getCustBasicList: adminId={}, roleCodes={}", auth.adminId, auth.roleCodes)
+        log.info("Inner API - getMyCustBasicList: adminId={}, roleCodes={}", auth.adminId, auth.roleCodes)
         return custUseCase.getCustList(searchParam, auth.adminId, auth.roleCodes)
     }
 

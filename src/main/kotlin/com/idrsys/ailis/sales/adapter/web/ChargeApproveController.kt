@@ -10,6 +10,7 @@ import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -31,7 +32,7 @@ class ChargeApproveController(
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "requestApproval", description = "고객수가 승인 요청")
     suspend fun requestApproval(
-        @RequestBody command: ChargeApproveRequestCommand,
+        @RequestBody @Valid command: ChargeApproveRequestCommand,
         @JwtAuthorization auth: AuthenticationAdmin
     ): ChargeApproveResponse {
         return chargeApproveUseCase.requestApproval(command, auth.adminId)
@@ -41,7 +42,7 @@ class ChargeApproveController(
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "approve", description = "고객수가 승인")
     suspend fun approve(
-        @RequestBody command: ChargeApproveActionCommand,
+        @RequestBody @Valid command: ChargeApproveActionCommand,
         @JwtAuthorization auth: AuthenticationAdmin
     ): ChargeApproveResponse {
         return chargeApproveUseCase.approve(command, auth.adminId)

@@ -1,11 +1,13 @@
 package com.idrsys.ailis.sales.application.service
 
+import com.idrsys.ailis.sales.application.dto.query.ChargeApproveQuery
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCustomRepository
 import com.idrsys.ailis.sales.shared.mapper.ChargeApproveMapper
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveActionCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveRequestCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveSearchParam
 import com.idrsys.ailis.sales.application.dto.response.ChargeApproveResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.BaseUserResponse
 import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoCustomRepository
@@ -13,6 +15,7 @@ import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoR
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeRepository
 import com.idrsys.ailis.sales.application.usecase.chargeapprove.ChargeApproveUseCase
 import com.idrsys.ailis.sales.domain.model.ApprInfo
+import com.idrsys.ailis.sales.domain.model.Charge
 import com.idrsys.ailis.sales.shared.constant.ChargeApproveErrorCode
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.toList
@@ -53,6 +56,10 @@ class ChargeApproveService(
         private const val LAST_T = "LAST_T" // 임시저장
         private const val LAST_I = "LAST_I" // 결재중
         private const val LAST_C = "LAST_C" // 결재완료
+
+        // Job Positions (jbpoCd) - from claude.md confirmed
+        private val TEAM_MEMBER_POSITIONS = listOf("JP_TM", "JP_PM") // 팀원, 파트장
+        private val TEAM_LEADER_OR_HIGHER_POSITIONS = listOf("JP_TL", "JP_AM", "JP_UM", "JP_BM", "JP_SM", "JP_HD", "JP_LC", "JP_DH", "JP_P") // 팀장 이상
     }
 
     /**
@@ -217,50 +224,35 @@ class ChargeApproveService(
      */
     @Transactional
     override suspend fun deleteCharge(custChargeId: String, userId: String) {
+        // 1. 고객수가 조회
         val charge = chargeRepository.findById(custChargeId)
             ?: throw UserDefinedException(
                 ChargeApproveErrorCode.CHARGE_NOT_FOUND_CODE,
                 ChargeApproveErrorCode.CHARGE_NOT_FOUND_MESSAGE
             )
 
-        val user = baseServicePort.getUser(userId) ?: throw UserDefinedException(
-            ChargeApproveErrorCode.NO_AUTHORITY_CODE,
-            "사용자 정보를 찾을 수 없습니다."
-        )
+        // 2. 사용자 정보 조회
+        val user = baseServicePort.getUser(userId)
+            ?: throw UserDefinedException(
+                ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+                ChargeApproveErrorCode.NO_AUTHORITY_MESSAGE
+            )
+
+        // 3. 삭제 권한 확인 및 처리
+        val permissionResult = canDeleteCharge(charge, user, userId)
+        if (!permissionResult.canDelete) {
+            throw UserDefinedException(permissionResult.errorCode, permissionResult.errorMessage)
+        }
 
         when (charge.lastApprStatCd) {
             LAST_T -> {
-                // 임시저장 상태: 단순 삭제
-                // TODO: 임시저장도 본인만 삭제 가능한지 등 권한 정책 확정 필요
+                // 임시저장 상태: 단순 삭제 (권한 검증은 canDeleteCharge에서 수행됨)
                 chargeRepository.deleteById(charge.custChargeId)
             }
             LAST_I -> {
-                // 결재중 상태: 반려(삭제) 로직 수행
+                // 결재중 상태: 반려(삭제) 로직 수행 (권한 검증은 canDeleteCharge에서 수행됨)
                 val apprInfoNo = charge.apprInfoNo
-                    ?: throw UserDefinedException(ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_CODE, "결재 정보가 없는 수가입니다.")
-
-                // 현재 결재자 또는 상위 결재자만 반려 가능 (정책에 따라)
-                // 여기서는 현재 결재자만 가능하다고 가정
-                val currentApprInfo = apprInfoCustomRepository.findPendingApprovalByChargeId(charge.custChargeId)
-                    ?: throw UserDefinedException(
-                        ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_CODE,
-                        ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_MESSAGE
-                    )
-                if (currentApprInfo.apprPersonEmpNo != user.empNo) {
-                    throw UserDefinedException(
-                        ChargeApproveErrorCode.NO_AUTHORITY_CODE,
-                        "현재 결재 담당자가 아니므로 반려할 수 없습니다."
-                    )
-                }
-
-                // 이미 승인한 건은 반려 불가
-                val hasAlreadyApproved = apprInfoCustomRepository.hasUserApproved(apprInfoNo, user.empNo!!)
-                if (hasAlreadyApproved) {
-                    throw UserDefinedException(
-                        ChargeApproveErrorCode.ALREADY_APPROVED_CODE,
-                        ChargeApproveErrorCode.ALREADY_APPROVED_MESSAGE
-                    )
-                }
+                    ?: throw UserDefinedException(ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_CODE, ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_MESSAGE)
 
                 // 데이터 삭제
                 apprInfoRepository.deleteAllByApprInfoNo(apprInfoNo)
@@ -275,8 +267,13 @@ class ChargeApproveService(
                     )
                 }
             }
+            // LAST_C 상태는 canDeleteCharge에서 이미 처리되므로 여기에 도달하지 않음
             else -> {
-                throw UserDefinedException("CANNOT_DELETE", "임시저장 또는 결재중인 수가만 삭제할 수 있습니다.")
+                // canDeleteCharge에서 모든 케이스를 처리했으므로, 여기에 도달하면 예상치 못한 상태임
+                throw UserDefinedException(
+                    ChargeApproveErrorCode.CANNOT_DELETE_CODE,
+                    ChargeApproveErrorCode.CANNOT_DELETE_MESSAGE
+                )
             }
         }
     }
@@ -409,10 +406,77 @@ class ChargeApproveService(
     }
 
     /**
+     * 고객수가 삭제 권한 검증 헬퍼
+     */
+    private suspend fun canDeleteCharge(
+        charge: Charge,
+        user: BaseUserResponse,
+        requestingUserId: String
+    ): DeletePermissionResult {
+        // 1. 사용자 직책 코드 확인 (jbpoCd는 null일 수 있으므로 기본값 설정)
+        val jbpoCd = user.jbpoCd ?: "JP_TM" // 기본 팀원
+
+        return when (charge.lastApprStatCd) {
+            LAST_T -> { // 임시저장 상태
+                // 임시저장 건은 생성자만 삭제 가능
+                if (charge.creator == requestingUserId) {
+                    DeletePermissionResult(true, "", "")
+                } else {
+                    DeletePermissionResult(
+                        false,
+                        ChargeApproveErrorCode.NOT_ALLOWED_TO_DELETE_LAST_T_CODE,
+                        ChargeApproveErrorCode.NOT_ALLOWED_TO_DELETE_LAST_T_MESSAGE
+                    )
+                }
+            }
+            LAST_I -> { // 결재중 상태
+                // 팀원(JP_TM/JP_PM)은 결재중인 건 삭제 불가
+                if (jbpoCd in TEAM_MEMBER_POSITIONS) {
+                    DeletePermissionResult(
+                        false,
+                        ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+                        ChargeApproveErrorCode.NO_AUTHORITY_MESSAGE
+                    )
+                } else {
+                    // 팀장 이상은 삭제 가능하나, 본인이 승인한 건 삭제 불가
+                    val hasAlreadyApproved = apprInfoCustomRepository.hasUserApproved(
+                        apprInfoNo = charge.apprInfoNo!!,
+                        empNo = user.empNo!!
+                    )
+                    if (hasAlreadyApproved) {
+                        DeletePermissionResult(
+                            false,
+                            ChargeApproveErrorCode.ALREADY_APPROVED_CODE,
+                            ChargeApproveErrorCode.ALREADY_APPROVED_MESSAGE
+                        )
+                    } else {
+                        DeletePermissionResult(true, "", "")
+                    }
+                }
+            }
+            LAST_C -> { // 결재완료 상태
+                // 아무도 삭제 불가
+                DeletePermissionResult(
+                    false,
+                    ChargeApproveErrorCode.CANNOT_DELETE_CODE,
+                    ChargeApproveErrorCode.CANNOT_DELETE_MESSAGE
+                )
+            }
+            else -> {
+                DeletePermissionResult(
+                    false,
+                    ChargeApproveErrorCode.CANNOT_DELETE_CODE,
+                    ChargeApproveErrorCode.CANNOT_DELETE_MESSAGE
+                )
+            }
+        }
+    }
+
+    /**
      * Name 필드 일괄 채우기 (성능 최적화)
      */
     private suspend fun populateNameFields(
-        queries: List<com.idrsys.ailis.sales.application.dto.query.ChargeApproveQuery>
+        queries: List<ChargeApproveQuery>
     ): List<ChargeApproveResponse> {
         if (queries.isEmpty()) return emptyList()
 
@@ -435,3 +499,9 @@ class ChargeApproveService(
         }
     }
 }
+
+data class DeletePermissionResult(
+    val canDelete: Boolean,
+    val errorCode: String,
+    val errorMessage: String
+)

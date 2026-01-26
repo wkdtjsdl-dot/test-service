@@ -27,4 +27,16 @@ object ChargeApproveErrorCode {
 
     const val APPROVE_CAS_CONFLICT_CODE = "CA012"
     const val APPROVE_CAS_CONFLICT_MESSAGE = "승인 처리 중 충돌이 발생했습니다."
+
+    const val ALREADY_REQUESTED_CODE = "CA013"
+    const val ALREADY_REQUESTED_MESSAGE = "임시저장 상태인 수가만 승인 요청할 수 있습니다."
+
+    const val APPR_LINE_NOT_FOUND_CODE = "CA014"
+    const val APPR_LINE_NOT_FOUND_MESSAGE = "결재선을 찾을 수 없습니다."
+
+    const val CANNOT_DELETE_CODE = "CA015"
+    const val CANNOT_DELETE_MESSAGE = "임시저장 또는 결재중인 수가만 삭제할 수 있습니다."
+
+    const val NOT_ALLOWED_TO_DELETE_LAST_T_CODE = "CA016"
+    const val NOT_ALLOWED_TO_DELETE_LAST_T_MESSAGE = "임시저장 상태의 수가는 등록자만 삭제할 수 있습니다."
 }
