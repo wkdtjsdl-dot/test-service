@@ -11,9 +11,7 @@ interface CollectionLedgerRepository {
     suspend fun save(collectionLedger: CollectionLedger): CollectionLedger
     suspend fun findById(id: String): CollectionLedger?
     suspend fun delete(collectionLedger: CollectionLedger)
-    fun findByCustCdAndColbillDtBetweenOrderByColbillDtAsc(
+    fun findByCustCdOrderByColbillDtAsc(
         custCd: String,
-        startDt: LocalDate,
-        endDt: LocalDate
     ): Flow<CollectionLedger>
 }

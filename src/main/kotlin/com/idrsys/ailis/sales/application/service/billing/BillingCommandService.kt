@@ -12,7 +12,6 @@ import com.idrsys.ailis.sales.application.usecase.billing.BillingCommandUseCase
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
 import com.idrsys.ailis.sales.domain.model.Demand
 import com.idrsys.web.exception.UserDefinedException
-import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -73,8 +72,6 @@ class BillingCommandService(
         )
         demand.setAsNew()
 
-        val savedDemand = demandRepository.save(demand)
-
         // 5. Create collection ledger entry for demand
         val ledger = CollectionLedger.createForDemand(
             custCd = command.custCd,
@@ -85,6 +82,10 @@ class BillingCommandService(
 
         val savedLedger = collectionLedgerRepository.save(ledger)
 
+        // 6. Assign colledgerId to demand and save
+        demand.assignColledgerId(savedLedger.colledgerId!!)
+        val savedDemand = demandRepository.save(demand)
+
         // 6. Update test requests with closing information
         val createdRequestCount = reqServicePort.updateTstItemClosingInfo(
             directAcctCd = command.custCd,
@@ -94,6 +95,7 @@ class BillingCommandService(
             closingAddtax = command.addtax,
             closingDemandCharge = demandCharge,
             exrtId = command.exrtId,
+            stndExrt = command.stndExrt,
             closingMemo = command.demandMemo,
             closingUser = adminId
         )
@@ -131,16 +133,10 @@ class BillingCommandService(
             )
         }
 
-        // 3. Delete associated collection ledger
-        // TODO: Implement ledger deletion when custom repository method is available
-        val ledgers = collectionLedgerRepository.findByCustCdAndColbillDtBetweenOrderByColbillDtAsc(
-            demand.custCd,
-            demand.demandDt,
-            demand.demandDt
-        ).toList()
-
-        for (ledger in ledgers) {
-            if (ledger.colbillDivCd == "0") { // Only delete demand ledgers
+        // 3. Delete associated collection ledger using colledgerId
+        demand.colledgerId?.let { colledgerId ->
+            val ledger = collectionLedgerRepository.findById(colledgerId)
+            if (ledger != null) {
                 collectionLedgerRepository.delete(ledger)
             }
         }

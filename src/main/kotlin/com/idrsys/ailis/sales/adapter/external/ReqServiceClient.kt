@@ -103,17 +103,16 @@ class ReqServiceClient(
         closingAddtax: BigDecimal,
         closingDemandCharge: BigDecimal,
         exrtId: Long?,
+        stndExrt: BigDecimal?,
         closingMemo: String?,
-        closingUser: String
+        closingUser: String,
     ): Int {
         val requestBody = mapOf(
             "directAcctCd" to directAcctCd,
             "startDt" to startDt.toString(),
             "endDt" to endDt.toString(),
-            "closingSupval" to closingSupval,
-            "closingAddtax" to closingAddtax,
-            "closingDemandCharge" to closingDemandCharge,
             "exrtId" to exrtId,
+            "stndExrt" to stndExrt,
             "closingMemo" to closingMemo
         )
 

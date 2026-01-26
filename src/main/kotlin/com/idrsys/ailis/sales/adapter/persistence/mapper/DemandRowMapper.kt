@@ -31,7 +31,8 @@ internal fun Row.toDemand(): Demand {
         creator = this.get("creator", String::class.java)!!,
         createDtime = this.get("create_dtime", LocalDateTime::class.java)!!,
         updater = this.get("updater", String::class.java)!!,
-        updateDtime = this.get("update_dtime", LocalDateTime::class.java)!!
+        updateDtime = this.get("update_dtime", LocalDateTime::class.java)!!,
+        colledgerId = this.get("colledger_id", String::class.java)
     )
 
     // Handle persisted entity (not new)

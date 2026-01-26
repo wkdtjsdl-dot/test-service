@@ -135,15 +135,8 @@ class CollectionController(
     @GetMapping("/ledger/{custCd}")
     suspend fun getCollectionLedger(
         @PathVariable custCd: String,
-        @RequestParam startDt: LocalDate,
-        @RequestParam endDt: LocalDate
     ): CollectionLedgerResponse {
-        val searchParam = CollectionSearchParam(
-            custCd = custCd,
-            startDt = startDt,
-            endDt = endDt
-        )
-        return collectionQueryUseCase.getCollectionLedger(searchParam)
+        return collectionQueryUseCase.getCollectionLedger(custCd)
     }
 
     /**

@@ -1,12 +1,9 @@
 package com.idrsys.ailis.sales.application.required.repository.collection
 
 import com.idrsys.ailis.sales.application.dto.request.collection.CollectionListSearchParam
-import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearchParam
 import com.idrsys.ailis.sales.application.dto.response.CollectionBillListResponse
 import com.idrsys.ailis.sales.domain.model.CollectionBill
 import kotlinx.coroutines.flow.Flow
-import org.springframework.data.domain.Pageable
-
 /**
  * Collection Bill Repository (Port Interface)
  *
@@ -23,11 +20,6 @@ interface CollectionBillRepository {
      * Find collection bills with pagination
      */
     suspend fun findCollectionBills(searchParam: CollectionListSearchParam): Flow<CollectionBillListResponse>
-
-    /**
-     * Count collection bills
-     */
-    suspend fun countCollectionBills(searchParam: CollectionSearchParam): Long
 
     /**
      * Find collection bill by ID

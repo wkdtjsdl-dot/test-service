@@ -64,9 +64,10 @@ interface ReqServicePort {
         closingSupval: BigDecimal,
         closingAddtax: BigDecimal,
         closingDemandCharge: BigDecimal,
-        exrtId: Long?,
+        exrtId: Long? = null,
+        stndExrt: BigDecimal? = null,
         closingMemo: String?,
-        closingUser: String
+        closingUser: String,
     ): Int
 
     /**

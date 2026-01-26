@@ -1,25 +1,18 @@
 package com.idrsys.ailis.sales.adapter.repository.collection
 
 import com.idrsys.ailis.sales.application.dto.request.collection.CollectionListSearchParam
-import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearchParam
 import com.idrsys.ailis.sales.application.dto.response.CollectionBillListResponse
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionBillRepository
 import com.idrsys.ailis.sales.domain.model.CollectionBill
 import com.idrsys.ailis.sales.generated.jooq.SalesScm
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
-import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.LocalDateTime
-
 @Repository
 class CollectionBillRepositoryImpl(
     private val collectionBillDataRepository: CollectionBillDataRepository,
@@ -132,10 +125,6 @@ class CollectionBillRepositoryImpl(
         )
     }
 
-    override suspend fun countCollectionBills(searchParam: CollectionSearchParam): Long {
-        // TODO: Implement with jOOQ when needed
-        return 0L
-    }
 
     override suspend fun findCollectionBillById(colbillId: String): CollectionBill? {
         return collectionBillDataRepository.findById(colbillId)

@@ -11,7 +11,6 @@ import com.idrsys.ailis.sales.application.dto.response.DeleteCollectionBillRespo
 import com.idrsys.ailis.sales.application.dto.response.SendCollectionResponse
 import com.idrsys.ailis.sales.application.dto.response.SendCollectionResult
 import com.idrsys.ailis.sales.application.dto.response.SplitCollectionResponse
-import kotlinx.coroutines.flow.toList
 import com.idrsys.ailis.sales.application.required.repository.collection.*
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionCommandUseCase
 import com.idrsys.ailis.sales.domain.model.CollectionBill
@@ -309,15 +308,10 @@ class CollectionCommandService(
             throw UserDefinedException("INVALID_OPERATION", "ERP 전송된 수금 정보는 삭제할 수 없습니다")
         }
 
-        // 3. Delete associated ledger
-        val ledgers = collectionLedgerRepository.findByCustCdAndColbillDtBetweenOrderByColbillDtAsc(
-            collectionBill.custCd,
-            collectionBill.colbillDt,
-            collectionBill.colbillDt
-        ).toList()
-
-        for (ledger in ledgers) {
-            if (ledger.colbillDivCd == "1" && ledger.colbillAmt == collectionBill.payAmt) {
+        // 3. Delete associated ledger using colledgerId
+        collectionBill.colledgerId?.let { colledgerId ->
+            val ledger = collectionLedgerRepository.findById(colledgerId)
+            if (ledger != null) {
                 collectionLedgerRepository.delete(ledger)
             }
         }
