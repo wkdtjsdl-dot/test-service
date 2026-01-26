@@ -14,7 +14,12 @@ data class RegisterCollectionCommand(
     val payMethodCd: String,
     val payAmt: BigDecimal,
     val cardPayId: String? = null,
+    val cardApprNo: String? = null,
+    val cardNo: String? = null,
+    val cardBillNo: String? = null,
     val bankDepositId: String? = null,
+    val accountYear: String? = null,
+    val surecpSlstmtNo: String? = null,
     val advreceYn: Boolean = false,
     val remark: String? = null
 )

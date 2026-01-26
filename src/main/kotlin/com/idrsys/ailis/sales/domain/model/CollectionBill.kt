@@ -45,6 +45,7 @@ class CollectionBill(
     closingCd: String? = null,
     colledgerId: String? = null,
     sendYn: Boolean = false,
+    remark: String? = null,
     creator: String,
     createDtime: LocalDateTime = LocalDateTime.now(),
     updater: String = creator,
@@ -137,6 +138,9 @@ class CollectionBill(
     @Column("send_yn")
     var sendYn: Boolean = sendYn
         private set
+
+    @Column("remark")
+    var remark: String? = remark
 
     @Column("creator")
     var creator: String = creator

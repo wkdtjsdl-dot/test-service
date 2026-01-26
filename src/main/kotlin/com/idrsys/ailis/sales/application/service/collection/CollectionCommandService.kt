@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import kotlin.String
 
 /**
  * Collection Command Service
@@ -69,10 +70,16 @@ class CollectionCommandService(
             colbillDt = command.colbillDt,
             payMethodCd = command.payMethodCd,
             payAmt = command.payAmt,
-            cardPayId = cardPayId,
+            cardPayId = command.cardPayId,
+            cardApprNo = command.cardApprNo,
+            cardNo = command.cardNo,
+            cardBillNo = command.cardBillNo,
             bankDepositId = null,
+            accountYear = null,
+            surecpSlstmtNo = null,
             advreceYn = command.advreceYn,
             sendYn = false,
+            remark = command.remark,
             creator = adminId,
             createDtime = LocalDateTime.now(),
             updater = adminId,
@@ -132,9 +139,15 @@ class CollectionCommandService(
             payMethodCd = command.payMethodCd,
             payAmt = command.payAmt,
             cardPayId = null,
-            bankDepositId = bankDepositId,
+            cardApprNo = null,
+            cardNo = null,
+            cardBillNo = null,
+            bankDepositId = command.bankDepositId,
+            accountYear = command.accountYear,
+            surecpSlstmtNo = command.surecpSlstmtNo,
             advreceYn = command.advreceYn,
             sendYn = false,
+            remark = command.remark,
             creator = adminId,
             createDtime = LocalDateTime.now(),
             updater = adminId,
