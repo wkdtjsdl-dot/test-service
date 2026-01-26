@@ -1,6 +1,5 @@
 package com.idrsys.ailis.sales.adapter.repository.collection
 
-import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearchParam
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionBillRepository
 import com.idrsys.ailis.sales.domain.model.CollectionBill
 import kotlinx.coroutines.flow.Flow
@@ -28,17 +27,6 @@ class CollectionBillRepositoryImpl(
 
     override suspend fun delete(collectionBill: CollectionBill) {
         collectionBillDataRepository.delete(collectionBill)
-    }
-
-    // Custom query operations (implemented with jOOQ)
-    override fun findCollectionBills(searchParam: CollectionSearchParam, pageable: Pageable): Flow<CollectionBill> {
-        // TODO: Implement with jOOQ when needed
-        return emptyFlow()
-    }
-
-    override suspend fun countCollectionBills(searchParam: CollectionSearchParam): Long {
-        // TODO: Implement with jOOQ when needed
-        return 0L
     }
 
     override suspend fun findCollectionBillById(colbillId: String): CollectionBill? {

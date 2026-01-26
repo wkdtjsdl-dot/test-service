@@ -2,7 +2,6 @@ package com.idrsys.ailis.sales.application.service.collection
 
 import com.idrsys.ailis.sales.application.dto.request.collection.BankDepositSearchParam
 import com.idrsys.ailis.sales.application.dto.request.collection.CardPaymentSearchParam
-import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearchParam
 import com.idrsys.ailis.sales.application.dto.response.BankDepositResponse
 import com.idrsys.ailis.sales.application.dto.response.CardPaymentResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerResponse
@@ -38,12 +37,10 @@ class CollectionQueryService(
      * 2. Balance calculated cumulatively
      * 3. AR balance = Total demand - Total collection
      */
-    override suspend fun getCollectionLedger(searchParam: CollectionSearchParam): CollectionLedgerResponse {
+    override suspend fun getCollectionLedger(custCd: String): CollectionLedgerResponse {
         // Get all ledger entries for customer in period
-        val ledgers = collectionLedgerRepository.findByCustCdAndColbillDtBetweenOrderByColbillDtAsc(
-            searchParam.custCd!!,
-            searchParam.startDt,
-            searchParam.endDt
+        val ledgers = collectionLedgerRepository.findByCustCdOrderByColbillDtAsc(
+            custCd,
         ).toList()
 
         // Calculate running balance and totals
@@ -67,7 +64,7 @@ class CollectionQueryService(
         }
 
         return CollectionLedgerResponse(
-            custCd = searchParam.custCd,
+            custCd = custCd,
             custNm = null, // TODO: Fetch from customer service
             transactions = transactions,
             totalDemandAmt = totalDemandAmt,

@@ -2,7 +2,6 @@ package com.idrsys.ailis.sales.application.usecase.collection
 
 import com.idrsys.ailis.sales.application.dto.request.collection.BankDepositSearchParam
 import com.idrsys.ailis.sales.application.dto.request.collection.CardPaymentSearchParam
-import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearchParam
 import com.idrsys.ailis.sales.application.dto.response.BankDepositResponse
 import com.idrsys.ailis.sales.application.dto.response.CardPaymentResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerResponse
@@ -17,7 +16,7 @@ interface CollectionQueryUseCase {
     /**
      * Get collection ledger for customer
      */
-    suspend fun getCollectionLedger(searchParam: CollectionSearchParam): CollectionLedgerResponse
+    suspend fun getCollectionLedger(custCd: String): CollectionLedgerResponse
 
     /**
      * Get card payment list (unregistered or all)

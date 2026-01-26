@@ -49,7 +49,8 @@ class Demand(
     creator: String,
     createDtime: LocalDateTime = LocalDateTime.now(),
     updater: String = creator,
-    updateDtime: LocalDateTime = LocalDateTime.now()
+    updateDtime: LocalDateTime = LocalDateTime.now(),
+    colledgerId: String? = null
 ) : Persistable<String> {
 
     init {
@@ -164,6 +165,10 @@ class Demand(
     var updateDtime: LocalDateTime = updateDtime
         private set
 
+    @Column("colledger_id")
+    var colledgerId: String? = colledgerId
+        private set
+
     @Transient
     private var _isNew: Boolean = false
 
@@ -235,5 +240,16 @@ class Demand(
      */
     fun canCancel(): Boolean {
         return slstmtNo == null
+    }
+
+    /**
+     * Assign collection ledger ID
+     *
+     * Business Rule:
+     * - Links demand to its collection ledger entry
+     */
+    fun assignColledgerId(colledgerId: String) {
+        require(colledgerId.isNotBlank()) { "Collection ledger ID cannot be blank" }
+        this.colledgerId = colledgerId
     }
 }

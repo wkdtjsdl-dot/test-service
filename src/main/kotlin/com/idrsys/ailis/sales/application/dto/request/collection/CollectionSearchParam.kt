@@ -3,16 +3,6 @@ package com.idrsys.ailis.sales.application.dto.request.collection
 import java.time.LocalDate
 
 /**
- * Collection Search Parameters
- */
-data class CollectionSearchParam(
-    val startDt: LocalDate,
-    val endDt: LocalDate,
-    val custCd: String? = null,
-    val sendYn: Boolean? = null
-)
-
-/**
  * Collection Ledger Search Parameters
  */
 data class CollectionLedgerSearchParam(

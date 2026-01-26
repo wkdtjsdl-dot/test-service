@@ -26,11 +26,9 @@ class CollectionLedgerRepositoryImpl(
         collectionLedgerDataRepository.delete(collectionLedger)
     }
 
-    override fun findByCustCdAndColbillDtBetweenOrderByColbillDtAsc(
+    override fun findByCustCdOrderByColbillDtAsc(
         custCd: String,
-        startDt: LocalDate,
-        endDt: LocalDate
     ): Flow<CollectionLedger> {
-        return collectionLedgerDataRepository.findByCustCdAndColbillDtBetween(custCd, startDt, endDt)
+        return collectionLedgerDataRepository.findByCustCd(custCd)
     }
 }

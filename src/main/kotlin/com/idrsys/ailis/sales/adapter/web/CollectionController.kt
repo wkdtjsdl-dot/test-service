@@ -3,7 +3,6 @@ package com.idrsys.ailis.sales.adapter.web
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
 import com.idrsys.ailis.sales.application.dto.request.collection.BankDepositSearchParam
 import com.idrsys.ailis.sales.application.dto.request.collection.CardPaymentSearchParam
-import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearchParam
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterCollectionCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterSplitPaymentCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.SendCollectionToErpCommand
@@ -131,15 +130,8 @@ class CollectionController(
     @GetMapping("/ledger/{custCd}")
     suspend fun getCollectionLedger(
         @PathVariable custCd: String,
-        @RequestParam startDt: LocalDate,
-        @RequestParam endDt: LocalDate
     ): CollectionLedgerResponse {
-        val searchParam = CollectionSearchParam(
-            custCd = custCd,
-            startDt = startDt,
-            endDt = endDt
-        )
-        return collectionQueryUseCase.getCollectionLedger(searchParam)
+        return collectionQueryUseCase.getCollectionLedger(custCd)
     }
 
     /**
