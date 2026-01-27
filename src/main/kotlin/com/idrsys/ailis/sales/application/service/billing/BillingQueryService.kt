@@ -81,13 +81,15 @@ class BillingQueryService(
         val custNmMap = custCustomRepository.findCustNmMapByCustCds(custCds)
 
         summaries.forEach { summary ->
-            val (custNm, invcRecpEmailYn, invcRecpEmailAddr) = custNmMap[summary.directAcctCd] ?: Triple("", false, "")
+            val custBillingInfo = custNmMap[summary.directAcctCd]
             emit(summary.toDemandResponse(
                 searchStartDt = searchParam.startDt,
                 searchEndDt = searchParam.endDt,
-                custNm = custNm,
-                invcRecpEmailYn = invcRecpEmailYn,
-                invcRecpEmailAddr = invcRecpEmailAddr
+                custNm = custBillingInfo?.custNm ?: "",
+                invcRecpEmailYn = custBillingInfo?.invcRecpEmailYn ?: false,
+                invcRecpEmailAddr = custBillingInfo?.invcRecpEmailAddr ?: "",
+                bzoffiCd = custBillingInfo?.bzoffiCd,
+                sapCustCd = custBillingInfo?.sapCustCd
             ))
         }
     }
@@ -117,12 +119,12 @@ class BillingQueryService(
         val custNmMap = custCustomRepository.findCustNmMapByCustCds(custCds)
 
         details.forEach { detail ->
-            val (custNm, _, _) = custNmMap[detail.custCd] ?: Triple("", false, "")
+            val custBillingInfo = custNmMap[detail.custCd]
             emit(BillingRequestResponse(
                 tstReqDt = detail.tstReqDt,
                 tstReqNo = detail.tstReqNo.toString(),
                 custCd = detail.custCd,
-                custNm = custNm,
+                custNm = custBillingInfo?.custNm ?: "",
                 patNm = detail.patNm,
                 hospChartNo = detail.hospChartNo,
                 tstMediumCateCd = detail.tstMediumCateCd,

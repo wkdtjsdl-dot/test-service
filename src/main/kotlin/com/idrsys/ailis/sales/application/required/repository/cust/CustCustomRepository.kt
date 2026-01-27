@@ -30,9 +30,9 @@ interface CustCustomRepository {
     fun findExcelFieldsByCustCd(custCd: String): Flow<IfFieldInfoResponse>
 
     /**
-     * Find customer names by customer codes (batch query)
+     * Find customer billing info by customer codes (batch query)
      * @param custCds list of customer codes
-     * @return map of custCd to custNm
+     * @return map of custCd to CustBillingInfo
      */
-    suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, Triple<String, Boolean, String>>
+    suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, CustBillingInfo>
 }

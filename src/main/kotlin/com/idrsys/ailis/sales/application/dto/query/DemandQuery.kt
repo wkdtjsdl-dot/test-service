@@ -28,5 +28,7 @@ data class DemandWithCustInfo(
     val createDtime: LocalDateTime,
     val colledgerId: String?,
     // Customer info from scs_cust_mst
-    val custNm: String?
+    val custNm: String?,
+    val bzoffiCd: String?,
+    val sapCustCd: String?
 )

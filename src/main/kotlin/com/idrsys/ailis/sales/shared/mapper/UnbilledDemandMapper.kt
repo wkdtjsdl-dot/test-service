@@ -12,13 +12,17 @@ import java.time.LocalDateTime
  *
  * Since this is unbilled (before closing), some fields are set to null or default values
  * @param custNm Customer name from sales-service DB (scs_cust_mst) via batch query
+ * @param bzoffiCd Business office code from sales-service DB (scs_cust_mst)
+ * @param sapCustCd SAP customer code from sales-service DB (scs_cust_mst)
  */
 fun ReqServiceUnbilledDemandSummary.toDemandResponse(
     searchStartDt: LocalDate,
     searchEndDt: LocalDate,
     custNm: String? = null,
     invcRecpEmailYn: Boolean = false,
-    invcRecpEmailAddr: String? = null
+    invcRecpEmailAddr: String? = null,
+    bzoffiCd: String? = null,
+    sapCustCd: String? = null
 ): DemandResponse {
     return DemandResponse(
         demandId = null,                        // No ID before closing
@@ -37,6 +41,8 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
         slstmtSendDt = null,                    // No send date before closing
         billPublYn = invcRecpEmailYn,
         invcRecpEmailAddr = invcRecpEmailAddr,
+        bzoffiCd = bzoffiCd,                    // From sales-service DB (scs_cust_mst)
+        sapCustCd = sapCustCd,                  // From sales-service DB (scs_cust_mst)
         creator = "-",                          // Not yet created
         createDtime = LocalDateTime.now(),      // Query time
         colledgerId = null,                     // Not set before closing

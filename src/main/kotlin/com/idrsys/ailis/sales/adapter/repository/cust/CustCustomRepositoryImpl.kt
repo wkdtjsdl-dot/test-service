@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.adapter.persistence.mapper.*
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.*
+import com.idrsys.ailis.sales.application.dto.query.CustBillingInfo
 import com.idrsys.ailis.sales.application.dto.response.IfFieldInfoResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.generated.jooq.Tables.*
@@ -681,14 +682,21 @@ class CustCustomRepositoryImpl(
             .asFlow()
     }
 
-    override suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, Triple<String, Boolean, String>> {
+    override suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, CustBillingInfo> {
         if (custCds.isEmpty()) return emptyMap()
 
-        val result = mutableMapOf<String, Triple<String, Boolean, String>>()
+        val result = mutableMapOf<String, CustBillingInfo>()
 
         // IN절 성능을 위해 BATCH_QUERY_SIZE 개씩 분할하여 쿼리 수행
         custCds.chunked(BATCH_QUERY_SIZE).forEach { chunk ->
-            val query = dslContext.select(SCS_CUST_MST.CUST_CD, SCS_CUST_MST.CUST_NM, SCS_CUST_MST.INVC_EMAIL_RECP_YN, SCS_CUST_MST.INVC_RECP_EMAIL_ADDR)
+            val query = dslContext.select(
+                SCS_CUST_MST.CUST_CD,
+                SCS_CUST_MST.CUST_NM,
+                SCS_CUST_MST.INVC_EMAIL_RECP_YN,
+                SCS_CUST_MST.INVC_RECP_EMAIL_ADDR,
+                SCS_CUST_MST.BZOFFI_CD,
+                SCS_CUST_MST.SAP_CUST_CD
+            )
                 .from(SCS_CUST_MST)
                 .where(SCS_CUST_MST.CUST_CD.`in`(chunk))
 
@@ -697,10 +705,12 @@ class CustCustomRepositoryImpl(
 
             val chunkResult = sql.map { row, _ ->
                 row.get("cust_cd", String::class.java)!! to
-                        Triple(
-                            row.get("cust_nm", String::class.java)!!,
-                            row.get("invc_email_recp_yn") as? Boolean ?: false,
-                            row.get("invc_recp_email_addr", String::class.java) ?: ""
+                        CustBillingInfo(
+                            custNm = row.get("cust_nm", String::class.java)!!,
+                            invcRecpEmailYn = row.get("invc_email_recp_yn") as? Boolean ?: false,
+                            invcRecpEmailAddr = row.get("invc_recp_email_addr", String::class.java) ?: "",
+                            bzoffiCd = row.get("bzoffi_cd", String::class.java),
+                            sapCustCd = row.get("sap_cust_cd", String::class.java)
                         )
             }.all().collectList().awaitSingle()
 

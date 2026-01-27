@@ -18,6 +18,8 @@ CREATE TABLE sales_scm.scs_cust_mst (
     cust_cd VARCHAR(50) NOT NULL UNIQUE,
     cust_nm VARCHAR(100) NOT NULL,
     direct_acct_cd VARCHAR(50),
+    bzoffi_cd VARCHAR(50),
+    sap_cust_cd VARCHAR(50),
     creator VARCHAR(50) NOT NULL,
     create_dtime TIMESTAMP NOT NULL,
     updater VARCHAR(50) NOT NULL,

@@ -67,7 +67,9 @@ class DemandRepositoryImpl(
         val conditions = buildConditions(searchParam)
         val query = dslContext.select(
             SBL_DEMAND.asterisk(),
-            SCS_CUST_MST.CUST_NM
+            SCS_CUST_MST.CUST_NM,
+            SCS_CUST_MST.BZOFFI_CD,
+            SCS_CUST_MST.SAP_CUST_CD
         )
             .from(SBL_DEMAND)
             .leftJoin(SCS_CUST_MST).on(SBL_DEMAND.CUST_CD.eq(SCS_CUST_MST.CUST_CD))

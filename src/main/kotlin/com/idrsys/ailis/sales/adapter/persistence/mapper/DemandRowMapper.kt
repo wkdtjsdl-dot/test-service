@@ -63,6 +63,8 @@ internal fun Row.toDemandWithCustInfo(): DemandWithCustInfo {
         creator = this.get("creator", String::class.java)!!,
         createDtime = this.get("create_dtime", LocalDateTime::class.java)!!,
         colledgerId = this.get("colledger_id", String::class.java),
-        custNm = this.get("cust_nm", String::class.java)
+        custNm = this.get("cust_nm", String::class.java),
+        bzoffiCd = this.get("bzoffi_cd", String::class.java),
+        sapCustCd = this.get("sap_cust_cd", String::class.java)
     )
 }
