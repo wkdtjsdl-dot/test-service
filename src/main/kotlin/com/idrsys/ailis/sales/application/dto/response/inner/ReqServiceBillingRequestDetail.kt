@@ -19,6 +19,7 @@ data class ReqServiceBillingRequestDetail(
     val stndPrice: BigDecimal,
     val supval: BigDecimal,
     val crcyCd: String?,
+    val exrtPrice: BigDecimal?,
     val closingSupval: BigDecimal?,
     val closingAddtax: BigDecimal?,
     val closingSpecialCharge: BigDecimal?,

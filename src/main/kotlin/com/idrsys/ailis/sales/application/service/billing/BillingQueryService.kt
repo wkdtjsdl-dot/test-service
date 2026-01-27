@@ -131,6 +131,7 @@ class BillingQueryService(
                 stndPrice = detail.stndPrice,
                 supval = detail.supval,
                 crcyCd =  detail.crcyCd,
+                exrtPrice = detail.exrtPrice,
                 closingSupval = detail.closingSupval,
                 closingAddtax = detail.closingAddtax,
                 closingSpecialCharge = detail.closingSpecialCharge,
