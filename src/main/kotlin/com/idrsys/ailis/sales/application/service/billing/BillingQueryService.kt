@@ -71,7 +71,7 @@ class BillingQueryService(
     ): Flow<DemandResponse> = flow {
         // Determine directAcctCds based on frgnAcctYn and custCd
         val directAcctCds: List<String>? = when {
-            searchParam.custCd != null -> listOf(searchParam.custCd)
+            !(searchParam.custCd.isNullOrBlank()) -> listOf(searchParam.custCd)
             searchParam.frgnAcctYn == true -> custCustomRepository.findDirectAcctCdsByFrgnAcctYn(true)  // Foreign only
             else -> null  // Domestic or All: query all from req-service
         }
