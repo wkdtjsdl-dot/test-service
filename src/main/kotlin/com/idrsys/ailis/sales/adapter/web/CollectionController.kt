@@ -8,6 +8,7 @@ import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearc
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterCollectionCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterSplitPaymentCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.SendCollectionToErpCommand
+import com.idrsys.ailis.sales.application.dto.request.collection.UpdateCollectionCommand
 import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionCommandUseCase
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionQueryUseCase
@@ -49,11 +50,25 @@ class CollectionController(
         @RequestBody request: RegisterCollectionCommand,
         @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
     ): CollectionBillResponse {
-        return if (request.cardPayId != null) {
+        return if (request.cardPayId == null) {
             collectionCommandUseCase.registerBankDeposit(request, auth.adminId)
 
         } else {
             collectionCommandUseCase.registerCardPayment(request, auth.adminId)
+        }
+    }
+    @Operation(summary = "입금 수정", description = "입금 내용 수정")
+    @PutMapping("/{colBillId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    suspend fun updatePayment(
+        @PathVariable colBillId: String,
+        @RequestBody request: UpdateCollectionCommand,
+        @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin,
+    ): CollectionBillResponse {
+        return if (request.cardPayId.isNullOrBlank() || request.cardPayId == "") {
+            collectionCommandUseCase.updateBankDeposit(colBillId,request ,auth.adminId)
+        }else {
+            collectionCommandUseCase.updateCardPayment(colBillId,request, auth.adminId)
         }
     }
 

@@ -1,10 +1,10 @@
 package com.idrsys.ailis.sales.application.service.collection
 
 import com.idrsys.ailis.sales.application.dto.request.collection.CollectionListSearchParam
-import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearchParam
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterCollectionCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterSplitPaymentCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.SendCollectionToErpCommand
+import com.idrsys.ailis.sales.application.dto.request.collection.UpdateCollectionCommand
 import com.idrsys.ailis.sales.application.dto.response.CollectionBillListResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionBillResponse
 import com.idrsys.ailis.sales.application.dto.response.DeleteCollectionBillResponse
@@ -62,7 +62,18 @@ class CollectionCommandService(
             throw UserDefinedException("DUPLICATE_REGISTRATION", "이미 등록된 카드 결제입니다: $cardPayId")
         }
 
-        // 2. Create collection bill
+
+        // 2. Create collection ledger FIRST
+        val ledger = CollectionLedger.createForCollection(
+            custCd = command.custCd,
+            colbillDt = command.colbillDt,
+            colbillItemNm = command.cardCompNm,
+            payAmt = command.payAmt,
+            creator = adminId
+        )
+        val savedLedger = collectionLedgerRepository.save(ledger)
+
+        // 3. Create collection bill with ledger ID
         val collectionBill = CollectionBill(
             colbillId = null,
             custCd = command.custCd,
@@ -73,31 +84,26 @@ class CollectionCommandService(
             cardApprNo = command.cardApprNo,
             cardNo = command.cardNo,
             cardBillNo = command.cardBillNo,
+            instlMonth = command.instlMonth,
             bankDepositId = null,
             accountYear = null,
             surecpSlstmtNo = null,
             advreceYn = command.advreceYn,
+            closingCd = command.closingCd,
+            colledgerId = savedLedger.colledgerId,
+            cardCompCd = command.cardCompCd,
+            cardCompNm = command.cardCompNm,
             sendYn = false,
             remark = command.remark,
             creator = adminId,
             createDtime = LocalDateTime.now(),
             updater = adminId,
             updateDtime = LocalDateTime.now()
-        )
-        collectionBill.setAsNew()
+        ).apply {
+            setAsNew()
+        }
 
         val savedBill = collectionBillRepository.save(collectionBill)
-
-        // 3. Create collection ledger
-        val ledger = CollectionLedger.createForCollection(
-            custCd = command.custCd,
-            colbillDt = command.colbillDt,
-            colbillItemNm = "결제(카드)",
-            payAmt = command.payAmt,
-            creator = adminId
-        )
-
-        val savedLedger = collectionLedgerRepository.save(ledger)
 
         // 4. Mark card payment as registered
         val updatedCardPayment = cardPayment.copy(regYn = true)
@@ -130,7 +136,17 @@ class CollectionCommandService(
             throw UserDefinedException("DUPLICATE_REGISTRATION", "이미 등록된 은행 입금입니다: $bankDepositId")
         }
 
-        // 2. Create collection bill
+        // 2. Create collection ledger FIRST
+        val ledger = CollectionLedger.createForCollection(
+            custCd = command.custCd,
+            colbillDt = command.colbillDt,
+            colbillItemNm = command.cardCompNm,
+            payAmt = command.payAmt,
+            creator = adminId
+        )
+        val savedLedger = collectionLedgerRepository.save(ledger)
+
+        // 3. Create collection bill with ledger ID
         val collectionBill = CollectionBill(
             colbillId = null,
             custCd = command.custCd,
@@ -141,34 +157,26 @@ class CollectionCommandService(
             cardApprNo = null,
             cardNo = null,
             cardBillNo = null,
+            instlMonth = null,
             bankDepositId = command.bankDepositId,
             accountYear = command.accountYear,
             surecpSlstmtNo = command.surecpSlstmtNo,
             advreceYn = command.advreceYn,
+            closingCd = command.closingCd,
+            colledgerId = savedLedger.colledgerId,
+            cardCompCd = command.cardCompCd,
+            cardCompNm = command.cardCompNm,
             sendYn = false,
             remark = command.remark,
             creator = adminId,
             createDtime = LocalDateTime.now(),
             updater = adminId,
             updateDtime = LocalDateTime.now()
-        )
-        collectionBill.setAsNew()
-
-
+        ).apply {
+            setAsNew()
+        }
 
         val savedBill = collectionBillRepository.save(collectionBill)
-        collectionBill.setAsExisting()
-
-        // 3. Create collection ledger
-        val ledger = CollectionLedger.createForCollection(
-            custCd = command.custCd,
-            colbillDt = command.colbillDt,
-            colbillItemNm = "결제(은행)",
-            payAmt = command.payAmt,
-            creator = adminId
-        )
-
-        val savedLedger = collectionLedgerRepository.save(ledger)
 
         // 4. Mark bank deposit as registered
         val updatedBankDeposit = bankDeposit.copy(regYn = true)
@@ -176,6 +184,135 @@ class CollectionCommandService(
 
         // 5. Return response
         return CollectionBillResponse.from(savedBill, savedLedger.colledgerId)
+    }
+
+    override suspend fun updateCardPayment(
+        colbillId: String,
+        request: UpdateCollectionCommand,
+        adminId: String
+    ): CollectionBillResponse {
+        val colBill = collectionBillRepository.findById(colbillId)
+            ?: throw UserDefinedException("COLBILL NOT FOUND", "입금 내역을 찾을 수 없습니다.")
+
+        if (request.cardPayId.isNullOrEmpty() || request.cardPayId == "") {
+            throw UserDefinedException("CARDPAYID IS NULL OR EMPTY", "카드 아이디가 null입니다.")
+        }
+
+        if (colBill.closingCd == "CLCD_Y") {
+            throw UserDefinedException("COLLECTION IS CLOSED", "마감된 상태입니다.")
+        }
+
+        // DTO의 값으로 업데이트 (DTO에 있는 필드만)
+        val updatedColBill = CollectionBill(
+            colbillId = colBill.colbillId,
+            custCd = request.custCd,
+            colbillDt = request.colbillDt,
+            payMethodCd = request.payMethodCd,
+            payAmt = request.payAmt,
+            cardPayId = request.cardPayId,
+            cardApprNo = request.cardApprNo,
+            cardNo = request.cardNo,
+            instlMonth = request.instlMonth,
+            cardBillNo = request.cardBillNo,
+            bankDepositId = null,
+            accountYear = null,
+            surecpSlstmtNo = null,
+            advreceYn = request.advreceYn,
+            closingCd = request.closingCd,
+            remark = request.remark,
+            cardCompCd = request.cardCompCd,
+            cardCompNm = request.cardCompNm,
+            // DTO에 없는 필드는 기존값 유지
+            salesSlstmtNo = colBill.salesSlstmtNo,
+            colledgerId = colBill.colledgerId,
+            sendYn = colBill.sendYn,
+            creator = colBill.creator,
+            createDtime = colBill.createDtime,
+            updater = adminId,
+            updateDtime = LocalDateTime.now()
+        ).apply {
+            setAsExisting()
+        }
+
+        val saved = collectionBillRepository.save(updatedColBill)
+
+        // CollectionLedger 업데이트 (colledgerId가 있으면)
+        colBill.colledgerId?.let { colledgerId ->
+            val ledger = collectionLedgerRepository.findById(colledgerId)
+                ?: throw UserDefinedException("LEDGER_NOT_FOUND", "원장을 찾을 수 없습니다.")
+
+            ledger.updateCollection(
+                colbillDt = request.colbillDt,
+                colbillAmt = request.payAmt,
+                colbillItemNm = request.cardCompNm,
+                updater = adminId
+            )
+
+            collectionLedgerRepository.save(ledger)
+        }
+
+        return CollectionBillResponse.from(saved)
+    }
+
+    override suspend fun updateBankDeposit(colbillId:String, request: UpdateCollectionCommand, adminId: String): CollectionBillResponse {
+        val colBill = collectionBillRepository.findById(colbillId) ?: throw UserDefinedException("COLBILL NOT FOUND","입금 내역을 찾을 수 없습니다.")
+        if(request.bankDepositId.isNullOrEmpty() || request.bankDepositId == "" ) {
+            throw UserDefinedException("BANKDEPOSITID IS NULL OR EMPTY","은행 아이디가 null입니다.")
+        }
+        if (colBill.closingCd === "CLCD_Y") {
+            throw UserDefinedException("COLLECTION IS CLOSED","마감된 상태입니다.")
+        }
+        // DTO의 값으로 업데이트 (DTO에 있는 필드만)
+        val updatedColBill = CollectionBill(
+            colbillId = colBill.colbillId,
+            custCd = request.custCd,
+            colbillDt = request.colbillDt,
+            payMethodCd = request.payMethodCd,
+            payAmt = request.payAmt,
+            cardPayId = null,
+            cardApprNo = null,
+            cardNo = null,
+            cardBillNo = null,
+            bankDepositId = request.bankDepositId,
+            accountYear = request.accountYear,
+            surecpSlstmtNo = request.surecpSlstmtNo,
+            advreceYn = request.advreceYn,
+            closingCd = request.closingCd,
+            remark = request.remark,
+            // DTO에 없는 필드는 기존값 유지
+            cardCompCd = request.cardCompCd,
+            cardCompNm = request.cardCompNm,
+            instlMonth = colBill.instlMonth,
+            salesSlstmtNo = colBill.salesSlstmtNo,
+            colledgerId = colBill.colledgerId,
+            sendYn = colBill.sendYn,
+            creator = colBill.creator,
+            createDtime = colBill.createDtime,
+            updater = adminId,
+            updateDtime = LocalDateTime.now()
+        ).apply {
+            setAsExisting()
+        }
+
+        val saved = collectionBillRepository.save(updatedColBill)
+
+        // CollectionLedger 업데이트 (colledgerId가 있으면)
+        colBill.colledgerId?.let { colledgerId ->
+            val ledger = collectionLedgerRepository.findById(colledgerId)
+                ?: throw UserDefinedException("LEDGER_NOT_FOUND", "원장을 찾을 수 없습니다.")
+
+            ledger.updateCollection(
+                colbillDt = request.colbillDt,
+                colbillAmt = request.payAmt,
+                colbillItemNm = request.cardCompNm,
+                updater = adminId
+            )
+
+            collectionLedgerRepository.save(ledger)
+        }
+
+
+        return CollectionBillResponse.from(saved)
     }
 
     /**

@@ -2,7 +2,6 @@ package com.idrsys.ailis.sales.application.required.repository.collection
 
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
 
 /**
  * Collection Ledger Repository (Port Interface)

@@ -5,7 +5,6 @@ import com.idrsys.ailis.sales.domain.model.CollectionLedger
 import kotlinx.coroutines.flow.Flow
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
-import java.time.LocalDate
 
 @Repository
 class CollectionLedgerRepositoryImpl(

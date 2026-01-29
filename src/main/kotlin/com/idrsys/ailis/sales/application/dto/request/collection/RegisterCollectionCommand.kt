@@ -17,12 +17,37 @@ data class RegisterCollectionCommand(
     val cardApprNo: String? = null,
     val cardNo: String? = null,
     val cardBillNo: String? = null,
+    val instlMonth: String?= null,
     val bankDepositId: String? = null,
     val accountYear: String? = null,
+    val closingCd: String,
+    val cardCompNm: String? = null,
+    val cardCompCd: String? = null,
     val surecpSlstmtNo: String? = null,
     val advreceYn: Boolean = false,
     val remark: String? = null
 )
+
+data class UpdateCollectionCommand(
+    val custCd: String = "",
+    val colbillDt: LocalDate = LocalDate.now(),
+    val payMethodCd: String = "",
+    val payAmt: BigDecimal = BigDecimal.ZERO,
+    val cardPayId: String? = null,
+    val cardApprNo: String? = null,
+    val cardNo: String? = null,
+    val cardBillNo: String? = null,
+    val instlMonth: String? = null,
+    val bankDepositId: String? = null,
+    val accountYear: String? = null,
+    val surecpSlstmtNo: String? = null,
+    val advreceYn: Boolean = false,
+    val closingCd: String? = "",
+    val remark: String? = null,
+    val cardCompCd: String? = null,
+    val cardCompNm: String? = null,
+
+    )
 
 /**
  * Register Split Payment Command

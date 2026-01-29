@@ -31,7 +31,7 @@ class CollectionLedger(
     colbillDivCd: String,
     colbillDt: LocalDate,
     custCd: String,
-    colbillItemNm: String,
+    colbillItemNm: String? = null,
     colbillItemDtl: String? = null,
     colbillAmt: BigDecimal,
     colbillMemo: String? = null,
@@ -43,7 +43,7 @@ class CollectionLedger(
 
     init {
         require(custCd.isNotBlank()) { "Customer code is required" }
-        require(colbillItemNm.isNotBlank()) { "Item name is required" }
+//        require(colbillItemNm.isNotBlank()) { "Item name is required" }
         require(colbillAmt >= BigDecimal.ZERO) { "Payment amount must be non-negative" }
     }
 
@@ -65,7 +65,7 @@ class CollectionLedger(
         private set
 
     @Column("colbill_item_nm")
-    var colbillItemNm: String = colbillItemNm
+    var colbillItemNm: String? = colbillItemNm
         private set
 
     @Column("colbill_item_dtl")
@@ -101,6 +101,10 @@ class CollectionLedger(
 
     fun setAsNew() {
         this._isNew = true
+    }
+
+    fun setAsExisting() {
+        this._isNew = false
     }
 
     override fun getId(): String? = colledgerId
@@ -139,7 +143,7 @@ class CollectionLedger(
         fun createForCollection(
             custCd: String,
             colbillDt: LocalDate,
-            colbillItemNm: String,
+            colbillItemNm: String?,
             payAmt: BigDecimal,
             creator: String
         ): CollectionLedger {
@@ -156,5 +160,19 @@ class CollectionLedger(
                 updateDtime = LocalDateTime.now()
             ).apply { setAsNew() }
         }
+
+    }
+
+    fun updateCollection(
+        colbillDt: LocalDate,
+        colbillAmt: BigDecimal,
+        colbillItemNm: String?,
+        updater: String
+    ) {
+        this.colbillDt = colbillDt
+        this.colbillAmt = colbillAmt
+        this.colbillItemNm = colbillItemNm
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
     }
 }

@@ -119,7 +119,7 @@ data class CollectionLedgerTransaction(
     val colledgerId: String,
     val colbillDt: LocalDate,
     val division: String,
-    val colbillItemNm: String,
+    val colbillItemNm: String? = null,
     val colbillAmt: BigDecimal,
     val balance: BigDecimal
 ) {
