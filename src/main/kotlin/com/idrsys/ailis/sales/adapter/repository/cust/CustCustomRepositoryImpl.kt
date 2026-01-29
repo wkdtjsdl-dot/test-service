@@ -720,6 +720,23 @@ class CustCustomRepositoryImpl(
         return result
     }
 
+    override suspend fun findDirectAcctCdsByFrgnAcctYn(frgnAcctYn: Boolean): List<String> {
+        val query = dslContext.select(SCS_CUST_MST.CUST_CD)
+            .from(SCS_CUST_MST)
+            .where(
+                SCS_CUST_MST.CUST_DIV_CD.eq("CSDV_DA"),
+                SCS_CUST_MST.FRGN_ACCT_YN.eq(frgnAcctYn)
+            )
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.get("cust_cd", String::class.java)!! }
+            .all()
+            .asFlow()
+            .toList()
+    }
+
     companion object {
         private const val BATCH_QUERY_SIZE = 200
     }

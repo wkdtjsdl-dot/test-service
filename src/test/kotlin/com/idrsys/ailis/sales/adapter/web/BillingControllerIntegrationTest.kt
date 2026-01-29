@@ -71,6 +71,13 @@ class BillingControllerIntegrationTest {
             .all()
             .`as`(transactionalOperator::transactional)
             .block()
+
+        // Clean up scs_cust_mst test data
+        r2dbcEntityTemplate.databaseClient
+            .sql("DELETE FROM sales_scm.scs_cust_mst WHERE cust_cd = 'CUST001'")
+            .then()
+            .`as`(transactionalOperator::transactional)
+            .block()
     }
 
     @Test
@@ -106,6 +113,17 @@ class BillingControllerIntegrationTest {
 
     @Test
     fun `should get demand list via GET endpoint`(): Unit = runBlocking {
+        // Arrange - Create test customer with frgnAcctYn=false
+        r2dbcEntityTemplate.databaseClient
+            .sql("""
+                INSERT INTO sales_scm.scs_cust_mst
+                (cust_mst_id, cust_cd, cust_nm, cust_div_cd, frgn_acct_yn, creator, create_dtime, updater, update_dtime)
+                VALUES ('CUST-MST-001', 'CUST001', 'Test Customer', 'CSDV_DA', false, 'admin', NOW(), 'admin', NOW())
+            """.trimIndent())
+            .then()
+            .`as`(transactionalOperator::transactional)
+            .block()
+
         // Arrange - Create test demand
         val demand = createTestDemand()
         demand.setAsNew()
@@ -114,30 +132,12 @@ class BillingControllerIntegrationTest {
         // Act & Assert - Flow returns JSON array directly (no pagination wrapper)
         webTestClient
             .get()
-            .uri("/api/billing/demands?clcdYn=CLCD_Y&startDt=2025-12-01&endDt=2025-12-31")
+            .uri("/api/billing/demands?clcdYn=CLCD_Y&startDt=2025-12-01&endDt=2025-12-31&frgnAcctYn=false")
             .exchange()
             .expectStatus().isOk
             .expectBody()
             .jsonPath("$").isArray
             .jsonPath("$[0].custCd").isEqualTo("CUST001")
-    }
-
-    @Test
-    fun `should get demand detail via GET endpoint`(): Unit = runBlocking {
-        // Arrange - Create test demand
-        val demand = createTestDemand()
-        demand.setAsNew()
-        val saved = r2dbcEntityTemplate.insert(demand).block()!!
-
-        // Act & Assert
-        webTestClient
-            .get()
-            .uri("/api/billing/demands/${saved.demandId}")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody()
-            .jsonPath("$.demandId").isEqualTo(saved.demandId!!)
-            .jsonPath("$.custCd").isEqualTo("CUST001")
     }
 
     @Test
@@ -177,19 +177,6 @@ class BillingControllerIntegrationTest {
             .jsonPath("$.demandId").isEqualTo(saved.demandId!!)
             .jsonPath("$.slstmtNo").exists()
             .jsonPath("$.sentToErp").isEqualTo(true)
-    }
-
-    @Test
-    fun `should return 404 when demand not found`() {
-        // Arrange
-        val nonExistentId = UUID.randomUUID().toString()
-
-        // Act & Assert
-        webTestClient
-            .get()
-            .uri("/api/billing/demands/$nonExistentId")
-            .exchange()
-            .expectStatus().isNotFound
     }
 
     @Test

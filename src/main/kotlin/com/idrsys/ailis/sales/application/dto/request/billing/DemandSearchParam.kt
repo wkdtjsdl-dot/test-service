@@ -12,7 +12,8 @@ data class DemandSearchParam(
     val startDt: LocalDate,
     val endDt: LocalDate,
     val custCd: String? = null,
-    val branchCd: String? = null
+    val branchCd: String? = null,
+    val frgnAcctYn: Boolean? = null  // null = 전체 조회 (국내+해외)
 )
 
 enum class CLCD {

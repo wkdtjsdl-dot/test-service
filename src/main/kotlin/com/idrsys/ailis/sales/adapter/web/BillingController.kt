@@ -3,7 +3,8 @@ package com.idrsys.ailis.sales.adapter.web
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
 import com.idrsys.ailis.sales.application.dto.request.billing.BillingRequestSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandCommand
-import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
+import com.idrsys.ailis.sales.application.dto.request.billing.DemandBaseSearchParam
+import com.idrsys.ailis.sales.application.dto.request.billing.toDemandSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
 import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementCommand
 import java.time.LocalDate
@@ -90,39 +91,52 @@ class BillingController(
     }
 
     /**
-     * Get demand list (청구 리스트 조회)
+     * Get demand list (청구 리스트 조회 - 전체)
      *
      * Returns unified DemandResponse type for both SETTLED and UNSETTLED cases
+     * Includes both domestic and foreign accounts (frgnAcctYn = null)
      *
-     * @param CLCD Demand type (SETTLED or UNSETTLED)
-     * @param startDt Start date
-     * @param endDt End date
-     * @param custCd Customer code (optional)
-     * @param branchCd Branch code (optional)
+     * @param searchParam DemandBaseSearchParam (without frgnAcctYn)
      * @return Flow of DemandResponse
      */
-    @Operation(summary = "청구 리스트 조회", description = "청구 마감된 리스트 또는 미청구 리스트 조회")
+    @Operation(summary = "청구 리스트 조회", description = "전체 청구 리스트 조회 (국내+해외)")
     @GetMapping("/demands")
     fun getDemandList(
-        @ParameterObject searchParam: DemandSearchParam,
+        @ParameterObject searchParam: DemandBaseSearchParam,
     ): Flow<DemandResponse> {
-        return billingQueryUseCase.getDemandList(searchParam)
+        return billingQueryUseCase.getDemandList(searchParam.toDemandSearchParam(frgnAcctYn = null))
     }
 
     /**
-     * Get demand detail (청구 상세 조회)
+     * Get domestic demand list (국내 청구 리스트 조회)
      *
-     * @param demandId Demand ID
-     * @return DemandResponse
+     * Returns DemandResponse for domestic accounts only (frgnAcctYn = false)
+     *
+     * @param searchParam DemandBaseSearchParam (without frgnAcctYn)
+     * @return Flow of DemandResponse
      */
-    @Operation(summary = "청구 상세 조회", description = "특정 청구의 상세 정보 조회")
-    @GetMapping("/demands/{demandId}")
-    suspend fun getDemandDetail(
-        @PathVariable demandId: String
-    ): ResponseEntity<DemandResponse> {
-        return billingQueryUseCase.getDemandDetail(demandId)?.let {
-            ResponseEntity.ok(it)
-        } ?: ResponseEntity.notFound().build()
+    @Operation(summary = "국내 청구 리스트 조회", description = "국내 거래처 청구 리스트 조회")
+    @GetMapping("/demands/domestic")
+    fun getDemandListDomestic(
+        @ParameterObject searchParam: DemandBaseSearchParam,
+    ): Flow<DemandResponse> {
+        return billingQueryUseCase.getDemandList(searchParam.toDemandSearchParam(frgnAcctYn = false))
+    }
+
+    /**
+     * Get foreign demand list (해외 청구 리스트 조회)
+     *
+     * Returns DemandResponse for foreign accounts only (frgnAcctYn = true)
+     *
+     * @param searchParam DemandBaseSearchParam (without frgnAcctYn)
+     * @return Flow of DemandResponse
+     */
+    @Operation(summary = "해외 청구 리스트 조회", description = "해외 거래처 청구 리스트 조회")
+    @GetMapping("/demands/foreign")
+    fun getDemandListForeign(
+        @ParameterObject searchParam: DemandBaseSearchParam,
+    ): Flow<DemandResponse> {
+        return billingQueryUseCase.getDemandList(searchParam.toDemandSearchParam(frgnAcctYn = true))
     }
 
     /**

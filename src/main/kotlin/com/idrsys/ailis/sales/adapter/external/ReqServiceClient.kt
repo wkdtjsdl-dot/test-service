@@ -34,13 +34,13 @@ class ReqServiceClient(
      *
      * @param startDt Start date
      * @param endDt End date
-     * @param custCd Customer code (optional)
+     * @param directAcctCds Direct account codes (optional, null means all)
      * @return List of unbilled demand summaries
      */
     override suspend fun getUnbilledDemandSummary(
         startDt: LocalDate,
         endDt: LocalDate,
-        custCd: String?
+        directAcctCds: List<String>?
     ): List<ReqServiceUnbilledDemandSummary> {
         return try {
             client.get()
@@ -48,7 +48,9 @@ class ReqServiceClient(
                     val builder = uriBuilder.path("/api/inner/rbs/tst-items/unbilled-demands")
                     builder.queryParam("startDt", startDt.toString())
                     builder.queryParam("endDt", endDt.toString())
-                    custCd?.let { builder.queryParam("directAcctCd", it) }  // custCd를 직접거래처코드로 맵핑
+                    directAcctCds?.takeIf { it.isNotEmpty() }?.let {
+                        builder.queryParam("directAcctCds", it.joinToString(","))
+                    }
                     builder.build()
                 }
                 .retrieve()

@@ -52,35 +52,49 @@ class BillingQueryService(
     }
 
     /**
-     * Get demand detail
-     */
-    override suspend fun getDemandDetail(demandId: String): DemandResponse? {
-        return demandRepository.findById(demandId)?.let { DemandResponse.from(it) }
-    }
-
-    /**
      * Get unbilled demand summary from req-service
      *
      * Business Rules:
-     * 1. Call req-service API to get unbilled test items (closingCd = "CLCD_N")
-     * 2. Batch query custNm from scs_cust_mst by distinct custCd list
-     * 3. Map response to DemandResponse format with custNm
-     * 4. Return empty flow if req-service call fails
+     * 1. Determine directAcctCds based on frgnAcctYn and custCd:
+     *    - custCd specified: use that single code
+     *    - frgnAcctYn=true (foreign only): query foreign direct account codes
+     *    - frgnAcctYn=false (domestic only): null (all), then filter out foreign in sales-service
+     *    - frgnAcctYn=null (all): null (no filter)
+     * 2. Call req-service API to get unbilled test items (closingCd = "CLCD_N")
+     * 3. For domestic only: filter out foreign accounts in sales-service
+     * 4. Batch query custNm from scs_cust_mst by distinct custCd list
+     * 5. Map response to DemandResponse format with custNm
+     * 6. Return empty flow if req-service call fails
      */
     private fun getUnbilledDemandSummaryFromReqService(
         searchParam: DemandSearchParam
     ): Flow<DemandResponse> = flow {
+        // Determine directAcctCds based on frgnAcctYn and custCd
+        val directAcctCds: List<String>? = when {
+            searchParam.custCd != null -> listOf(searchParam.custCd)
+            searchParam.frgnAcctYn == true -> custCustomRepository.findDirectAcctCdsByFrgnAcctYn(true)  // Foreign only
+            else -> null  // Domestic or All: query all from req-service
+        }
+
         val summaries = reqServicePort.getUnbilledDemandSummary(
             startDt = searchParam.startDt,
             endDt = searchParam.endDt,
-            custCd = searchParam.custCd
+            directAcctCds = directAcctCds
         )
 
+        // For domestic only (frgnAcctYn=false): filter out foreign accounts
+        val filteredSummaries = if (searchParam.frgnAcctYn == false) {
+            val foreignAcctCds = custCustomRepository.findDirectAcctCdsByFrgnAcctYn(true).toSet()
+            summaries.filter { it.directAcctCd !in foreignAcctCds }
+        } else {
+            summaries
+        }
+
         // Batch query custNm from scs_cust_mst
-        val custCds = summaries.map { it.directAcctCd }.distinct()
+        val custCds = filteredSummaries.map { it.directAcctCd }.distinct()
         val custNmMap = custCustomRepository.findCustNmMapByCustCds(custCds)
 
-        summaries.forEach { summary ->
+        filteredSummaries.forEach { summary ->
             val custBillingInfo = custNmMap[summary.directAcctCd]
             emit(summary.toDemandResponse(
                 searchStartDt = searchParam.startDt,
@@ -132,8 +146,11 @@ class BillingQueryService(
                 tstNm = detail.tstNm,
                 stndPrice = detail.stndPrice,
                 supval = detail.supval,
+                addTax = detail.addTax,
+                demandCharge = detail.demandCharge,
                 crcyCd =  detail.crcyCd,
                 exrtPrice = detail.exrtPrice,
+                closingCd = detail.closingCd,
                 closingSupval = detail.closingSupval,
                 closingAddtax = detail.closingAddtax,
                 closingSpecialCharge = detail.closingSpecialCharge,

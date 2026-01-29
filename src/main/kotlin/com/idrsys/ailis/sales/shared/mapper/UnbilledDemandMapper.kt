@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.application.dto.response.DemandResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceUnbilledDemandSummary
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -24,6 +25,15 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
     bzoffiCd: String? = null,
     sapCustCd: String? = null
 ): DemandResponse {
+    val dscntRate = if (stndPrice > BigDecimal.ZERO) {
+        stndPrice.subtract(demandCharge)
+            .divide(stndPrice, 4, RoundingMode.HALF_UP)
+            .multiply(BigDecimal(100))
+            .setScale(2, RoundingMode.HALF_UP)
+    } else {
+        null
+    }
+
     return DemandResponse(
         demandId = null,                        // No ID before closing
         custCd = this.directAcctCd,
@@ -36,7 +46,7 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
         supval = this.supval,
         addtax = this.addtax,
         demandCharge = this.demandCharge,
-        dscntRate = BigDecimal.ZERO,            // Calculated after closing
+        dscntRate = dscntRate,            // Calculated after closing
         slstmtNo = null,                        // No statement number before closing
         slstmtSendDt = null,                    // No send date before closing
         billPublYn = invcRecpEmailYn,
