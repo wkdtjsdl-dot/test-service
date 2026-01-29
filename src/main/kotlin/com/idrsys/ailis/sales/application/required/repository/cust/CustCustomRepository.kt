@@ -35,4 +35,11 @@ interface CustCustomRepository {
      * @return map of custCd to CustBillingInfo
      */
     suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, CustBillingInfo>
+
+    /**
+     * Find direct account codes by foreign account flag
+     * @param frgnAcctYn true for foreign accounts, false for domestic accounts
+     * @return list of direct account codes (cust_cd where cust_div_cd = 'CSDV_DA')
+     */
+    suspend fun findDirectAcctCdsByFrgnAcctYn(frgnAcctYn: Boolean): List<String>
 }

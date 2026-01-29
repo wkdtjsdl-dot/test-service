@@ -94,7 +94,7 @@ class TestConfig {
             override suspend fun getUnbilledDemandSummary(
                 startDt: LocalDate,
                 endDt: LocalDate,
-                custCd: String?
+                directAcctCds: List<String>?
             ): List<ReqServiceUnbilledDemandSummary> = emptyList()
 
             override fun getBillingRequests(

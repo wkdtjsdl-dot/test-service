@@ -20,11 +20,6 @@ interface BillingQueryUseCase {
     fun getDemandList(searchParam: DemandSearchParam): Flow<DemandResponse>
 
     /**
-     * Get demand detail
-     */
-    suspend fun getDemandDetail(demandId: String): DemandResponse?
-
-    /**
      * Get billing request details (의뢰내역 조회)
      *
      * Returns individual test item records (non-aggregated)

@@ -18,13 +18,13 @@ interface ReqServicePort {
      *
      * @param startDt Start date
      * @param endDt End date
-     * @param custCd Customer code (optional)
+     * @param directAcctCds Direct account codes (optional, null means all)
      * @return List of unbilled demand summaries
      */
     suspend fun getUnbilledDemandSummary(
         startDt: LocalDate,
         endDt: LocalDate,
-        custCd: String? = null
+        directAcctCds: List<String>? = null
     ): List<ReqServiceUnbilledDemandSummary>
 
     /**

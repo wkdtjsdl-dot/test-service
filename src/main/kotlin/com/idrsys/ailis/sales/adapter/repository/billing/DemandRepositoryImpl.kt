@@ -104,6 +104,11 @@ class DemandRepositoryImpl(
             conds += SBL_DEMAND.CUST_CD.eq(it)
         }
 
+        // Foreign account filter (via SCS_CUST_MST join) - null means all (no filter)
+        searchParam.frgnAcctYn?.let {
+            conds += SCS_CUST_MST.FRGN_ACCT_YN.eq(it)
+        }
+
         // Note: SETTLED demands are all records in SBL_DEMAND table
         // (SLSTMT_NO is only set after SAP transmission, not at billing close time)
 

@@ -21,7 +21,7 @@ data class DemandResponse(
     val supval: BigDecimal,
     val addtax: BigDecimal,
     val demandCharge: BigDecimal,
-    val dscntRate: BigDecimal,
+    val dscntRate: BigDecimal?,
     val slstmtNo: String? = null,
     val slstmtSendDt: LocalDate? = null,
     val billPublYn: Boolean,
