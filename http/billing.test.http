@@ -24,7 +24,15 @@ Content-Type: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 청구 리스트 조회 (미청구)
-GET {{api-service}}/api/sals/billing/demands?clcdYn=CLCD_N&startDt=2025-07-01&endDt=2025-12-31&page=0&size=15
+GET {{api-service}}/api/sals/billing/demands?clcdYn=CLCD_N&startDt=2025-07-01&endDt=2025-12-31
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 청구 리스트 조회 (미청구 -국내)
+GET {{api-service}}/api/sals/billing/demands/domestic?clcdYn=CLCD_N&startDt=2025-07-01&endDt=2025-12-31
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 청구 리스트 조회 (미청구 -해외)
+GET {{api-service}}/api/sals/billing/demands/foreign?clcdYn=CLCD_N&startDt=2025-11-01&endDt=2025-11-30
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 청구 리스트 조회 (거래처 필터링)
