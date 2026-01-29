@@ -49,6 +49,9 @@ data class UpdateCollectionCommand(
 
     )
 
+data class UpdateClosingRequest(
+    val closingCd: String
+)
 /**
  * Register Split Payment Command
  *

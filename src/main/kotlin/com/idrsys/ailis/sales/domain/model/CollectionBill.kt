@@ -183,4 +183,12 @@ class CollectionBill(
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }
+    fun updateClosingStatus(closingCd: String, updater: String) {
+        require(closingCd == "CLCD_Y" || closingCd == "CLCD_N") {
+            "Closing code must be CLCD_Y or CLCD_N"
+        }
+        this.closingCd = closingCd
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
 }

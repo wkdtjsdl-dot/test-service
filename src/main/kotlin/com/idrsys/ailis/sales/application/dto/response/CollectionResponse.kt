@@ -35,6 +35,9 @@ data class CollectionBillListResponse(
     val custNm: String? = null,
     val accountNo: String? = null,
     val remark: String? = null,
+   val tradeNo: String? = null,
+    val payDivCd: String? = null,
+
 )
 /**
  * Collection Bill Response DTO

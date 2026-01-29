@@ -8,6 +8,7 @@ import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearc
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterCollectionCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterSplitPaymentCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.SendCollectionToErpCommand
+import com.idrsys.ailis.sales.application.dto.request.collection.UpdateClosingRequest
 import com.idrsys.ailis.sales.application.dto.request.collection.UpdateCollectionCommand
 import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionCommandUseCase
@@ -220,6 +221,16 @@ class CollectionController(
             bzoffiCd = bzoffiCd
         )
         return collectionCommandUseCase.findCollectionBills(searchParam)
+    }
+
+    @Operation(summary = "입금내역 마감처리", description = "입금내역 마감/마감해제 ")
+    @PutMapping("/closing/{colbillId}")
+    suspend fun setColbillClosing(
+        @PathVariable colbillId: String,
+        @RequestBody request: UpdateClosingRequest,
+        @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
+    ): CollectionBillResponse {
+        return collectionCommandUseCase.setColbillClosing(colbillId, request,auth.adminId)
     }
 
 }

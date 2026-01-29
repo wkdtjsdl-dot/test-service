@@ -5,6 +5,7 @@ import com.idrsys.ailis.sales.application.dto.request.collection.CollectionSearc
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterCollectionCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterSplitPaymentCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.SendCollectionToErpCommand
+import com.idrsys.ailis.sales.application.dto.request.collection.UpdateClosingRequest
 import com.idrsys.ailis.sales.application.dto.request.collection.UpdateCollectionCommand
 import com.idrsys.ailis.sales.application.dto.response.CollectionBillListResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionBillResponse
@@ -35,6 +36,8 @@ interface CollectionCommandUseCase {
     suspend fun registerBankDeposit(command: RegisterCollectionCommand, adminId: String): CollectionBillResponse
 
     suspend fun updateBankDeposit(colbillId: String,request: UpdateCollectionCommand, adminId: String): CollectionBillResponse
+
+    suspend fun setColbillClosing(collBillId: String, closingCd: UpdateClosingRequest, adminId: String):CollectionBillResponse
 
     /**
      * Register split payment (card or bank) to multiple customers

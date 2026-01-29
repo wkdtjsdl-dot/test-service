@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.application.dto.request.collection.CollectionListS
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterCollectionCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterSplitPaymentCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.SendCollectionToErpCommand
+import com.idrsys.ailis.sales.application.dto.request.collection.UpdateClosingRequest
 import com.idrsys.ailis.sales.application.dto.request.collection.UpdateCollectionCommand
 import com.idrsys.ailis.sales.application.dto.response.CollectionBillListResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionBillResponse
@@ -314,6 +315,24 @@ class CollectionCommandService(
 
         return CollectionBillResponse.from(saved)
     }
+
+    // CollectionService.kt
+    override suspend fun setColbillClosing(
+        colbillId: String,
+        request: UpdateClosingRequest,
+        adminId: String
+    ): CollectionBillResponse {
+        val colBill = collectionBillRepository.findById(colbillId)
+            ?: throw UserDefinedException("COLBILL NOT FOUND", "입금 내역을 찾을 수 없습니다.")
+
+        colBill.updateClosingStatus(request.closingCd, adminId)
+        colBill.setAsExisting()
+
+        val saved = collectionBillRepository.save(colBill)
+        return CollectionBillResponse.from(saved)
+    }
+
+
 
     /**
      * Register split payment (card or bank) to multiple customers

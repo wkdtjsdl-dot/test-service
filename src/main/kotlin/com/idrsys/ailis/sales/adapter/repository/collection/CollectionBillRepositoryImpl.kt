@@ -38,6 +38,7 @@ class CollectionBillRepositoryImpl(
         val cb = SalesScm.SALES_SCM.SBL_COLBILL
         val cm = SalesScm.SALES_SCM.SCS_CUST_MST
         val bd = SalesScm.SALES_SCM.SBL_BANK_DEPOSIT
+        val cp = SalesScm.SALES_SCM.SBL_CARD_PAY
 
         val query = dslContext
             .select(
@@ -65,13 +66,14 @@ class CollectionBillRepositoryImpl(
                 cm.SAP_CUST_CD,
                 cm.BZOFFI_CD,
                 cm.CUST_NM,
-                bd.ACCOUNT_NO,
+                cp.PAY_DIV_CD,
+                cp.TRADE_NO
             )
             .from(cb)
             .join(cm)
             .on(cb.CUST_CD.eq(cm.CUST_CD))
-            .leftJoin(bd)
-            .on(cb.BANK_DEPOSIT_ID.eq(bd.BANK_DEPOSIT_ID))
+            .leftJoin(cp)
+            .on(cb.CARD_PAY_ID.eq(cp.CARD_PAY_ID))
             .where(
                 cb.COLBILL_DT.between(searchParam.startDt, searchParam.endDt)
                     .and(searchParam.custCd?.let { cm.CUST_CD.eq(it) } ?: DSL.noCondition())
@@ -122,6 +124,8 @@ class CollectionBillRepositoryImpl(
             custNm = row["cust_nm"] as? String,
             accountNo = row["account_no"] as? String,
             remark = row["remark"] as? String,
+            tradeNo = row["trade_no"] as? String,
+            payDivCd = row["pay_div_cd"] as? String,
         )
     }
 
