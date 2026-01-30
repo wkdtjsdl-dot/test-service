@@ -29,6 +29,7 @@ data class ChargeApproveResponse(
     val apprLvlCd: String?,
     val apprLvlNm: String?,
     val approvalLines: List<ApprovalLineInfo>? = null,
+    val canApproveThisItem: Boolean = false,
 )
 
 /**
@@ -43,4 +44,14 @@ data class ApprovalLineInfo(
     val apprStatNm: String?,
     val apprCmplDtime: LocalDateTime?,
     val apprMemo: String?,
+    val jbpoNm: String?,
+)
+
+/**
+ * 삭제 권한 검증 결과
+ */
+data class DeletePermissionResult(
+    val canDelete: Boolean,
+    val errorCode: String,
+    val errorMessage: String
 )

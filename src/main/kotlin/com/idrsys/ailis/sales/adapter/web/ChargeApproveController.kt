@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*
  * 고객수가 승인 Controller
  */
 @RestController
-@RequestMapping("/api/charges/approval")
+@RequestMapping("/api/custs/charges/approval")
 @Tag(name = "ChargeApproveController", description = "고객수가 승인 Controller")
 class ChargeApproveController(
     private val chargeApproveUseCase: ChargeApproveUseCase
@@ -56,6 +56,16 @@ class ChargeApproveController(
         @JwtAuthorization auth: AuthenticationAdmin
     ) {
         chargeApproveUseCase.deleteCharge(custChargeId, auth.adminId)
+    }
+
+    @DeleteMapping("/reject/{custChargeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "rejectCharge", description = "고객수가 반려 (결재중인 건만)")
+    suspend fun rejectCharge(
+        @PathVariable custChargeId: String,
+        @JwtAuthorization auth: AuthenticationAdmin
+    ) {
+        chargeApproveUseCase.rejectCharge(custChargeId, auth.adminId)
     }
 
     @GetMapping

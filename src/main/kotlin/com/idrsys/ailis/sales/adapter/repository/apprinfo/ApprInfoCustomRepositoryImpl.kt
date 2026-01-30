@@ -18,6 +18,9 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.jooq.Query
+import org.jooq.Record
+import org.jooq.SelectLimitStep
 import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -32,14 +35,16 @@ class ApprInfoCustomRepositoryImpl(
 ) : ApprInfoCustomRepository {
 
     override fun findByApprInfoNo(apprInfoNo: Long): Flow<ApprInfo> {
-        val sql = dslContext
+        val query = dslContext
             .select(SCS_APPR_INFO.asterisk())
             .from(SCS_APPR_INFO)
             .where(SCS_APPR_INFO.APPR_INFO_NO.eq(apprInfoNo))
             .orderBy(SCS_APPR_INFO.APPR_SEQ)
-            .sql
 
-        return dbClient.sql(sql)
+        var sql = dbClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
             .map { row, _ -> ApprInfoRowMapper.mapRow(row) }
             .all()
             .asFlow()
@@ -64,7 +69,7 @@ class ApprInfoCustomRepositoryImpl(
     }
 
     override suspend fun findPendingApprovalByChargeId(custChargeId: String): ApprInfo? {
-        val sql = dslContext
+        val query = dslContext
             .select(SCS_APPR_INFO.asterisk())
             .from(SCS_APPR_INFO)
             .join(SCS_CUST_CHARGE)
@@ -74,9 +79,11 @@ class ApprInfoCustomRepositoryImpl(
                     .and(SCS_APPR_INFO.APPR_SEQ.eq(SCS_CUST_CHARGE.CURR_APPR_SEQ))
                     .and(SCS_APPR_INFO.APPR_STAT_CD.eq("APST_W"))  // 대기중
             )
-            .sql
 
-        return dbClient.sql(sql)
+        var sql = dbClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
             .map { row, _ -> ApprInfoRowMapper.mapRow(row) }
             .one()
             .awaitSingleOrNull()
@@ -89,7 +96,7 @@ class ApprInfoCustomRepositoryImpl(
         empNo: String?,
         pageable: Pageable
     ): Flow<ChargeApproveQuery> {
-        val conditions = buildApprovalConditions(searchParam, userId, userRole, empNo)
+        val conditions = buildApprovalConditions(searchParam, userId, userRole)
 
         val query = dslContext.select(
             SCS_CUST_CHARGE.CUST_CHARGE_ID,
@@ -114,7 +121,17 @@ class ApprInfoCustomRepositoryImpl(
             .leftJoin(SCS_CUST_MST)
             .on(SCS_CUST_CHARGE.CUST_CD.eq(SCS_CUST_MST.CUST_CD))
             .where(conditions)
-            .orderBy(SCS_CUST_CHARGE.APPR_SUBMS_DTIME.desc())
+            .orderBy(
+                // 임시저장(LAST_T) → 결재중(LAST_I) → 결재완료(LAST_C) 순서
+                DSL.case_(SCS_CUST_CHARGE.LAST_APPR_STAT_CD)
+                    .`when`("LAST_T", 1)
+                    .`when`("LAST_I", 2)
+                    .`when`("LAST_C", 3)
+                    .else_(4)
+                    .asc(),
+                SCS_CUST_CHARGE.CUST_CD.asc(),
+                SCS_CUST_CHARGE.TST_CD.asc()
+            )
             .let { applyPaging(it, pageable) }
 
         var sql = dbClient.sql(query.sql)
@@ -129,7 +146,7 @@ class ApprInfoCustomRepositoryImpl(
         userRole: String,
         empNo: String?
     ): Long {
-        val conditions = buildApprovalConditions(searchParam, userId, userRole, empNo)
+        val conditions = buildApprovalConditions(searchParam, userId, userRole)
 
         val query = dslContext.selectCount()
             .from(SCS_CUST_CHARGE)
@@ -189,19 +206,21 @@ class ApprInfoCustomRepositoryImpl(
     }
 
     override suspend fun getNextApprInfoNo(): Long {
-        val sql = "SELECT nextval('sales_scm.scs_appr_info_appr_info_no_seq')"
-        return dbClient.sql(sql)
+        val query = dslContext
+            .select(DSL.field("nextval('sales_scm.scs_appr_info_appr_info_no_seq')", Long::class.java))
+
+        return dbClient.sql(query.sql)
             .map { row -> row.get(0, java.lang.Long::class.java)!!.toLong() }
             .one()
             .awaitSingle()
     }
 
-    override suspend fun hasUserApproved(apprInfoNo: Long, empNo: String): Boolean {
+    override suspend fun hasUserApproved(apprInfoNo: Long, userId: String): Boolean {
         val query = dslContext.selectCount()
             .from(SCS_APPR_INFO)
             .where(
                 SCS_APPR_INFO.APPR_INFO_NO.eq(apprInfoNo)
-                    .and(SCS_APPR_INFO.APPR_PERSON_EMP_NO.eq(empNo))
+                    .and(SCS_APPR_INFO.APPR_PERSON_EMP_NO.eq(userId))  // appr_person_emp_no stores user_id
                     .and(SCS_APPR_INFO.APPR_STAT_CD.eq("APST_C"))
             )
 
@@ -215,11 +234,19 @@ class ApprInfoCustomRepositoryImpl(
         return count > 0
     }
 
+    override suspend fun deleteAllByApprInfoNo(apprInfoNo: Long): Int {
+        val query = dslContext.deleteFrom(SCS_APPR_INFO)
+            .where(SCS_APPR_INFO.APPR_INFO_NO.eq(apprInfoNo))
+
+        var sql = dbClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+        return sql.fetch().rowsUpdated().awaitSingle().toInt()
+    }
+
     private fun buildApprovalConditions(
         searchParam: ChargeApproveSearchParam,
         userId: String,
-        userRole: String,
-        empNo: String?
+        userRole: String
     ): List<Condition> {
         val conditions = mutableListOf<Condition>()
 
@@ -237,21 +264,19 @@ class ApprInfoCustomRepositoryImpl(
                 )
             }
             "JP_TL", "JP_DH", "JP_P" -> {
-                // Approvers: filter by approval authority
-                if (empNo != null) {
-                    conditions += DSL.exists(
-                        dslContext.selectOne()
-                            .from(SCS_APPR_INFO)
-                            .where(
-                                SCS_APPR_INFO.APPR_INFO_NO.eq(
-                                    SCS_CUST_CHARGE.APPR_INFO_NO.cast(Long::class.java)
-                                )
-                                    .and(SCS_APPR_INFO.APPR_SEQ.eq(SCS_CUST_CHARGE.CURR_APPR_SEQ))
-                                    .and(SCS_APPR_INFO.APPR_PERSON_EMP_NO.eq(empNo))
-                                    .and(SCS_APPR_INFO.APPR_STAT_CD.eq("APST_W"))  // Waiting only
+                // Approvers: filter by approval authority (appr_person_emp_no stores user_id)
+                conditions += DSL.exists(
+                    dslContext.selectOne()
+                        .from(SCS_APPR_INFO)
+                        .where(
+                            SCS_APPR_INFO.APPR_INFO_NO.eq(
+                                SCS_CUST_CHARGE.APPR_INFO_NO.cast(Long::class.java)
                             )
-                    )
-                }
+                                .and(SCS_APPR_INFO.APPR_SEQ.eq(SCS_CUST_CHARGE.CURR_APPR_SEQ))
+                                .and(SCS_APPR_INFO.APPR_PERSON_EMP_NO.eq(userId))
+                                .and(SCS_APPR_INFO.APPR_STAT_CD.eq("APST_W"))  // Waiting only
+                        )
+                )
             }
         }
 
@@ -278,7 +303,7 @@ class ApprInfoCustomRepositoryImpl(
         return conditions
     }
 
-    private fun applyPaging(q: org.jooq.SelectLimitStep<out org.jooq.Record>, pageable: Pageable): org.jooq.Query {
+    private fun applyPaging(q: SelectLimitStep<out Record>, pageable: Pageable): Query {
         if (pageable.isUnpaged) return q
         else return q.limit(pageable.pageSize).offset(pageable.offset)
     }

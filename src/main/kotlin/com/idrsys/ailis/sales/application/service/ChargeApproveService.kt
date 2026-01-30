@@ -7,6 +7,7 @@ import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApprov
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveRequestCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveSearchParam
 import com.idrsys.ailis.sales.application.dto.response.ChargeApproveResponse
+import com.idrsys.ailis.sales.application.dto.response.DeletePermissionResult
 import com.idrsys.ailis.sales.application.dto.response.inner.BaseUserResponse
 import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.external.TstServicePort
@@ -59,7 +60,6 @@ class ChargeApproveService(
 
         // Job Positions (jbpoCd) - from claude.md confirmed
         private val TEAM_MEMBER_POSITIONS = listOf("JP_TM", "JP_PM") // 팀원, 파트장
-        private val TEAM_LEADER_OR_HIGHER_POSITIONS = listOf("JP_TL", "JP_AM", "JP_UM", "JP_BM", "JP_SM", "JP_HD", "JP_LC", "JP_DH", "JP_P") // 팀장 이상
     }
 
     /**
@@ -80,7 +80,7 @@ class ChargeApproveService(
         // 2. 임시저장 상태가 아니면 에러
         if (charge.lastApprStatCd != LAST_T) {
             throw UserDefinedException(
-                "ALREADY_REQUESTED", // TODO: Add to ErrorCode
+                "ALREADY_REQUESTED",
                 "임시저장 상태인 수가만 승인 요청할 수 있습니다."
             )
         }
@@ -102,7 +102,7 @@ class ChargeApproveService(
         val approvalLines = baseServicePort.getApprovalLines(userId, APPR_DOC_TYPE_CD, apprDocDtlNo)
         if (approvalLines.isEmpty()) {
             throw UserDefinedException(
-                "APPR_LINE_NOT_FOUND", // TODO: Add to ErrorCode
+                "APPR_LINE_NOT_FOUND",
                 "결재선을 찾을 수 없습니다."
             )
         }
@@ -177,7 +177,8 @@ class ChargeApproveService(
             ChargeApproveErrorCode.NO_AUTHORITY_CODE,
             "사용자 정보를 찾을 수 없습니다."
         )
-        if (currentApprInfo.apprPersonEmpNo != user.empNo) {
+        // appr_person_emp_no에는 user_id가 저장됨
+        if (currentApprInfo.apprPersonEmpNo != userId) {
             throw UserDefinedException(
                 ChargeApproveErrorCode.NO_AUTHORITY_CODE,
                 ChargeApproveErrorCode.NO_AUTHORITY_MESSAGE
@@ -217,6 +218,84 @@ class ChargeApproveService(
 
         // 5. 상세조회 결과를 반환하여 최신 상태 응답
         return getApprovalDetail(charge.custChargeId, userId)
+    }
+
+    /**
+     * 고객 수가 반려 (결재중인 건만)
+     * - 반려 시 scs_cust_charge와 scs_appr_info 전체 삭제
+     */
+    @Transactional
+    override suspend fun rejectCharge(custChargeId: String, userId: String) {
+        // 1. 고객수가 조회
+        val charge = chargeRepository.findById(custChargeId)
+            ?: throw UserDefinedException(
+                ChargeApproveErrorCode.CHARGE_NOT_FOUND_CODE,
+                ChargeApproveErrorCode.CHARGE_NOT_FOUND_MESSAGE
+            )
+
+        // 2. 결재중(LAST_I) 상태만 반려 가능
+        if (charge.lastApprStatCd != LAST_I) {
+            throw UserDefinedException(
+                ChargeApproveErrorCode.NOT_IN_PROGRESS_CODE,
+                ChargeApproveErrorCode.NOT_IN_PROGRESS_MESSAGE
+            )
+        }
+
+        // 3. 사용자 정보 조회
+        val user = baseServicePort.getUser(userId)
+            ?: throw UserDefinedException(
+                ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+                ChargeApproveErrorCode.NO_AUTHORITY_MESSAGE
+            )
+
+        // 4. 결재 권한 확인 (현재 결재자인지)
+        val currentApprInfo = apprInfoCustomRepository.findPendingApprovalByChargeId(custChargeId)
+            ?: throw UserDefinedException(
+                ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_CODE,
+                ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_MESSAGE
+            )
+
+        if (currentApprInfo.apprPersonEmpNo != userId) {
+            throw UserDefinedException(
+                ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+                ChargeApproveErrorCode.NO_AUTHORITY_MESSAGE
+            )
+        }
+
+        // 5. 본인이 이미 승인한 건은 반려 불가
+        val hasAlreadyApproved = apprInfoCustomRepository.hasUserApproved(
+            apprInfoNo = charge.apprInfoNo!!,
+            userId = userId
+        )
+        if (hasAlreadyApproved) {
+            throw UserDefinedException(
+                ChargeApproveErrorCode.ALREADY_APPROVED_CODE,
+                ChargeApproveErrorCode.ALREADY_APPROVED_MESSAGE
+            )
+        }
+
+        // 6. appr_info_no 확인
+        val apprInfoNo = charge.apprInfoNo
+            ?: throw UserDefinedException(
+                ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_CODE,
+                ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_MESSAGE
+            )
+
+        // 7. scs_cust_charge 먼저 삭제 (메인 테이블, CAS)
+        val rowsDeleted = chargeCustomRepository.deleteWithCAS(
+            custChargeId = custChargeId,
+            currentSeq = charge.currApprSeq!!
+        )
+        if (rowsDeleted == 0) {
+            throw UserDefinedException(
+                ChargeApproveErrorCode.REJECT_CAS_CONFLICT_CODE,
+                ChargeApproveErrorCode.REJECT_CAS_CONFLICT_MESSAGE
+            )
+        }
+
+        // 8. scs_appr_info 전체 라인 삭제 (jOOQ)
+        // charge 삭제 성공 후 실행 - 실패해도 가비지 데이터만 남음
+        apprInfoCustomRepository.deleteAllByApprInfoNo(apprInfoNo)
     }
 
     /**
@@ -311,8 +390,8 @@ class ChargeApproveService(
             pageable
         ).toList()
 
-        // 4. Populate name fields
-        val responses = populateNameFields(charges)
+        // 4. Populate name fields and calculate canApproveThisItem
+        val responses = populateNameFields(queries = charges, currentUser = user)
 
         return PageImpl(responses, pageable, total)
     }
@@ -340,7 +419,10 @@ class ChargeApproveService(
         ).toList()
 
         // 3. Populate name fields
-        return populateNameFields(charges)
+        return populateNameFields(
+            queries = charges,
+            currentUser = user
+        )
     }
 
     /**
@@ -358,29 +440,37 @@ class ChargeApproveService(
             )
 
         // 2. Map to base response
+        val currentUser = baseServicePort.getUser(userId) ?: throw UserDefinedException(
+            ChargeApproveErrorCode.NO_AUTHORITY_CODE,
+            "사용자 정보를 찾을 수 없습니다."
+        )
         val response = chargeApproveMapper.toResponse(chargeQuery)
+        val canApproveThisItem = calculateCanApproveThisItem(chargeQuery, currentUser)
 
         // 3. Fetch lookup data
         val tstItems = tstServicePort.findAllTstItems() ?: emptyList()
         val tstItemMap = tstItems.associateBy { it.tstCd }
 
-        val systemCodes = baseServicePort.getChildrenSystemCodes(listOf("APST", "AL")) ?: emptyMap()
+        val systemCodes = baseServicePort.getChildrenSystemCodes(listOf("APST", "AL", "JP")) ?: emptyMap()
         val apprStatMap = systemCodes["APST"]?.associateBy { it.cd } ?: emptyMap()
         val apprLvlMap = systemCodes["AL"]?.associateBy { it.cd } ?: emptyMap()
+        val jbpoMap = systemCodes["JP"]?.associateBy { it.cd } ?: emptyMap()
 
         // 4. Get users for approval line
         val empNos = approvalLines.mapNotNull { it.apprPersonEmpNo }.distinct()
         val users = if (empNos.isNotEmpty()) {
-            baseServicePort.getUsers() ?: emptyList()
+            baseServicePort.getUsersByIds(empNos) ?: emptyList()
         } else {
             emptyList()
         }
-        val userByEmpNo = users.associateBy { it.empNo }
+        val userByUserId = users.associateBy { it.userId }
 
         // 5. Map approval lines
         val approvalLineInfos = approvalLines.map { apprInfo ->
+            val userDetail = userByUserId[apprInfo.apprPersonEmpNo]
             chargeApproveMapper.toApprovalLineInfo(apprInfo).copy(
-                apprPersonNm = userByEmpNo[apprInfo.apprPersonEmpNo]?.userNm,
+                apprPersonNm = userDetail?.userNm,
+                jbpoNm = userDetail?.jbpoCd?.let { jbpoMap[it]?.cdNm }, // Populate jbpoNm using system codes
                 apprStatNm = apprStatMap[apprInfo.apprStatCd]?.cdNm
             )
         }
@@ -401,7 +491,8 @@ class ChargeApproveService(
             lastApprStatNm = apprStatMap[chargeQuery.lastApprStatCd]?.cdNm,
             apprLvlNm = chargeQuery.apprLvlCd?.let { apprLvlMap[it]?.cdNm },
             lowestCharge = lowestCharge,
-            approvalLines = approvalLineInfos
+            approvalLines = approvalLineInfos,
+            canApproveThisItem = canApproveThisItem // Add to response
         )
     }
 
@@ -441,7 +532,7 @@ class ChargeApproveService(
                     // 팀장 이상은 삭제 가능하나, 본인이 승인한 건 삭제 불가
                     val hasAlreadyApproved = apprInfoCustomRepository.hasUserApproved(
                         apprInfoNo = charge.apprInfoNo!!,
-                        empNo = user.empNo!!
+                        userId = requestingUserId  // appr_person_emp_no에는 user_id가 저장됨
                     )
                     if (hasAlreadyApproved) {
                         DeletePermissionResult(
@@ -476,7 +567,8 @@ class ChargeApproveService(
      * Name 필드 일괄 채우기 (성능 최적화)
      */
     private suspend fun populateNameFields(
-        queries: List<ChargeApproveQuery>
+        queries: List<ChargeApproveQuery>,
+        currentUser: BaseUserResponse // Add currentUser parameter
     ): List<ChargeApproveResponse> {
         if (queries.isEmpty()) return emptyList()
 
@@ -491,17 +583,41 @@ class ChargeApproveService(
         // 2. Map and populate
         return queries.map { query ->
             val response = chargeApproveMapper.toResponse(query)
+            val canApproveThisItem = calculateCanApproveThisItem(query, currentUser) // Calculate here
             response.copy(
                 tstNm = tstItemMap[query.tstCd]?.tstNm,
                 lastApprStatNm = apprStatMap[query.lastApprStatCd]?.cdNm,
-                apprLvlNm = query.apprLvlCd?.let { apprLvlMap[it]?.cdNm }
+                apprLvlNm = query.apprLvlCd?.let { apprLvlMap[it]?.cdNm },
+                canApproveThisItem = canApproveThisItem // Add to response
             )
         }
     }
-}
 
-data class DeletePermissionResult(
-    val canDelete: Boolean,
-    val errorCode: String,
-    val errorMessage: String
-)
+    /**
+     * 특정 고객수가 항목에 대해 현재 사용자가 승인 권한이 있는지 계산하는 헬퍼 함수
+     */
+    private suspend fun calculateCanApproveThisItem(
+        charge: ChargeApproveQuery,
+        currentUser: BaseUserResponse
+    ): Boolean {
+        // 1. 결재중 상태여야만 승인 가능
+        if (charge.lastApprStatCd != LAST_I) return false
+
+        // 2. 현재 결재 순번(currApprSeq)에 대한 결재자(apprPersonEmpNo)가 현재 사용자인지 확인
+        val currentApprSeq = charge.currApprSeq ?: return false
+        val apprInfoNo = charge.apprInfoNo ?: return false
+
+        val currentApprover = apprInfoCustomRepository.findByApprInfoNoAndSeq(apprInfoNo, currentApprSeq)
+            ?: return false
+
+        // 3. 결재 대상자가 현재 로그인한 사용자와 일치해야 함 (appr_person_emp_no에는 user_id가 저장됨)
+        if (currentApprover.apprPersonEmpNo != currentUser.userId) return false
+
+        // 4. 현재 사용자의 직책 코드가 TEAM_MEMBER_POSITIONS에 속하지 않아야 함 (팀장 이상)
+        // 이 조건은 이미 백엔드의 canApprove 로직에 포함되어 있으나, 이 함수는 UI 표시용이므로 명시적으로 포함하지 않음
+        // 백엔드의 approve 함수에서 이미 권한 체크를 하므로 여기서는 최소한의 조건만 확인
+        // (즉, 결재자이며, 결재중인 건이며, 본인 차례인 경우)
+        // -> UI에서는 "승인" 버튼을 활성화할 최소 조건만 제공
+        return true
+    }
+}

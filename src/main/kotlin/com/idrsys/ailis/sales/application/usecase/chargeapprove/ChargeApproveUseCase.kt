@@ -27,6 +27,12 @@ interface ChargeApproveUseCase {
     suspend fun deleteCharge(custChargeId: String, userId: String)
 
     /**
+     * 고객 수가 반려 (결재중인 건만)
+     * - 반려 시 scs_cust_charge와 scs_appr_info 전체 삭제
+     */
+    suspend fun rejectCharge(custChargeId: String, userId: String)
+
+    /**
      * 승인 목록 조회 (페이징)
      */
     suspend fun getApprovalPage(

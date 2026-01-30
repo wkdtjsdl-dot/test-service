@@ -66,6 +66,14 @@ interface ApprInfoCustomRepository {
 
     /**
      * 해당 사용자가 이미 결재선에 승인했는지 여부 확인
+     * @param userId 사용자 ID (appr_person_emp_no에는 user_id가 저장됨)
      */
-    suspend fun hasUserApproved(apprInfoNo: Long, empNo: String): Boolean
+    suspend fun hasUserApproved(apprInfoNo: Long, userId: String): Boolean
+
+    /**
+     * 결재정보번호로 전체 결재선 삭제 (jOOQ)
+     * @param apprInfoNo 결재정보번호
+     * @return 삭제된 행 수
+     */
+    suspend fun deleteAllByApprInfoNo(apprInfoNo: Long): Int
 }
