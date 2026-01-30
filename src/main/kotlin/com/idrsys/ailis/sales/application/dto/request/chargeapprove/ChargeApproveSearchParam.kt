@@ -12,4 +12,5 @@ data class ChargeApproveSearchParam(
     val applyEndDt: LocalDate? = null,    // 적용종료일자 (to)
     val lastApprStatCd: String? = null,   // 마지막결재상태코드 (LAST_T, LAST_I, LAST_C)
     val apprLvlCd: String? = null,        // 결재레벨코드
+    val myApproval: Boolean = false,      // 내 결재 필터 (true: 내가 결재라인에 포함된 건만)
 )

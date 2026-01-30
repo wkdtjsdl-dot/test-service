@@ -250,22 +250,38 @@ class ApprInfoCustomRepositoryImpl(
     ): List<Condition> {
         val conditions = mutableListOf<Condition>()
 
-        // Role-based filtering
-        when (userRole) {
-            "JP_TM", "JP_PM" -> {
-                // Team members: filter by customer ownership
-                conditions += DSL.exists(
+        // 팀원/파트장 직책 목록
+        val teamMemberRoles = listOf("JP_TM", "JP_PM")
+
+        // 팀원/파트장: 본인 고객만 조회
+        if (userRole in teamMemberRoles) {
+            conditions += DSL.exists(
+                dslContext.selectOne()
+                    .from(SCS_GCGN_SALS_PIC_INFO)
+                    .where(
+                        SCS_GCGN_SALS_PIC_INFO.CUST_CD.eq(SCS_CUST_CHARGE.CUST_CD)
+                            .and(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(userId))
+                    )
+            )
+        }
+
+        // 내 결재 필터 (모든 역할 공통)
+        if (searchParam.myApproval) {
+            conditions += DSL.or(
+                // 내가 이미 승인한 건
+                DSL.exists(
                     dslContext.selectOne()
-                        .from(SCS_GCGN_SALS_PIC_INFO)
+                        .from(SCS_APPR_INFO)
                         .where(
-                            SCS_GCGN_SALS_PIC_INFO.CUST_CD.eq(SCS_CUST_CHARGE.CUST_CD)
-                                .and(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(userId))
+                            SCS_APPR_INFO.APPR_INFO_NO.eq(
+                                SCS_CUST_CHARGE.APPR_INFO_NO.cast(Long::class.java)
+                            )
+                                .and(SCS_APPR_INFO.APPR_PERSON_EMP_NO.eq(userId))
+                                .and(SCS_APPR_INFO.APPR_STAT_CD.eq("APST_C"))
                         )
-                )
-            }
-            "JP_TL", "JP_DH", "JP_P" -> {
-                // Approvers: filter by approval authority (appr_person_emp_no stores user_id)
-                conditions += DSL.exists(
+                ),
+                // 현재 내 차례인 건 (appr_seq = curr_appr_seq)
+                DSL.exists(
                     dslContext.selectOne()
                         .from(SCS_APPR_INFO)
                         .where(
@@ -274,10 +290,11 @@ class ApprInfoCustomRepositoryImpl(
                             )
                                 .and(SCS_APPR_INFO.APPR_SEQ.eq(SCS_CUST_CHARGE.CURR_APPR_SEQ))
                                 .and(SCS_APPR_INFO.APPR_PERSON_EMP_NO.eq(userId))
-                                .and(SCS_APPR_INFO.APPR_STAT_CD.eq("APST_W"))  // Waiting only
                         )
-                )
-            }
+                ),
+                // 내가 생성한 건
+                SCS_CUST_CHARGE.CREATOR.eq(userId)
+            )
         }
 
         // Search parameter conditions
