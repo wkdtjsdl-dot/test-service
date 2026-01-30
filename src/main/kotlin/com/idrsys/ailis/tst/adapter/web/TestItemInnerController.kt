@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.adapter.web
 
+import com.idrsys.ailis.tst.application.dto.StandardChargeResponse
 import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
 import com.idrsys.ailis.tst.application.dto.TestItemSpecimensResponse
 import com.idrsys.ailis.tst.application.dto.TestItemRefItemsResponse
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -48,5 +50,13 @@ class TestItemInnerController(
     ): Flow<TestItemRefItemsResponse> {
         val codes = cds.split(",").map { it.trim() }.filter { it.isNotEmpty() }
         return testItemUseCase.getRefItemsByTstCds(codes)
+    }
+
+    @Operation(summary = "검사 최저수가 inner 조회")
+    @GetMapping("/stnd-charge")
+    suspend fun getStandardCharges(
+        @RequestParam tstCd: String
+    ): Flow<StandardChargeResponse> {
+        return testItemUseCase.getChargesByTest(tstCd)
     }
 }
