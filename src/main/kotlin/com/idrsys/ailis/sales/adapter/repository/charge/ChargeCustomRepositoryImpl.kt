@@ -51,8 +51,8 @@ class ChargeCustomRepositoryImpl(
             .where(conditions)
             .orderBy(
                 SCS_CUST_CHARGE.CUST_CD.asc(),
-                SCS_CUST_CHARGE.CRCY_CD.asc(),
-                SCS_CUST_CHARGE.APPLY_END_DT.desc()
+                SCS_CUST_CHARGE.TST_CD.asc(),
+                SCS_CUST_CHARGE.APPLY_START_DT.desc()
             )
 
             .let { applyPaging(it, pageable) }

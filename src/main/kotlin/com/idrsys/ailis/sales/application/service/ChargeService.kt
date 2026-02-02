@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -42,6 +43,10 @@ class ChargeService(
     private val tstServicePort: TstServicePort,
     private val custCustomRepository: CustCustomRepository
 ) : ChargeUseCase {
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(ChargeService::class.java)
+    }
 
     @Transactional(readOnly = true)
     override suspend fun getChargePage(
@@ -65,6 +70,8 @@ class ChargeService(
         val departments = baseServicePort.getDepartments() ?: emptyList()
         val deptNameByCd = departments.associate { it.deptCd to it.deptNm }
 
+        val systemCodeMaps = fetchSystemCodeMaps()
+
         val total = chargeCustomRepository.countCharge(finalSearchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
@@ -83,6 +90,8 @@ class ChargeService(
             charge.copy(
                 bzoffiNm = deptNameByCd[charge.bzoffiCd],
                 tstNm = tstNameByCode[charge.tstCd],
+                crcyCd = systemCodeMaps.crcyNameByCd[charge.crcyCd] ?: charge.crcyCd,
+                lastApprStatCd = systemCodeMaps.lastApprStatNameByCd[charge.lastApprStatCd] ?: charge.lastApprStatCd,
                 salesPics = updatedSalesPics
             )
         }
@@ -108,6 +117,8 @@ class ChargeService(
         val departments = baseServicePort.getDepartments() ?: emptyList()
         val deptNameByCd = departments.associate { it.deptCd to it.deptNm }
 
+        val systemCodeMaps = fetchSystemCodeMaps()
+
         val charges = chargeCustomRepository.findCharges(finalSearchParam, Pageable.unpaged())
             .map(chargeMapper::toResponse)
             .toList()
@@ -123,6 +134,8 @@ class ChargeService(
             charge.copy(
                 bzoffiNm = deptNameByCd[charge.bzoffiCd],
                 tstNm = tstNameByCode[charge.tstCd],
+                crcyCd = systemCodeMaps.crcyNameByCd[charge.crcyCd] ?: charge.crcyCd,
+                lastApprStatCd = systemCodeMaps.lastApprStatNameByCd[charge.lastApprStatCd] ?: charge.lastApprStatCd,
                 salesPics = updatedSalesPics
             )
         }
@@ -482,4 +495,23 @@ class ChargeService(
     ): List<CustChargeInnerResponse> {
         return chargeCustomRepository.findCustChargesByConditions(custCds, tstCds, startDt, endDt)
     }
+
+    private suspend fun fetchSystemCodeMaps(): SystemCodeMaps {
+        return try {
+            val systemCodes = baseServicePort.getChildrenSystemCodes(listOf("CRCY", "LAST")) ?: emptyMap()
+
+            val crcyNameByCd = systemCodes["CRCY"]?.associate { it.cd to it.cdNm } ?: emptyMap()
+            val lastApprStatNameByCd = systemCodes["LAST"]?.associate { it.cd to it.cdNm } ?: emptyMap()
+
+            SystemCodeMaps(crcyNameByCd, lastApprStatNameByCd)
+        } catch (e: Exception) {
+            logger.warn("Failed to fetch system codes from base-service, displaying raw codes instead", e)
+            SystemCodeMaps(emptyMap(), emptyMap())
+        }
+    }
+
+    data class SystemCodeMaps(
+        val crcyNameByCd: Map<String, String>,
+        val lastApprStatNameByCd: Map<String, String>
+    )
 }
