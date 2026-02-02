@@ -119,8 +119,8 @@ class TestItemService(
     }
 
     @Transactional(readOnly = true)
-    override suspend fun getChargesByTest(tstCd: String): Flow<StandardChargeResponse> {
-        return repository.findChargesByTestCd(tstCd).map { mapper.toResponse(it) }
+    override suspend fun getChargesByTest(tstCd: String, sort: String?): Flow<StandardChargeResponse> {
+        return repository.findChargesByTestCd(tstCd, sort).map { mapper.toResponse(it) }
     }
 
     @Transactional(readOnly = true)

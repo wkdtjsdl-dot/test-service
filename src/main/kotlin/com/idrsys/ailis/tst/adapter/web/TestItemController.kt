@@ -96,9 +96,12 @@ class TestItemController(
 
     @Operation(summary = "검사 검사종목 기준수가 목록")
     @GetMapping("/api/bts/item/stnd-charge")
-    fun getChargesByTest(@RequestParam tstCd: String): Flow<StandardChargeResponse> {
+    fun getChargesByTest(
+        @RequestParam tstCd: String,
+        @RequestParam(required = false) sort: String?
+    ): Flow<StandardChargeResponse> {
         return kotlinx.coroutines.flow.flow {
-            useCase.getChargesByTest(tstCd).collect { emit(it) }
+            useCase.getChargesByTest(tstCd, sort).collect { emit(it) }
         }
     }
 

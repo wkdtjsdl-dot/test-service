@@ -260,12 +260,44 @@ class TestItemRepositoryImpl(
     override suspend fun findChargeById(id: String): StandardCharge? = chargeDataRepo.findById(id)
     override suspend fun deleteChargeById(id: String) = chargeDataRepo.deleteById(id)
 
-    override suspend fun findChargesByTestCd(tstCd: String): Flow<StandardCharge> {
+    override suspend fun findChargesByTestCd(tstCd: String, sort: String?): Flow<StandardCharge> {
         val table = BtsStndCharge.BTS_STND_CHARGE
-        val query = dslContext
+
+        var selectQuery = dslContext
             .select(table.fields().toList())
             .from(table)
             .where(table.TST_CD.eq(tstCd))
+
+        // Parse and apply multiple ORDER BY clauses if sort parameter is provided
+        val query = if (!sort.isNullOrBlank()) {
+            val sortFields = sort.split(",").mapNotNull { sortPart ->
+                val parts = sortPart.trim().split(":")
+                val fieldName = parts[0].trim().lowercase()
+                val direction = if (parts.size > 1) parts[1].trim().uppercase() else "ASC"
+
+                // GET /api/bts/item/stnd-charge?tstCd=TEST001&sort=apply_start_dt:DESC,stnd_price:ASC
+                val jooqField = when (fieldName) {
+                    "apply_start_dt" -> table.APPLY_START_DT
+                    "apply_end_dt" -> table.APPLY_END_DT
+                    "stnd_price" -> table.STND_PRICE
+                    "insure_price" -> table.INSURE_PRICE
+                    "qlad_charge" -> table.QLAD_CHARGE
+                    else -> null
+                }
+
+                jooqField?.let {
+                    if (direction == "DESC") it.desc() else it.asc()
+                }
+            }
+
+            if (sortFields.isNotEmpty()) {
+                selectQuery.orderBy(sortFields)
+            } else {
+                selectQuery
+            }
+        } else {
+            selectQuery
+        }
 
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value: Any? ->
