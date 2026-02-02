@@ -98,7 +98,21 @@ class ChargeApproveService(
         val apprLvlCd = if (specialCharge >= lowestCharge) APLV_1 else APLV_8
 
         // 5. 결재선 조회
-        val apprDocDtlNo = apprLvlCd.substringAfterLast('_') // "APLV_1" -> "1"
+        /*
+        #승인
+            결재선은 “레벨별”이 아니라 “문서유형별(APPR_DOC_TYPE_CD)”로 1세트만 존재
+            A. “base line” (DB 결재선)을 붙일지 말지는 apprDocDtlNo 0/1로 제어
+            B. “팀장(deptHead)” 라인은 별도 규칙으로 추가됨 - SERVICE
+            C. 상신자가 결재선 테이블에 포함되어 있으면 “자기보다 뒤 라인만” 가져옴
+            APLV_1 - > 0
+            APLV_8 - > 1
+        */
+        val apprDocDtlNo = when (apprLvlCd) {
+            "APLV_1" -> "0"
+            "APLV_8" -> "1"
+            else -> throw IllegalArgumentException("Unsupported apprLvlCd: $apprLvlCd")
+        }
+
         val approvalLines = baseServicePort.getApprovalLines(userId, APPR_DOC_TYPE_CD, apprDocDtlNo)
         if (approvalLines.isEmpty()) {
             throw UserDefinedException(
