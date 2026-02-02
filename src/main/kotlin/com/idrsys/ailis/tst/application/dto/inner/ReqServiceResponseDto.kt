@@ -20,7 +20,7 @@ data class TstRequestDetailResponse(
     val mediSbjtNm: String?,
     val sikRoom: String?,
     val drNm: String?,
-    val spcmTakeDtime: LocalDateTime?,
+    val spcmTakeDt: LocalDate?,
     val spcmCnt: Int?,
     val memo: String?,
     val tstReqDivCd: String?,
