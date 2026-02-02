@@ -28,6 +28,8 @@ interface CollectionCommandUseCase {
      */
     suspend fun registerCardPayment(command: RegisterCollectionCommand, adminId: String): CollectionBillResponse
 
+
+
     suspend fun updateCardPayment(colbillId:String, request: UpdateCollectionCommand, adminId: String): CollectionBillResponse
 
     /**
@@ -36,6 +38,11 @@ interface CollectionCommandUseCase {
     suspend fun registerBankDeposit(command: RegisterCollectionCommand, adminId: String): CollectionBillResponse
 
     suspend fun updateBankDeposit(colbillId: String,request: UpdateCollectionCommand, adminId: String): CollectionBillResponse
+
+
+    suspend fun registerCashOrBillPayment(command: RegisterCollectionCommand, adminId: String): CollectionBillResponse
+
+    suspend fun updateCashOrBillPayment(colbilId:String, command: UpdateCollectionCommand, adminId: String): CollectionBillResponse
 
     suspend fun setColbillClosing(collBillId: String, closingCd: UpdateClosingRequest, adminId: String):CollectionBillResponse
 

@@ -18,6 +18,7 @@ import com.idrsys.ailis.sales.domain.model.CollectionBill
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -68,7 +69,8 @@ class CollectionCommandService(
         val ledger = CollectionLedger.createForCollection(
             custCd = command.custCd,
             colbillDt = command.colbillDt,
-            colbillItemNm = command.cardCompNm,
+            colbillItemNm = "결제(카드)",
+            colbillItemDtl = command.cardCompNm,
             payAmt = command.payAmt,
             creator = adminId
         )
@@ -141,7 +143,8 @@ class CollectionCommandService(
         val ledger = CollectionLedger.createForCollection(
             custCd = command.custCd,
             colbillDt = command.colbillDt,
-            colbillItemNm = command.cardCompNm,
+            colbillItemNm = "결제(은행)",
+            colbillItemDtl = command.cardCompNm,
             payAmt = command.payAmt,
             creator = adminId
         )
@@ -245,7 +248,8 @@ class CollectionCommandService(
             ledger.updateCollection(
                 colbillDt = request.colbillDt,
                 colbillAmt = request.payAmt,
-                colbillItemNm = request.cardCompNm,
+                colbillItemNm = "결제(카드)",
+                colbillItemDtl = request.cardCompNm,
                 updater = adminId
             )
 
@@ -305,7 +309,8 @@ class CollectionCommandService(
             ledger.updateCollection(
                 colbillDt = request.colbillDt,
                 colbillAmt = request.payAmt,
-                colbillItemNm = request.cardCompNm,
+                colbillItemNm = "결제(은행)",
+                colbillItemDtl = request.cardCompNm,
                 updater = adminId
             )
 
@@ -330,6 +335,136 @@ class CollectionCommandService(
 
         val saved = collectionBillRepository.save(colBill)
         return CollectionBillResponse.from(saved)
+    }
+
+    override suspend fun registerCashOrBillPayment(
+        command: RegisterCollectionCommand,
+        adminId: String
+    ): CollectionBillResponse {
+
+        // 결제 방법에 따른 원장 항목명 결정
+        val (colbillItemNm, isValidPayMethod) = when (command.payMethodCd) {
+            "PMMT_CS" -> "결제(현금)" to true
+            "PMMT_BL" -> "결제(어음)" to true
+            else -> "" to false
+        }
+
+        require(isValidPayMethod) {
+            "지원하지 않는 결제 방법입니다: ${command.payMethodCd}"
+        }
+
+        val ledger = CollectionLedger.createForCollection(
+            custCd = command.custCd,
+            colbillDt = command.colbillDt,
+            colbillItemNm = colbillItemNm,
+            colbillItemDtl = command.cardCompNm,
+            payAmt = command.payAmt,
+            creator = adminId
+        )
+
+        val savedLedger = collectionLedgerRepository.save(ledger)
+
+        val collectionBill = CollectionBill(
+            colbillId = null,
+            custCd = command.custCd,
+            colbillDt = command.colbillDt,
+            payMethodCd = command.payMethodCd,
+            payAmt = command.payAmt,
+            cardPayId = null,
+            cardApprNo = null,
+            cardNo = null,
+            cardBillNo = null,
+            instlMonth = null,
+            bankDepositId = null,
+            accountYear = null,
+            surecpSlstmtNo = null,
+            advreceYn = command.advreceYn,
+            closingCd = command.closingCd,
+            colledgerId = savedLedger.colledgerId,
+            cardCompCd = null,
+            cardCompNm = null,
+            sendYn = false,
+            remark = command.remark,
+            creator = adminId,
+            createDtime = LocalDateTime.now(),
+            updater = adminId,
+            updateDtime = LocalDateTime.now()
+        ).apply {
+            setAsNew()
+        }
+
+        val savedBill = collectionBillRepository.save(collectionBill)
+
+        return CollectionBillResponse.from(savedBill, savedLedger.colledgerId)
+    }
+
+    override suspend fun updateCashOrBillPayment(
+        colbillId: String,
+        command: UpdateCollectionCommand,
+        adminId: String
+    ): CollectionBillResponse {
+        val colBill = collectionBillRepository.findById(colbillId) ?: throw UserDefinedException("COLBILL NOT FOUND","입금 내역을 찾을 수 없습니다.")
+        if (colBill.closingCd === "CLCD_Y") {
+            throw UserDefinedException("COLLECTION IS CLOSED","마감된 상태입니다.")
+        }
+        // 결제 방법에 따른 원장 항목명 결정
+        val (colbillItemNm) = when (command.payMethodCd) {
+            "PMMT_CS" -> "결제(현금)" to true
+            "PMMT_BL" -> "결제(어음)" to true
+            else -> "" to false
+        }
+
+        // DTO의 값으로 업데이트 (DTO에 있는 필드만)
+        val updatedColBill = CollectionBill(
+            colbillId = colBill.colbillId,
+            custCd = command.custCd,
+            colbillDt = command.colbillDt,
+            payMethodCd = command.payMethodCd,
+            payAmt = command.payAmt,
+            cardPayId = null,
+            cardApprNo = null,
+            cardNo = null,
+            cardBillNo = null,
+            bankDepositId = null,
+            accountYear = null,
+            surecpSlstmtNo = null,
+            advreceYn = command.advreceYn,
+            closingCd = command.closingCd,
+            remark = command.remark,
+            // DTO에 없는 필드는 기존값 유지
+            cardCompCd = null,
+            cardCompNm = null,
+            instlMonth = colBill.instlMonth,
+            salesSlstmtNo = colBill.salesSlstmtNo,
+            colledgerId = colBill.colledgerId,
+            sendYn = colBill.sendYn,
+            creator = colBill.creator,
+            createDtime = colBill.createDtime,
+            updater = adminId,
+            updateDtime = LocalDateTime.now()
+        ).apply {
+            setAsExisting()
+        }
+        val saved = collectionBillRepository.save(updatedColBill)
+
+        // CollectionLedger 업데이트 (colledgerId가 있으면)
+        colBill.colledgerId?.let { colledgerId ->
+            val ledger = collectionLedgerRepository.findById(colledgerId)
+                ?: throw UserDefinedException("LEDGER_NOT_FOUND", "원장을 찾을 수 없습니다.")
+
+            ledger.updateCollection(
+                colbillDt = command.colbillDt,
+                colbillAmt = command.payAmt,
+                colbillItemNm = colbillItemNm,
+                colbillItemDtl = command.cardCompNm,
+                updater = adminId
+            )
+
+            collectionLedgerRepository.save(ledger)
+        }
+
+        return CollectionBillResponse.from(saved)
+
     }
 
 
@@ -416,6 +551,7 @@ class CollectionCommandService(
                 custCd = split.custCd,
                 colbillDt = split.colbillDt,
                 colbillItemNm = "결제(${if (paymentType == "CARD") "카드" else "은행"})",
+                colbillItemDtl = "",
                 payAmt = split.payAmt,
                 creator = adminId
             )

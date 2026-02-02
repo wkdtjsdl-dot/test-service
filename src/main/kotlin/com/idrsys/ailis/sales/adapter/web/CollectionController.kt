@@ -52,10 +52,12 @@ class CollectionController(
         @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
     ): CollectionBillResponse {
         return if (request.cardPayId == null) {
-            collectionCommandUseCase.registerBankDeposit(request, auth.adminId)
+            collectionCommandUseCase.registerBankDeposit(request, auth.adminId) // payMethodCd가 은행일때
 
+        } else if (request.bankDepositId == null) {
+            collectionCommandUseCase.registerCardPayment(request, auth.adminId) // payMethodCd가 카드일때
         } else {
-            collectionCommandUseCase.registerCardPayment(request, auth.adminId)
+            collectionCommandUseCase.registerCashOrBillPayment(request, auth.adminId) // payMethodCd가 현금 혹은 어음 일때
         }
     }
     @Operation(summary = "입금 수정", description = "입금 내용 수정")
@@ -67,10 +69,57 @@ class CollectionController(
         @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin,
     ): CollectionBillResponse {
         return if (request.cardPayId.isNullOrBlank() || request.cardPayId == "") {
-            collectionCommandUseCase.updateBankDeposit(colBillId,request ,auth.adminId)
-        }else {
-            collectionCommandUseCase.updateCardPayment(colBillId,request, auth.adminId)
+            collectionCommandUseCase.updateBankDeposit(colBillId,request ,auth.adminId) // payMethodCd가 은행일때
+        }else if(request.bankDepositId.isNullOrBlank() || request.bankDepositId == "") {
+            collectionCommandUseCase.updateCardPayment(colBillId,request, auth.adminId) // payMethodCd가 카드일때
+        } else {
+            collectionCommandUseCase.updateCashOrBillPayment(colBillId,request, auth.adminId) // payMethodCd가 현금 혹은 어음 일때
         }
+    }
+
+    @Operation(summary = "Find all collections", description = "입금 목록 조회")
+    @GetMapping
+    suspend fun getCollectionBills(
+        @RequestParam startDt: LocalDate,
+        @RequestParam endDt: LocalDate,
+        @RequestParam custCd: String?,
+        @RequestParam closingCd: String?,
+        @RequestParam bzoffiCd: String?,
+
+        ): Flow<CollectionBillListResponse> {
+        val searchParam = CollectionListSearchParam(
+            custCd = custCd,
+            startDt = startDt,
+            endDt = endDt,
+            closingCd = closingCd,
+            bzoffiCd = bzoffiCd
+        )
+        return collectionCommandUseCase.findCollectionBills(searchParam)
+    }
+
+    @Operation(summary = "입금내역 마감처리", description = "입금내역 마감/마감해제 ")
+    @PutMapping("/closing/{colbillId}")
+    suspend fun setColbillClosing(
+        @PathVariable colbillId: String,
+        @RequestBody request: UpdateClosingRequest,
+        @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
+    ): CollectionBillResponse {
+        return collectionCommandUseCase.setColbillClosing(colbillId, request,auth.adminId)
+    }
+    /**
+     * Delete collection bill (입금 삭제)
+     *
+     * @param colbillId Collection bill ID
+     * @param auth Authenticated admin from JWT token
+     * @return DeleteCollectionBillResponse
+     */
+    @Operation(summary = "입금 삭제", description = "입금 내역 삭제")
+    @DeleteMapping("/{colbillId}")
+    suspend fun deleteCollectionBill(
+        @PathVariable colbillId: String,
+        @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
+    ): DeleteCollectionBillResponse {
+        return collectionCommandUseCase.deleteCollectionBill(colbillId, auth.adminId)
     }
 
     /**
@@ -107,21 +156,8 @@ class CollectionController(
         return collectionCommandUseCase.registerSplitPayment(request, auth.adminId)
     }
 
-    /**
-     * Delete collection bill (입금 삭제)
-     *
-     * @param colbillId Collection bill ID
-     * @param auth Authenticated admin from JWT token
-     * @return DeleteCollectionBillResponse
-     */
-    @Operation(summary = "입금 삭제", description = "입금 내역 삭제")
-    @DeleteMapping("/{colbillId}")
-    suspend fun deleteCollectionBill(
-        @PathVariable colbillId: String,
-        @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
-    ): DeleteCollectionBillResponse {
-        return collectionCommandUseCase.deleteCollectionBill(colbillId, auth.adminId)
-    }
+
+
 
     /**
      * Send collection to ERP (ERP 전송)
@@ -203,34 +239,4 @@ class CollectionController(
         )
         return collectionQueryUseCase.getBankDepositList(searchParam)
     }
-    @Operation(summary = "Find all collections", description = "입금 목록 조회")
-    @GetMapping
-    suspend fun getCollectionBills(
-        @RequestParam startDt: LocalDate,
-        @RequestParam endDt: LocalDate,
-        @RequestParam custCd: String?,
-        @RequestParam closingCd: String?,
-        @RequestParam bzoffiCd: String?,
-
-    ): Flow<CollectionBillListResponse> {
-        val searchParam = CollectionListSearchParam(
-            custCd = custCd,
-            startDt = startDt,
-            endDt = endDt,
-            closingCd = closingCd,
-            bzoffiCd = bzoffiCd
-        )
-        return collectionCommandUseCase.findCollectionBills(searchParam)
-    }
-
-    @Operation(summary = "입금내역 마감처리", description = "입금내역 마감/마감해제 ")
-    @PutMapping("/closing/{colbillId}")
-    suspend fun setColbillClosing(
-        @PathVariable colbillId: String,
-        @RequestBody request: UpdateClosingRequest,
-        @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
-    ): CollectionBillResponse {
-        return collectionCommandUseCase.setColbillClosing(colbillId, request,auth.adminId)
-    }
-
 }
