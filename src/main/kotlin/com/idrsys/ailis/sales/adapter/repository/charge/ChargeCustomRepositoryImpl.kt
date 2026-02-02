@@ -233,6 +233,8 @@ class ChargeCustomRepositoryImpl(
             SCS_CUST_CHARGE.APPLY_START_DT,
             SCS_CUST_CHARGE.APPLY_END_DT,
             SCS_CUST_CHARGE.STND_PRICE,
+            SCS_CUST_CHARGE.CRCY_CD,
+            SCS_CUST_CHARGE.SPECIAL_CHARGE,
             SCS_CUST_CHARGE.SUPVAL,
             SCS_CUST_CHARGE.ADDTAX
         )
