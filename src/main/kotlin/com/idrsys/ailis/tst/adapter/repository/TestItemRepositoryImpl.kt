@@ -4,6 +4,7 @@ import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.required.repository.TestItemRepository
 import com.idrsys.ailis.tst.domain.model.*
+import com.idrsys.ailis.tst.generated.jooq.Tables.BTS_ITEM
 import com.idrsys.ailis.tst.generated.jooq.tables.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -62,7 +63,28 @@ class TestItemRepositoryImpl(
     // --- TestItem ---
     override suspend fun save(entity: TestItem): TestItem = itemDataRepo.save(entity)
     override suspend fun findById(tstCd: String): TestItem? = itemDataRepo.findById(tstCd)
-    override suspend fun findAll(): Flow<TestItem> = itemDataRepo.findAll()
+//    override suspend fun findAll(): Flow<TestItem> = itemDataRepo.findAll()
+    override suspend fun findAll(): Flow<TestItem> {
+        val query = dslContext
+            .select(BTS_ITEM.asterisk())
+            .from(BTS_ITEM)
+            .orderBy(BTS_ITEM.TST_CD.asc())
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestItem(row) }
+            .asFlow()
+    }
 
     override fun getItems(searchParam: TestItemSearchParam): Flow<TestItem> {
         val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
