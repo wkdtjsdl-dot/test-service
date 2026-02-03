@@ -1,10 +1,14 @@
 package com.idrsys.ailis.sales.adapter.web
 
+import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.ValidateTstMappingRequest
+import com.idrsys.ailis.sales.application.dto.response.ValidateTstMappingResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.CustTstCdInnerResponse
 import com.idrsys.ailis.sales.application.usecase.testCodeMapping.TestCodeMappingUseCase
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -31,5 +35,16 @@ class CustTstCdInnerController(
             custTstCd = custTstCd,
             tstCd = tstCd
         )
+    }
+
+    @PostMapping("/validate")
+    @Operation(
+        summary = "validateCustTstMappings",
+        description = "고객검사코드 매핑 일괄 유효성 검사 (엑셀 업로드 시 사용)"
+    )
+    suspend fun validateCustTstMappings(
+        @RequestBody request: ValidateTstMappingRequest
+    ): ValidateTstMappingResponse {
+        return testCodeMappingUseCase.validateCustTstMappings(request)
     }
 }

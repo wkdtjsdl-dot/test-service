@@ -26,7 +26,10 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.*
+import org.slf4j.LoggerFactory
+
 
 /**
  * 고객수가 승인 Service
@@ -44,6 +47,7 @@ class ChargeApproveService(
 ) : ChargeApproveUseCase {
 
     companion object {
+        private val log = LoggerFactory.getLogger(ChargeApproveService::class.java)
         private const val APPR_DOC_TYPE_CD = "APDC_CC"  // 고객수가
 
         // Approval Levels
@@ -52,6 +56,7 @@ class ChargeApproveService(
 
         // Approval Status
         private const val APST_W = "APST_W"  // 대기
+        private const val APST_C = "APST_C"  // 승인완료
 
         // Charge Status
         private const val LAST_T = "LAST_T" // 임시저장
@@ -94,8 +99,11 @@ class ChargeApproveService(
 
         // 4. 특별수가 vs 최저수가 비교하여 결재 레벨 결정 (BigDecimal 사용)
         val lowestCharge = BigDecimal.valueOf(lowestChargeDouble)
+        log.info("lowestCharge: {}", lowestCharge)
         val specialCharge = BigDecimal.valueOf(charge.specialCharge)
+        log.info("specialCharge: {}", specialCharge)
         val apprLvlCd = if (specialCharge >= lowestCharge) APLV_1 else APLV_8
+        log.info("apprLvlCd: {}", apprLvlCd)
 
         // 5. 결재선 조회
         /*
@@ -120,11 +128,29 @@ class ChargeApproveService(
                 "결재선을 찾을 수 없습니다."
             )
         }
-
+        log.info("apprDocDtlNo: {}", apprDocDtlNo)
+        log.info("approvalLines: {}", approvalLines)
         // 6. 결재정보번호 생성 (시퀀스)
         val apprInfoNo = apprInfoCustomRepository.getNextApprInfoNo()
 
-        // 7. 결재정보 생성
+        // 7. 상신자 본인 결재정보 생성 (이력용, 이미 승인완료 상태)
+        val now = LocalDateTime.now()
+        val submitterApprInfo = ApprInfo(
+            apprInfoId = UUID.randomUUID().toString(),
+            apprInfoNo = apprInfoNo,
+            apprSeq = 0,  // 상신자는 seq=0
+            apprDocTypeCd = APPR_DOC_TYPE_CD,
+            apprPersonEmpNo = userId,
+            apprStatCd = APST_C,  // 이미 승인완료
+            apprCmplDtime = now,  // 승인일 = 상신일
+            apprMemo = null,
+            creator = userId,
+            updater = userId,
+        )
+        submitterApprInfo.setAsNew()
+        apprInfoRepository.save(submitterApprInfo)
+
+        // 8. 나머지 결재선 생성 (대기 상태)
         approvalLines.forEach { line ->
             val apprInfo = ApprInfo(
                 apprInfoId = UUID.randomUUID().toString(),
@@ -140,7 +166,7 @@ class ChargeApproveService(
             apprInfoRepository.save(apprInfo)
         }
 
-        // 8. 고객수가 상태 업데이트 (CAS 적용)
+        // 9. 고객수가 상태 업데이트 (CAS 적용)
         val rowsUpdated = chargeCustomRepository.updateToInProgressWithCAS(
             custChargeId = charge.custChargeId,
             apprInfoNo = apprInfoNo,
@@ -157,7 +183,7 @@ class ChargeApproveService(
             )
         }
 
-        // 9. 상세조회 결과를 반환하여 최신 상태 응답
+        // 10. 상세조회 결과를 반환하여 최신 상태 응답
         return getApprovalDetail(charge.custChargeId, userId)
     }
 

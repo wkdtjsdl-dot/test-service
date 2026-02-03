@@ -21,4 +21,13 @@ interface TestCodeMappingCustomRepository {
      * @return 내부 검사코드 (없으면 null)
      */
     suspend fun findTstCdByCustCdAndCustTstCd(custCd: String, custTstCd: String): String?
+
+    /**
+     * 주어진 고객코드(custCd)에 대해 주어진 검사코드(tstCds) 목록 중 존재하는 코드들을 조회합니다.
+     *
+     * @param custCd 고객코드
+     * @param tstCds 검사코드 목록
+     * @return DB에 존재하는 검사코드 목록
+     */
+    suspend fun findExistingTstCdsByCustCd(custCd: String, tstCds: List<String>): List<String?>
 }

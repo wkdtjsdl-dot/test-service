@@ -125,4 +125,23 @@ class TestCodeMappingCustomRepositoryImpl(
             .one()
             .awaitSingleOrNull()
     }
+
+    override suspend fun findExistingTstCdsByCustCd(custCd: String, tstCds: List<String>): List<String?> {
+        if (tstCds.isEmpty()) return emptyList()
+
+        val query = dslContext.select(SCS_CUST_TST_CD_MPG.CUST_TST_CD)
+            .from(SCS_CUST_TST_CD_MPG)
+            .where(
+                SCS_CUST_TST_CD_MPG.CUST_CD.eq(custCd)
+                    .and(SCS_CUST_TST_CD_MPG.CUST_TST_CD.`in`(tstCds))
+            )
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.get("cust_tst_cd", String::class.java) }
+            .all()
+            .collectList()
+            .awaitSingleOrNull() ?: emptyList()
+    }
 }
