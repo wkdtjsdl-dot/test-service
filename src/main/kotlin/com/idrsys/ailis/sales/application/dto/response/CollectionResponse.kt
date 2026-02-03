@@ -124,21 +124,10 @@ data class CollectionLedgerTransaction(
     val division: String,
     val colbillItemNm: String? = null,
     val colbillAmt: BigDecimal,
+    val demandAmt: BigDecimal,
+    val collectAmt: BigDecimal,
     val balance: BigDecimal
-) {
-    companion object {
-        fun from(ledger: CollectionLedger, balance: BigDecimal): CollectionLedgerTransaction {
-            return CollectionLedgerTransaction(
-                colledgerId = ledger.colledgerId!!,
-                colbillDt = ledger.colbillDt,
-                division = if (ledger.colbillDivCd == "0") "청구" else "수금",
-                colbillItemNm = ledger.colbillItemNm,
-                colbillAmt = ledger.colbillAmt,
-                balance = balance
-            )
-        }
-    }
-}
+)
 
 /**
  * Card Payment Response DTO

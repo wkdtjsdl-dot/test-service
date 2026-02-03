@@ -5,7 +5,6 @@ import com.idrsys.ailis.sales.application.dto.request.collection.CardPaymentSear
 import com.idrsys.ailis.sales.application.dto.response.BankDepositResponse
 import com.idrsys.ailis.sales.application.dto.response.CardPaymentResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerResponse
-import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerTransaction
 import com.idrsys.ailis.sales.application.required.repository.collection.BankDepositRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CardPaymentRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionLedgerRepository
@@ -38,30 +37,16 @@ class CollectionQueryService(
      * 3. AR balance = Total demand - Total collection
      */
     override suspend fun getCollectionLedger(custCd: String): CollectionLedgerResponse {
-        // Get all ledger entries for customer in period
-        val ledgers = collectionLedgerRepository.findByCustCdOrderByColbillDtAsc(
-            custCd,
-        ).toList()
+        val transactions = collectionLedgerRepository.findLedgerTransactionsWithBalance(custCd).toList()
 
-        // Calculate running balance and totals
-        var runningBalance = java.math.BigDecimal.ZERO
-        var totalDemandAmt = java.math.BigDecimal.ZERO
-        var totalCollectionAmt = java.math.BigDecimal.ZERO
-
-        val transactions = ledgers.map { ledger ->
-            val amount = ledger.colbillAmt
-            if (ledger.colbillDivCd == "0") {
-                // Demand (increase AR)
-                runningBalance = runningBalance.add(amount)
-                totalDemandAmt = totalDemandAmt.add(amount)
-            } else {
-                // Collection (decrease AR)
-                runningBalance = runningBalance.subtract(amount)
-                totalCollectionAmt = totalCollectionAmt.add(amount)
-            }
-
-            CollectionLedgerTransaction.from(ledger, runningBalance)
-        }
+        // 각 트랜잭션의 colbillAmt를 구분에 따라 합산
+        val totalDemandAmt = transactions
+            .filter { it.division == "청구" }
+            .fold(java.math.BigDecimal.ZERO) { acc, t -> acc.add(t.colbillAmt) }
+        val totalCollectionAmt = transactions
+            .filter { it.division == "수금" }
+            .fold(java.math.BigDecimal.ZERO) { acc, t -> acc.add(t.colbillAmt) }
+        val arBalance = transactions.lastOrNull()?.balance ?: java.math.BigDecimal.ZERO
 
         return CollectionLedgerResponse(
             custCd = custCd,
@@ -69,7 +54,7 @@ class CollectionQueryService(
             transactions = transactions,
             totalDemandAmt = totalDemandAmt,
             totalCollectionAmt = totalCollectionAmt,
-            arBalance = runningBalance
+            arBalance = arBalance
         )
     }
 

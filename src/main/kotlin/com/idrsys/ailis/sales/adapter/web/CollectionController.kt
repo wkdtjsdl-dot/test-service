@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
@@ -44,20 +45,31 @@ class CollectionController(
      * @param auth Authenticated admin from JWT token
      * @return CollectionBillResponse
      */
-    @Operation(summary = "입금 등록", description = "카드/은행 입금을 고객에게 매칭하여 등록")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun registerPayment(
         @RequestBody request: RegisterCollectionCommand,
         @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
     ): CollectionBillResponse {
-        return if (request.cardPayId == null) {
-            collectionCommandUseCase.registerBankDeposit(request, auth.adminId) // payMethodCd가 은행일때
-
-        } else if (request.bankDepositId == null) {
-            collectionCommandUseCase.registerCardPayment(request, auth.adminId) // payMethodCd가 카드일때
-        } else {
-            collectionCommandUseCase.registerCashOrBillPayment(request, auth.adminId) // payMethodCd가 현금 혹은 어음 일때
+        return when {
+            request.bankDepositId != "" && request.cardPayId == "" -> {
+                // 은행 입금만 있음
+                collectionCommandUseCase.registerBankDeposit(request, auth.adminId)
+            }
+            request.cardPayId != "" && request.bankDepositId == "" -> {
+                // 카드 결제만 있음
+                collectionCommandUseCase.registerCardPayment(request, auth.adminId)
+            }
+            request.bankDepositId == "" && request.cardPayId == "" -> {
+                // 둘 다 없음 → 현금/어음
+                collectionCommandUseCase.registerCashOrBillPayment(request, auth.adminId)
+            }
+            else -> {
+                // 둘 다 있거나 예상치 못한 경우
+                throw IllegalArgumentException(
+                    "잘못된 요청입니다. bankDepositId: ${request.bankDepositId}, cardPayId: ${request.cardPayId}"
+                )
+            }
         }
     }
     @Operation(summary = "입금 수정", description = "입금 내용 수정")
@@ -68,12 +80,25 @@ class CollectionController(
         @RequestBody request: UpdateCollectionCommand,
         @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin,
     ): CollectionBillResponse {
-        return if (request.cardPayId.isNullOrBlank() || request.cardPayId == "") {
-            collectionCommandUseCase.updateBankDeposit(colBillId,request ,auth.adminId) // payMethodCd가 은행일때
-        }else if(request.bankDepositId.isNullOrBlank() || request.bankDepositId == "") {
-            collectionCommandUseCase.updateCardPayment(colBillId,request, auth.adminId) // payMethodCd가 카드일때
-        } else {
-            collectionCommandUseCase.updateCashOrBillPayment(colBillId,request, auth.adminId) // payMethodCd가 현금 혹은 어음 일때
+        return when {
+            !request.bankDepositId.isNullOrBlank() && request.cardPayId.isNullOrBlank() -> {
+                // 은행 입금만 있음
+                collectionCommandUseCase.updateBankDeposit(colBillId, request, auth.adminId)
+            }
+            !request.cardPayId.isNullOrBlank() && request.bankDepositId.isNullOrBlank() -> {
+                // 카드 결제만 있음
+                collectionCommandUseCase.updateCardPayment(colBillId, request, auth.adminId)
+            }
+            request.bankDepositId.isNullOrBlank() && request.cardPayId.isNullOrBlank() -> {
+                // 둘 다 없음 → 현금/어음
+                collectionCommandUseCase.updateCashOrBillPayment(colBillId, request, auth.adminId)
+            }
+            else -> {
+                // 둘 다 있거나 예상치 못한 경우
+                throw IllegalArgumentException(
+                    "잘못된 요청입니다. bankDepositId: ${request.bankDepositId}, cardPayId: ${request.cardPayId}"
+                )
+            }
         }
     }
 

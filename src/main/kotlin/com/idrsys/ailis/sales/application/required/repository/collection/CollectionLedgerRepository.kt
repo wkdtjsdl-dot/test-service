@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.application.required.repository.collection
 
+import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerTransaction
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
 import kotlinx.coroutines.flow.Flow
 
@@ -13,4 +14,5 @@ interface CollectionLedgerRepository {
     fun findByCustCdOrderByColbillDtAsc(
         custCd: String,
     ): Flow<CollectionLedger>
+    fun findLedgerTransactionsWithBalance(custCd: String): Flow<CollectionLedgerTransaction>
 }
