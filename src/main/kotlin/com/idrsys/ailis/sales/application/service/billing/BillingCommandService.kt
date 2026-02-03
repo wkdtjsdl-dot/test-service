@@ -47,7 +47,6 @@ class BillingCommandService(
         // TODO: Implement duplicate check when custom repository is available
 
         // 3. Calculate demand charge from command data
-        val demandCharge = command.supval.add(command.addtax)
 
         // 4. Create demand entity
         val demand = Demand(
@@ -59,7 +58,7 @@ class BillingCommandService(
             stndPrice = command.stndPrice,
             supval = command.supval,
             addtax = command.addtax,
-            demandCharge = demandCharge,
+            demandCharge = command.demandCharge,
             dscntRate = command.dscntRate,
             insurePrice = command.insurePrice,
             sapCustCd = command.sapCustCd,
@@ -76,7 +75,7 @@ class BillingCommandService(
         val ledger = CollectionLedger.createForDemand(
             custCd = command.custCd,
             demandDt = command.demandDt,
-            demandCharge = demandCharge,
+            demandCharge = command.demandCharge,
             creator = adminId
         )
 
@@ -91,9 +90,6 @@ class BillingCommandService(
             directAcctCd = command.custCd,
             startDt = command.demandStartDt,
             endDt = command.demandStndDt,
-            closingSupval = command.supval,
-            closingAddtax = command.addtax,
-            closingDemandCharge = demandCharge,
             exrtId = command.exrtId,
             stndExrt = command.stndExrt,
             closingMemo = command.demandMemo,

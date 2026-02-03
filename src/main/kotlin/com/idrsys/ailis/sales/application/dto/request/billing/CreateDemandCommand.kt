@@ -28,6 +28,7 @@ data class CreateDemandCommand(
     val demandStartDt: LocalDate,
     val demandStndDt: LocalDate,
     val stndPrice: BigDecimal,
+    val demandCharge: BigDecimal,
     val supval: BigDecimal,
     val addtax: BigDecimal,
     val dscntRate: BigDecimal = BigDecimal.ZERO,
