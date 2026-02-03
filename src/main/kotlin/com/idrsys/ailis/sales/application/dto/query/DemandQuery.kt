@@ -14,6 +14,8 @@ data class DemandWithCustInfo(
     val demandDt: LocalDate,
     val demandStartDt: LocalDate,
     val demandStndDt: LocalDate,
+    val demandCreatorEmpNo: String?,
+    val demandCreateDtime: LocalDateTime,
     val stndPrice: BigDecimal,
     val supval: BigDecimal,
     val addtax: BigDecimal,

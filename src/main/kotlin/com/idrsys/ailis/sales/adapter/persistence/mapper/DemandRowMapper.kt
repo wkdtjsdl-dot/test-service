@@ -50,6 +50,8 @@ internal fun Row.toDemandWithCustInfo(): DemandWithCustInfo {
         demandDt = this.get("demand_dt", LocalDate::class.java)!!,
         demandStartDt = this.get("demand_start_dt", LocalDate::class.java)!!,
         demandStndDt = this.get("demand_stnd_dt", LocalDate::class.java)!!,
+        demandCreateDtime = this.get("demand_create_dtime", LocalDateTime::class.java)!!,
+        demandCreatorEmpNo = this.get("demand_creator_emp_no", String::class.java),
         stndPrice = this.get("stnd_price", BigDecimal::class.java)!!,
         supval = this.get("supval", BigDecimal::class.java)!!,
         addtax = this.get("addtax", BigDecimal::class.java)!!,
