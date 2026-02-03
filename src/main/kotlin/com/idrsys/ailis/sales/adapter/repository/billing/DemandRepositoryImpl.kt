@@ -104,6 +104,10 @@ class DemandRepositoryImpl(
             conds += SBL_DEMAND.CUST_CD.eq(it)
         }
 
+        searchParam.branchCd?.takeIf { it.isNotBlank() }?.let {
+            conds += SCS_CUST_MST.BZOFFI_CD.eq(it)
+        }
+
         // Foreign account filter (via SCS_CUST_MST join) - null means all (no filter)
         searchParam.frgnAcctYn?.let {
             conds += SCS_CUST_MST.FRGN_ACCT_YN.eq(it)
