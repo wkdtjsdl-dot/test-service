@@ -514,6 +514,7 @@ class CustCustomRepositoryImpl(
         )
             .from(SCS_CUST_MST)
             .where(conditions)
+            .orderBy(SCS_CUST_MST.CUST_NM.asc())
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
@@ -617,6 +618,7 @@ class CustCustomRepositoryImpl(
             )
                 .from(SCS_CUST_MST)
                 .where(conditions)
+                .orderBy(SCS_CUST_MST.CUST_NM.asc())
 
             var sql = databaseClient.sql(query.sql)
             query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }

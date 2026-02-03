@@ -144,6 +144,7 @@ class CollectionLedger(
             custCd: String,
             colbillDt: LocalDate,
             colbillItemNm: String?,
+            colbillItemDtl: String?,
             payAmt: BigDecimal,
             creator: String
         ): CollectionLedger {
@@ -153,6 +154,7 @@ class CollectionLedger(
                 colbillDt = colbillDt,
                 custCd = custCd,
                 colbillItemNm = colbillItemNm,
+                colbillItemDtl = colbillItemDtl,
                 colbillAmt = payAmt,
                 creator = creator,
                 createDtime = LocalDateTime.now(),
@@ -167,11 +169,13 @@ class CollectionLedger(
         colbillDt: LocalDate,
         colbillAmt: BigDecimal,
         colbillItemNm: String?,
+        colbillItemDtl: String?,
         updater: String
     ) {
         this.colbillDt = colbillDt
         this.colbillAmt = colbillAmt
         this.colbillItemNm = colbillItemNm
+        this.colbillItemDtl = colbillItemDtl
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }

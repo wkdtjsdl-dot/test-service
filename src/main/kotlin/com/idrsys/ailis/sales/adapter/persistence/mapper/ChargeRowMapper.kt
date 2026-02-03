@@ -37,6 +37,8 @@ internal fun Row.toCustChargeInnerResponse(): CustChargeInnerResponse = CustChar
     applyStartDt = this.get("apply_start_dt", LocalDate::class.java)!!,
     applyEndDt = this.get("apply_end_dt", LocalDate::class.java)!!,
     stndPrice = this.get("stnd_price", java.lang.Long::class.java)?.toLong(),
+    crcyCd = this.get("crcy_cd", String::class.java)!!,
+    specialCharge = this.get("special_charge", java.lang.Long::class.java)!!.toLong(),
     supval = this.get("supval", java.lang.Long::class.java)?.toLong(),
     addtax = this.get("addtax", java.lang.Long::class.java)?.toLong()
 )
