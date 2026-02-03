@@ -25,6 +25,7 @@ import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 interface TestItemRepository {
     // --- TestItem ---
@@ -42,6 +43,7 @@ interface TestItemRepository {
     suspend fun deleteChargeById(id: String)
     suspend fun findChargesByTestCd(tstCd: String, sort: String? = null): Flow<StandardCharge>
     suspend fun getEqualDate(entity: StandardCharge): Flow<StandardCharge>
+    suspend fun findLatestChargeByTestCdAndDate(tstCd: String, currentDate: LocalDate): StandardCharge?
 
     // --- TestItemSpecimen ---
     suspend fun saveSpecimen(entity: TestItemSpecimen): TestItemSpecimen

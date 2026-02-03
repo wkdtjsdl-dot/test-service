@@ -124,6 +124,13 @@ class TestItemService(
     }
 
     @Transactional(readOnly = true)
+    override suspend fun getCurrentStandardChargeByTest(tstCd: String): StandardChargeResponse? {
+        val currentDate = java.time.LocalDate.now()
+        val standardCharge = repository.findLatestChargeByTestCdAndDate(tstCd, currentDate)
+        return standardCharge?.let { mapper.toResponse(it) }
+    }
+
+    @Transactional(readOnly = true)
     suspend fun getEqualDate(request: StandardChargeRegisterRequest, adminId: String): Flow<StandardCharge> {
         val command = commandMapper.toCreateCommand(request)
         val now = java.time.LocalDateTime.now()

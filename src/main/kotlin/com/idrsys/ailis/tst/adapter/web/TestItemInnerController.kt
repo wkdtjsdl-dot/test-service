@@ -56,7 +56,7 @@ class TestItemInnerController(
     @GetMapping("/stnd-charge")
     suspend fun getStandardCharges(
         @RequestParam tstCd: String
-    ): Flow<StandardChargeResponse> {
-        return testItemUseCase.getChargesByTest(tstCd)
+    ): StandardChargeResponse? {
+        return testItemUseCase.getCurrentStandardChargeByTest(tstCd)
     }
 }

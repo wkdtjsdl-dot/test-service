@@ -343,6 +343,36 @@ class TestItemRepositoryImpl(
         .asFlow()
     }
 
+    override suspend fun findLatestChargeByTestCdAndDate(tstCd: String, currentDate: LocalDate): StandardCharge? {
+        val table = BtsStndCharge.BTS_STND_CHARGE
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(
+                table.TST_CD.eq(tstCd)
+                    .and(table.APPLY_START_DT.le(currentDate))
+                    .and(table.APPLY_END_DT.ge(currentDate))
+            )
+            .orderBy(table.APPLY_END_DT.desc())
+            .limit(1)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        val row = executeSpec
+            .fetch()
+            .one()
+            .awaitSingleOrNull()
+
+        return row?.let { toStandardCharge(it) }
+    }
+
     // --- TestItemSpecimen ---
     override suspend fun saveSpecimen(entity: TestItemSpecimen): TestItemSpecimen = specimenDataRepo.save(entity)
     override suspend fun findSpecimenById(spcmId: String): TestItemSpecimen? = specimenDataRepo.findById(spcmId)
