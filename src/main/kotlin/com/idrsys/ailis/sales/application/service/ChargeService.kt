@@ -142,18 +142,46 @@ class ChargeService(
     }
 
     override suspend fun registerCharge(command: ChargeRegisterCommand, creator: String): ChargeResponse {
-        // 검증 로직 추가
-        chargeValidator.validateForCreate(
+        // 1. Build complete end date
+        val completeEndDt = command.applyEndDt ?: LocalDate.of(9999, 12, 31)
+
+        // 2. Validate basic business rules (exclude period overlap check)
+        chargeValidator.validateDateRange(command.applyStartDt, completeEndDt)
+        chargeValidator.validateUniqueKey(
             custMstId = command.custMstId,
             applyStartDt = command.applyStartDt,
-            applyEndDt = command.applyEndDt ?: LocalDate.of(9999, 12, 31),
             tstCd = command.tstCd
         )
 
+        // 3. Find overlapping periods (for auto-close, not validation error)
+        val overlapping = chargeCustomRepository.findOverlappingPeriods(
+            custMstId = command.custMstId,
+            tstCd = command.tstCd,
+            startDt = command.applyStartDt,
+            endDt = completeEndDt,
+            excludeId = null
+        )
+
+        // 4. Auto-close existing overlapping periods (follow excelRegisterCharges pattern)
+        if (overlapping.isNotEmpty()) {
+            // Select only the most recent charge (latest applyStartDt)
+            val mostRecentCharge = overlapping.maxByOrNull { it.applyStartDt }
+
+            if (mostRecentCharge != null) {
+                // Cut off previous period to day before new period starts
+                val newEndDate = command.applyStartDt.minusDays(1)
+                mostRecentCharge.updateEndDate(newEndDate, creator)
+                chargeRepository.save(mostRecentCharge)
+            }
+        }
+
+        // 5. Save the new charge
         val now = LocalDateTime.now()
         val newChargeId = UUID.randomUUID().toString()
         val newCharge = chargeMapper.toDomain(command, newChargeId, creator, now).apply { setAsNew() }
         val savedCharge = chargeRepository.save(newCharge)
+
+        // 6. Build response with test item name
         val chargeResponse = chargeMapper.toResponse(savedCharge)
         val testItems = tstServicePort.findTestItemByTestCode(listOf(chargeResponse.tstCd))
         val tstNm = testItems?.firstOrNull()?.tstNm

@@ -31,7 +31,7 @@ class Demand(
     demandDt: LocalDate,
     custCd: String,
     demandStartDt: LocalDate,
-    demandStndDt: LocalDate,
+    demandEndDt: LocalDate,
     stndPrice: BigDecimal,
     supval: BigDecimal,
     demandCharge: BigDecimal,
@@ -56,7 +56,7 @@ class Demand(
     init {
         require(custCd.isNotBlank()) { "Customer code cannot be empty" }
 //        require(demandCharge >= BigDecimal.ZERO) { "Demand charge must be non-negative" } -> 수기로 수정하는 데이터의 경우, (-) 금액이 있을 수 있음.
-        require(demandStartDt <= demandStndDt) { "Start date must be before or equal to end date" }
+        require(demandStartDt <= demandEndDt) { "Start date must be before or equal to end date" }
         require(creator.isNotBlank()) { "Creator is required" }
     }
 
@@ -77,8 +77,8 @@ class Demand(
     var demandStartDt: LocalDate = demandStartDt
         private set
 
-    @Column("demand_stnd_dt")
-    var demandStndDt: LocalDate = demandStndDt
+    @Column("demand_end_dt")
+    var demandEndDt: LocalDate = demandEndDt
         private set
 
     @Column("stnd_price")

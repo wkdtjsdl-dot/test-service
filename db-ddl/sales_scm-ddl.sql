@@ -1565,7 +1565,7 @@ create table sbl_demand
     demand_dt             date                  not null,
     cust_cd               varchar(50)           not null,
     demand_start_dt       date                  not null,
-    demand_stnd_dt        date                  not null,
+    demand_end_dt         date                  not null,
     stnd_price            numeric,
     supval                numeric,
     demand_charge         numeric,
@@ -1602,7 +1602,7 @@ comment on column sbl_demand.cust_cd is '고객코드';
 
 comment on column sbl_demand.demand_start_dt is '청구시작일자';
 
-comment on column sbl_demand.demand_stnd_dt is '청구기준일자';
+comment on column sbl_demand.demand_end_dt is '청구종료일자';
 
 comment on column sbl_demand.stnd_price is '기준가';
 

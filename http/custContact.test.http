@@ -63,3 +63,8 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
   "remark": "수정된 비고",
   "useYn": true
 }
+
+### 고객 영업담당자 정보 목록
+GET {{api-service}}/api/sals/custs/sals-pics?custMstId=C5F964E6-DEA6-4279-B645-9B1E6EE4D9F8
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
