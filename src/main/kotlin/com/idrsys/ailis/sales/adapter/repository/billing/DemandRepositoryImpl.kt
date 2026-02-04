@@ -97,7 +97,7 @@ class DemandRepositoryImpl(
         val conds = mutableListOf<Condition>()
 
         // Date range filter
-        conds += SBL_DEMAND.DEMAND_STND_DT.between(searchParam.startDt, searchParam.endDt)
+        conds += SBL_DEMAND.DEMAND_END_DT.between(searchParam.startDt, searchParam.endDt)
 
         // Customer code filter
         searchParam.custCd?.takeIf { it.isNotBlank() }?.let {

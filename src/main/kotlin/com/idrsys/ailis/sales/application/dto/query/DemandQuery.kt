@@ -13,7 +13,7 @@ data class DemandWithCustInfo(
     val custCd: String,
     val demandDt: LocalDate,
     val demandStartDt: LocalDate,
-    val demandStndDt: LocalDate,
+    val demandEndDt: LocalDate,
     val demandCreatorEmpNo: String?,
     val demandCreateDtime: LocalDateTime,
     val stndPrice: BigDecimal,
