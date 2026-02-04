@@ -1,16 +1,16 @@
 package com.idrsys.ailis.sales.application.service
 
+import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalaPicInfoAutoSearchParam
 import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalsPicInfoCommand
 import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalsPicInfoSearchParam
+import com.idrsys.ailis.sales.application.dto.response.GcgnSalsPicInfoAutoResponse
 import com.idrsys.ailis.sales.application.dto.response.GcgnSalsPicInfoResponse
+import com.idrsys.ailis.sales.application.dto.response.UserContactInfo
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.repository.gcgnSalsPicInfo.GcgnSalsPicInfoCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.gcgnSalsPicInfo.GcgnSalsPicInfoRepository
 import com.idrsys.ailis.sales.application.usecase.gcgnSalsPicInfo.GcgnSalsPicInfoUseCase
-import com.idrsys.ailis.sales.application.required.external.BaseServicePort
-import com.idrsys.ailis.sales.application.dto.request.gcgnSalsPicInfo.GcgnSalaPicInfoAutoSearchParam
-import com.idrsys.ailis.sales.application.dto.response.GcgnSalsPicInfoAutoResponse
 import com.idrsys.ailis.sales.shared.mapper.GcgnSalsPicInfoMapper
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -43,17 +43,26 @@ class GcgnSalsPicInfoService(
 
         // Fetch user names in batch to avoid N+1 problem
         val empUserIds = gcgnSalsPicInfoDtos.map { it.empUserId }.distinct()
-        val userNameById = if (empUserIds.isNotEmpty()) {
-            baseServicePort.getUsersByIds(empUserIds)
-                ?.associate { it.userId to it.userNm }
-                ?: emptyMap()
-        } else {
-            emptyMap()
-        }
+
+        val userInfoById = baseServicePort.getUsersByIds(empUserIds)
+            ?.associate {
+                it.userId to UserContactInfo(
+                    it.userNm,
+                    it.bzMoblPhno,
+                    it.offcTelNo
+                )
+            }
+            ?: emptyMap()
 
         val gcgnSalsPicInfos = gcgnSalsPicInfoDtos.map { dto ->
             val response = gcgnSalsPicInfoMapper.toResponse(dto)
-            response.copy(empUserNm = userNameById[dto.empUserId])
+            val userInfo = userInfoById[dto.empUserId]
+
+            response.copy(
+                empUserNm = userInfo?.userNm,
+                bzMoblPhno = userInfo?.bzMoblPhno,
+                offcTelNo = userInfo?.offcTelNo
+            )
         }
 
         return PageImpl(gcgnSalsPicInfos, serializablePageable, total)
