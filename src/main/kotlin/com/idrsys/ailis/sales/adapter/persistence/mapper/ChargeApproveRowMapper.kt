@@ -17,6 +17,7 @@ fun Row.toChargeApproveQuery(): ChargeApproveQuery {
         tstNm = null,  // Service에서 채움
         applyStartDt = this.get("apply_start_dt", LocalDate::class.java)!!,
         applyEndDt = this.get("apply_end_dt", LocalDate::class.java)!!,
+        crcyCd = this.get("crcy_cd", String::class.java),
         specialCharge = this.get("special_charge", Long::class.java)!!,
         stndPrice = this.get("stnd_price", java.lang.Long::class.java)?.toLong(),
         supval = this.get("supval", Long::class.java),

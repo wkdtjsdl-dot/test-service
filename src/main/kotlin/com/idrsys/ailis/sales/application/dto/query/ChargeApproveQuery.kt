@@ -14,6 +14,7 @@ data class ChargeApproveQuery(
     val tstNm: String?,
     val applyStartDt: LocalDate,
     val applyEndDt: LocalDate,
+    val crcyCd: String?,
     val specialCharge: Long,
     val stndPrice: Long?,
     val supval: Long?,
