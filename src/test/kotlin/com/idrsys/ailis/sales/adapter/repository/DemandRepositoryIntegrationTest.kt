@@ -100,11 +100,11 @@ class DemandRepositoryIntegrationTest {
         // Arrange
         val demand1 = createTestDemand(
             demandStartDt = LocalDate.of(2025, 12, 1),
-            demandStndDt = LocalDate.of(2025, 12, 31)
+            demandEndDt = LocalDate.of(2025, 12, 31)
         )
         val demand2 = createTestDemand(
             demandStartDt = LocalDate.of(2026, 1, 1),
-            demandStndDt = LocalDate.of(2026, 1, 31)
+            demandEndDt = LocalDate.of(2026, 1, 31)
         )
 
         demand1.setAsNew()
@@ -114,14 +114,14 @@ class DemandRepositoryIntegrationTest {
         demandDataRepository.save(demand2)
 
         // Act
-        val found = demandDataRepository.findByDemandStndDtBetween(
+        val found = demandDataRepository.findByDemandEndDtBetween(
             startDate = LocalDate.of(2025, 12, 1),
             endDate = LocalDate.of(2025, 12, 31)
         ).toList()
 
         // Assert
         assertEquals(1, found.size)
-        assertEquals(LocalDate.of(2025, 12, 31), found[0].demandStndDt)
+        assertEquals(LocalDate.of(2025, 12, 31), found[0].demandEndDt)
     }
 
     @Test
@@ -186,14 +186,14 @@ class DemandRepositoryIntegrationTest {
     private fun createTestDemand(
         custCd: String = "CUST001",
         demandStartDt: LocalDate = LocalDate.of(2025, 12, 1),
-        demandStndDt: LocalDate = LocalDate.of(2025, 12, 31)
+        demandEndDt: LocalDate = LocalDate.of(2025, 12, 31)
     ): Demand {
         return Demand(
             demandId = null,  // Let UuidIdGeneratorCallback generate the ID
-            demandDt = demandStndDt,
+            demandDt = demandEndDt,
             custCd = custCd,
             demandStartDt = demandStartDt,
-            demandStndDt = demandStndDt,
+            demandEndDt = demandEndDt,
             stndPrice = BigDecimal("10000000"),
             supval = BigDecimal("9000000"),
             demandCharge = BigDecimal("9900000"),

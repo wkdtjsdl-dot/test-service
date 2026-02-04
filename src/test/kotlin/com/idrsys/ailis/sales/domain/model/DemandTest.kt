@@ -17,7 +17,7 @@ class DemandTest {
         val custCd = "CUST001"
         val demandDt = LocalDate.of(2025, 12, 31)
         val demandStartDt = LocalDate.of(2025, 12, 1)
-        val demandStndDt = LocalDate.of(2025, 12, 31)
+        val demandEndDt = LocalDate.of(2025, 12, 31)
         val supval = BigDecimal("9000000")
         val addtax = BigDecimal("900000")
         val demandCharge = BigDecimal("9900000")
@@ -29,7 +29,7 @@ class DemandTest {
             demandDt = demandDt,
             custCd = custCd,
             demandStartDt = demandStartDt,
-            demandStndDt = demandStndDt,
+            demandEndDt = demandEndDt,
             stndPrice = BigDecimal("10000000"),
             supval = supval,
             demandCharge = demandCharge,
@@ -56,7 +56,7 @@ class DemandTest {
                 demandDt = LocalDate.now(),
                 custCd = "",
                 demandStartDt = LocalDate.now(),
-                demandStndDt = LocalDate.now(),
+                demandEndDt = LocalDate.now(),
                 stndPrice = BigDecimal.ZERO,
                 supval = BigDecimal.ZERO,
                 demandCharge = BigDecimal.ZERO,
@@ -76,7 +76,7 @@ class DemandTest {
                 demandDt = LocalDate.now(),
                 custCd = "CUST001",
                 demandStartDt = LocalDate.of(2025, 12, 31),
-                demandStndDt = LocalDate.of(2025, 12, 1),
+                demandEndDt = LocalDate.of(2025, 12, 1),
                 stndPrice = BigDecimal.ZERO,
                 supval = BigDecimal.ZERO,
                 demandCharge = BigDecimal.ZERO,
@@ -95,7 +95,7 @@ class DemandTest {
             demandDt = LocalDate.now(),
             custCd = "CUST001",
             demandStartDt = LocalDate.now(),
-            demandStndDt = LocalDate.now(),
+            demandEndDt = LocalDate.now(),
             stndPrice = BigDecimal("10000000"),
             supval = BigDecimal("9000000"),
             demandCharge = BigDecimal("9900000"),
@@ -126,7 +126,7 @@ class DemandTest {
             demandDt = LocalDate.now(),
             custCd = "CUST001",
             demandStartDt = LocalDate.now(),
-            demandStndDt = LocalDate.now(),
+            demandEndDt = LocalDate.now(),
             stndPrice = BigDecimal.ZERO,
             supval = BigDecimal.ZERO,
             demandCharge = BigDecimal.ZERO,
@@ -152,7 +152,7 @@ class DemandTest {
             demandDt = LocalDate.now(),
             custCd = "CUST001",
             demandStartDt = LocalDate.now(),
-            demandStndDt = LocalDate.now(),
+            demandEndDt = LocalDate.now(),
             stndPrice = BigDecimal.ZERO,
             supval = BigDecimal.ZERO,
             demandCharge = BigDecimal.ZERO,
@@ -176,7 +176,7 @@ class DemandTest {
             demandDt = LocalDate.now(),
             custCd = "CUST001",
             demandStartDt = LocalDate.now(),
-            demandStndDt = LocalDate.now(),
+            demandEndDt = LocalDate.now(),
             stndPrice = BigDecimal.ZERO,
             supval = BigDecimal.ZERO,
             demandCharge = BigDecimal.ZERO,
@@ -197,7 +197,7 @@ class DemandTest {
             demandDt = LocalDate.now(),
             custCd = "CUST001",
             demandStartDt = LocalDate.now(),
-            demandStndDt = LocalDate.now(),
+            demandEndDt = LocalDate.now(),
             stndPrice = BigDecimal.ZERO,
             supval = BigDecimal.ZERO,
             demandCharge = BigDecimal.ZERO,

@@ -11,7 +11,7 @@ import java.time.LocalDate
  * @property custCd 고객코드
  * @property demandDt 청구일자
  * @property demandStartDt 청구시작일
- * @property demandStndDt 청구기준일(종료일)
+ * @property demandEndDt 청구기준일(종료일)
  * @property stndPrice 청구수가 (기준가)
  * @property supval 공급가액
  * @property addtax 부가세액
@@ -26,7 +26,7 @@ data class CreateDemandCommand(
     val custCd: String,
     val demandDt: LocalDate,
     val demandStartDt: LocalDate,
-    val demandStndDt: LocalDate,
+    val demandEndDt: LocalDate,
     val stndPrice: BigDecimal,
     val demandCharge: BigDecimal,
     val supval: BigDecimal,

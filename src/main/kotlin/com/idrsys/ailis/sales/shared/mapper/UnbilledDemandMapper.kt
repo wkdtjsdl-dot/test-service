@@ -41,7 +41,7 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
         branchNm = this.branchNm,
         demandDt = LocalDate.now(),             // Query date
         demandStartDt = searchStartDt,          // Search start date
-        demandStndDt = searchEndDt,             // Demand standard date (Search end date)
+        demandEndDt = searchEndDt,             // Demand standard date (Search end date)
         demandCreatorEmpNo = null,
         demandCreateDtime = LocalDateTime.now(),
         stndPrice = this.stndPrice,

@@ -53,7 +53,7 @@ class BillingCommandService(
             demandId = null,
             demandDt = command.demandDt,
             demandStartDt = command.demandStartDt,
-            demandStndDt = command.demandStndDt,
+            demandEndDt = command.demandEndDt,
             custCd = command.custCd,
             stndPrice = command.stndPrice,
             supval = command.supval,
@@ -89,7 +89,7 @@ class BillingCommandService(
         val createdRequestCount = reqServicePort.updateTstItemClosingInfo(
             directAcctCd = command.custCd,
             startDt = command.demandStartDt,
-            endDt = command.demandStndDt,
+            endDt = command.demandEndDt,
             exrtId = command.exrtId,
             stndExrt = command.stndExrt,
             closingMemo = command.demandMemo,
@@ -141,7 +141,7 @@ class BillingCommandService(
         val releasedRequestCount = reqServicePort.releaseTstItemClosingInfo(
             directAcctCd = demand.custCd,
             startDt = demand.demandStartDt,
-            endDt = demand.demandStndDt,
+            endDt = demand.demandEndDt,
             updater = adminId
         )
 

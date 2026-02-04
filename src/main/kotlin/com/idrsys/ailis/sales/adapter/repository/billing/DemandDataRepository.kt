@@ -22,12 +22,12 @@ interface DemandDataRepository : CoroutineCrudRepository<Demand, String> {
     /**
      * Find demands by period (demand standard date between)
      */
-    fun findByDemandStndDtBetween(startDate: LocalDate, endDate: LocalDate): Flow<Demand>
+    fun findByDemandEndDtBetween(startDate: LocalDate, endDate: LocalDate): Flow<Demand>
 
     /**
      * Find demands by customer code and period
      */
-    fun findByCustCdAndDemandStndDtBetween(
+    fun findByCustCdAndDemandEndDtBetween(
         custCd: String,
         startDate: LocalDate,
         endDate: LocalDate
@@ -36,9 +36,9 @@ interface DemandDataRepository : CoroutineCrudRepository<Demand, String> {
     /**
      * Check if demand exists by customer code, demand start date, and demand standard date
      */
-    suspend fun existsByCustCdAndDemandStartDtAndDemandStndDt(
+    suspend fun existsByCustCdAndDemandStartDtAndDemandEndDt(
         custCd: String,
         demandStartDt: LocalDate,
-        demandStndDt: LocalDate
+        demandEndDt: LocalDate
     ): Boolean
 }
