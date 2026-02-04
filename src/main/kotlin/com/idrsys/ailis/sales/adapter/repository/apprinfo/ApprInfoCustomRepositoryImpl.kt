@@ -101,7 +101,7 @@ class ApprInfoCustomRepositoryImpl(
         val query = dslContext.select(
             SCS_CUST_CHARGE.CUST_CHARGE_ID,
             SCS_CUST_CHARGE.CUST_CD,
-            SCS_CUST_MST.CUST_NM,  // custNm from join
+            SCS_CUST_MST.CUST_NM.`as`("cust_nm"),
             SCS_CUST_CHARGE.TST_CD,
             SCS_CUST_CHARGE.APPLY_START_DT,
             SCS_CUST_CHARGE.APPLY_END_DT,

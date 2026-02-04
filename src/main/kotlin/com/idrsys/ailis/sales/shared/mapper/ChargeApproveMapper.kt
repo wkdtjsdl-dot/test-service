@@ -16,7 +16,6 @@ interface ChargeApproveMapper {
     /**
      * ChargeApproveQuery → ChargeApproveResponse
      */
-    @Mapping(target = "custNm", ignore = true)
     @Mapping(target = "tstNm", ignore = true)
     @Mapping(target = "lowestCharge", ignore = true)
     @Mapping(target = "lastApprStatNm", ignore = true)
