@@ -51,7 +51,8 @@ class ChargeService(
     @Transactional(readOnly = true)
     override suspend fun getChargePage(
         searchParam: ChargeSearchParam,
-        pageable: Pageable
+        pageable: Pageable,
+        isExcel: Boolean
     ): Page<ChargeResponse> {
 
         var finalSearchParam = searchParam
@@ -90,8 +91,16 @@ class ChargeService(
             charge.copy(
                 bzoffiNm = deptNameByCd[charge.bzoffiCd],
                 tstNm = tstNameByCode[charge.tstCd],
-                crcyCd = systemCodeMaps.crcyNameByCd[charge.crcyCd] ?: charge.crcyCd,
-                lastApprStatCd = systemCodeMaps.lastApprStatNameByCd[charge.lastApprStatCd] ?: charge.lastApprStatCd,
+                crcyCd = if (isExcel) {
+                    systemCodeMaps.crcyNameByCd[charge.crcyCd] ?: charge.crcyCd
+                } else {
+                    charge.crcyCd
+                },
+                lastApprStatCd = if (isExcel) {
+                    systemCodeMaps.lastApprStatNameByCd[charge.lastApprStatCd] ?: charge.lastApprStatCd
+                } else {
+                    charge.lastApprStatCd
+                },
                 salesPics = updatedSalesPics
             )
         }
@@ -100,7 +109,7 @@ class ChargeService(
     }
 
     @Transactional(readOnly = true)
-    override suspend fun getCharges(searchParam: ChargeSearchParam): List<ChargeResponse> {
+    override suspend fun getCharges(searchParam: ChargeSearchParam, isExcel: Boolean): List<ChargeResponse> {
         var finalSearchParam = searchParam
 
         val users = baseServicePort.getUsers() ?: emptyList()
@@ -134,8 +143,16 @@ class ChargeService(
             charge.copy(
                 bzoffiNm = deptNameByCd[charge.bzoffiCd],
                 tstNm = tstNameByCode[charge.tstCd],
-                crcyCd = systemCodeMaps.crcyNameByCd[charge.crcyCd] ?: charge.crcyCd,
-                lastApprStatCd = systemCodeMaps.lastApprStatNameByCd[charge.lastApprStatCd] ?: charge.lastApprStatCd,
+                crcyCd = if (isExcel) {
+                    systemCodeMaps.crcyNameByCd[charge.crcyCd] ?: charge.crcyCd
+                } else {
+                    charge.crcyCd
+                },
+                lastApprStatCd = if (isExcel) {
+                    systemCodeMaps.lastApprStatNameByCd[charge.lastApprStatCd] ?: charge.lastApprStatCd
+                } else {
+                    charge.lastApprStatCd
+                },
                 salesPics = updatedSalesPics
             )
         }
@@ -344,11 +361,15 @@ class ChargeService(
                 ChargeErrorCode.NOT_FOUND_MESSAGE
             )
 
+        val systemCodeMaps = fetchSystemCodeMaps()
         val chargeResponse = chargeMapper.toResponse(chargeWithDetails)
         val testItems = tstServicePort.findTestItemByTestCode(listOf(chargeResponse.tstCd))
         val tstNm = testItems?.firstOrNull()?.tstNm
 
-        return chargeResponse.copy(tstNm = tstNm)
+        return chargeResponse.copy(
+            tstNm = tstNm,
+            lastApprStatCd = systemCodeMaps.lastApprStatNameByCd[chargeResponse.lastApprStatCd] ?: chargeResponse.lastApprStatCd
+        )
     }
 
 
@@ -531,7 +552,10 @@ class ChargeService(
             val crcyNameByCd = systemCodes["CRCY"]?.associate { it.cd to it.cdNm } ?: emptyMap()
             val lastApprStatNameByCd = systemCodes["LAST"]?.associate { it.cd to it.cdNm } ?: emptyMap()
 
-            SystemCodeMaps(crcyNameByCd, lastApprStatNameByCd)
+            SystemCodeMaps(
+                crcyNameByCd = crcyNameByCd,
+                lastApprStatNameByCd = lastApprStatNameByCd
+            )
         } catch (e: Exception) {
             logger.warn("Failed to fetch system codes from base-service, displaying raw codes instead", e)
             SystemCodeMaps(emptyMap(), emptyMap())

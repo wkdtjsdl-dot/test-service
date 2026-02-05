@@ -80,7 +80,7 @@ class ChargeController(
         @ParameterObject @Parameter(hidden = true) searchParam: ChargeSearchParam,
         @PageableDefault(page = 0, size = 15) pageable: Pageable
     ): Page<ChargeResponse> {
-        return chargeUseCase.getChargePage(searchParam, pageable)
+        return chargeUseCase.getChargePage(searchParam, pageable, isExcel = false)
     }
 
     @GetMapping("/list")
@@ -88,7 +88,7 @@ class ChargeController(
     suspend fun getCharges(
         @ParameterObject @Parameter(hidden = true) searchParam: ChargeSearchParam
     ): List<ChargeResponse> {
-        return chargeUseCase.getCharges(searchParam)
+        return chargeUseCase.getCharges(searchParam, isExcel = false)
     }
 
     @GetMapping("/excel")
@@ -96,7 +96,7 @@ class ChargeController(
     suspend fun downloadChargesExcel(
         @ParameterObject @Parameter(hidden = true) searchParam: ChargeSearchParam
     ): ResponseEntity<Flow<DataBuffer>> {
-        val excelInfos = chargeUseCase.getCharges(searchParam)
+        val excelInfos = chargeUseCase.getCharges(searchParam, isExcel = true)
         val today = LocalDate.now().toString()
         val filename = "고객수가목록_${today}.xlsx"
         val encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
