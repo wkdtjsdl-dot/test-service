@@ -443,7 +443,8 @@ class CustCustomRepositoryImpl(
         val selectFields = arrayOf(
             SCS_CUST_MST.CUST_MST_ID,
             SCS_CUST_MST.CUST_CD,
-            SCS_CUST_MST.CUST_NM
+            SCS_CUST_MST.CUST_NM,
+            SCS_CUST_MST.CRCY_CD
         )
         val orderByField = SCS_CUST_MST.CUST_CD.asc()
 
@@ -668,7 +669,8 @@ class CustCustomRepositoryImpl(
         val query = dslContext.selectDistinct(
             SCS_CUST_MST.CUST_MST_ID,
             SCS_CUST_MST.CUST_CD,
-            SCS_CUST_MST.CUST_NM
+            SCS_CUST_MST.CUST_NM,
+            SCS_CUST_MST.CRCY_CD
         )
             .from(SCS_CUST_MST)
             .join(SCS_GCGN_SALS_PIC_INFO).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID))

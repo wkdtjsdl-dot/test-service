@@ -110,7 +110,8 @@ data class CustDetailInfo(
 data class CustCdNmAutoCompleteInfo(
     val custMstId: String?,
     val custCd: String?,
-    val custNm: String?
+    val custNm: String?,
+    val crcyCd: String?
 )
 
 data class RprsCustCdNmAutoCompleteInfo(
