@@ -40,7 +40,7 @@ class EstimateItem(
         require(item.isNotBlank()) { "Item name is required" }
         require(qnty >= BigDecimal.ZERO) { "Quantity must be non-negative" }
         require(unitPrice >= BigDecimal.ZERO) { "Unit price must be non-negative" }
-        require(seq > 0) { "Sequence must be positive" }
+        require(seq >= 0) { "Sequence must be positive" }
     }
 
     @Id
