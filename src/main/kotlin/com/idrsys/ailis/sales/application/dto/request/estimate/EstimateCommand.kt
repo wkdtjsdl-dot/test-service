@@ -16,7 +16,7 @@ data class CreateEstimateCommand(
     val deptCd: String? = null,
     val remark: String? = null,
     val note: String? = null,
-    val items: List<EstimateItemCommand>
+    val items: List<EstimateItemCommand>? = null,
 )
 
 /**
@@ -30,7 +30,7 @@ data class UpdateEstimateCommand(
     val deptCd: String? = null,
     val remark: String? = null,
     val note: String? = null,
-    val items: List<EstimateItemCommand>
+    val items: List<EstimateItemCommand>? = null
 )
 
 /**
