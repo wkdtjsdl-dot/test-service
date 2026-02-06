@@ -161,5 +161,6 @@ data class CustBasicResponse(
     val telNo: String?,     // 전화번호
     val branchCd: String?,  // 지점코드
     val bzoffiCd: String?,   // 영업소코드
-    val useLangCd: String   // 사용언어코드
+    val useLangCd: String,   // 사용언어코드
+    val reqDivCd: String    // 의뢰구분코드
 )

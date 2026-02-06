@@ -15,7 +15,7 @@ class Cust(
     custCd: String,                 // 고객코드
     custNm: String,                 // 고객명
     custDivCd: String,              // 고객구분코드      직접거래처여부 : 직접거래처 / 재수탁거래처
-    directAcctCd: String?,           // 직접거래처코드
+    directAcctCd: String,           // 직접거래처코드
     directAcctAcctCd: String?,       // 직접거래처거래처코드 인터페이스용
     rprsNm: String?,                 // 대표자명
     rstOutputCustNm: String?,       // 결과지출력고객명
@@ -108,7 +108,7 @@ class Cust(
         private set
 
     @Column("direct_acct_cd")
-    var directAcctCd: String? = directAcctCd
+    var directAcctCd: String = directAcctCd
         private set
 
     @Column("direct_acct_acct_cd")

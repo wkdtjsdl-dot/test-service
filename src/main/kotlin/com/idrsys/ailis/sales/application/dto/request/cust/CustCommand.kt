@@ -7,7 +7,7 @@ data class CustCommand(
     val custCd: String,                 // 고객코드
     val custNm: String,                 // 고객명
     val custDivCd: String,              // 고객구분코드      직접거래처여부 : 직접거래처 / 재수탁거래처
-    val directAcctCd: String?,           // 직접거래처코드
+    val directAcctCd: String,           // 직접거래처코드
     val directAcctAcctCd: String?,      // 직접거래처거래처코드 인터페이스용
     val rprsNm: String?,                 // 대표자명
     val rstOutputCustNm: String?,       // 결과지출력고객명
