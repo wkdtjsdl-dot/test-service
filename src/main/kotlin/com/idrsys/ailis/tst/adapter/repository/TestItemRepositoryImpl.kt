@@ -134,6 +134,51 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
+    override fun findSimpleItems(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse> {
+        val tstItem = BtsItem.BTS_ITEM
+
+        var condition: Condition = DSL.trueCondition()
+
+        searchParam.tstLargeCateCd?.takeIf { it.isNotBlank() }?.let {
+            condition = condition.and(tstItem.TST_LARGE_CATE_CD.eq(it))
+        }
+        searchParam.tstMediumCateCd?.takeIf { it.isNotBlank() }?.let {
+            condition = condition.and(tstItem.TST_MEDIUM_CATE_CD.eq(it))
+        }
+        searchParam.useYn?.let {
+            condition = condition.and(tstItem.USE_YN.eq(it))
+        }
+
+        val selectFrom = dslContext
+            .select(
+                tstItem.TST_CD,  // Only select 2 columns instead of 38
+                tstItem.TST_NM
+            )
+            .from(tstItem)
+
+        val query = selectFrom.where(condition).orderBy(tstItem.TST_CD.asc())
+
+        // SQL과 바인딩 값 준비
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .map { row, _ ->
+                TestItemSimpleResponse(
+                    tstCd = row.get(tstItem.TST_CD.name, String::class.java)!!,
+                    tstNm = row.get(tstItem.TST_NM.name, String::class.java)!!
+                )
+            }
+            .all()
+            .asFlow()
+    }
+
     override fun findUnspecifiedDeptItems(searchParam: UnspecifiedDepartmentTestItemSearchParam): Flow<TestItem> {
         if (searchParam.deptCd.isBlank()) {
             return flowOf()

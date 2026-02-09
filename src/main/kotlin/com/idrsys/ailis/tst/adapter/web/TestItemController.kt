@@ -52,6 +52,12 @@ class TestItemController(
         return useCase.getItems(searchParam)
     }
 
+    @Operation(summary = "검사 코드 간략 목록 조회 (SelectBox용)")
+    @GetMapping("/api/bts/item/simple")
+    fun getItemsSimple(@ParameterObject searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse> {
+        return useCase.getItemsSimple(searchParam)
+    }
+
     @Operation(summary = "검사 코드 자동완성")
     @GetMapping("/api/bts/item/auto-complete")
     fun autoCompleteItem(@ParameterObject searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse> {

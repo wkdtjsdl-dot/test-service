@@ -71,6 +71,11 @@ class TestItemService(
     }
 
     @Transactional(readOnly = true)
+    override fun getItemsSimple(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse> {
+        return repository.findSimpleItems(searchParam)
+    }
+
+    @Transactional(readOnly = true)
     override fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse> {
         return repository.autoCompleteItems(searchParam)
     }

@@ -34,6 +34,7 @@ interface TestItemRepository {
     suspend fun findAll(): Flow<TestItem>
     fun getItems(searchParam: TestItemSearchParam): Flow<TestItem>
     fun findUnspecifiedDeptItems(searchParam: UnspecifiedDepartmentTestItemSearchParam): Flow<TestItem>
+    fun findSimpleItems(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse>
     fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse>
     fun findSimpleItemByTstCd(tstCds: List<String>): Flow<TestItemSimpleResponse>
 
