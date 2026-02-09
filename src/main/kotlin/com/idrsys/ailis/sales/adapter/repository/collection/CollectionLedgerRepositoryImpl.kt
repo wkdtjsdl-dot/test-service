@@ -42,11 +42,14 @@ class CollectionLedgerRepositoryImpl(
     override fun findLedgerTransactionsWithBalance(custCd: String): Flow<CollectionLedgerTransaction> {
         val cl = SalesScm.SALES_SCM.SBL_COLLEDGER
 
-            // 서브쿼리: 날짜별 그룹화
-        val dailySummary = dslContext
+        // 서브쿼리: 날짜 + 구분코드별 집계
+        val summary = dslContext
             .select(
                 cl.CUST_CD.`as`("cust_cd"),
                 cl.COLBILL_DT.`as`("colbill_dt"),
+                cl.COLBILL_DIV_CD.`as`("colbill_div_cd"),
+                DSL.max(cl.COLLEDGER_ID).`as`("colledger_id"),
+                DSL.sum(cl.COLBILL_AMT).`as`("colbill_amt"), // 금액 합계 추가
                 DSL.sum(
                     DSL.case_()
                         .`when`(cl.COLBILL_DIV_CD.eq("0"), cl.COLBILL_AMT)
@@ -67,40 +70,48 @@ class CollectionLedgerRepositoryImpl(
                             .`when`(cl.COLBILL_DIV_CD.eq("1"), cl.COLBILL_AMT)
                             .otherwise(BigDecimal.ZERO)
                     )
-                ).`as`("rest")
+                ).`as`("rest"),
+                DSL.max(cl.COLBILL_ITEM_NM).`as`("colbill_item_nm")
             )
             .from(cl)
             .where(cl.CUST_CD.eq(custCd))
-            .groupBy(cl.CUST_CD, cl.COLBILL_DT)
-            .asTable("daily_summary")
+            .groupBy(cl.CUST_CD, cl.COLBILL_DT, cl.COLBILL_DIV_CD)
+            .orderBy(
+                DSL.field("colbill_dt"),
+                DSL.field("colbill_div_cd")
+            )
 
-        // 메인 쿼리: 기존 select 필드 유지 + 누적 잔액 계산
-        val query = dslContext
+        // 메인 쿼리: 누적 잔액 계산
+        val finalQuery = dslContext
             .select(
-                // 기존 필드들 유지
-                cl.COLLEDGER_ID,
-                cl.COLBILL_DT,
-                cl.COLBILL_DIV_CD,
-                cl.COLBILL_ITEM_NM,
-                cl.COLBILL_AMT,
-                // 날짜별 집계된 demand
-                dailySummary.field("demand", BigDecimal::class.java)?.`as`("demand_amt"),
-                // 날짜별 집계된 collect
-                dailySummary.field("collect", BigDecimal::class.java)?.`as`("collect_amt"),
-                // 누적 잔액 (SQL의 sum(rest) over 로직)
-                DSL.sum(dailySummary.field("rest", BigDecimal::class.java))
+                DSL.field("colledger_id", String::class.java),
+                DSL.field("cust_cd", String::class.java),
+                DSL.field("colbill_div_cd", String::class.java),
+                DSL.case_()
+                    .`when`(DSL.field("colbill_div_cd").eq("0"), DSL.inline("청구"))
+                    .otherwise(DSL.inline("수금"))
+                    .`as`("colbill_div_nm"),
+                DSL.field("colbill_dt", LocalDate::class.java),
+                DSL.field("colbill_amt", BigDecimal::class.java), // 금액 추가
+                DSL.field("demand", BigDecimal::class.java),
+                DSL.field("collect", BigDecimal::class.java),
+                DSL.sum(DSL.field("rest", BigDecimal::class.java))
                     .over()
-                    .orderBy(dailySummary.field("colbill_dt"))
-                    .`as`("balance")
+                    .orderBy(
+                        DSL.field("colbill_dt"),
+                        DSL.field("colbill_div_cd")
+                    )
+                    .`as`("balance"),
+                DSL.field("colbill_item_nm", String::class.java)
             )
-            .from(cl)
-            .join(dailySummary)
-            .on(cl.COLBILL_DT.eq(dailySummary.field("colbill_dt", LocalDate::class.java)))
-            .where(cl.CUST_CD.eq(custCd))
-            .orderBy(cl.COLBILL_DT, cl.COLLEDGER_ID)
+            .from(summary.asTable("sub"))
+            .orderBy(
+                DSL.field("colbill_dt"),
+                DSL.field("colbill_div_cd")
+            )
 
-        var executeSpec = databaseClient.sql { query.sql }
-        query.bindValues.forEachIndexed { index, value ->
+        var executeSpec = databaseClient.sql { finalQuery.sql }
+        finalQuery.bindValues.forEachIndexed { index, value ->
             if (value != null) {
                 executeSpec = executeSpec.bind(index, value)
             } else {
@@ -116,16 +127,16 @@ class CollectionLedgerRepositoryImpl(
     }
 
     private fun toCollectionLedgerTransaction(row: Map<String, Any>): CollectionLedgerTransaction {
-        val divCd = row["colbill_div_cd"] as String
         return CollectionLedgerTransaction(
             colledgerId = row["colledger_id"] as String,
             colbillDt = row["colbill_dt"] as LocalDate,
-            division = if (divCd == "0") "청구" else "수금",
+            division = row["colbill_div_nm"] as String,
             colbillItemNm = row["colbill_item_nm"] as? String,
-            colbillAmt = row["colbill_amt"] as BigDecimal,
-            demandAmt = row["demand_amt"] as BigDecimal,
-            collectAmt = row["collect_amt"] as BigDecimal,
+            colbillAmt = row["colbill_amt"] as BigDecimal, // 금액 매핑
+            demandAmt = row["demand"] as BigDecimal,
+            collectAmt = row["collect"] as BigDecimal,
             balance = row["balance"] as BigDecimal
         )
     }
+
 }
