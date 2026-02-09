@@ -31,7 +31,7 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
             .multiply(BigDecimal(100))
             .setScale(2, RoundingMode.HALF_UP)
     } else {
-        null
+        BigDecimal.ZERO
     }
 
     return DemandResponse(
