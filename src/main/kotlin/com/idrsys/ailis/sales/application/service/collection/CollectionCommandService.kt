@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import kotlin.String
 
@@ -108,8 +109,21 @@ class CollectionCommandService(
 
         val savedBill = collectionBillRepository.save(collectionBill)
 
-        // 4. Mark card payment as registered
-        val updatedCardPayment = cardPayment.copy(regYn = true)
+        // 4. 카드 미정산 금액 및 등록여부 계산
+        val remainAmt = cardPayment.outamt.subtract(command.payAmt)
+
+        if (remainAmt < BigDecimal.ZERO) {
+            throw UserDefinedException(
+                "INVALID_PAYMENT_AMOUNT",
+                "요청 금액이 미정산 금액을 초과합니다"
+            )
+        }
+
+        val updatedCardPayment = cardPayment.copy(
+            outamt = remainAmt,
+            regYn = remainAmt.compareTo(BigDecimal.ZERO) == 0
+        )
+
         cardPaymentRepository.save(updatedCardPayment)
 
         // 5. Return response
@@ -182,8 +196,21 @@ class CollectionCommandService(
 
         val savedBill = collectionBillRepository.save(collectionBill)
 
-        // 4. Mark bank deposit as registered
-        val updatedBankDeposit = bankDeposit.copy(regYn = true)
+        // 4. 은행 미정산 금액 및 등록여부 계산
+        val remainAmt = bankDeposit.outamt?.subtract(command.payAmt)
+
+        if (remainAmt != null && remainAmt < BigDecimal.ZERO) {
+          throw UserDefinedException(
+            "INVALID_PAYMENT_AMOUNT",
+            "요청 금액이 미정산 금액을 초과합니다"
+          )
+        }
+
+        val updatedBankDeposit = bankDeposit.copy(
+            outamt = remainAmt,
+            regYn = remainAmt?.compareTo(BigDecimal.ZERO) == 0
+        )
+
         bankDepositRepository.save(updatedBankDeposit)
 
         // 5. Return response
@@ -201,6 +228,9 @@ class CollectionCommandService(
         if (request.cardPayId.isNullOrEmpty() || request.cardPayId == "") {
             throw UserDefinedException("CARDPAYID IS NULL OR EMPTY", "카드 아이디가 null입니다.")
         }
+
+        val cardPayment = request.cardPayId.let { cardPaymentRepository.findById(it) }
+            ?: throw UserDefinedException("CARD_PAYMENT_NOT_FOUND", "카드 결제를 찾을 수 없습니다: ${request.cardPayId}")
 
         if (colBill.closingCd == "CLCD_Y") {
             throw UserDefinedException("COLLECTION IS CLOSED", "마감된 상태입니다.")
@@ -256,6 +286,24 @@ class CollectionCommandService(
             collectionLedgerRepository.save(ledger)
         }
 
+        // 카드 미정산 금액 및 등록여부 계산
+        val diff = request.payAmt.subtract(colBill.payAmt)
+        val remainAmt = cardPayment.outamt.subtract(diff)
+
+        if (remainAmt < BigDecimal.ZERO) {
+            throw UserDefinedException(
+                "INVALID_PAYMENT_AMOUNT",
+                "요청 금액이 미정산 금액을 초과합니다"
+            )
+        }
+
+        val updatedCardPayment = cardPayment.copy(
+            outamt = remainAmt,
+            regYn = remainAmt.compareTo(BigDecimal.ZERO) == 0
+        )
+
+        cardPaymentRepository.save(updatedCardPayment)
+
         return CollectionBillResponse.from(saved)
     }
 
@@ -264,6 +312,9 @@ class CollectionCommandService(
         if(request.bankDepositId.isNullOrEmpty() || request.bankDepositId == "" ) {
             throw UserDefinedException("BANKDEPOSITID IS NULL OR EMPTY","은행 아이디가 null입니다.")
         }
+        val bankDeposit = bankDepositRepository.findById(request.bankDepositId)
+            ?: throw UserDefinedException("BANK_DEPOSIT_NOT_FOUND", "은행 입금을 찾을 수 없습니다: ${request.bankDepositId}")
+
         if (colBill.closingCd === "CLCD_Y") {
             throw UserDefinedException("COLLECTION IS CLOSED","마감된 상태입니다.")
         }
@@ -317,7 +368,24 @@ class CollectionCommandService(
             collectionLedgerRepository.save(ledger)
         }
 
+        // 은행 미정산 금액 및 등록여부 계산
+        val diff = request.payAmt.subtract(colBill.payAmt)
+        val remainAmt = bankDeposit.outamt?.subtract(diff)
 
+        if (remainAmt != null && remainAmt < BigDecimal.ZERO) {
+          throw UserDefinedException(
+            "INVALID_PAYMENT_AMOUNT",
+            "요청 금액이 미정산 금액을 초과합니다"
+          )
+        }
+
+        val updatedBankPayment = bankDeposit.copy(
+            outamt = remainAmt,
+            regYn = remainAmt?.compareTo(BigDecimal.ZERO) == 0
+        )
+
+        bankDepositRepository.save(updatedBankPayment)
+        
         return CollectionBillResponse.from(saved)
     }
 
@@ -608,16 +676,36 @@ class CollectionCommandService(
             }
         }
 
-        // 4. Mark payment source as not registered
+        // 4. 카드/은행 미정산 금액 및 등록여부 계산
         if (collectionBill.cardPayId != null) {
             val cardPayment = cardPaymentRepository.findById(collectionBill.cardPayId.toString())
+
+            val newOutAmt = cardPayment?.outamt?.add(collectionBill.payAmt)
+
+            val updatedCardPayment = newOutAmt?.let {
+                cardPayment.copy(
+                    outamt = it,
+                    regYn = false
+                )
+            }
+
             if (cardPayment != null) {
-                cardPaymentRepository.save(cardPayment.copy(regYn = false))
+                updatedCardPayment?.let { cardPaymentRepository.save(it) }
             }
         } else if (collectionBill.bankDepositId != null) {
             val bankDeposit = bankDepositRepository.findById(collectionBill.bankDepositId.toString())
+
+            val newOutAmt = bankDeposit?.outamt?.add(collectionBill.payAmt)
+
+            val updatedBankPayment = newOutAmt?.let {
+                bankDeposit.copy(
+                    outamt = it,
+                    regYn = false
+                )
+            }
+
             if (bankDeposit != null) {
-                bankDepositRepository.save(bankDeposit.copy(regYn = false))
+                updatedBankPayment?.let { bankDepositRepository.save(it) }
             }
         }
 
