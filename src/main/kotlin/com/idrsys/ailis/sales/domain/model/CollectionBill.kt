@@ -54,8 +54,8 @@ class CollectionBill(
 
     init {
         require(custCd.isNotBlank()) { "Customer code is required" }
-//        require(cardPayId != null || bankDepositId != null) { "Payment source must be specified" }
-//        require(!(cardPayId != null && bankDepositId != null)) { "Only one payment source allowed" }
+        require(cardPayId != null || bankDepositId != null) { "Payment source must be specified" }
+        require(!(cardPayId != null && bankDepositId != null)) { "Only one payment source allowed" }
     }
 
     @Id

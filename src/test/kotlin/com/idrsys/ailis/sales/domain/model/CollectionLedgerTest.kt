@@ -6,6 +6,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class CollectionLedgerTest {
@@ -50,6 +51,7 @@ class CollectionLedgerTest {
             custCd = custCd,
             colbillDt = colbillDt,
             colbillItemNm = "결제(카드)",
+            colbillItemDtl = null,
             payAmt = payAmt,
             creator = creator
         )
@@ -60,6 +62,7 @@ class CollectionLedgerTest {
         assertEquals(colbillDt, ledger.colbillDt)
         assertEquals(custCd, ledger.custCd)
         assertEquals("결제(카드)", ledger.colbillItemNm)
+        assertNull(ledger.colbillItemDtl)
         assertEquals(payAmt, ledger.colbillAmt)
         assertEquals(creator, ledger.creator)
         assertTrue(ledger.isNew())
@@ -78,6 +81,7 @@ class CollectionLedgerTest {
             custCd = custCd,
             colbillDt = colbillDt,
             colbillItemNm = "결제(은행)",
+            colbillItemDtl = "외환은행:xxxxxxx",
             payAmt = payAmt,
             creator = creator
         )
@@ -108,21 +112,8 @@ class CollectionLedgerTest {
                 custCd = "CUST001",
                 colbillDt = LocalDate.now(),
                 colbillItemNm = "결제(카드)",
+                colbillItemDtl = null,
                 payAmt = BigDecimal("-1000"),
-                creator = "admin"
-            )
-        }
-    }
-
-    @Test
-    fun `should throw exception for empty item name`() {
-        // Given & When & Then
-        assertThrows<IllegalArgumentException> {
-            CollectionLedger.createForCollection(
-                custCd = "CUST001",
-                colbillDt = LocalDate.now(),
-                colbillItemNm = "",
-                payAmt = BigDecimal("1000"),
                 creator = "admin"
             )
         }

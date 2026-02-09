@@ -64,7 +64,7 @@ CREATE TABLE sales_scm.sbl_demand (
     demand_dt DATE NOT NULL,
     cust_cd VARCHAR(255) NOT NULL,
     demand_start_dt DATE NOT NULL,
-    demand_stnd_dt DATE NOT NULL,
+    demand_end_dt DATE NOT NULL,
     stnd_price DECIMAL(19, 2) NOT NULL,
     supval DECIMAL(19, 2) NOT NULL,
     demand_charge DECIMAL(19, 2) NOT NULL,
@@ -141,11 +141,6 @@ CREATE TABLE sales_scm.sbl_estimate_item (
 );
 
 -- Create indexes
-CREATE INDEX idx_demand_cust_cd ON sales_scm.sbl_demand(cust_cd);
-CREATE INDEX idx_demand_stnd_dt ON sales_scm.sbl_demand(demand_stnd_dt);
-CREATE INDEX idx_demand_slstmt_no ON sales_scm.sbl_demand(slstmt_no);
-CREATE INDEX idx_estimate_doc_type ON sales_scm.sbl_estimate(doc_type);
-CREATE INDEX idx_estimate_reg_dt ON sales_scm.sbl_estimate(reg_dt);
 CREATE INDEX idx_estimate_item_estimate_id ON sales_scm.sbl_estimate_item(estimate_id);
 CREATE INDEX idx_sales_target_cust_cd ON sales_scm.sbl_sales_target(cust_cd);
 CREATE INDEX idx_sales_target_year ON sales_scm.sbl_sales_target(sales_year);
