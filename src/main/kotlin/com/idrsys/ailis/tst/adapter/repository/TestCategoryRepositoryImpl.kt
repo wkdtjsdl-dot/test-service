@@ -5,7 +5,6 @@ import com.idrsys.ailis.tst.domain.model.TestCategory
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstCate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactor.awaitSingle
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
@@ -35,17 +34,28 @@ class TestCategoryRepositoryImpl(
         testCategoryDataRepository.deleteById(id)
     }
 
-    override fun findByLargeCateCd(largeCateCd: String, useYn: Boolean?): Flow<TestCategory> {
+    override fun findByLargeCateCd(largeCateCd: String?, useYn: Boolean?): Flow<TestCategory> {
         val table = BbsTstCate.BBS_TST_CATE
-        val condition = if (useYn != null){
+
+        // largeCateCd 조건
+        val largeCateCondition = if (largeCateCd != null) {
+            table.TST_LARGE_CATE_CD.eq(largeCateCd)
+        } else {
+            DSL.noCondition()
+        }
+
+        // useYn 조건
+        val useYnCondition = if (useYn != null) {
             table.USE_YN.eq(useYn)
         } else {
             DSL.noCondition()
         }
+
         val query = dslContext
             .select(table.fields().toList())
             .from(table)
-            .where(table.TST_LARGE_CATE_CD.eq(largeCateCd)).and(condition)
+            .where(largeCateCondition)
+            .and(useYnCondition)
             .orderBy(table.SORT_ORDER)
 
         var executeSpec = databaseClient.sql(query.sql)

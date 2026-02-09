@@ -19,9 +19,13 @@ class TestCategoryController(
     private val testCategoryUseCase: TestCategoryUseCase
 ) {
 
+
     @Operation(summary = "검사 기준정보 검사코드분류 중분류 조회")
-    @GetMapping("/{largeCateCd}")
-    fun getCategoriesByLargeCategory(@PathVariable largeCateCd: String, @RequestParam(required = false) useYn: Boolean?): Flow<TestCategoryResponse> {
+    @GetMapping
+    suspend fun getCategories(
+        @RequestParam(required = false) largeCateCd: String?,
+        @RequestParam(required = false) useYn: Boolean?
+    ): Flow<TestCategoryResponse> {
         return testCategoryUseCase.getCategoriesByLargeCategory(largeCateCd, useYn)
     }
 
