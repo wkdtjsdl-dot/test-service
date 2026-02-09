@@ -9,6 +9,7 @@ interface TestItemUseCase {
     suspend fun getItem(tstCd: String): TestItemResponse
     suspend fun updateItem(tstCd: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse
     fun getItems(searchParam: TestItemSearchParam): Flow<TestItemResponse>
+    fun getItemsSimple(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse>
     fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse>
     suspend fun findSimpleItemByTstCd(tstCds: List<String>): Flow<TestItemSimpleResponse>
     suspend fun findSimpleItemAll(): Flow<TestItemSimpleResponse>
