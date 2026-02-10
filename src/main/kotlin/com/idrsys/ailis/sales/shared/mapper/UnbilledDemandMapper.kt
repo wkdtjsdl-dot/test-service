@@ -39,7 +39,7 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
         custCd = this.directAcctCd,
         custNm = custNm,                        // From sales-service DB (scs_cust_mst)
         branchNm = this.branchNm,
-        demandDt = LocalDate.now(),             // Query date
+        demandDt = searchEndDt,             // Query date
         demandStartDt = searchStartDt,          // Search start date
         demandEndDt = searchEndDt,             // Demand standard date (Search end date)
         demandCreatorEmpNo = null,
