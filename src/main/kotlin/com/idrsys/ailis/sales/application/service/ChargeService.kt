@@ -165,7 +165,7 @@ class ChargeService(
         // 2. Validate basic business rules (exclude period overlap check)
         chargeValidator.validateDateRange(command.applyStartDt, completeEndDt)
         chargeValidator.validateUniqueKey(
-            custMstId = command.custMstId,
+            custCd = command.custCd,
             applyStartDt = command.applyStartDt,
             tstCd = command.tstCd
         )
@@ -230,6 +230,7 @@ class ChargeService(
 
                 chargeValidator.validateForUpdate(
                     custChargeId = custChargeId,
+                    custCd = charge.custCd,
                     custMstId = charge.custMstId ?: throw IllegalStateException("custMstId is null"),
                     applyStartDt = newStartDt,
                     applyEndDt = command.applyEndDt,
@@ -284,6 +285,7 @@ class ChargeService(
                 // 미래 구간: 단순 UPDATE (시작일 유지, 종료일/금액만 변경)
                 chargeValidator.validateForUpdate(
                     custChargeId = custChargeId,
+                    custCd = charge.custCd,
                     custMstId = charge.custMstId ?: throw IllegalStateException("custMstId is null"),
                     applyStartDt = charge.applyStartDt,
                     applyEndDt = command.applyEndDt,
@@ -424,7 +426,7 @@ class ChargeService(
 
             // 3-2. 중복 validation (동일 고객, 기간, 검사코드)
             val duplicate = chargeCustomRepository.existsByUniqueKey(
-                custMstId = enriched.custMstId,
+                custCd = enriched.custCd,
                 applyStartDt = enriched.applyStartDt,
                 tstCd = enriched.tstCd,
                 excludeId = null

@@ -160,15 +160,15 @@ class ChargeCustomRepositoryImpl(
         return conds
     }
 
-    // UK 중복 검증
+    // UK 중복 검증 (cust_cd, apply_start_dt, tst_cd)
     override suspend fun existsByUniqueKey(
-        custMstId: String,
+        custCd: String,
         applyStartDt: LocalDate,
         tstCd: String,
         excludeId: String?
     ): Boolean {
         val conditions = mutableListOf<Condition>(
-            SCS_CUST_CHARGE.CUST_MST_ID.eq(custMstId),
+            SCS_CUST_CHARGE.CUST_CD.eq(custCd),
             SCS_CUST_CHARGE.APPLY_START_DT.eq(applyStartDt),
             SCS_CUST_CHARGE.TST_CD.eq(tstCd)
         )
@@ -202,6 +202,38 @@ class ChargeCustomRepositoryImpl(
             SCS_CUST_CHARGE.TST_CD.eq(tstCd),
             SCS_CUST_CHARGE.APPLY_START_DT.le(endDt),
             SCS_CUST_CHARGE.APPLY_END_DT.ge(startDt)
+        )
+
+        excludeId?.let { conditions += SCS_CUST_CHARGE.CUST_CHARGE_ID.ne(it) }
+
+        val query = dslContext.select(SCS_CUST_CHARGE.asterisk())
+            .from(SCS_CUST_CHARGE)
+            .where(conditions)
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.toCharge() }
+            .all()
+            .asFlow()
+            .toList()
+    }
+
+    // 기간 겹침 검증 (특정 상태 필터) - 이력 끊기용
+    override suspend fun findOverlappingPeriodsWithStatus(
+        custMstId: String,
+        tstCd: String,
+        startDt: LocalDate,
+        endDt: LocalDate,
+        lastApprStatCd: String,
+        excludeId: String?
+    ): List<Charge> {
+        val conditions = mutableListOf<Condition>(
+            SCS_CUST_CHARGE.CUST_MST_ID.eq(custMstId),
+            SCS_CUST_CHARGE.TST_CD.eq(tstCd),
+            SCS_CUST_CHARGE.APPLY_START_DT.le(endDt),
+            SCS_CUST_CHARGE.APPLY_END_DT.ge(startDt),
+            SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq(lastApprStatCd)
         )
 
         excludeId?.let { conditions += SCS_CUST_CHARGE.CUST_CHARGE_ID.ne(it) }

@@ -3,7 +3,7 @@ package com.idrsys.ailis.sales.shared.constant
 object ChargeErrorCode {
     // UK 중복
     const val UK_DUPLICATE_CODE = "CHARGE_UK_DUPLICATE"
-    const val UK_DUPLICATE_MESSAGE = "동일한 고객/검사코드/적용시작일 조합이 이미 존재합니다"
+    const val UK_DUPLICATE_MESSAGE = "동일 시작일자의 동일 검사코드가 이미 존재합니다."
 
     // 기간 겹침
     const val PERIOD_OVERLAP_CODE = "CHARGE_PERIOD_OVERLAP"

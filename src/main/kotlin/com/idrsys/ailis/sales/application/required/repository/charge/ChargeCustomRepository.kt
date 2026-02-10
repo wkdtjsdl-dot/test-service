@@ -13,9 +13,9 @@ interface ChargeCustomRepository {
     suspend fun countCharge(searchParam: ChargeSearchParam): Long
     suspend fun findChargeWithDetailsById(custChargeId: String): ChargeWithDetails?
 
-    // 신규: UK 중복 검증
+    // 신규: UK 중복 검증 (cust_cd, apply_start_dt, tst_cd)
     suspend fun existsByUniqueKey(
-        custMstId: String,
+        custCd: String,
         applyStartDt: LocalDate,
         tstCd: String,
         excludeId: String? = null
@@ -27,6 +27,16 @@ interface ChargeCustomRepository {
         tstCd: String,
         startDt: LocalDate,
         endDt: LocalDate,
+        excludeId: String? = null
+    ): List<Charge>
+
+    // 기간 겹침 검증 (특정 상태 필터)
+    suspend fun findOverlappingPeriodsWithStatus(
+        custMstId: String,
+        tstCd: String,
+        startDt: LocalDate,
+        endDt: LocalDate,
+        lastApprStatCd: String,
         excludeId: String? = null
     ): List<Charge>
 

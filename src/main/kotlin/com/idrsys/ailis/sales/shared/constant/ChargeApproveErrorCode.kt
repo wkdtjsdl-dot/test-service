@@ -39,4 +39,10 @@ object ChargeApproveErrorCode {
 
     const val NOT_ALLOWED_TO_DELETE_LAST_T_CODE = "CA016"
     const val NOT_ALLOWED_TO_DELETE_LAST_T_MESSAGE = "임시저장 상태의 수가는 등록자만 삭제할 수 있습니다."
+
+    const val PAST_PERIOD_NOT_ALLOWED_CODE = "CA017"
+    const val PAST_PERIOD_NOT_ALLOWED_MESSAGE = "과거 구간은 결재 요청할 수 없습니다."
+
+    const val DUPLICATE_CHARGE_CODE = "CA018"
+    const val DUPLICATE_CHARGE_MESSAGE = "동일 고객의 동일 시작일자, 동일 검사코드가 이미 존재합니다."
 }

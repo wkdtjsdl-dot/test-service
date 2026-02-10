@@ -25,17 +25,17 @@ class ChargeValidator(
     }
 
     /**
-     * UK 중복 검증
+     * UK 중복 검증 (cust_cd, apply_start_dt, tst_cd)
      * @throws UserDefinedException UK 중복 시
      */
     suspend fun validateUniqueKey(
-        custMstId: String,
+        custCd: String,
         applyStartDt: LocalDate,
         tstCd: String,
         excludeId: String? = null
     ) {
         val exists = chargeCustomRepository.existsByUniqueKey(
-            custMstId = custMstId,
+            custCd = custCd,
             applyStartDt = applyStartDt,
             tstCd = tstCd,
             excludeId = excludeId
@@ -84,13 +84,14 @@ class ChargeValidator(
      * 신규 등록 시 전체 검증
      */
     suspend fun validateForCreate(
+        custCd: String,
         custMstId: String,
         applyStartDt: LocalDate,
         applyEndDt: LocalDate,
         tstCd: String
     ) {
         validateDateRange(applyStartDt, applyEndDt)
-        validateUniqueKey(custMstId, applyStartDt, tstCd)
+        validateUniqueKey(custCd, applyStartDt, tstCd)
         validatePeriodOverlap(custMstId, tstCd, applyStartDt, applyEndDt)
     }
 
@@ -99,6 +100,7 @@ class ChargeValidator(
      */
     suspend fun validateForUpdate(
         custChargeId: String,
+        custCd: String,
         custMstId: String,
         applyStartDt: LocalDate,
         applyEndDt: LocalDate,
@@ -107,7 +109,7 @@ class ChargeValidator(
         validateDateRange(applyStartDt, applyEndDt)
 
         // UK 중복 검증 (현재 구간 이력 끊기 시 today로 시작하는 새 레코드의 UK 검증)
-        validateUniqueKey(custMstId, applyStartDt, tstCd, excludeId = custChargeId)
+        validateUniqueKey(custCd, applyStartDt, tstCd, excludeId = custChargeId)
 
         // 기간 겹침 검증
         validatePeriodOverlap(custMstId, tstCd, applyStartDt, applyEndDt, excludeId = custChargeId)

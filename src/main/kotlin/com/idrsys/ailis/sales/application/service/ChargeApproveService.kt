@@ -18,6 +18,8 @@ import com.idrsys.ailis.sales.application.usecase.chargeapprove.ChargeApproveUse
 import com.idrsys.ailis.sales.domain.model.ApprInfo
 import com.idrsys.ailis.sales.domain.model.Charge
 import com.idrsys.ailis.sales.shared.constant.ChargeApproveErrorCode
+import com.idrsys.ailis.sales.shared.util.PeriodClassifier
+import com.idrsys.ailis.sales.shared.util.PeriodType
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Page
@@ -90,7 +92,17 @@ class ChargeApproveService(
             )
         }
 
-        // 3. 최저수가 조회
+        // 3. 과거 구간 체크 - 과거 구간은 결재 요청 불가
+        val today = java.time.LocalDate.now()
+        val periodType = PeriodClassifier.classifyPeriod(charge.applyStartDt, charge.applyEndDt, today)
+        if (periodType == PeriodType.PAST) {
+            throw UserDefinedException(
+                ChargeApproveErrorCode.PAST_PERIOD_NOT_ALLOWED_CODE,
+                ChargeApproveErrorCode.PAST_PERIOD_NOT_ALLOWED_MESSAGE
+            )
+        }
+
+        // 4. 최저수가 조회
         val lowestChargeDouble = tstServicePort.getStandardCharges(charge.tstCd)?.firstOrNull()?.lowestCharge
             ?: throw UserDefinedException(
                 ChargeApproveErrorCode.LOWEST_CHARGE_NOT_FOUND_CODE,
@@ -234,6 +246,30 @@ class ChargeApproveService(
 
         val rowsUpdated = if (nextApprInfo == null) {
             // 마지막 결재자: 결재 완료 처리
+
+            // 5. 이력 끊기: LAST_C 상태인 기존 수가 중 기간이 겹치는 것 찾기
+            val completeEndDt = charge.applyEndDt
+            val overlapping = chargeCustomRepository.findOverlappingPeriodsWithStatus(
+                custMstId = charge.custMstId ?: throw IllegalStateException("custMstId is null"),
+                tstCd = charge.tstCd,
+                startDt = charge.applyStartDt,
+                endDt = completeEndDt,
+                lastApprStatCd = LAST_C,
+                excludeId = charge.custChargeId
+            )
+
+            // 가장 최근 수가의 종료일을 새 수가 시작일 - 1일로 변경
+            if (overlapping.isNotEmpty()) {
+                val mostRecentCharge = overlapping.maxByOrNull { it.applyStartDt }
+                if (mostRecentCharge != null) {
+                    val newEndDate = charge.applyStartDt.minusDays(1)
+                    mostRecentCharge.updateEndDate(newEndDate, userId)
+                    chargeRepository.save(mostRecentCharge)
+                    log.info("이력 끊기 완료: 기존 수가 {} 종료일 {} -> {}", mostRecentCharge.custChargeId, mostRecentCharge.applyEndDt, newEndDate)
+                }
+            }
+
+            // 6. 결재 완료 처리
             chargeCustomRepository.completeApprovalWithCAS(
                 custChargeId = charge.custChargeId,
                 currentSeq = currentApprInfo.apprSeq,
