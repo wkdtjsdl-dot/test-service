@@ -14,6 +14,7 @@ import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCusto
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.usecase.charge.ChargeUseCase
+import com.idrsys.ailis.sales.domain.enums.ApprovalStatus
 import com.idrsys.ailis.sales.shared.constant.ChargeErrorCode
 import com.idrsys.ailis.sales.shared.mapper.ChargeMapper
 import com.idrsys.ailis.sales.shared.util.ChargeValidator
@@ -170,25 +171,28 @@ class ChargeService(
             tstCd = command.tstCd
         )
 
-        // 3. Find overlapping periods (for auto-close, not validation error)
-        val overlapping = chargeCustomRepository.findOverlappingPeriods(
-            custMstId = command.custMstId,
-            tstCd = command.tstCd,
-            startDt = command.applyStartDt,
-            endDt = completeEndDt,
-            excludeId = null
-        )
+        // 3. 자동승인(LAST_C) 모드에서만 이력 끊기 실행
+        // 결재 프로세스(LAST_T)에서는 마지막 결재자 승인 시 ChargeApproveService.approve()에서 처리
+        if (command.lastApprStatCd == ApprovalStatus.COMPLETED.code) {
+            val overlapping = chargeCustomRepository.findOverlappingPeriods(
+                custMstId = command.custMstId,
+                tstCd = command.tstCd,
+                startDt = command.applyStartDt,
+                endDt = completeEndDt,
+                excludeId = null
+            )
 
-        // 4. Auto-close existing overlapping periods (follow excelRegisterCharges pattern)
-        if (overlapping.isNotEmpty()) {
-            // Select only the most recent charge (latest applyStartDt)
-            val mostRecentCharge = overlapping.maxByOrNull { it.applyStartDt }
+            // 4. Auto-close existing overlapping periods (follow excelRegisterCharges pattern)
+            if (overlapping.isNotEmpty()) {
+                // Select only the most recent charge (latest applyStartDt)
+                val mostRecentCharge = overlapping.maxByOrNull { it.applyStartDt }
 
-            if (mostRecentCharge != null) {
-                // Cut off previous period to day before new period starts
-                val newEndDate = command.applyStartDt.minusDays(1)
-                mostRecentCharge.updateEndDate(newEndDate, creator)
-                chargeRepository.save(mostRecentCharge)
+                if (mostRecentCharge != null) {
+                    // Cut off previous period to day before new period starts
+                    val newEndDate = command.applyStartDt.minusDays(1)
+                    mostRecentCharge.updateEndDate(newEndDate, creator)
+                    chargeRepository.save(mostRecentCharge)
+                }
             }
         }
 

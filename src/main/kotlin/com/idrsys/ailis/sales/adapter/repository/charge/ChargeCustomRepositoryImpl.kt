@@ -7,6 +7,7 @@ import com.idrsys.ailis.sales.application.dto.query.ChargeWithDetails
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeSearchParam
 import com.idrsys.ailis.sales.application.dto.response.inner.CustChargeInnerResponse
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeCustomRepository
+import com.idrsys.ailis.sales.domain.enums.ApprovalStatus
 import com.idrsys.ailis.sales.domain.model.Charge
 import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustCharge.SCS_CUST_CHARGE
 import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustMst.SCS_CUST_MST
@@ -296,7 +297,7 @@ class ChargeCustomRepositoryImpl(
         updater: String
     ): Int {
         val query = dslContext.update(SCS_CUST_CHARGE)
-            .set(SCS_CUST_CHARGE.LAST_APPR_STAT_CD, "LAST_I")
+            .set(SCS_CUST_CHARGE.LAST_APPR_STAT_CD, "ApprovalStatus.IN_PROGRESS.code")
             .set(SCS_CUST_CHARGE.APPR_INFO_NO, apprInfoNo)
             .set(SCS_CUST_CHARGE.CURR_APPR_SEQ, currApprSeq)
             .set(SCS_CUST_CHARGE.APPR_SUBMS_EMP_NO, apprSubmsEmpNo)
@@ -304,7 +305,7 @@ class ChargeCustomRepositoryImpl(
             .set(SCS_CUST_CHARGE.APPR_LVL_CD, apprLvlCd)
             .set(SCS_CUST_CHARGE.UPDATER, updater)
             .set(SCS_CUST_CHARGE.UPDATE_DTIME, LocalDateTime.now())
-            .where(SCS_CUST_CHARGE.CUST_CHARGE_ID.eq(custChargeId).and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("LAST_T")))
+            .where(SCS_CUST_CHARGE.CUST_CHARGE_ID.eq(custChargeId).and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("ApprovalStatus.TEMPORARY.code")))
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
@@ -319,7 +320,7 @@ class ChargeCustomRepositoryImpl(
             .where(
                 SCS_CUST_CHARGE.CUST_CHARGE_ID.eq(custChargeId)
                     .and(SCS_CUST_CHARGE.CURR_APPR_SEQ.eq(currentSeq))
-                    .and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("LAST_I"))
+                    .and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("ApprovalStatus.IN_PROGRESS.code"))
             )
 
         var sql = databaseClient.sql(query.sql)
@@ -329,13 +330,13 @@ class ChargeCustomRepositoryImpl(
 
     override suspend fun completeApprovalWithCAS(custChargeId: String, currentSeq: Int, updater: String): Int {
         val query = dslContext.update(SCS_CUST_CHARGE)
-            .set(SCS_CUST_CHARGE.LAST_APPR_STAT_CD, "LAST_C")
+            .set(SCS_CUST_CHARGE.LAST_APPR_STAT_CD, "ApprovalStatus.COMPLETED.code")
             .set(SCS_CUST_CHARGE.UPDATER, updater)
             .set(SCS_CUST_CHARGE.UPDATE_DTIME, LocalDateTime.now())
             .where(
                 SCS_CUST_CHARGE.CUST_CHARGE_ID.eq(custChargeId)
                     .and(SCS_CUST_CHARGE.CURR_APPR_SEQ.eq(currentSeq))
-                    .and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("LAST_I"))
+                    .and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("ApprovalStatus.IN_PROGRESS.code"))
             )
 
         var sql = databaseClient.sql(query.sql)
@@ -348,7 +349,7 @@ class ChargeCustomRepositoryImpl(
             .where(
                 SCS_CUST_CHARGE.CUST_CHARGE_ID.eq(custChargeId)
                     .and(SCS_CUST_CHARGE.CURR_APPR_SEQ.eq(currentSeq))
-                    .and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("LAST_I"))
+                    .and(SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq("ApprovalStatus.IN_PROGRESS.code"))
             )
 
         var sql = databaseClient.sql(query.sql)

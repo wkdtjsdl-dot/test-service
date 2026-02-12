@@ -5,6 +5,7 @@ import com.idrsys.ailis.sales.adapter.persistence.mapper.toChargeApproveQuery
 import com.idrsys.ailis.sales.application.dto.query.ChargeApproveQuery
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveSearchParam
 import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoCustomRepository
+import com.idrsys.ailis.sales.domain.enums.ApprovalStatus
 import com.idrsys.ailis.sales.domain.model.ApprInfo
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_APPR_INFO
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_CHARGE
@@ -125,9 +126,9 @@ class ApprInfoCustomRepositoryImpl(
             .orderBy(
                 // 임시저장(LAST_T) → 결재중(LAST_I) → 결재완료(LAST_C) 순서
                 DSL.case_(SCS_CUST_CHARGE.LAST_APPR_STAT_CD)
-                    .`when`("LAST_T", 1)
-                    .`when`("LAST_I", 2)
-                    .`when`("LAST_C", 3)
+                    .`when`(ApprovalStatus.TEMPORARY.code, 1)
+                    .`when`(ApprovalStatus.IN_PROGRESS.code, 2)
+                    .`when`(ApprovalStatus.COMPLETED.code, 3)
                     .else_(4)
                     .asc(),
                 SCS_CUST_CHARGE.CUST_CD.asc(),

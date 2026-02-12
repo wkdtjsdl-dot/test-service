@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.domain.model
 
 import com.idrsys.ailis.sales.application.dto.request.charge.ChargeUpdateCommand
+import com.idrsys.ailis.sales.domain.enums.ApprovalStatus
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -167,7 +168,7 @@ class Charge(
         this.currApprSeq = 1
         this.apprSubmsEmpNo = apprSubmsEmpNo
         this.apprSubmsDtime = LocalDateTime.now()
-        this.lastApprStatCd = "LAST_I"  // 결재중
+        this.lastApprStatCd = ApprovalStatus.IN_PROGRESS.code  // 결재중
         this.apprLvlCd = apprLvlCd
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
@@ -186,7 +187,7 @@ class Charge(
      * 결재 완료
      */
     fun completeApproval(updater: String) {
-        this.lastApprStatCd = "LAST_C"  // 결재완료
+        this.lastApprStatCd = ApprovalStatus.COMPLETED.code  // 결재완료
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }

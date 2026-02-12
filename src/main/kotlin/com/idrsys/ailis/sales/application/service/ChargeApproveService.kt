@@ -15,6 +15,7 @@ import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoC
 import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoRepository
 import com.idrsys.ailis.sales.application.required.repository.charge.ChargeRepository
 import com.idrsys.ailis.sales.application.usecase.chargeapprove.ChargeApproveUseCase
+import com.idrsys.ailis.sales.domain.enums.ApprovalStatus
 import com.idrsys.ailis.sales.domain.model.ApprInfo
 import com.idrsys.ailis.sales.domain.model.Charge
 import com.idrsys.ailis.sales.shared.constant.ChargeApproveErrorCode
@@ -60,11 +61,6 @@ class ChargeApproveService(
         private const val APST_W = "APST_W"  // 대기
         private const val APST_C = "APST_C"  // 승인완료
 
-        // Charge Status
-        private const val LAST_T = "LAST_T" // 임시저장
-        private const val LAST_I = "LAST_I" // 결재중
-        private const val LAST_C = "LAST_C" // 결재완료
-
         // Job Positions (jbpoCd) - from claude.md confirmed
         private val TEAM_MEMBER_POSITIONS = listOf("JP_TM", "JP_PM") // 팀원, 파트장
     }
@@ -85,7 +81,7 @@ class ChargeApproveService(
             )
 
         // 2. 임시저장 상태가 아니면 에러
-        if (charge.lastApprStatCd != LAST_T) {
+        if (charge.lastApprStatCd != ApprovalStatus.TEMPORARY.code) {
             throw UserDefinedException(
                 "ALREADY_REQUESTED",
                 "임시저장 상태인 수가만 승인 요청할 수 있습니다."
@@ -214,7 +210,7 @@ class ChargeApproveService(
                 ChargeApproveErrorCode.CHARGE_NOT_FOUND_MESSAGE
             )
 
-        if (charge.lastApprStatCd != LAST_I) {
+        if (charge.lastApprStatCd != ApprovalStatus.IN_PROGRESS.code) {
             throw UserDefinedException(ChargeApproveErrorCode.NOT_IN_PROGRESS_CODE, ChargeApproveErrorCode.NOT_IN_PROGRESS_MESSAGE)
         }
 
@@ -247,14 +243,14 @@ class ChargeApproveService(
         val rowsUpdated = if (nextApprInfo == null) {
             // 마지막 결재자: 결재 완료 처리
 
-            // 5. 이력 끊기: LAST_C 상태인 기존 수가 중 기간이 겹치는 것 찾기
+            // 5. 이력 끊기: ApprovalStatus.COMPLETED.code 상태인 기존 수가 중 기간이 겹치는 것 찾기
             val completeEndDt = charge.applyEndDt
             val overlapping = chargeCustomRepository.findOverlappingPeriodsWithStatus(
                 custMstId = charge.custMstId ?: throw IllegalStateException("custMstId is null"),
                 tstCd = charge.tstCd,
                 startDt = charge.applyStartDt,
                 endDt = completeEndDt,
-                lastApprStatCd = LAST_C,
+                lastApprStatCd = ApprovalStatus.COMPLETED.code,
                 excludeId = charge.custChargeId
             )
 
@@ -309,8 +305,8 @@ class ChargeApproveService(
                 ChargeApproveErrorCode.CHARGE_NOT_FOUND_MESSAGE
             )
 
-        // 2. 결재중(LAST_I) 상태만 반려 가능
-        if (charge.lastApprStatCd != LAST_I) {
+        // 2. 결재중(ApprovalStatus.IN_PROGRESS.code) 상태만 반려 가능
+        if (charge.lastApprStatCd != ApprovalStatus.IN_PROGRESS.code) {
             throw UserDefinedException(
                 ChargeApproveErrorCode.NOT_IN_PROGRESS_CODE,
                 ChargeApproveErrorCode.NOT_IN_PROGRESS_MESSAGE
@@ -400,11 +396,11 @@ class ChargeApproveService(
         }
 
         when (charge.lastApprStatCd) {
-            LAST_T -> {
+            ApprovalStatus.TEMPORARY.code -> {
                 // 임시저장 상태: 단순 삭제 (권한 검증은 canDeleteCharge에서 수행됨)
                 chargeRepository.deleteById(charge.custChargeId)
             }
-            LAST_I -> {
+            ApprovalStatus.IN_PROGRESS.code -> {
                 // 결재중 상태: 반려(삭제) 로직 수행 (권한 검증은 canDeleteCharge에서 수행됨)
                 val apprInfoNo = charge.apprInfoNo
                     ?: throw UserDefinedException(ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_CODE, ChargeApproveErrorCode.APPROVAL_INFO_NOT_FOUND_MESSAGE)
@@ -422,7 +418,7 @@ class ChargeApproveService(
                     )
                 }
             }
-            // LAST_C 상태는 canDeleteCharge에서 이미 처리되므로 여기에 도달하지 않음
+            // ApprovalStatus.COMPLETED.code 상태는 canDeleteCharge에서 이미 처리되므로 여기에 도달하지 않음
             else -> {
                 // canDeleteCharge에서 모든 케이스를 처리했으므로, 여기에 도달하면 예상치 못한 상태임
                 throw UserDefinedException(
@@ -584,7 +580,7 @@ class ChargeApproveService(
         val jbpoCd = user.jbpoCd ?: "JP_TM" // 기본 팀원
 
         return when (charge.lastApprStatCd) {
-            LAST_T -> { // 임시저장 상태
+            ApprovalStatus.TEMPORARY.code -> { // 임시저장 상태
                 // 임시저장 건은 생성자만 삭제 가능
                 if (charge.creator == requestingUserId) {
                     DeletePermissionResult(true, "", "")
@@ -596,7 +592,7 @@ class ChargeApproveService(
                     )
                 }
             }
-            LAST_I -> { // 결재중 상태
+            ApprovalStatus.IN_PROGRESS.code -> { // 결재중 상태
                 // 팀원(JP_TM/JP_PM)은 결재중인 건 삭제 불가
                 if (jbpoCd in TEAM_MEMBER_POSITIONS) {
                     DeletePermissionResult(
@@ -621,7 +617,7 @@ class ChargeApproveService(
                     }
                 }
             }
-            LAST_C -> { // 결재완료 상태
+            ApprovalStatus.COMPLETED.code -> { // 결재완료 상태
                 // 아무도 삭제 불가
                 DeletePermissionResult(
                     false,
@@ -677,7 +673,7 @@ class ChargeApproveService(
         currentUser: BaseUserResponse
     ): Boolean {
         // 1. 결재중 상태여야만 승인 가능
-        if (charge.lastApprStatCd != LAST_I) return false
+        if (charge.lastApprStatCd != ApprovalStatus.IN_PROGRESS.code) return false
 
         // 2. 현재 결재 순번(currApprSeq)에 대한 결재자(apprPersonEmpNo)가 현재 사용자인지 확인
         val currentApprSeq = charge.currApprSeq ?: return false
