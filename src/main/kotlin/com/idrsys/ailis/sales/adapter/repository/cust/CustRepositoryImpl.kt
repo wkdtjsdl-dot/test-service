@@ -6,7 +6,9 @@ import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface CustDataRepository : CoroutineCrudRepository<Cust, String>
+interface CustDataRepository : CoroutineCrudRepository<Cust, String> {
+    suspend fun findByExtnAuthKey(extnAuthKey: String): Cust?
+}
 
 @Repository
 class CustRepositoryImpl(

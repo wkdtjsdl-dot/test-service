@@ -83,6 +83,9 @@ class Cust(
     rstNtcnRecpEmailAddr: String?,   // 결과알림수신이메일주소
     reqMethodCd: String?,           // 의뢰메소드(방법)코드
     reqIfTypeCd: String?,           // 의뢰연동유형코드
+
+    extnAuthKey: String?,           // 외부기관인증key
+
     // 테이블공통
     creator: String,                // 생성자
     createDtime: LocalDateTime,     // 생성일시
@@ -354,7 +357,7 @@ class Cust(
     @Column("req_method_cd")
     var reqMethodCd: String? = reqMethodCd
         private set
-    
+
     @Column("req_if_type_cd")
     var reqIfTypeCd: String? = reqIfTypeCd
         private set
@@ -365,6 +368,10 @@ class Cust(
 
     @Column("req_poss_tst_limit_yn")
     var reqPossTstLimitYn: Boolean? = reqPossTstLimitYn
+        private set
+
+    @Column("extn_auth_key")
+    var extnAuthKey: String? = extnAuthKey
         private set
 
     // 테이블공통

@@ -7,6 +7,7 @@ import com.idrsys.ailis.sales.application.dto.query.*
 import com.idrsys.ailis.sales.application.dto.query.CustBillingInfo
 import com.idrsys.ailis.sales.application.dto.response.IfFieldInfoResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
+import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.generated.jooq.Tables.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -27,6 +28,7 @@ import kotlin.Boolean
 class CustCustomRepositoryImpl(
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient,
+    private val custDataRepository: CustDataRepository,
 ) : CustCustomRepository {
     override suspend fun findCustMstIdByCustCd(custCd: String): String? {
         val query = dslContext.select(SCS_CUST_MST.CUST_MST_ID)
@@ -739,6 +741,10 @@ class CustCustomRepositoryImpl(
             .all()
             .asFlow()
             .toList()
+    }
+
+    override suspend fun findByExtnAuthKey(extnAuthKey: String): Cust? {
+        return custDataRepository.findByExtnAuthKey(extnAuthKey)
     }
 
     companion object {

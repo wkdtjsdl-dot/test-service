@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.*
 import com.idrsys.ailis.sales.application.dto.response.IfFieldInfoResponse
+import com.idrsys.ailis.sales.domain.model.Cust
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Pageable
 
@@ -42,4 +43,11 @@ interface CustCustomRepository {
      * @return list of direct account codes (cust_cd where cust_div_cd = 'CSDV_DA')
      */
     suspend fun findDirectAcctCdsByFrgnAcctYn(frgnAcctYn: Boolean): List<String>
+
+    /**
+     * Find customer by external authentication key
+     * @param extnAuthKey external authentication key
+     * @return Cust entity or null if not found
+     */
+    suspend fun findByExtnAuthKey(extnAuthKey: String): Cust?
 }

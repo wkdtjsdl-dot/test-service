@@ -32,4 +32,11 @@ interface CustUseCase {
     suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse>
     suspend fun getInterfaceConfigByCustCd(custCd: String): ExcelConfigResponse
     suspend fun getExcelFieldsByCustCd(custCd: String): Flow<IfFieldInfoResponse>
+
+    /**
+     * Validate external authentication key
+     * @param extnAuthKey external authentication key
+     * @return AuthKeyValidateResponse or null if invalid
+     */
+    suspend fun validateAuthKey(extnAuthKey: String): com.idrsys.ailis.sales.application.dto.response.AuthKeyValidateResponse?
 }
