@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface TestCodeMappingUseCase {
-    suspend fun getTestCodeMappingList(searchParam: TestCodeMappingSearchParam, pageable: Pageable): Page<TestCodeMappingResponse>
+    suspend fun getTestCodeMappingPage(searchParam: TestCodeMappingSearchParam, pageable: Pageable): Page<TestCodeMappingResponse>
 
     suspend fun createTestCodeMapping(command: TestCodeMappingCommand, adminId: String): TestCodeMappingResponse
 

@@ -4,8 +4,6 @@ import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMa
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingSearchParam
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingExcelValidResponse
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingResponse
-import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.ValidateTstMappingRequest
-import com.idrsys.ailis.sales.application.dto.response.ValidateTstMappingResponse
 import com.idrsys.ailis.sales.application.usecase.testCodeMapping.TestCodeMappingUseCase
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
 import com.idrsys.reactive.excel.ReactiveExcelWriter
@@ -32,12 +30,20 @@ class TestCodeMappingController(
 ) {
 
     @GetMapping
-    @Operation(summary = "getTestCodeMappingList", description = "고객 검사 코드 맵핑 목록")
-    suspend fun getTestCodeMappingList(
+    @Operation(summary = "getTestCodeMappingPage", description = "고객 검사 코드 맵핑 페이지 목록")
+    suspend fun getTestCodeMappingPage(
         @ParameterObject @Parameter(hidden = true) searchParam: TestCodeMappingSearchParam,
         @PageableDefault(page = 0, size = 15) pageable: Pageable,
     ): Page<TestCodeMappingResponse> {
-        return testCodeMappingUseCase.getTestCodeMappingList(searchParam, pageable)
+        return testCodeMappingUseCase.getTestCodeMappingPage(searchParam, pageable)
+    }
+
+    @GetMapping("/list")
+    @Operation(summary = "getTestCodeMappingList", description = "고객 검사 코드 맵핑 목록")
+    suspend fun getTestCodeMappingList(
+        @ParameterObject @Parameter(hidden = true) searchParam: TestCodeMappingSearchParam,
+    ): Flow<TestCodeMappingResponse> {
+        return testCodeMappingUseCase.searchTestCodeMappingList(searchParam)
     }
 
     @PostMapping

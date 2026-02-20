@@ -18,8 +18,14 @@ Accept: application/json
     client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
 %}
 
-### 고객 검사 코드 맵핑 목록
+### 고객 검사 코드 맵핑 페이지 목록
 GET {{api-service}}/api/sals/custs/tst-cd-mpgs?custCd=
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 검사 코드 맵핑 리스트 목록
+GET {{api-service}}/api/sals/custs/tst-cd-mpgs/list?custCd=G010000
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

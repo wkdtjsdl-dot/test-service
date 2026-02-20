@@ -27,7 +27,7 @@ class TestCodeMappingService(
     private val custCustomRepository: CustCustomRepository,
     private val testCodeMappingMapper: TestCodeMappingMapper,
 ) : TestCodeMappingUseCase {
-    override suspend fun getTestCodeMappingList(searchParam: TestCodeMappingSearchParam, pageable: Pageable
+    override suspend fun getTestCodeMappingPage(searchParam: TestCodeMappingSearchParam, pageable: Pageable
     ): Page<TestCodeMappingResponse> {
         val total = testCodeMappingCustomRepository.countTestCodeMapping(searchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
