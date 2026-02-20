@@ -5,6 +5,7 @@ import com.idrsys.ailis.sales.adapter.persistence.mapper.toChargeApproveQuery
 import com.idrsys.ailis.sales.application.dto.query.ChargeApproveQuery
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveSearchParam
 import com.idrsys.ailis.sales.application.required.repository.apprinfo.ApprInfoCustomRepository
+import com.idrsys.ailis.sales.domain.enums.ApprovalLineStatus
 import com.idrsys.ailis.sales.domain.enums.ApprovalStatus
 import com.idrsys.ailis.sales.domain.model.ApprInfo
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_APPR_INFO
@@ -326,5 +327,31 @@ class ApprInfoCustomRepositoryImpl(
     private fun applyPaging(q: SelectLimitStep<out Record>, pageable: Pageable): Query {
         if (pageable.isUnpaged) return q
         else return q.limit(pageable.pageSize).offset(pageable.offset)
+    }
+
+    override suspend fun findMyApprovalInfoNos(userId: String, apprDocTypeCds: List<String>): List<Long> {
+        if (apprDocTypeCds.isEmpty()) return emptyList()
+
+        val query = dslContext.selectDistinct(SCS_APPR_INFO.APPR_INFO_NO)
+            .from(SCS_APPR_INFO)
+            .where(
+                SCS_APPR_INFO.APPR_PERSON_EMP_NO.eq(userId)
+                    .and(SCS_APPR_INFO.APPR_DOC_TYPE_CD.`in`(apprDocTypeCds))
+                    .and(
+                        SCS_APPR_INFO.APPR_STAT_CD.`in`(
+                            ApprovalLineStatus.WAITING.code,
+                            ApprovalLineStatus.COMPLETED.code
+                        )
+                    )
+            )
+
+        var sql = dbClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.get(0, java.lang.Long::class.java)!!.toLong() }
+            .all()
+            .asFlow()
+            .toList()
     }
 }

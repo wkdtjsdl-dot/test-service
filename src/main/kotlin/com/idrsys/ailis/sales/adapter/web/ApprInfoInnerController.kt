@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.adapter.web
 
+import com.idrsys.ailis.sales.application.dto.request.apprinfo.ApprInfoApproveRequest
 import com.idrsys.ailis.sales.application.dto.request.apprinfo.ApprInfoCreateRequest
 import com.idrsys.ailis.sales.application.usecase.apprinfo.ApprInfoInnerUseCase
 import io.swagger.v3.oas.annotations.Operation
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -38,5 +40,45 @@ class ApprInfoInnerController(
         @PathVariable apprInfoNo: Long
     ) {
         apprInfoInnerUseCase.deleteByApprInfoNo(apprInfoNo)
+    }
+
+    @GetMapping("/approver")
+    @Operation(summary = "findApprover", description = "결재정보번호 + 결재순번으로 결재자 userId 조회")
+    suspend fun findApprover(
+        @RequestParam apprInfoNo: Long,
+        @RequestParam apprSeq: Int
+    ): String? {
+        return apprInfoInnerUseCase.findApproverByApprInfoNoAndSeq(apprInfoNo, apprSeq)
+    }
+
+    @GetMapping("/my-approval-info-nos")
+    @Operation(summary = "findMyApprovalInfoNos", description = "내 결재 필터용 appr_info_no 목록 조회")
+    suspend fun findMyApprovalInfoNos(
+        @RequestParam userId: String,
+        @RequestParam apprDocTypeCds: List<String>
+    ): List<Long> {
+        return apprInfoInnerUseCase.findMyApprovalInfoNos(userId, apprDocTypeCds)
+    }
+
+    @PostMapping("/approve")
+    @Operation(summary = "approveApprInfo", description = "결재선 승인 처리 (APST_W → APST_C)")
+    suspend fun approveApprInfo(
+        @RequestBody request: ApprInfoApproveRequest
+    ) {
+        apprInfoInnerUseCase.approveApprInfo(
+            request.apprInfoNo,
+            request.apprSeq,
+            request.apprMemo,
+            request.userId
+        )
+    }
+
+    @GetMapping("/has-next-approver")
+    @Operation(summary = "hasNextApprover", description = "다음 결재자 존재 여부 확인")
+    suspend fun hasNextApprover(
+        @RequestParam apprInfoNo: Long,
+        @RequestParam currentSeq: Int
+    ): Boolean {
+        return apprInfoInnerUseCase.hasNextApprover(apprInfoNo, currentSeq)
     }
 }

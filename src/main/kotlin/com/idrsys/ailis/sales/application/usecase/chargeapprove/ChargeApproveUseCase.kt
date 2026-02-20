@@ -3,6 +3,7 @@ package com.idrsys.ailis.sales.application.usecase.chargeapprove
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveActionCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveRequestCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveSearchParam
+import com.idrsys.ailis.sales.application.dto.response.ApprovalLineInfo
 import com.idrsys.ailis.sales.application.dto.response.ChargeApproveResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -53,4 +54,12 @@ interface ChargeApproveUseCase {
      * 승인 상세 조회
      */
     suspend fun getApprovalDetail(custChargeId: String, userId: String): ChargeApproveResponse
+
+    /**
+     * 결재정보번호로 결재라인 조회
+     * @param apprInfoNo 결재정보번호
+     * @return 결재라인 목록
+     */
+    suspend fun findApprovalLinesByApprInfoNo(apprInfoNo: Long): List<ApprovalLineInfo>
+
 }

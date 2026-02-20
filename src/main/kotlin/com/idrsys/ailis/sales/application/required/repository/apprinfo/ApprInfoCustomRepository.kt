@@ -76,4 +76,14 @@ interface ApprInfoCustomRepository {
      * @return 삭제된 행 수
      */
     suspend fun deleteAllByApprInfoNo(apprInfoNo: Long): Int
+
+    /**
+     * 내 결재 필터용 appr_info_no 목록 조회
+     * - 내가 현재 결재할 차례인 것 (appr_stat_cd = APST_W)
+     * - 내가 이미 승인한 것 (appr_stat_cd = APST_C)
+     * @param userId 사용자 ID
+     * @param apprDocTypeCds 결재문서유형코드 목록 (예: APDC_ET, APDC_CN)
+     * @return appr_info_no 목록
+     */
+    suspend fun findMyApprovalInfoNos(userId: String, apprDocTypeCds: List<String>): List<Long>
 }

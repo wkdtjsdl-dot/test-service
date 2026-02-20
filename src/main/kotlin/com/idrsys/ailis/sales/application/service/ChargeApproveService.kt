@@ -6,6 +6,7 @@ import com.idrsys.ailis.sales.shared.mapper.ChargeApproveMapper
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveActionCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveRequestCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveSearchParam
+import com.idrsys.ailis.sales.application.dto.response.ApprovalLineInfo
 import com.idrsys.ailis.sales.application.dto.response.ChargeApproveResponse
 import com.idrsys.ailis.sales.application.dto.response.DeletePermissionResult
 import com.idrsys.ailis.sales.application.dto.response.inner.BaseUserResponse
@@ -636,7 +637,7 @@ class ChargeApproveService(
     }
 
     /**
-     * Name 필드 일괄 채우기 (성능 최적화)
+     * Name 필드 일괄 채우기
      */
     private suspend fun populateNameFields(
         queries: List<ChargeApproveQuery>,
@@ -686,10 +687,33 @@ class ChargeApproveService(
         if (currentApprover.apprPersonEmpNo != currentUser.userId) return false
 
         // 4. 현재 사용자의 직책 코드가 TEAM_MEMBER_POSITIONS에 속하지 않아야 함 (팀장 이상)
-        // 이 조건은 이미 백엔드의 canApprove 로직에 포함되어 있으나, 이 함수는 UI 표시용이므로 명시적으로 포함하지 않음
         // 백엔드의 approve 함수에서 이미 권한 체크를 하므로 여기서는 최소한의 조건만 확인
-        // (즉, 결재자이며, 결재중인 건이며, 본인 차례인 경우)
-        // -> UI에서는 "승인" 버튼을 활성화할 최소 조건만 제공
         return true
+    }
+    override suspend fun findApprovalLinesByApprInfoNo(apprInfoNo: Long): List<ApprovalLineInfo> {
+        val apprInfos = apprInfoCustomRepository.findByApprInfoNo(apprInfoNo).toList()
+        if (apprInfos.isEmpty()) return emptyList()
+
+        // 1. 사용자 정보 조회
+        val empNos = apprInfos.mapNotNull { it.apprPersonEmpNo }.distinct()
+        val users = if (empNos.isNotEmpty()) {
+            baseServicePort.getUsersByIds(empNos) ?: emptyList()
+        } else emptyList()
+        val userByUserId = users.associateBy { it.userId }
+
+        // 2. 시스템 코드 조회 (승인상태, 직책)
+        val systemCodes = baseServicePort.getChildrenSystemCodes(listOf("APST", "JP")) ?: emptyMap()
+        val apprStatMap = systemCodes["APST"]?.associateBy { it.cd } ?: emptyMap()
+        val jbpoMap = systemCodes["JP"]?.associateBy { it.cd } ?: emptyMap()
+
+        // 3. 매핑 (기존 toApprovalLineInfo + copy 패턴 재사용)
+        return apprInfos.map { apprInfo ->
+            val userDetail = userByUserId[apprInfo.apprPersonEmpNo]
+            chargeApproveMapper.toApprovalLineInfo(apprInfo).copy(
+                apprPersonNm = userDetail?.userNm,
+                jbpoNm = userDetail?.jbpoCd?.let { jbpoMap[it]?.cdNm },
+                apprStatNm = apprStatMap[apprInfo.apprStatCd]?.cdNm
+            )
+        }
     }
 }

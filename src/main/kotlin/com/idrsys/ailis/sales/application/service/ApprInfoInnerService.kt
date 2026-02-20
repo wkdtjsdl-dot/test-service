@@ -50,4 +50,28 @@ class ApprInfoInnerService(
     override suspend fun deleteByApprInfoNo(apprInfoNo: Long) {
         apprInfoRepository.deleteAllByApprInfoNo(apprInfoNo)
     }
+
+    override suspend fun findApproverByApprInfoNoAndSeq(apprInfoNo: Long, apprSeq: Int): String? {
+        val apprInfo = apprInfoCustomRepository.findByApprInfoNoAndSeq(apprInfoNo, apprSeq)
+        return apprInfo?.apprPersonEmpNo
+    }
+
+    override suspend fun findMyApprovalInfoNos(userId: String, apprDocTypeCds: List<String>): List<Long> {
+        return apprInfoCustomRepository.findMyApprovalInfoNos(userId, apprDocTypeCds)
+    }
+
+    @Transactional
+    override suspend fun approveApprInfo(apprInfoNo: Long, apprSeq: Int, apprMemo: String?, userId: String) {
+        val apprInfo = apprInfoCustomRepository.findByApprInfoNoAndSeq(apprInfoNo, apprSeq)
+            ?: throw IllegalStateException("결재정보를 찾을 수 없습니다.")
+
+        apprInfo.approve(apprMemo, userId)
+        apprInfoRepository.save(apprInfo)
+    }
+
+    override suspend fun hasNextApprover(apprInfoNo: Long, currentSeq: Int): Boolean {
+        val nextApprInfo = apprInfoCustomRepository.findByApprInfoNoAndSeq(apprInfoNo, currentSeq + 1)
+        return nextApprInfo != null
+    }
+
 }

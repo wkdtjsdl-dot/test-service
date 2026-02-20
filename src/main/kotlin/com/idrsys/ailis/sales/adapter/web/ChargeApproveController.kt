@@ -3,6 +3,7 @@ package com.idrsys.ailis.sales.adapter.web
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveActionCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveRequestCommand
 import com.idrsys.ailis.sales.application.dto.request.chargeapprove.ChargeApproveSearchParam
+import com.idrsys.ailis.sales.application.dto.response.ApprovalLineInfo
 import com.idrsys.ailis.sales.application.dto.response.ChargeApproveResponse
 import com.idrsys.ailis.sales.application.usecase.chargeapprove.ChargeApproveUseCase
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
@@ -94,5 +95,12 @@ class ChargeApproveController(
         @JwtAuthorization auth: AuthenticationAdmin
     ): ChargeApproveResponse {
         return chargeApproveUseCase.getApprovalDetail(custChargeId, auth.adminId)
+    }
+    @GetMapping("/{apprInfoNo}/lines")
+    @Operation(summary = "findApprovalLinesByApprInfoNo", description = "결재정보번호로 결재라인 조회")
+    suspend fun findApprovalLinesByApprInfoNo(
+        @PathVariable apprInfoNo: Long
+    ): List<ApprovalLineInfo> {
+        return chargeApproveUseCase.findApprovalLinesByApprInfoNo(apprInfoNo)
     }
 }
