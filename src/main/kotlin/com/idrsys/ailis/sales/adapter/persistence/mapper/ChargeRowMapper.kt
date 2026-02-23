@@ -40,5 +40,6 @@ internal fun Row.toCustChargeInnerResponse(): CustChargeInnerResponse = CustChar
     crcyCd = this.get("crcy_cd", String::class.java)!!,
     specialCharge = this.get("special_charge", java.lang.Long::class.java)!!.toLong(),
     supval = this.get("supval", java.lang.Long::class.java)?.toLong(),
-    addtax = this.get("addtax", java.lang.Long::class.java)?.toLong()
+    addtax = this.get("addtax", java.lang.Long::class.java)?.toLong(),
+    frgnAcctYn = this.get("frgn_acct_yn", Boolean::class.java)!!
 )

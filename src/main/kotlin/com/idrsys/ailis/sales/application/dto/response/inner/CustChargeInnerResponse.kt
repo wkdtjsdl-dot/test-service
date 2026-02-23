@@ -14,5 +14,6 @@ data class CustChargeInnerResponse(
     val crcyCd: String,
     val specialCharge: Long,
     val supval: Long?,
-    val addtax: Long?
+    val addtax: Long?,
+    val frgnAcctYn: Boolean
 )

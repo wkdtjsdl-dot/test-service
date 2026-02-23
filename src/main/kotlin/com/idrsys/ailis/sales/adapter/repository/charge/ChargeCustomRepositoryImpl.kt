@@ -269,9 +269,11 @@ class ChargeCustomRepositoryImpl(
             SCS_CUST_CHARGE.CRCY_CD,
             SCS_CUST_CHARGE.SPECIAL_CHARGE,
             SCS_CUST_CHARGE.SUPVAL,
-            SCS_CUST_CHARGE.ADDTAX
+            SCS_CUST_CHARGE.ADDTAX,
+            SCS_CUST_MST.FRGN_ACCT_YN
         )
             .from(SCS_CUST_CHARGE)
+            .innerJoin(SCS_CUST_MST).on(SCS_CUST_CHARGE.CUST_CD.eq(SCS_CUST_MST.CUST_CD))
             .where(SCS_CUST_CHARGE.CUST_CD.`in`(custCds))
             .and(SCS_CUST_CHARGE.TST_CD.`in`(tstCds))
             .and(SCS_CUST_CHARGE.APPLY_START_DT.lessOrEqual(endDt))
