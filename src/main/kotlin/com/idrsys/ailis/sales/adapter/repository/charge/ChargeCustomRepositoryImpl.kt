@@ -261,7 +261,7 @@ class ChargeCustomRepositoryImpl(
         if (custCds.isEmpty() || tstCds.isEmpty()) return emptyList()
 
         val query = dslContext.select(
-            SCS_CUST_CHARGE.CUST_CD,
+            SCS_CUST_MST.CUST_CD,
             SCS_CUST_CHARGE.TST_CD,
             SCS_CUST_CHARGE.APPLY_START_DT,
             SCS_CUST_CHARGE.APPLY_END_DT,
@@ -272,13 +272,15 @@ class ChargeCustomRepositoryImpl(
             SCS_CUST_CHARGE.ADDTAX,
             SCS_CUST_MST.FRGN_ACCT_YN
         )
-            .from(SCS_CUST_CHARGE)
-            .innerJoin(SCS_CUST_MST).on(SCS_CUST_CHARGE.CUST_CD.eq(SCS_CUST_MST.CUST_CD))
-            .where(SCS_CUST_CHARGE.CUST_CD.`in`(custCds))
-            .and(SCS_CUST_CHARGE.TST_CD.`in`(tstCds))
-            .and(SCS_CUST_CHARGE.APPLY_START_DT.lessOrEqual(endDt))
-            .and(SCS_CUST_CHARGE.APPLY_END_DT.greaterOrEqual(startDt))
-            .orderBy(SCS_CUST_CHARGE.CUST_CD.asc(), SCS_CUST_CHARGE.TST_CD.asc())
+            .from(SCS_CUST_MST)
+            .leftOuterJoin(SCS_CUST_CHARGE).on(
+                SCS_CUST_MST.CUST_CD.eq(SCS_CUST_CHARGE.CUST_CD)
+                    .and(SCS_CUST_CHARGE.TST_CD.`in`(tstCds))
+                    .and(SCS_CUST_CHARGE.APPLY_START_DT.lessOrEqual(endDt))
+                    .and(SCS_CUST_CHARGE.APPLY_END_DT.greaterOrEqual(startDt))
+            )
+            .where(SCS_CUST_MST.CUST_CD.`in`(custCds))
+            .orderBy(SCS_CUST_MST.CUST_CD.asc(), SCS_CUST_CHARGE.TST_CD.asc())
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }

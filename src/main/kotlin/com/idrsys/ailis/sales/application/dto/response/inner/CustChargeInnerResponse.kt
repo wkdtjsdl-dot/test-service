@@ -7,12 +7,12 @@ import java.time.LocalDate
  */
 data class CustChargeInnerResponse(
     val custCd: String,
-    val tstCd: String,
-    val applyStartDt: LocalDate,
-    val applyEndDt: LocalDate,
+    val tstCd: String?,
+    val applyStartDt: LocalDate?,
+    val applyEndDt: LocalDate?,
     val stndPrice: Long?,
-    val crcyCd: String,
-    val specialCharge: Long,
+    val crcyCd: String?,
+    val specialCharge: Long?,
     val supval: Long?,
     val addtax: Long?,
     val frgnAcctYn: Boolean
