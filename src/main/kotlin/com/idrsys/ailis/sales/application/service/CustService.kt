@@ -55,7 +55,6 @@ class CustService(
                 .map { it.userId }
             finalSearchParam = searchParam.copy(empUserIds = matchedUserIds)
         }
-
         val total = custCustomRepository.countCusts(finalSearchParam)
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
@@ -93,19 +92,14 @@ class CustService(
                 .map { it.userId }
             finalSearchParam = searchParam.copy(empUserIds = matchedUserIds)
         }
-
-        val total: Long
-        val custsFromRepo: List<CustWithSalsPicInfo>
-
-        if (isUserAdmin(roleCodes)) {
-            total = custCustomRepository.countCusts(finalSearchParam)
-            if (total == 0L) return PageImpl(emptyList(), pageable, 0)
-            custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(finalSearchParam, pageable).toList()
-        } else {
-            total = custCustomRepository.countMyCusts(finalSearchParam, empUserId)
-            if (total == 0L) return PageImpl(emptyList(), pageable, 0)
-            custsFromRepo = custCustomRepository.findMyCustsWithSalsPicInfo(finalSearchParam, pageable, empUserId).toList()
+        if (isUserRoleSlcp(roleCodes)) {
+            val user = baseServicePort.getUser(empUserId)
+            finalSearchParam = finalSearchParam.copy(bzoffiCd = user?.deptCd)
         }
+
+        val total = custCustomRepository.countCusts(finalSearchParam)
+        if (total == 0L) return PageImpl(emptyList(), pageable, 0)
+        val custsFromRepo = custCustomRepository.findCustsWithSalsPicInfo(finalSearchParam, pageable).toList()
 
         val userIds = custsFromRepo.flatMap { cust ->
             cust.salsPicInfo?.split(",")
@@ -315,6 +309,10 @@ class CustService(
 
     private fun isUserAdmin(roles: List<String>): Boolean {
         return ADMIN_ROLE_CODES.any { roles.contains(it) }
+    }
+
+    private fun isUserRoleSlcp(roles: List<String>): Boolean {
+        return roles.contains("RO_SLCP")
     }
 
     @Transactional(readOnly = true)
