@@ -56,6 +56,7 @@ dependencies {
     jooqGenerator("org.postgresql:postgresql")
     implementation("org.jooq:jooq:3.20.7")
     implementation("software.amazon.awssdk:s3:2.29.39")
+    implementation("org.springframework.security:spring-security-crypto")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")

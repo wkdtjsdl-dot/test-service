@@ -11,6 +11,9 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.data.r2dbc.mapping.event.BeforeSaveCallback
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 
 /**
  * Base Configuration for Production/Dev environments
@@ -44,4 +47,11 @@ class DatabaseConfig {
 
     @Bean
     fun beforeSaveCallback(): BeforeSaveCallback<T> = UuidIdGeneratorCallback() // UUID 저장시 필요
+
+    @Bean
+    fun passwordEncoder(): PasswordEncoder {
+        val encodingId = "bcrypt"
+        val encoders = mapOf(encodingId to BCryptPasswordEncoder())
+        return DelegatingPasswordEncoder(encodingId, encoders)
+    }
 }

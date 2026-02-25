@@ -37,6 +37,8 @@ data class CustResponse(
     val addr1: String?,                  // 주소1
     val addr2: String?,                  // 주소2
     val reqDivCd: String?,               // 의뢰구분코드 (공통코드 RQDV)
+    val reqMethodCd: String?,            // 의뢰방식코드
+    val reqIfTypeCd: String?,            // 연동유형코드
     // 사업자등록정보
     val bizrno: String?,                 // 사업자번호
     val sapCustCd: String?,              // SAP고객코드

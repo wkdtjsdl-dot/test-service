@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -21,8 +22,11 @@ import java.time.LocalDateTime
 class HpLoginUserService(
     private val repository: HpLoginUserRepository,
     private val customRepository: HpLoginUserCustomRepository,
-    private val mapper: HpLoginUserMapper
+    private val mapper: HpLoginUserMapper,
+    private val passwordEncoder: PasswordEncoder
 ) : HpLoginUserUseCase {
+
+    private fun encodePassword(raw: String): String = passwordEncoder.encode(raw)
 
     override suspend fun getHpLoginUserPage(searchParam: HpLoginUserSearchParam, pageable: Pageable): Page<HpLoginUserResponse> {
         val total = customRepository.countHpLoginUsers(searchParam)
@@ -43,7 +47,8 @@ class HpLoginUserService(
     @Transactional
     override suspend fun createHpLoginUser(custMstId: String, command: HpLoginUserCommand, creator: String): HpLoginUserResponse {
         val now = LocalDateTime.now()
-        val hpLoginUser = mapper.toDomain(command, creator, now).apply { setAsNew() }
+        val encodedCommand = command.copy(loginPswd = encodePassword(command.loginPswd))
+        val hpLoginUser = mapper.toDomain(encodedCommand, creator, now).apply { setAsNew() }
         val savedHpLoginUser = repository.save(hpLoginUser)
         return mapper.toResponse(savedHpLoginUser)
     }
@@ -53,7 +58,8 @@ class HpLoginUserService(
         val hpLoginUser = customRepository.findDomainById(hpLoginUserId)
             ?: throw NoSuchElementException("HpLoginUser not found with id: $hpLoginUserId")
 
-        hpLoginUser.update(command, updater)
+        val encodedCommand = command.copy(loginPswd = encodePassword(command.loginPswd))
+        hpLoginUser.update(encodedCommand, updater)
 
         val updatedHpLoginUser = repository.save(hpLoginUser)
         return mapper.toResponse(updatedHpLoginUser)

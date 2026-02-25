@@ -480,4 +480,11 @@ class Cust(
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }
+
+    fun updateReqIfMethod(newReqMethodCd: String?, newReqIfTypeCd: String?, updater: String) {
+        this.reqMethodCd = newReqMethodCd
+        this.reqIfTypeCd = newReqIfTypeCd
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
 }

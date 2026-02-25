@@ -5,6 +5,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.cust.CustAtchFileUpdateCommand
+import com.idrsys.ailis.sales.application.dto.request.cust.CustReqIfMethodUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
 import com.idrsys.ailis.sales.domain.model.Cust
@@ -21,6 +22,7 @@ interface CustUseCase {
     suspend fun registerCust(command: CustRegisterCommand, creator: String): Cust
     suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust
     suspend fun updateCustAtchFile(custMstId: String, command: CustAtchFileUpdateCommand, updater: String)
+    suspend fun updateCustReqIfMethod(custMstId: String, command: CustReqIfMethodUpdateCommand, updater: String)
     suspend fun isCustCdExists(custCd: String): Boolean
     fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteResponse>
     fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<CustCdNmAutoCompleteResponse>

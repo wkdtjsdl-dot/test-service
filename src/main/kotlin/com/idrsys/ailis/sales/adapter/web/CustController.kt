@@ -5,6 +5,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.cust.CustAtchFileUpdateCommand
+import com.idrsys.ailis.sales.application.dto.request.cust.CustReqIfMethodUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
@@ -129,6 +130,17 @@ class CustController(
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ) {
         custUseCase.updateCustAtchFile(custMstId, command, auth.adminId)
+    }
+
+    @PatchMapping("/req-if-method/{custMstId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "updateCustReqIfMethod", description = "고객 연동정보(의뢰방식/연동유형) 업데이트")
+    suspend fun updateCustReqIfMethod(
+        @PathVariable custMstId: String,
+        @RequestBody command: CustReqIfMethodUpdateCommand,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ) {
+        custUseCase.updateCustReqIfMethod(custMstId, command, auth.adminId)
     }
 
     @GetMapping("/autoComplete/custCdNm")
