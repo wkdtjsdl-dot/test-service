@@ -16,7 +16,7 @@ interface EstimateItemDataRepository : CoroutineCrudRepository<EstimateItem, Str
     /**
      * Find estimate items by estimate ID
      */
-    fun findByEstimateId(estimateId: String): Flow<EstimateItem>
+    fun findByEstimateIdOrderByCreateDtimeDesc(estimateId: String): Flow<EstimateItem>
 
     /**
      * Delete estimate items by estimate ID

@@ -47,6 +47,7 @@ class EstimateRepositoryImpl(
             .where(table.PUBL_DT.between(searchParam.startDt, searchParam.endDt)
                 .and(searchParam.receiver?.let { table.RECP_PERSON.like(it) })
                 .and(searchParam.reference?.let { table.REF_PERSON.like(it) }))
+            .orderBy(table.PUBL_DT.desc())
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value ->
             executeSpec = if (value != null) {
