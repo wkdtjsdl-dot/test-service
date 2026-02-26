@@ -94,7 +94,16 @@ class BillingQueryService(
         val custCds = filteredSummaries.map { it.directAcctCd }.distinct()
         val custNmMap = custCustomRepository.findCustNmMapByCustCds(custCds)
 
-        filteredSummaries.forEach { summary ->
+        // Filter by branchCd (영업소 코드) if specified
+        val branchFiltered = if (!searchParam.branchCd.isNullOrBlank()) {
+            filteredSummaries.filter { summary ->
+                custNmMap[summary.directAcctCd]?.bzoffiCd == searchParam.branchCd
+            }
+        } else {
+            filteredSummaries
+        }
+
+        branchFiltered.forEach { summary ->
             val custBillingInfo = custNmMap[summary.directAcctCd]
             emit(summary.toDemandResponse(
                 searchStartDt = searchParam.startDt,
