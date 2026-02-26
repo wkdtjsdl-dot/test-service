@@ -264,6 +264,11 @@ class CustService(
     }
 
     @Transactional(readOnly = true)
+    override fun getCustSimpleList(): Flow<CustCdNmAutoCompleteResponse> {
+        return custCustomRepository.findCustSimple().map(custMapper::toCustCdNmAutoCompleteResponse)
+    }
+
+    @Transactional(readOnly = true)
     override fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteResponse> {
         val autoCompleteList = custCustomRepository.findCustCdNmAutoComplete(searchParam)
         return autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)

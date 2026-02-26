@@ -17,6 +17,7 @@ interface CustCustomRepository {
     suspend fun countMyCusts(searchParam: CustSearchParam, empUserId: String): Long
     suspend fun existByCustCd(custCd: String): Boolean
     fun findCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteInfo>
+    fun findCustSimple(): Flow<CustCdNmAutoCompleteInfo>
     fun findRprsCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteInfo>
     suspend fun findCustDetailInfoByCustMstId(custMstId: String): CustDetailInfo?
     fun findDirectAcctCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteInfo>

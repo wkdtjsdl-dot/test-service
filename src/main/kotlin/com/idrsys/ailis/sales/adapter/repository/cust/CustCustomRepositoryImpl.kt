@@ -464,6 +464,25 @@ class CustCustomRepositoryImpl(
             .asFlow()
     }
 
+    override fun findCustSimple(): Flow<CustCdNmAutoCompleteInfo> {
+        val query = dslContext.selectDistinct(
+            SCS_CUST_MST.CUST_MST_ID,
+            SCS_CUST_MST.CUST_CD,
+            SCS_CUST_MST.CUST_NM,
+            SCS_CUST_MST.CRCY_CD
+        )
+            .from(SCS_CUST_MST)
+            .orderBy(SCS_CUST_MST.CUST_CD.asc())
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustCdNmAutoCompleteInfo() }
+            .all()
+            .asFlow()
+    }
+
     // 대표거래처 자동완성
     override fun findRprsCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteInfo> {
         val conditions = mutableListOf<Condition>()

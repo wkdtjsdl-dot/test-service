@@ -143,6 +143,12 @@ class CustController(
         custUseCase.updateCustReqIfMethod(custMstId, command, auth.adminId)
     }
 
+    @GetMapping("/simple")
+    @Operation(summary = "getCustSimpleList", description = "고객 목록 조회 (SelectBox용)")
+    fun getCustSimpleList(): Flow<CustCdNmAutoCompleteResponse> {
+        return custUseCase.getCustSimpleList()
+    }
+
     @GetMapping("/autoComplete/custCdNm")
     @Operation(summary = "getCustCdNmAutoCompleteList", description = "고객코드/명 자동완성 조회")
     fun getCustCdNmAutoCompleteList(
