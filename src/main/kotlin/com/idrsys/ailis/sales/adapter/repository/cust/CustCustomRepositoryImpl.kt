@@ -768,13 +768,16 @@ class CustCustomRepositoryImpl(
         return result
     }
 
-    override suspend fun findDirectAcctCdsByFrgnAcctYn(frgnAcctYn: Boolean): List<String> {
+    override suspend fun findDirectAcctCdsByFrgnAcctYn(frgnAcctYn: Boolean, bzoffiCd: String?): List<String> {
+        val conditions = mutableListOf(
+            SCS_CUST_MST.CUST_DIV_CD.eq("CSDV_DA"),
+            SCS_CUST_MST.FRGN_ACCT_YN.eq(frgnAcctYn)
+        )
+        bzoffiCd?.let { conditions.add(SCS_CUST_MST.BZOFFI_CD.eq(it)) }
+
         val query = dslContext.select(SCS_CUST_MST.CUST_CD)
             .from(SCS_CUST_MST)
-            .where(
-                SCS_CUST_MST.CUST_DIV_CD.eq("CSDV_DA"),
-                SCS_CUST_MST.FRGN_ACCT_YN.eq(frgnAcctYn)
-            )
+            .where(conditions)
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }

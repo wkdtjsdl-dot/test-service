@@ -69,11 +69,19 @@ class BillingQueryService(
     private fun getUnbilledDemandSummaryFromReqService(
         searchParam: DemandSearchParam
     ): Flow<DemandResponse> = flow {
-        // Determine directAcctCds based on frgnAcctYn and custCd
+        val branchCd = searchParam.branchCd?.takeIf { it.isNotBlank() }
+
+        // Determine directAcctCds based on frgnAcctYn, custCd, and branchCd
         val directAcctCds: List<String>? = when {
-            !(searchParam.custCd.isNullOrBlank()) -> listOf(searchParam.custCd)
-            searchParam.frgnAcctYn == true -> custCustomRepository.findDirectAcctCdsByFrgnAcctYn(true)  // Foreign only
-            else -> null  // Domestic or All: query all from req-service
+            !searchParam.custCd.isNullOrBlank() -> listOf(searchParam.custCd)
+            searchParam.frgnAcctYn == true -> custCustomRepository.findDirectAcctCdsByFrgnAcctYn(true, branchCd)
+            branchCd != null -> {
+                // frgnAcctYn이 null(전체) 또는 false(국내)이고 branchCd만 있는 경우
+                // 해당 영업소의 국내+해외 계정 모두 조회 (frgnAcctYn 필터는 이후 in-memory에서 처리)
+                custCustomRepository.findDirectAcctCdsByFrgnAcctYn(false, branchCd) +
+                    custCustomRepository.findDirectAcctCdsByFrgnAcctYn(true, branchCd)
+            }
+            else -> null
         }
 
         val summaries = reqServicePort.getUnbilledDemandSummary(
@@ -94,16 +102,7 @@ class BillingQueryService(
         val custCds = filteredSummaries.map { it.directAcctCd }.distinct()
         val custNmMap = custCustomRepository.findCustNmMapByCustCds(custCds)
 
-        // Filter by branchCd (영업소 코드) if specified
-        val branchFiltered = if (!searchParam.branchCd.isNullOrBlank()) {
-            filteredSummaries.filter { summary ->
-                custNmMap[summary.directAcctCd]?.bzoffiCd == searchParam.branchCd
-            }
-        } else {
-            filteredSummaries
-        }
-
-        branchFiltered.forEach { summary ->
+        filteredSummaries.forEach { summary ->
             val custBillingInfo = custNmMap[summary.directAcctCd]
             emit(summary.toDemandResponse(
                 searchStartDt = searchParam.startDt,
