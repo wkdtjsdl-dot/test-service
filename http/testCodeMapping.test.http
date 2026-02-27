@@ -30,6 +30,14 @@ Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
+
+### 고객 검사 코드 맵핑 리스트 목록
+GET {{api-service}}/api/cust-tst-cds?custCd=G010000&custTstCd=P047
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+
 ### 고객 검사 코드 맵핑 등록
 POST {{api-service}}/api/sals/custs/tst-cd-mpgs
 Content-Type: application/json

@@ -29,6 +29,23 @@ class CustInnerController(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
+    @GetMapping("/{custMstId}")
+    @Operation(summary = "findCustByCustMstId", description = "고객 상세 조회")
+    suspend fun findCustByCustMstId(
+        @PathVariable custMstId: String
+    ) : CustResponse {
+        return custUseCase.findCustByCustMstId(custMstId)
+    }
+
+    @GetMapping("/organization/{custCd}")
+    @Operation(summary = "findCustByCustCd", description = "고객 코드로 상세 조회")
+    suspend fun findCustByCustCd(
+        @PathVariable custCd: String
+    ) : CustResponse {
+        return custUseCase.findCustByCustCd(custCd)
+    }
+
+
     @GetMapping
     @Operation(summary = "getCustBasicList", description = "내부용 고객 기본정보 조회 (전체)")
     suspend fun getCustBasicList(

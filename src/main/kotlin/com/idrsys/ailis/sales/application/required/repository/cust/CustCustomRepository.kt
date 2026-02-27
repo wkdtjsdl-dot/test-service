@@ -20,6 +20,7 @@ interface CustCustomRepository {
     fun findCustSimple(): Flow<CustCdNmAutoCompleteInfo>
     fun findRprsCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteInfo>
     suspend fun findCustDetailInfoByCustMstId(custMstId: String): CustDetailInfo?
+    suspend fun findCustDetailInfoByCustCd(custCd: String): CustDetailInfo?
     fun findDirectAcctCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteInfo>
     fun findAllWithCareInstId(): Flow<CustCareInstId>
     suspend fun findCustList(searchParam: CustSearchParam): Flow<CustBasicInfo>

@@ -18,6 +18,7 @@ interface CustUseCase {
     suspend fun getCustPage(searchParam: CustSearchParam, pageable: Pageable, empUserId: String, roleCodes: List<String>): Page<CustListResponse> // list with auth
     suspend fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> // excel
     suspend fun findCustByCustMstId(custMstId: String): CustResponse
+    suspend fun findCustByCustCd(custCd: String): CustResponse
     suspend fun findTstItemsByCustMstId(custMstId: String): Flow<TstServiceTstItemsResponse>
     suspend fun registerCust(command: CustRegisterCommand, creator: String): Cust
     suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust

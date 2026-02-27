@@ -1,7 +1,5 @@
 package com.idrsys.ailis.sales.application.service
 
-import com.idrsys.ailis.sales.application.required.external.BaseServicePort
-import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
@@ -11,12 +9,13 @@ import com.idrsys.ailis.sales.application.dto.request.cust.CustReqIfMethodUpdate
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemSearchParam
 import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
+import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustMstHstRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustRepository
 import com.idrsys.ailis.sales.application.required.repository.custreqposststitem.CustReqPossTstItemCustomRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
-import com.idrsys.ailis.sales.application.dto.query.CustWithSalsPicInfo
 import com.idrsys.ailis.sales.domain.model.Cust
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
 import com.idrsys.ailis.sales.shared.mapper.TestCodeMappingMapper
@@ -161,6 +160,25 @@ class CustService(
     override suspend fun findCustByCustMstId(custMstId: String): CustResponse {
         val cust = custCustomRepository.findCustDetailInfoByCustMstId(custMstId)
             ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+
+        val response = custMapper.toDetailResponse(cust)
+
+        if (!response.careInstId.isNullOrBlank()) {
+            try {
+                val hospitalMst = hospitalDataService.getHospitalMstDetail(response.careInstId)
+                return response.copy(careInstNm = hospitalMst.careInstNm)
+            } catch (e: Exception) {
+                e.stackTraceToString()
+            }
+        }
+
+        return response
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun findCustByCustCd(custCd: String): CustResponse {
+        val cust = custCustomRepository.findCustDetailInfoByCustCd(custCd)
+            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custCd")
 
         val response = custMapper.toDetailResponse(cust)
 

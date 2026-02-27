@@ -393,6 +393,29 @@ class CustCustomRepositoryImpl(
             .awaitSingle()
     }
 
+    override suspend fun findCustDetailInfoByCustCd(custCd: String): CustDetailInfo? {
+        val directAcctMst = SCS_CUST_MST.`as`("DIRECT_ACCT_MST")
+        val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+
+        val query = dslContext.select(
+            SCS_CUST_MST.asterisk(),
+            directAcctMst.CUST_NM.`as`("direct_acct_nm"),
+            rprsCustMst.CUST_NM.`as`("rprs_cust_nm")
+        )
+            .from(SCS_CUST_MST)
+            .leftJoin(directAcctMst).on(SCS_CUST_MST.DIRECT_ACCT_CD.eq(directAcctMst.CUST_CD))
+            .leftJoin(rprsCustMst).on(SCS_CUST_MST.RPRS_CUST_CD.eq(rprsCustMst.CUST_CD))
+            .where(SCS_CUST_MST.CUST_CD.eq(custCd))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustDetailInfo() }
+            .one()
+            .awaitSingle()
+    }
+
     // 직접거래처 자동완성
     override fun findDirectAcctCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteInfo> {
         val conditions = mutableListOf<Condition>()
