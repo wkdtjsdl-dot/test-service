@@ -11,6 +11,7 @@ import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRep
 import com.idrsys.ailis.sales.application.usecase.billing.BillingQueryUseCase
 import com.idrsys.ailis.sales.shared.mapper.toDemandResponse
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -83,6 +84,9 @@ class BillingQueryService(
             }
             else -> null
         }
+
+        // 영업소 필터링 결과 매칭 계정이 없으면 빈 결과 반환
+        if (directAcctCds != null && directAcctCds.isEmpty()) return@flow
 
         val summaries = reqServicePort.getUnbilledDemandSummary(
             startDt = searchParam.startDt,
