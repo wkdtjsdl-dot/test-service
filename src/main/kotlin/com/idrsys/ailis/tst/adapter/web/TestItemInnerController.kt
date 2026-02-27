@@ -1,26 +1,21 @@
 package com.idrsys.ailis.tst.adapter.web
 
-import com.idrsys.ailis.tst.application.dto.StandardChargeResponse
-import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
-import com.idrsys.ailis.tst.application.dto.TestItemSpecimensResponse
-import com.idrsys.ailis.tst.application.dto.TestItemRefItemsResponse
+import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.usecase.TestItemUseCase
 import io.swagger.v3.oas.annotations.Operation
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.reactor.mono
 import org.springdoc.core.annotations.ParameterObject
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/api/inner/bts/item")
 class TestItemInnerController(
     private val testItemUseCase: TestItemUseCase
 ) {
 
     @Operation(summary = "검사 종목 inner 조회")
-    @GetMapping
+    @GetMapping("/api/inner/bts/item")
     suspend fun findTestItemByTestCode(
         @ParameterObject cds: String
     ): Flow<TestItemSimpleResponse> {
@@ -29,13 +24,13 @@ class TestItemInnerController(
     }
 
     @Operation(summary = "검사 종목 inner 전체 조회")
-    @GetMapping("/all")
+    @GetMapping("/api/inner/bts/item/all")
     suspend fun findTestItemAll(): Flow<TestItemSimpleResponse> {
         return testItemUseCase.findSimpleItemAll()
     }
 
     @Operation(summary = "검사 코드별 검체 조회")
-    @GetMapping("/specimens")
+    @GetMapping("/api/inner/bts/item/specimens")
     suspend fun getSpecimensByTstCds(
         @ParameterObject cds: String
     ): Flow<TestItemSpecimensResponse> {
@@ -44,7 +39,7 @@ class TestItemInnerController(
     }
 
     @Operation(summary = "검사 코드별 참조항목 조회")
-    @GetMapping("/ref-items")
+    @GetMapping("/api/inner/bts/item/ref-items")
     suspend fun getRefItemsByTstCds(
         @ParameterObject cds: String
     ): Flow<TestItemRefItemsResponse> {
@@ -53,10 +48,26 @@ class TestItemInnerController(
     }
 
     @Operation(summary = "검사 최저수가 inner 조회")
-    @GetMapping("/stnd-charge")
+    @GetMapping("/api/inner/bts/item/stnd-charge")
     suspend fun getStandardCharges(
         @RequestParam tstCd: String
     ): StandardChargeResponse? {
         return testItemUseCase.getCurrentStandardChargeByTest(tstCd)
     }
+
+    @Operation(summary = "검사 검사종목 기본정보 조회")
+    @GetMapping("/api/inner/bts/item/base/{tstCd}")
+    fun getItem(@PathVariable tstCd: String): Mono<TestItemResponse> = mono {
+        testItemUseCase.getItem(tstCd)
+    }
+
+    @Operation(summary = "검사 검사종목 참조항목 목록")
+    @GetMapping("/api/inner/bts/ref-item")
+    fun getRefItemsByTstCd(@ParameterObject searchParam: TestItemRefRequest): Flow<TestItemRefResponse> =
+        testItemUseCase.getRefItemsByTstCd(searchParam)
+
+    @Operation(summary = "검사 검사종목 검체 목록")
+    @GetMapping("/api/inner/bts/spcm")
+    fun getSpecimensByTest(@RequestParam tstCd: String): Flow<TestItemSpecimenListResponse> =
+        testItemUseCase.getSpecimensByTest(tstCd)
 }
