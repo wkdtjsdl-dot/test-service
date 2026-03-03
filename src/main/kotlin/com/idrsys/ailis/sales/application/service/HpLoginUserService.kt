@@ -1,15 +1,19 @@
 package com.idrsys.ailis.sales.application.service
 
 import com.idrsys.ailis.sales.application.dto.request.hploginuser.HpLoginUserCommand
+import com.idrsys.ailis.sales.application.dto.request.hploginuser.HpLoginUserUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.hploginuser.HpLoginUserSearchParam
 import com.idrsys.ailis.sales.application.dto.response.HpLoginUserResponse
 import com.idrsys.ailis.sales.application.required.repository.hploginuser.HpLoginUserCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.hploginuser.HpLoginUserRepository
 import com.idrsys.ailis.sales.application.usecase.hploginuser.HpLoginUserUseCase
+import com.idrsys.ailis.sales.shared.constant.HpLoginUserErrorCode
 import com.idrsys.ailis.sales.shared.mapper.HpLoginUserMapper
+import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -49,20 +53,34 @@ class HpLoginUserService(
         val now = LocalDateTime.now()
         val encodedCommand = command.copy(loginPswd = encodePassword(command.loginPswd))
         val hpLoginUser = mapper.toDomain(encodedCommand, creator, now).apply { setAsNew() }
-        val savedHpLoginUser = repository.save(hpLoginUser)
-        return mapper.toResponse(savedHpLoginUser)
+        return try {
+            val savedHpLoginUser = repository.save(hpLoginUser)
+            mapper.toResponse(savedHpLoginUser)
+        } catch (e: DuplicateKeyException) {
+            throw UserDefinedException(
+                HpLoginUserErrorCode.LOGIN_ID_DUPLICATE_CODE,
+                HpLoginUserErrorCode.LOGIN_ID_DUPLICATE_MESSAGE
+            )
+        }
     }
 
     @Transactional
-    override suspend fun updateHpLoginUser(hpLoginUserId: String, command: HpLoginUserCommand, updater: String): HpLoginUserResponse {
+    override suspend fun updateHpLoginUser(hpLoginUserId: String, command: HpLoginUserUpdateCommand, updater: String): HpLoginUserResponse {
         val hpLoginUser = customRepository.findDomainById(hpLoginUserId)
             ?: throw NoSuchElementException("HpLoginUser not found with id: $hpLoginUserId")
 
-        val encodedCommand = command.copy(loginPswd = encodePassword(command.loginPswd))
-        hpLoginUser.update(encodedCommand, updater)
+        val encodedPswd = command.loginPswd?.let { encodePassword(it) }
+        hpLoginUser.update(command, encodedPswd, updater)
 
-        val updatedHpLoginUser = repository.save(hpLoginUser)
-        return mapper.toResponse(updatedHpLoginUser)
+        return try {
+            val updatedHpLoginUser = repository.save(hpLoginUser)
+            mapper.toResponse(updatedHpLoginUser)
+        } catch (e: DuplicateKeyException) {
+            throw UserDefinedException(
+                HpLoginUserErrorCode.LOGIN_ID_DUPLICATE_CODE,
+                HpLoginUserErrorCode.LOGIN_ID_DUPLICATE_MESSAGE
+            )
+        }
     }
 
     @Transactional
