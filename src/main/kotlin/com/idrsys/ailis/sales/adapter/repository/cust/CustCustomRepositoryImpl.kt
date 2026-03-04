@@ -465,6 +465,11 @@ class CustCustomRepositoryImpl(
 
         conditions += SCS_CUST_MST.CUST_CD.containsIgnoreCase(keyword).or(SCS_CUST_MST.CUST_NM.containsIgnoreCase(keyword))
 
+        // 비admin용 영업소 기준 필터링
+        searchParam.bzoffiCd?.takeIf { it.isNotBlank() }?.let {
+            conditions += SCS_CUST_MST.BZOFFI_CD.eq(it)
+        }
+
         val selectFields = arrayOf(
             SCS_CUST_MST.CUST_MST_ID,
             SCS_CUST_MST.CUST_CD,

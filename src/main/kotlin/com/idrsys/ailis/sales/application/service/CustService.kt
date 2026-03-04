@@ -295,11 +295,17 @@ class CustService(
     @Transactional(readOnly = true)
     override fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<CustCdNmAutoCompleteResponse> {
         return if (isUserAdmin(roles)) {
-            val autoCompleteList = custCustomRepository.findCustCdNmAutoComplete(searchParam)
-            autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
+            custCustomRepository.findCustCdNmAutoComplete(searchParam)
+                .map(custMapper::toCustCdNmAutoCompleteResponse)
         } else {
-            val autoCompleteList = custCustomRepository.findMyCustCdNmAutoComplete(searchParam, empUserId)
-            autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
+            flow {
+                val user = baseServicePort.getUser(empUserId)
+                val modifiedParam = searchParam.copy(bzoffiCd = user?.deptCd)
+                emitAll(
+                    custCustomRepository.findCustCdNmAutoComplete(modifiedParam)
+                        .map(custMapper::toCustCdNmAutoCompleteResponse)
+                )
+            }
         }
     }
 
