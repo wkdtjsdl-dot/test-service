@@ -19,6 +19,7 @@ interface CustUseCase {
     suspend fun getCusts(searchParam: CustSearchParam): Flow<CustListResponse> // excel
     suspend fun findCustByCustMstId(custMstId: String): CustResponse
     suspend fun findCustByCustCd(custCd: String): CustResponse
+    suspend fun findCustNmByCustCd(custCds:List<String>): Map<String, CustCdNmResponse>
     suspend fun findTstItemsByCustMstId(custMstId: String): Flow<TstServiceTstItemsResponse>
     suspend fun registerCust(command: CustRegisterCommand, creator: String): Cust
     suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust
@@ -42,5 +43,5 @@ interface CustUseCase {
      * @param extnAuthKey external authentication key
      * @return AuthKeyValidateResponse or null if invalid
      */
-    suspend fun validateAuthKey(extnAuthKey: String): com.idrsys.ailis.sales.application.dto.response.AuthKeyValidateResponse?
+    suspend fun validateAuthKey(extnAuthKey: String): AuthKeyValidateResponse?
 }

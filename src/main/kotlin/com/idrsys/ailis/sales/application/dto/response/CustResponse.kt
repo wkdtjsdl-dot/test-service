@@ -131,6 +131,12 @@ data class CustCdNmAutoCompleteResponse(
     val crcyCd: String?
 )
 
+data class CustCdNmResponse(
+    val custMstId: String?,
+    val custCd: String?,
+    val custNm: String?
+)
+
 data class RprsCustCdNmAutoCompleteResponse(
     val rprsCustCd: String?,
     val rprsCustNm: String?

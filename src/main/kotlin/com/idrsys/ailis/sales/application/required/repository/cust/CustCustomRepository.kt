@@ -3,6 +3,7 @@ package com.idrsys.ailis.sales.application.required.repository.cust
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.*
+import com.idrsys.ailis.sales.application.dto.response.CustCdNmResponse
 import com.idrsys.ailis.sales.application.dto.response.IfFieldInfoResponse
 import com.idrsys.ailis.sales.domain.model.Cust
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +22,7 @@ interface CustCustomRepository {
     fun findRprsCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteInfo>
     suspend fun findCustDetailInfoByCustMstId(custMstId: String): CustDetailInfo?
     suspend fun findCustDetailInfoByCustCd(custCd: String): CustDetailInfo?
+    suspend fun findCustNmByCustCd(custCds: List<String>): Map<String, CustCdNmResponse>
     fun findDirectAcctCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<DirectAcctCdNmAutoCompleteInfo>
     fun findAllWithCareInstId(): Flow<CustCareInstId>
     suspend fun findCustList(searchParam: CustSearchParam): Flow<CustBasicInfo>

@@ -194,6 +194,11 @@ class CustService(
         return response
     }
 
+    @Transactional(readOnly = true)
+    override suspend fun findCustNmByCustCd(custCds:List<String>): Map<String, CustCdNmResponse> {
+        return custCustomRepository.findCustNmByCustCd(custCds)
+    }
+
     override suspend fun findTstItemsByCustMstId(custMstId: String): Flow<TstServiceTstItemsResponse> {
         val custMst = custRepository.findByCustMstId(custMstId)
 

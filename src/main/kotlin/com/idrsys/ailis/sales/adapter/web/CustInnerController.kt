@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -45,6 +47,13 @@ class CustInnerController(
         return custUseCase.findCustByCustCd(custCd)
     }
 
+    @PostMapping("/custNms")
+    @Operation(summary = "findCustNmByCustCd", description = "고객 코드로 고객명 조회")
+    suspend fun findCustNmByCustCd(
+        @RequestBody custCds: List<String>
+    ): Map<String, CustCdNmResponse> {
+        return custUseCase.findCustNmByCustCd(custCds)
+    }
 
     @GetMapping
     @Operation(summary = "getCustBasicList", description = "내부용 고객 기본정보 조회 (전체)")

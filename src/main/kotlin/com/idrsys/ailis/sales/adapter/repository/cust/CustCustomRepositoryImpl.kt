@@ -5,6 +5,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.*
 import com.idrsys.ailis.sales.application.dto.query.CustBillingInfo
+import com.idrsys.ailis.sales.application.dto.response.CustCdNmResponse
 import com.idrsys.ailis.sales.application.dto.response.IfFieldInfoResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.domain.model.Cust
@@ -414,6 +415,45 @@ class CustCustomRepositoryImpl(
             .map { row, _ -> row.toCustDetailInfo() }
             .one()
             .awaitSingle()
+    }
+
+    override suspend fun findCustNmByCustCd(custCds: List<String>): Map<String, CustCdNmResponse> {
+        if (custCds.isEmpty()) return emptyMap()
+
+        val result = mutableMapOf<String, CustCdNmResponse>()
+
+        custCds.chunked(BATCH_QUERY_SIZE).forEach { chunk ->
+
+            val query = dslContext.selectDistinct(
+                SCS_CUST_MST.CUST_MST_ID,
+                SCS_CUST_MST.CUST_CD,
+                SCS_CUST_MST.CUST_NM,
+            )
+                .from(SCS_CUST_MST)
+                .where(SCS_CUST_MST.CUST_CD.`in`(chunk))
+
+            var sql = databaseClient.sql(query.sql)
+            query.bindValues.forEachIndexed { i, v ->
+                sql = sql.bind(i, v)
+            }
+
+            val chunkResult = sql
+                .map { row, _ ->
+                    row.get("cust_cd", String::class.java)!! to
+                        CustCdNmResponse(
+                            custMstId = row.get("cust_mst_id", String::class.java)!!,
+                            custCd = row.get("cust_cd", String::class.java)!!,
+                            custNm = row.get("cust_nm", String::class.java)!!
+                        )
+                }
+                .all()
+                .collectList()
+                .awaitSingle()
+
+            result.putAll(chunkResult)
+        }
+
+        return result
     }
 
     // 직접거래처 자동완성
