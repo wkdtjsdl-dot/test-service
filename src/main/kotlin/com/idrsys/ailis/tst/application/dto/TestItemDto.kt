@@ -314,6 +314,7 @@ data class TestItemRefResponse(
     val refCateCd: String?,
     val sortOrder: Int?,
     val refNm: String,
+    val refEngNm: String?,
     val estlYn: Boolean
 )
 

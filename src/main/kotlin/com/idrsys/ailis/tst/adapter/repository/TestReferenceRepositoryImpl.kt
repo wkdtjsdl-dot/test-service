@@ -1,23 +1,16 @@
 package com.idrsys.ailis.tst.adapter.repository
 
-import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteParam
-import com.idrsys.ailis.tst.application.dto.TestReferenceAutoCompleteResponse
-import com.idrsys.ailis.tst.application.dto.TestReferenceByGroupParam
-import com.idrsys.ailis.tst.application.dto.TestReferenceGroupItemResponse
-import com.idrsys.ailis.tst.application.dto.TestReferenceSimpleResponse
+import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.required.repository.TestReferenceRepository
 import com.idrsys.ailis.tst.domain.model.TestReference
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroup
 import com.idrsys.ailis.tst.domain.model.TestReferenceGroupItem
-import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRef
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstRefGroupItem
-import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.jooq.Condition
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -117,8 +110,7 @@ class TestReferenceRepositoryImpl(
         }
 
         val query = dslContext.select(
-            tstRef.REF_CD,
-            tstRef.REF_NM
+            tstRef.REF_CD, tstRef.REF_NM, tstRef.REF_ENG_NM
         )
             .from(tstRef)
             .where(condition)
@@ -136,7 +128,8 @@ class TestReferenceRepositoryImpl(
             .map { row, _ ->
                 TestReferenceSimpleResponse(
                     refCd = row.get(tstRef.REF_CD.name, String::class.java)!!,
-                    refNm = row.get(tstRef.REF_NM.name, String::class.java)!!
+                    refNm = row.get(tstRef.REF_NM.name, String::class.java)!!,
+                    refEngNm = row.get(tstRef.REF_ENG_NM.name, String::class.java)!!,
                 )
             }
             .all()

@@ -22,7 +22,8 @@ data class TestReferenceAutoCompleteResponse(
 
 data class TestReferenceSimpleResponse(
     val refCd: String,
-    val refNm: String
+    val refNm: String,
+    val refEngNm: String?
 )
 
 data class TestReferenceRegisterRequest(
