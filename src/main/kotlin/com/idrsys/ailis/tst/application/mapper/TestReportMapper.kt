@@ -21,28 +21,31 @@ class TestReportMapper {
             tstReportId = entity.tstReportId ?: "",
             tstReqDt = entity.tstReqDt,
             tstReqNo = entity.tstReqNo,
-            patientNm = "", // TODO: req-service Inner API로 조회 필요
+
+            patientNm = "",
+
+            tstStatusCd = "",
+            deliveryYn = entity.deliveryYn,
+
             tstCd = entity.tstCd,
-            tstNm = "", // TODO: bts_item JOIN 또는 조회 필요
-            tstStatusCd = "", // TODO: req-service Inner API로 조회 필요
-            tstStatusNm = null,
-            reportStatusCd = "", // TODO: req-service Inner API로 조회 필요
-            reportStatusNm = null,
-            custNm = "", // TODO: req-service Inner API로 조회 필요
-            hospNm = "", // TODO: req-service Inner API로 조회 필요
-            deptCd = null, // TODO: req-service Inner API로 조회 필요
-            deptNm = "", // TODO: base-service Inner API로 조회 필요 (deptCd 기반)
-            reportDt = entity.deliveryDtime?.toLocalDate(),
-            deliveryDt = entity.deliveryDtime?.toLocalDate(),
-            testerNm = null,
-            reporterNm = null,
-            reportSeq = null,
+            tstNm = "",
+
+            limsRcvDtime = entity.limsRcvDtime?.toLocalDate(),
+            deliveryDtime = entity.deliveryDtime?.toLocalDate(),
+
+            directAcctCd = "",
+            custCd = "",
+
+            directAcctNm = "",
+            custNm = "",
+
+            deliverer = entity.deliverer,
+
+            atchGrupId = entity.atchGrupId,
+
             rstShort = entity.rstShort,
             rstTxt = entity.rstTxt,
-            rstFileNm = entity.rstFileNm,
-            rstFilePath = entity.rstFilePath,
-            rstUrl = entity.rstUrl,
-            deliveryYn = entity.deliveryYn
+            rstUrl = entity.rstUrl
         )
     }
 }

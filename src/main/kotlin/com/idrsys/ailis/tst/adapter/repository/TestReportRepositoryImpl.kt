@@ -5,11 +5,13 @@ import com.idrsys.ailis.tst.application.dto.TestResultSearchParam
 import com.idrsys.ailis.tst.application.required.repository.TestReportRepository
 import com.idrsys.ailis.tst.domain.model.TestReport
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem.BTS_ITEM
+import com.idrsys.ailis.tst.generated.jooq.tables.RbsPatient.RBS_PATIENT
+import com.idrsys.ailis.tst.generated.jooq.tables.RbsTstItem.RBS_TST_ITEM
 import com.idrsys.ailis.tst.generated.jooq.tables.TbsTstReport.TBS_TST_REPORT
-import kotlinx.coroutines.reactive.awaitFirstOrNull
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem.BBS_DEPT_TST_ITEM
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.DSLContext
-import org.slf4j.LoggerFactory
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
@@ -59,98 +61,129 @@ class TestReportRepositoryImpl(
     }
 
     override suspend fun searchTestResults(params: TestResultSearchParam): List<TestResultResponse> {
-        // jOOQ + R2DBC를 사용한 타입 안전 쿼리
-        // 필요한 데이터 출처:
-        // 1. tbs_tst_report (검사결과 보고서) + bts_item (검사종목) - 현재 쿼리에서 JOIN
-        // 2. req-service Inner API (의뢰 정보) - 환자명, 거래처, 병원, 검사상태, 보고상태, 부서코드
-        // 3. base-service Inner API (부서명, 시스템 코드명) - Service 레이어에서 병합
-
         val report = TBS_TST_REPORT
+        val patient = RBS_PATIENT
+        val tstItem = RBS_TST_ITEM
         val item = BTS_ITEM
+        val deptItem = BBS_DEPT_TST_ITEM
 
-        // 동적 WHERE 조건 빌드
+        // TODO 검사상태&보고상태
         val conditions = mutableListOf(
             report.TST_REQ_DT.between(params.reqStartDt, params.reqEndDt)
         )
 
-        // 보고일 조건 (날짜 범위로 검색)
         params.reportDt?.let {
             val startOfDay = it.atStartOfDay()
             val endOfDay = it.plusDays(1).atStartOfDay()
-            conditions.add(
-                report.DELIVERY_DTIME.between(startOfDay, endOfDay)
-            )
+            conditions.add(report.DELIVERY_DTIME.between(startOfDay, endOfDay))
         }
 
-        // 의뢰번호 범위 조건
-        params.reqNoFrom?.let { conditions.add(report.TST_REQ_NO.ge(it)) }
-        params.reqNoTo?.let { conditions.add(report.TST_REQ_NO.le(it)) }
+        params.directAcctCd?.takeIf { it.isNotBlank() }?.let {
+            conditions.add(patient.DIRECT_ACCT_CD.eq(it))
+        }
 
-        // 검사코드 조건 (빈 문자열 체크)
+        params.custCd?.takeIf { it.isNotBlank() }?.let {
+            conditions.add(patient.CUST_CD.eq(it))
+        }
+
+        params.reqNoFrom?.let {
+            conditions.add(report.TST_REQ_NO.ge(it))
+        }
+
+        params.reqNoTo?.let {
+            conditions.add(report.TST_REQ_NO.le(it))
+        }
+
         params.tstCd?.takeIf { it.isNotBlank() }?.let {
             conditions.add(report.TST_CD.eq(it))
         }
 
-        // jOOQ DSL로 쿼리 생성
+        params.deptCd?.takeIf { it.isNotBlank() }?.let {
+            conditions.add(deptItem.DEPT_CD.eq(it))
+        }
+
         val query = dslContext
             .select(
-                report.TST_REPORT_ID.`as`("tst_report_id"),
-                report.TST_REQ_DT.`as`("tst_req_dt"),
-                report.TST_REQ_NO.`as`("tst_req_no"),
-                report.TST_CD.`as`("tst_cd"),
-                item.TST_NM.`as`("tst_nm"),
-                report.RST_SHORT.`as`("rst_short"),
-                report.RST_TXT.`as`("rst_txt"),
-                report.RST_FILE_NM.`as`("rst_file_nm"),
-                report.RST_FILE_PATH.`as`("rst_file_path"),
-                report.RST_URL.`as`("rst_url"),
-                report.DELIVERY_YN.`as`("delivery_yn"),
-                report.DELIVERY_DTIME.`as`("delivery_dtime")
+                report.TST_REPORT_ID,
+                report.TST_REQ_DT,
+                report.TST_REQ_NO,
+
+                patient.PAT_NM.`as`("patient_nm"),
+
+                tstItem.TST_STAT1_CD.`as`("tst_status_cd"),
+                report.DELIVERY_YN,
+
+                report.TST_CD,
+                item.TST_NM,
+
+                report.LIMS_RCV_DTIME,
+                report.DELIVERY_DTIME,
+                patient.DIRECT_ACCT_CD,
+                patient.CUST_CD,
+                report.DELIVERER,
+                report.ATCH_GRUP_ID,
+
+                report.RST_SHORT,
+                report.RST_TXT,
+                report.RST_URL
             )
             .from(report)
-            .leftJoin(item).on(report.TST_CD.eq(item.TST_CD))
+                .join(patient)
+                    .on(report.TST_REQ_DT.eq(patient.TST_REQ_DT))
+                    .and(report.TST_REQ_NO.eq(patient.TST_REQ_NO))
+                .join(tstItem)
+                    .on(report.TST_REQ_DT.eq(tstItem.TST_REQ_DT))
+                    .and(report.TST_REQ_NO.eq(tstItem.TST_REQ_NO))
+                    .and(report.TST_CD.eq(tstItem.TST_CD))
+                .join(item)
+                    .on(report.TST_CD.eq(item.TST_CD))
+                .join(deptItem)
+                    .on(report.TST_CD.eq(deptItem.TST_CD))
             .where(conditions)
             .orderBy(report.TST_REQ_DT.desc(), report.TST_REQ_NO.desc())
 
-        // DatabaseClient로 SQL 실행 (기존 패턴 - renderInlined 방식)
-        return databaseClient.sql(dslContext.renderInlined(query))
-            .map { row, _ ->
-                TestResultResponse(
-                    tstReportId = row.get("tst_report_id", String::class.java) ?: "",
-                    tstReqDt = row.get("tst_req_dt", LocalDate::class.java) ?: LocalDate.now(),
-                    tstReqNo = row.get("tst_req_no", java.lang.Long::class.java)?.toLong() ?: 0L,
-                    // TODO: req-service Inner API로 조회 필요
-                    patientNm = "",
-                    tstCd = row.get("tst_cd", String::class.java) ?: "",
-                    tstNm = row.get("tst_nm", String::class.java) ?: "",
-                    // TODO: req-service Inner API로 조회 필요
-                    tstStatusCd = "",
-                    tstStatusNm = null,
-                    reportStatusCd = "",
-                    reportStatusNm = null,
-                    custNm = "",
-                    hospNm = "",
-                    deptCd = null, // TODO: req-service Inner API로 조회 필요
-                    deptNm = "", // base-service Inner API로 조회 (Service 레이어에서 병합)
-                    reportDt = row.get("delivery_dtime", LocalDateTime::class.java)?.toLocalDate(),
-                    deliveryDt = row.get("delivery_dtime", LocalDateTime::class.java)?.toLocalDate(),
-                    testerNm = null,
-                    reporterNm = null,
-                    reportSeq = null, // TODO: 보고 차수 로직 구현 필요
-                    rstShort = row.get("rst_short", String::class.java),
-                    rstTxt = row.get("rst_txt", String::class.java),
-                    rstFileNm = row.get("rst_file_nm", String::class.java),
-                    rstFilePath = row.get("rst_file_path", String::class.java),
-                    rstUrl = row.get("rst_url", String::class.java),
-                    deliveryYn = (row.get("delivery_yn") as? Boolean) ?: false
-                )
-            }
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> executeSpec = executeSpec.bind(i, v) }
+
+        return executeSpec
+            .fetch()
             .all()
+            .map { toTestResultResponse(it) }
             .collectList()
-            .awaitFirstOrNull() ?: emptyList()
+            .awaitSingle()
     }
 
     override suspend fun deleteById(id: String) {
         testReportDataRepository.deleteById(id)
+    }
+
+    private fun toTestResultResponse(row: Map<String, Any>): TestResultResponse {
+        return TestResultResponse(
+            tstReportId = (row["tst_report_id"] ?: "").toString(),
+            tstReqDt = (row["tst_req_dt"] as? LocalDate) ?: LocalDate.now(),
+            tstReqNo = (row["tst_req_no"] as? Number)?.toLong() ?: 0L,
+
+            patientNm = (row["patient_nm"] ?: "").toString(),
+            tstStatusCd = (row["tst_status_cd"] ?: "").toString(),
+            deliveryYn = (row["delivery_yn"] as? Boolean) ?: false,
+
+            tstCd = (row["tst_cd"] ?: "").toString(),
+            tstNm = (row["tst_nm"] ?: "").toString(),
+
+            limsRcvDtime = (row["lims_rcv_dtime"] as? LocalDateTime)?.toLocalDate(),
+            deliveryDtime = (row["delivery_dtime"] as? LocalDateTime)?.toLocalDate(),
+
+            directAcctCd = (row["direct_acct_cd"] ?: "").toString(),
+            custCd = (row["cust_cd"] ?: "").toString(),
+
+            directAcctNm = "",
+            custNm = "",
+
+            deliverer = row["deliverer"]?.toString(),
+            atchGrupId = row["atch_grup_id"]?.toString(),
+            rstShort = row["rst_short"]?.toString(),
+            rstTxt = row["rst_txt"]?.toString(),
+            rstUrl = row["rst_url"]?.toString()
+        )
     }
 }

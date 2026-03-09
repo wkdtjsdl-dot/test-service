@@ -2,10 +2,9 @@ package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.application.required.external.BaseServicePort
 import com.idrsys.ailis.tst.application.dto.*
-import com.idrsys.ailis.tst.application.dto.inner.TestRequestKey
 import com.idrsys.ailis.tst.application.mapper.TestReportCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestReportMapper
-import com.idrsys.ailis.tst.application.required.external.ReqServicePort
+import com.idrsys.ailis.tst.application.required.external.SalesServicePort
 import com.idrsys.ailis.tst.application.required.repository.TestReportRepository
 import com.idrsys.ailis.tst.application.usecase.TestReportUseCase
 import com.idrsys.ailis.tst.domain.model.TestReport
@@ -24,54 +23,29 @@ class TestReportService(
     private val testReportRepository: TestReportRepository,
     private val testReportMapper: TestReportMapper,
     private val commandMapper: TestReportCommandMapper,
-    private val baseServiceClient: BaseServicePort,
-    private val reqServiceClient: ReqServicePort
+    private val salesServiceClient: SalesServicePort,
 ) : TestReportUseCase {
 
     @Transactional(readOnly = true)
     override suspend fun searchTestResults(params: TestResultSearchParam): List<TestResultResponse> {
-        // 1. Repository에서 기본 검사결과 조회 (tbs_tst_report + bts_item JOIN)
-        val reports = testReportRepository.searchTestResults(params)
+        val results = testReportRepository.searchTestResults(params)
 
-        if (reports.isEmpty()) {
-            return emptyList()
+        if (results.isEmpty()) return results
+
+        // custCd / directAcctCd 추출
+        val custCds = results.mapNotNull { it.custCd }
+        val directAcctCds = results.mapNotNull { it.directAcctCd }
+
+        val allCustCds = (custCds + directAcctCds).distinct()
+
+        val custMap = salesServiceClient.findCustNmByCustCd(allCustCds)
+
+        results.forEach { row ->
+            row.custNm = row.custCd.let { custMap[it]?.custNm.toString() }
+            row.directAcctNm = row.directAcctCd.let { custMap[it]?.custNm.toString() }
         }
 
-        // 2. req-service Inner API로 의뢰 정보 조회 (1번만 호출로 최적화)
-        val requestKeys = reports.map { TestRequestKey(it.tstReqDt, it.tstReqNo) }.distinct()
-        val requestInfoList = reqServiceClient.getTestRequestsByKeys(requestKeys)
-
-        // 의뢰 정보 Map (빠른 조회용)
-        val requestInfoMap = requestInfoList.associateBy {
-            TestRequestKey(it.tstReqDt, it.tstReqNo)
-        }
-
-        // 3. base-service Inner API로 부서명 조회
-        val deptCds = requestInfoList.mapNotNull { it.deptCd }.distinct()
-        val deptNames = if (deptCds.isNotEmpty()) {
-            baseServiceClient.getDepartmentsByDeptCds(deptCds)
-        } else {
-            emptyMap()
-        }
-
-        // 4. 데이터 병합 (getTestItemsStatus 호출 제거로 중복 API 호출 방지)
-        return reports.map { report ->
-            val requestKey = TestRequestKey(report.tstReqDt, report.tstReqNo)
-            val requestInfo = requestInfoMap[requestKey]
-
-            report.copy(
-                // req-service에서 조회한 데이터로 업데이트
-                patientNm = requestInfo?.patientNm ?: "",
-                custNm = requestInfo?.custNm ?: "",
-                hospNm = requestInfo?.hospNm ?: "",
-                deptCd = requestInfo?.deptCd,
-                deptNm = requestInfo?.deptCd?.let { deptNames[it] } ?: "",
-                tstStatusCd = requestInfo?.tstReqStatCd ?: "",
-                tstStatusNm = null, // TODO
-                reportStatusCd = "", // TODO
-                reportStatusNm = null // TODO
-            )
-        }
+        return results
     }
 
     @Transactional(readOnly = true)
