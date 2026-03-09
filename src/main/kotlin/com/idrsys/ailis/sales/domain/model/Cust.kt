@@ -38,7 +38,7 @@ class Cust(
     addr2: String?,                  // 주소2
     reqDivCd: String?,               // 의뢰구분코드 (공통코드 RQDV)
     atchFileGrupId: String?,         // 첨부파일그룹아이디
-    reqPossTstLimitYn: Boolean? = null,     // 의뢰가능검사제한여부
+    reqPossTstLimitYn: Boolean? = false,     // 의뢰가능검사제한여부
     // 사업자등록정보
     bizrno: String?,                 // 사업자번호
     sapCustCd: String?,              // SAP고객코드
@@ -486,5 +486,95 @@ class Cust(
         this.reqIfTypeCd = newReqIfTypeCd
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
+    }
+
+    fun updateCust(command: CustUpdateCommand, updater: String) {
+
+        // 기본정보
+        updateIfNotNull(command.custCd) { custCd = it }
+        updateIfNotNull(command.custNm) { custNm = it }
+        updateIfNotNull(command.custDivCd) { custDivCd = it }
+        updateIfNotNull(command.directAcctCd) { directAcctCd = it }
+        updateIfNotNull(command.directAcctAcctCd) { directAcctAcctCd = it }
+        updateIfNotNull(command.rprsNm) { rprsNm = it }
+        updateIfNotNull(command.rstOutputCustNm) { rstOutputCustNm = it }
+        updateIfNotNull(command.careInstId) { careInstId = it }
+        updateIfNotNull(command.custTypeCd) { custTypeCd = it }
+        updateIfNotNull(command.bzoffiCd) { bzoffiCd = it }
+        updateIfNotNull(command.bzoffiPicId) { bzoffiPicId = it }
+        updateIfNotNull(command.custStatCd) { custStatCd = it }
+
+        updateIfNotNull(command.reqPossYn) { reqPossYn = it }
+        updateIfNotNull(command.rprsCustYn) { rprsCustYn = it }
+        updateIfNotNull(command.rprsCustCd) { rprsCustCd = it }
+        updateIfNotNull(command.studyProjCustYn) { studyProjCustYn = it }
+        updateIfNotNull(command.studyProjNm) { studyProjNm = it }
+
+        updateIfNotNull(command.asrtCd) { asrtCd = it }
+        updateIfNotNull(command.careInstNo) { careInstNo = it }
+        updateIfNotNull(command.telNo) { telNo = it }
+        updateIfNotNull(command.faxNo) { faxNo = it }
+        updateIfNotNull(command.zipcd) { zipcd = it }
+        updateIfNotNull(command.addr1) { addr1 = it }
+        updateIfNotNull(command.addr2) { addr2 = it }
+        updateIfNotNull(command.reqDivCd) { reqDivCd = it }
+
+        // 사업자등록정보
+        updateIfNotNull(command.bizrno) { bizrno = it }
+        updateIfNotNull(command.sapCustCd) { sapCustCd = it }
+        updateIfNotNull(command.corpNo) { corpNo = it }
+        updateIfNotNull(command.biznm) { biznm = it }
+        updateIfNotNull(command.bztp) { bztp = it }
+        updateIfNotNull(command.bzse) { bzse = it }
+        updateIfNotNull(command.bizregRprsNm) { bizregRprsNm = it }
+        updateIfNotNull(command.openDt) { openDt = it }
+
+        // 수금/정산/계산서
+        updateIfNotNull(command.billPublYn) { billPublYn = it }
+        updateIfNotNull(command.addtaxInclYn) { addtaxInclYn = it }
+        updateIfNotNull(command.billPic) { billPic = it }
+        updateIfNotNull(command.billPicEmaiAddr) { billPicEmaiAddr = it }
+        updateIfNotNull(command.billPicTelno) { billPicTelno = it }
+        updateIfNotNull(command.billPublDt) { billPublDt = it }
+        updateIfNotNull(command.payRtday) { payRtday = it }
+        updateIfNotNull(command.payPlanDt) { payPlanDt = it }
+        updateIfNotNull(command.payMethodCd) { payMethodCd = it }
+        updateIfNotNull(command.billAutoPublTargetYn) { billAutoPublTargetYn = it }
+        updateIfNotNull(command.gccStmtMethodCd) { gccStmtMethodCd = it }
+        updateIfNotNull(command.spcmPickupMethodCd) { spcmPickupMethodCd = it }
+        updateIfNotNull(command.gcgPickupPicEmpNo) { gcgPickupPicEmpNo = it }
+        updateIfNotNull(command.outamtWritingYn) { outamtWritingYn = it }
+
+        // 해외거래처
+        updateIfNotNull(command.frgnAcctYn) { frgnAcctYn = it }
+        updateIfNotNull(command.natnCd) { natnCd = it }
+        updateIfNotNull(command.useLangCd) { useLangCd = it }
+        updateIfNotNull(command.crcyCd) { crcyCd = it }
+
+        // 기타
+        updateIfNotNull(command.custGradeCd) { custGradeCd = it }
+        updateIfNotNull(command.branchCd) { branchCd = it }
+        updateIfNotNull(command.hpUrl) { hpUrl = it }
+        updateIfNotNull(command.taxDivCd) { taxDivCd = it }
+        updateIfNotNull(command.rprsAcctBillCombPublYn) { rprsAcctBillCombPublYn = it }
+        updateIfNotNull(command.truncUnitCd) { truncUnitCd = it }
+        updateIfNotNull(command.invcEmailRecpYn) { invcEmailRecpYn = it }
+        updateIfNotNull(command.invcRecpEmailAddr) { invcRecpEmailAddr = it }
+        updateIfNotNull(command.sotOutputYn) { sotOutputYn = it }
+        updateIfNotNull(command.sotOutputQnty) { sotOutputQnty = it }
+        updateIfNotNull(command.rstNtcnRecpYn) { rstNtcnRecpYn = it }
+        updateIfNotNull(command.rstNtcnRecpEmailAddr) { rstNtcnRecpEmailAddr = it }
+        updateIfNotNull(command.reqMethodCd) { reqMethodCd = it }
+        updateIfNotNull(command.reqIfTypeCd) { reqIfTypeCd = it }
+        updateIfNotNull(command.atchFileGrupId) { atchFileGrupId = it }
+        updateIfNotNull(command.reqPossTstLimitYn) { reqPossTstLimitYn = it }
+
+        // 공통
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
+
+    private fun <T> updateIfNotNull(value: T?, setter: (T) -> Unit) {
+        value?.let(setter)
     }
 }

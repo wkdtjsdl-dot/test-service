@@ -2,6 +2,7 @@ package com.idrsys.ailis.sales.adapter.repository.cust
 
 import com.idrsys.ailis.sales.adapter.persistence.mapper.*
 import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
+import com.idrsys.ailis.sales.application.dto.cust.CustSearchCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.*
 import com.idrsys.ailis.sales.application.dto.query.CustBillingInfo
@@ -31,6 +32,21 @@ class CustCustomRepositoryImpl(
     private val databaseClient: DatabaseClient,
     private val custDataRepository: CustDataRepository,
 ) : CustCustomRepository {
+    override suspend fun findByCustCd(custCd: String): Cust? {
+        val query = dslContext
+            .select(SCS_CUST_MST.asterisk())
+            .from(SCS_CUST_MST)
+            .where(SCS_CUST_MST.CUST_CD.eq(custCd))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustMst() }
+            .one()
+            .awaitSingleOrNull()
+    }
+
     override suspend fun findCustMstIdByCustCd(custCd: String): String? {
         val query = dslContext.select(SCS_CUST_MST.CUST_MST_ID)
             .from(SCS_CUST_MST)
@@ -184,6 +200,30 @@ class CustCustomRepositoryImpl(
             .map { row, _ -> row.toCustWithSalsPicInfo() }
             .all()
             .asFlow()
+    }
+
+    override suspend fun searchInnerCusts(searchParam: CustSearchCommand): List<Cust> {
+        val conditions = mutableListOf<Condition>()
+        conditions.add(SCS_CUST_MST.DIRECT_ACCT_CD.eq(searchParam.directAcctCd))
+
+        searchParam.serial?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.CUST_CD.eq(it)) }
+        searchParam.name?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$it%")) }
+        searchParam.registrationNumber?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BIZRNO.eq(it)) }
+        searchParam.nursingNumber?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.CARE_INST_NO.eq(it)) }
+        searchParam.branchCode?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BRANCH_CD.eq(it)) }
+        searchParam.type?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BZSE.likeIgnoreCase("%$it%")) }
+
+        val query = dslContext.selectFrom(SCS_CUST_MST)
+            .where(conditions)
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toCustMst() }
+            .all()
+            .asFlow()
+            .toList()
     }
 
     override suspend fun countCusts(searchParam: CustSearchParam): Long {
@@ -369,6 +409,22 @@ class CustCustomRepositoryImpl(
             .awaitSingle()
 
         return count > 0
+    }
+
+    override suspend fun deleteByCustCd(custCd: String) {
+        val query = dslContext.deleteFrom(SCS_CUST_MST)
+            .where(SCS_CUST_MST.CUST_CD.eq(custCd))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        val updated = sql.fetch()
+            .rowsUpdated()
+            .awaitSingle()
+
+        if (updated?.toInt() == 0) {
+            throw IllegalArgumentException("Customer not found: $custCd")
+        }
     }
 
     override suspend fun findCustDetailInfoByCustMstId(custMstId: String): CustDetailInfo? {

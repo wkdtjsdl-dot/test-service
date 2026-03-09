@@ -102,6 +102,24 @@ class BaseServiceClient(
             }
     }
 
+    override suspend fun getDepartmentsByIds(deptCds: List<String>): List<BaseDepartmentResponse>? {
+        if (deptCds.isEmpty()) return emptyList()
+        return try {
+            client.get()
+                .uri { uriBuilder ->
+                    uriBuilder
+                        .path("/api/inner/departments/byDeptCds")
+                        .queryParam("deptCds", deptCds)
+                        .build()
+                }
+                .retrieve()
+                .awaitBody<List<BaseDepartmentResponse>>()
+        } catch (ex: Exception) {
+            println("Error fetching departments: ${ex.message}") // 로그 확인용
+            null
+        }
+    }
+
     // ========== 시스템 코드 관련 메서드 ==========
 
     /**

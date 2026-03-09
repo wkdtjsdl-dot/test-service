@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.application.dto.cust
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class CustCommand(
     // 기본정보
@@ -76,6 +77,39 @@ data class CustCommand(
     val atchFileGrupId: String?,         // 첨부파일그룹아이디
     val reqPossTstLimitYn: Boolean?,     // 의뢰가능검사제한여부
     val updateReason: String? = null    // 변경사유 (히스토리 테이블용)
+)
+
+data class CustSearchCommand (
+    val directAcctCd: String,
+    val serial: String? = null,
+    val name: String? = null,
+    val registrationNumber: String? = null,
+    val nursingNumber: String? = null,
+    val branchCode: String? = null,
+    val branchName: String? = null,
+    val employeeId: String? = null,
+    val employeeName: String? = null,
+    val employeePhone: String? = null,
+    val type: String? = null,
+)
+
+data class CustResponseCommand (
+    val serial: String,
+    val name: String?,
+    val registrationNumber: String?,
+    val nursingNumber: String?,
+    val branchCode: String?,
+    val branchName: String?,
+    val employeeId: String?,
+    val employeeName: String?,
+    val employeePhone: String?,
+    val type: String?,
+    val createAt: LocalDateTime?
+)
+
+data class CustRegisterWrapper(
+    val command: CustCommand,
+    val authId: String
 )
 
 typealias CustRegisterCommand = CustCommand

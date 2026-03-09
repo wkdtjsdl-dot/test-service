@@ -1,13 +1,17 @@
 package com.idrsys.ailis.sales.adapter.repository.testCodeMapping
 
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toTestCodeMappingInnerTestCode
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toTestCodeMappingQuery
 import com.idrsys.ailis.sales.application.dto.query.TestCodeMappingQuery
+import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.InnerTestCodeSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingSearchParam
+import com.idrsys.ailis.sales.application.dto.response.InnerTestCodeMappingResponse
 import com.idrsys.ailis.sales.application.required.repository.testCodeMapping.TestCodeMappingCustomRepository
 import com.idrsys.ailis.sales.domain.model.CustTestCodeMapping
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_TST_CD_MPG
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
@@ -67,6 +71,27 @@ class TestCodeMappingCustomRepositoryImpl(
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
         return sql.map { row, _ -> row.toTestCodeMappingQuery() }.all().asFlow()
+    }
+
+    override suspend fun innerSearchTestCodeMappingList(searchParam: InnerTestCodeSearchParam): List<InnerTestCodeMappingResponse> {
+        val conditions = mutableListOf<Condition>()
+        conditions.add(SCS_CUST_TST_CD_MPG.CUST_CD.eq(searchParam.userId))
+        searchParam.code?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_TST_CD_MPG.TST_CD.eq(it)) }
+        searchParam.serial?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_TST_CD_MPG.CUST_TST_CD.eq(it)) }
+        searchParam.nameKr?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_TST_CD_MPG.TST_NM.likeIgnoreCase("%${it}%")) }
+//        searchParam.nameEn?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_TST_CD_MPG.TST.eq(it)) }
+
+        val query = dslContext.selectFrom(SCS_CUST_TST_CD_MPG)
+            .where(conditions)
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql
+            .map { row, _ -> row.toTestCodeMappingInnerTestCode() }
+            .all()
+            .asFlow()
+            .toList()
     }
 
     override suspend fun deleteById(id: String) {

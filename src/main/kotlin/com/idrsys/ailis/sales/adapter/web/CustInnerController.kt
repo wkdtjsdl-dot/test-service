@@ -1,14 +1,10 @@
 package com.idrsys.ailis.sales.adapter.web
 
-import com.idrsys.ailis.sales.application.dto.response.CustBasicResponse
-import com.idrsys.ailis.sales.application.dto.response.CustCdNmAutoCompleteResponse
-import com.idrsys.ailis.sales.application.dto.response.DirectAcctCdNmAutoCompleteResponse
-import com.idrsys.ailis.sales.application.dto.response.ExcelConfigResponse
-import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
-import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
+import com.idrsys.ailis.sales.application.dto.cust.*
 import com.idrsys.ailis.sales.application.dto.response.*
-import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
-import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
+import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
+import com.idrsys.ailis.sales.domain.model.Cust
+import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
 import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -16,12 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import org.slf4j.LoggerFactory
 import org.springdoc.core.annotations.ParameterObject
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/inner/custs")
@@ -30,6 +21,30 @@ class CustInnerController(
     private val custUseCase: CustUseCase,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
+
+    @PostMapping("/organizations")
+    @Operation(summary = "registerCust", description = "고객 검색")
+    suspend fun searchCust(
+        @RequestBody search: CustSearchCommand,
+    ): List<CustResponseCommand> {
+        return custUseCase.searchCust(search)
+    }
+
+    @PutMapping
+    @Operation(summary = "registerCust", description = "고객 등록 및 수정")
+    suspend fun registerCust(
+        @RequestBody wrapper: CustRegisterWrapper,
+    ): Cust {
+        return custUseCase.upsertCust(wrapper.command, wrapper.authId)
+    }
+
+    @DeleteMapping("/{custCd}")
+    @Operation(summary = "deleteCust", description = "고객 삭제")
+    suspend fun deleteCust(
+        @PathVariable custCd: String
+    ) {
+        return custUseCase.deleteCust(custCd)
+    }
 
     @GetMapping("/{custMstId}")
     @Operation(summary = "findCustByCustMstId", description = "고객 상세 조회")

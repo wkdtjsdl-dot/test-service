@@ -1,9 +1,6 @@
 package com.idrsys.ailis.sales.application.usecase.cust
 
-import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
-import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
-import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
-import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
+import com.idrsys.ailis.sales.application.dto.cust.*
 import com.idrsys.ailis.sales.application.dto.request.cust.CustAtchFileUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.cust.CustReqIfMethodUpdateCommand
 import com.idrsys.ailis.sales.application.dto.response.*
@@ -22,6 +19,9 @@ interface CustUseCase {
     suspend fun findCustNmByCustCd(custCds:List<String>): Map<String, CustCdNmResponse>
     suspend fun findTstItemsByCustMstId(custMstId: String): Flow<TstServiceTstItemsResponse>
     suspend fun registerCust(command: CustRegisterCommand, creator: String): Cust
+    suspend fun searchCust(searchParam: CustSearchCommand): List<CustResponseCommand>
+    suspend fun upsertCust(command: CustRegisterCommand, authId: String): Cust
+    suspend fun deleteCust(custCd: String)
     suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust
     suspend fun updateCustAtchFile(custMstId: String, command: CustAtchFileUpdateCommand, updater: String)
     suspend fun updateCustReqIfMethod(custMstId: String, command: CustReqIfMethodUpdateCommand, updater: String)

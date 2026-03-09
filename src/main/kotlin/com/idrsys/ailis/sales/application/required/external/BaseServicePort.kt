@@ -75,6 +75,8 @@ interface BaseServicePort {
         command: AttachedFileGroupCreateCommand,
         creatorId: String
     ): BaseAttachedFileGroupResponse?
+
+    suspend fun getDepartmentsByIds(deptCds: List<String>): List<BaseDepartmentResponse>?
 }
 
 /**

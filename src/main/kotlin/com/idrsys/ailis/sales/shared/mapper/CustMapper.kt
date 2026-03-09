@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.shared.mapper
 
 import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
+import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
 import com.idrsys.ailis.sales.application.dto.query.CustBasicInfo
 import com.idrsys.ailis.sales.application.dto.query.CustCdNmAutoCompleteInfo
 import com.idrsys.ailis.sales.application.dto.query.CustDetailInfo
@@ -55,6 +56,8 @@ abstract class CustMapper {
         Mapping(target = "careInstNm", ignore = true)
     )
     abstract fun toDetailResponse(model: CustDetailInfo): CustResponse
+
+    abstract fun toUpdateCommand(command: CustRegisterCommand): CustUpdateCommand
 
     abstract fun toCustCdNmAutoCompleteResponse(model: CustCdNmAutoCompleteInfo): CustCdNmAutoCompleteResponse
 

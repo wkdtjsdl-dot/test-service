@@ -1,15 +1,13 @@
 package com.idrsys.ailis.sales.application.service
 
-import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
-import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
-import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
-import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
+import com.idrsys.ailis.sales.application.dto.cust.*
 import com.idrsys.ailis.sales.application.dto.request.cust.CustAtchFileUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.cust.CustReqIfMethodUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemSearchParam
 import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
 import com.idrsys.ailis.sales.application.required.external.BaseServicePort
+import com.idrsys.ailis.sales.application.required.external.ReqServicePort
 import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustMstHstRepository
@@ -38,6 +36,7 @@ class CustService(
     private val custMapper: CustMapper,
     private val baseServicePort: BaseServicePort,
     private val tstServicePort: TstServicePort,
+    private val reqServicePort: ReqServicePort,
     private val hospitalDataService: HospitalDataService,
     private val testCodeMappingMapper: TestCodeMappingMapper,
 ) : CustUseCase {
@@ -219,6 +218,46 @@ class CustService(
         }
     }
 
+    override suspend fun searchCust(searchParam: CustSearchCommand): List<CustResponseCommand> {
+        if (
+            searchParam.serial.isNullOrBlank() &&
+            searchParam.name.isNullOrBlank() &&
+            searchParam.registrationNumber.isNullOrBlank() &&
+            searchParam.nursingNumber.isNullOrBlank() &&
+            searchParam.branchCode.isNullOrBlank() &&
+            searchParam.branchName.isNullOrBlank() &&
+            searchParam.employeeId.isNullOrBlank() &&
+            searchParam.employeeName.isNullOrBlank() &&
+            searchParam.employeePhone.isNullOrBlank() &&
+            searchParam.type.isNullOrBlank()
+        ) {
+            throw IllegalArgumentException("검색 조건이 최소 1개 이상 필요합니다.")
+        }
+
+        val custList = custCustomRepository.searchInnerCusts(searchParam)
+
+        val branchCdList = custList.mapNotNull { it.bzoffiCd }.distinct()
+
+        val departments = baseServicePort.getDepartmentsByIds(branchCdList)
+        val branchMap = departments?.associateBy({ it.deptCd }, { it.deptNm })
+
+        return custList.map { cust ->
+            CustResponseCommand(
+                serial = cust.custCd,
+                name = cust.custNm,
+                registrationNumber = cust.bizrno,
+                nursingNumber = cust.careInstNo,
+                branchCode = cust.bzoffiCd,
+                branchName = cust.bzoffiCd?.let { branchMap?.get(it) },
+                employeeId = cust.bzoffiPicId,
+                employeeName = null,
+                employeePhone = null,
+                type = cust.custTypeCd,
+                createAt = cust.createDtime
+            )
+        }
+    }
+
     override suspend fun registerCust(command: CustRegisterCommand, creator: String): Cust {
         val custCd = command.custCd
 
@@ -236,6 +275,48 @@ class CustService(
         custMstHistRepository.save(hist)
 
         return savedCust
+    }
+
+    override suspend fun upsertCust(command: CustRegisterCommand, authId: String): Cust {
+        val custCd = command.custCd
+        val now = LocalDateTime.now()
+
+        val existingCust = custCustomRepository.findByCustCd(custCd)
+
+        return if (existingCust == null) {
+            // create
+            val newCust = custMapper.toDomain(command, authId, now)
+            val savedCust = custRepository.save(newCust)
+
+            val hist = custMapper.toHistDomain(savedCust, command.updateReason)
+            custMstHistRepository.save(hist)
+
+            savedCust
+        } else {
+            // update
+            val updateCommand = custMapper.toUpdateCommand(command)
+
+            existingCust.updateCust(updateCommand, authId)
+            val updatedCust = custRepository.save(existingCust)
+
+            val hist = custMapper.toHistDomain(updatedCust, command.updateReason)
+            custMstHistRepository.save(hist)
+
+            updatedCust
+        }
+    }
+
+    override suspend fun deleteCust(custCd: String) {
+        val requestCount = reqServicePort.checkRequestsByCustCd(custCd)
+
+        if (requestCount > 0) {
+            throw UserDefinedException(
+                "CUST_DELETE_NOT_ALLOWED",
+                "삭제할 수 없습니다. 해당 고객으로 등록된 의뢰가 ${requestCount}건 존재합니다."
+            )
+        }
+
+        custCustomRepository.deleteByCustCd(custCd)
     }
 
     override suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust {

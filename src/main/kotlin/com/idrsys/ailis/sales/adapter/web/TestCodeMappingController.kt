@@ -28,7 +28,6 @@ class TestCodeMappingController(
     private val testCodeMappingUseCase: TestCodeMappingUseCase,
     private val excelWriter: ReactiveExcelWriter,
 ) {
-
     @GetMapping
     @Operation(summary = "getTestCodeMappingPage", description = "고객 검사 코드 맵핑 페이지 목록")
     suspend fun getTestCodeMappingPage(
