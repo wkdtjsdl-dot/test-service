@@ -129,6 +129,11 @@ GET {{tst-service}}/api/inner/bts/item/ref-items?cds=N118,M006,ON156
 Content-Type: application/json
 Accept: application/json
 
+### 검사 코드 상세 innerApi 조회
+GET {{tst-service}}/api/inner/bts/item/ref-items/detail?cds=N118,M006,ON156,N019
+Content-Type: application/json
+Accept: application/json
+
 
 ###########################
 # 표준수가 (Standard Charge)

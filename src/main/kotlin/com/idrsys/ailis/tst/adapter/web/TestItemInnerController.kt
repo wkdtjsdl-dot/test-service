@@ -47,6 +47,15 @@ class TestItemInnerController(
         return testItemUseCase.getRefItemsByTstCds(codes)
     }
 
+    @Operation(summary = "검사 코드별 참조항목 상세 조회")
+    @GetMapping("/api/inner/bts/item/ref-items/detail")
+    suspend fun getRefItemsDetailByTstCds(
+        @ParameterObject cds: String
+    ): Flow<TestItemRefDetailItemsResponse> {
+        val codes = cds.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        return testItemUseCase.getRefItemsDetailByTstCds(codes)
+    }
+
     @Operation(summary = "검사 최저수가 inner 조회")
     @GetMapping("/api/inner/bts/item/stnd-charge")
     suspend fun getStandardCharges(

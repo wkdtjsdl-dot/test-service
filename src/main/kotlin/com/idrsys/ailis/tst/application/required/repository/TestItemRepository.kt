@@ -1,19 +1,6 @@
 package com.idrsys.ailis.tst.application.required.repository
 
-import com.idrsys.ailis.tst.application.dto.TestGeneRequest
-import com.idrsys.ailis.tst.application.dto.TestItemAutoCompleteParam
-import com.idrsys.ailis.tst.application.dto.TestItemEssentialDocDetailResponse
-import com.idrsys.ailis.tst.application.dto.TestItemEssentialDocListResponse
-import com.idrsys.ailis.tst.application.dto.TestItemGeneResponse
-import com.idrsys.ailis.tst.application.dto.TestItemRefDetailResponse
-import com.idrsys.ailis.tst.application.dto.TestItemRefItemsResponse
-import com.idrsys.ailis.tst.application.dto.TestItemRefRequest
-import com.idrsys.ailis.tst.application.dto.TestItemRefResponse
-import com.idrsys.ailis.tst.application.dto.TestItemSearchParam
-import com.idrsys.ailis.tst.application.dto.TestItemSimpleResponse
-import com.idrsys.ailis.tst.application.dto.TestItemSpecimenDetailResponse
-import com.idrsys.ailis.tst.application.dto.TestItemSpecimenListResponse
-import com.idrsys.ailis.tst.application.dto.TestItemSpecimensResponse
+import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.domain.model.StandardCharge
 import com.idrsys.ailis.tst.domain.model.TestGene
@@ -62,6 +49,7 @@ interface TestItemRepository {
     fun findRefItemsByTstCd(searchParam: TestItemRefRequest): Flow<TestItemRefResponse>
     suspend fun getDetailRefItemById(refItemId: String): TestItemRefDetailResponse?
     suspend fun findRefItemsByTstCds(tstCds: List<String>): Flow<TestItemRefItemsResponse>
+    suspend fun findRefItemsDetailByTstCds(tstCds: List<String>): Flow<TestItemRefDetailItemsResponse>
 
     // --- TestGene ---
      fun getGenes(request: TestGeneRequest): Flow<TestGene>
