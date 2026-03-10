@@ -31,7 +31,7 @@ interface TestReportRepository {
     /**
      * 검사결과 목록 검색 (JOIN 포함)
      */
-    suspend fun searchTestResults(params: TestResultSearchParam): List<TestResultResponse>
+    suspend fun searchTestResults(params: TestResultSearchParam, rerDeptCd: String?): List<TestResultResponse>
 
     /**
      * 보고서 삭제

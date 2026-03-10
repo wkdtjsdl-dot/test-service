@@ -1,6 +1,6 @@
 package com.idrsys.ailis.tst.application.service
 
-import com.idrsys.ailis.tst.application.required.external.BaseServicePort
+import com.idrsys.ailis.tst.adapter.external.BaseServiceClient
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.mapper.TestReportCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestReportMapper
@@ -23,18 +23,24 @@ class TestReportService(
     private val testReportRepository: TestReportRepository,
     private val testReportMapper: TestReportMapper,
     private val commandMapper: TestReportCommandMapper,
+    private val baseServiceClient: BaseServiceClient,
     private val salesServiceClient: SalesServicePort,
 ) : TestReportUseCase {
 
     @Transactional(readOnly = true)
     override suspend fun searchTestResults(params: TestResultSearchParam): List<TestResultResponse> {
-        val results = testReportRepository.searchTestResults(params)
+        val rerDeptCd = baseServiceClient
+            .getSysCodesByCateCd("RERDPT")
+            .firstOrNull()
+            ?.etc1
+
+        val results = testReportRepository.searchTestResults(params, rerDeptCd)
 
         if (results.isEmpty()) return results
 
         // custCd / directAcctCd 추출
-        val custCds = results.mapNotNull { it.custCd }
-        val directAcctCds = results.mapNotNull { it.directAcctCd }
+        val custCds = results.map { it.custCd }
+        val directAcctCds = results.map { it.directAcctCd }
 
         val allCustCds = (custCds + directAcctCds).distinct()
 

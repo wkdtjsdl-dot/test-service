@@ -12,6 +12,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem.BBS_DEPT_TST_IT
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
@@ -60,14 +61,13 @@ class TestReportRepositoryImpl(
             .awaitSingleOrNull()
     }
 
-    override suspend fun searchTestResults(params: TestResultSearchParam): List<TestResultResponse> {
+    override suspend fun searchTestResults(params: TestResultSearchParam, rerDeptCd: String?): List<TestResultResponse> {
         val report = TBS_TST_REPORT
         val patient = RBS_PATIENT
         val tstItem = RBS_TST_ITEM
         val item = BTS_ITEM
         val deptItem = BBS_DEPT_TST_ITEM
 
-        // TODO 검사상태&보고상태
         val conditions = mutableListOf(
             report.TST_REQ_DT.between(params.reqStartDt, params.reqEndDt)
         )
@@ -102,6 +102,26 @@ class TestReportRepositoryImpl(
             conditions.add(deptItem.DEPT_CD.eq(it))
         }
 
+        params.deliveryYn?.takeIf { it.isNotBlank() }?.let { strValue ->
+            val booleanValue = (strValue == "Y")
+            conditions.add(report.DELIVERY_YN.eq(booleanValue))
+        }
+
+        val rerYnField =
+            if (rerDeptCd != null) {
+                DSL.`when`(
+                    DSL.exists(
+                        DSL.selectOne()
+                            .from(deptItem)
+                            .where(deptItem.TST_CD.eq(report.TST_CD))
+                            .and(deptItem.DEPT_CD.eq(rerDeptCd))
+                    ),
+                    "Y"
+                ).otherwise("N").`as`("rer_yn")
+            } else {
+                DSL.inline("N").`as`("rer_yn")
+            }
+
         val query = dslContext
             .select(
                 report.TST_REPORT_ID,
@@ -110,22 +130,24 @@ class TestReportRepositoryImpl(
 
                 patient.PAT_NM.`as`("patient_nm"),
 
-                tstItem.TST_STAT1_CD.`as`("tst_status_cd"),
-                report.DELIVERY_YN,
-
                 report.TST_CD,
                 item.TST_NM,
 
-                report.LIMS_RCV_DTIME,
-                report.DELIVERY_DTIME,
                 patient.DIRECT_ACCT_CD,
                 patient.CUST_CD,
+
+                report.DELIVERY_YN,
+                report.DELIVERY_CD,
+                report.DELIVERY_DTIME,
                 report.DELIVERER,
                 report.ATCH_GRUP_ID,
 
                 report.RST_SHORT,
                 report.RST_TXT,
-                report.RST_URL
+                report.RST_URL,
+
+                rerYnField,
+                tstItem.TST_REQ_STAT_CD
             )
             .from(report)
                 .join(patient)
@@ -137,8 +159,6 @@ class TestReportRepositoryImpl(
                     .and(report.TST_CD.eq(tstItem.TST_CD))
                 .join(item)
                     .on(report.TST_CD.eq(item.TST_CD))
-                .join(deptItem)
-                    .on(report.TST_CD.eq(deptItem.TST_CD))
             .where(conditions)
             .orderBy(report.TST_REQ_DT.desc(), report.TST_REQ_NO.desc())
 
@@ -164,14 +184,9 @@ class TestReportRepositoryImpl(
             tstReqNo = (row["tst_req_no"] as? Number)?.toLong() ?: 0L,
 
             patientNm = (row["patient_nm"] ?: "").toString(),
-            tstStatusCd = (row["tst_status_cd"] ?: "").toString(),
-            deliveryYn = (row["delivery_yn"] as? Boolean) ?: false,
 
             tstCd = (row["tst_cd"] ?: "").toString(),
             tstNm = (row["tst_nm"] ?: "").toString(),
-
-            limsRcvDtime = (row["lims_rcv_dtime"] as? LocalDateTime)?.toLocalDate(),
-            deliveryDtime = (row["delivery_dtime"] as? LocalDateTime)?.toLocalDate(),
 
             directAcctCd = (row["direct_acct_cd"] ?: "").toString(),
             custCd = (row["cust_cd"] ?: "").toString(),
@@ -179,11 +194,16 @@ class TestReportRepositoryImpl(
             directAcctNm = "",
             custNm = "",
 
+            deliveryYn = (row["delivery_yn"] as Boolean),
+            deliveryCd = row["delivery_cd"]?.toString(),
+            deliveryDtime = (row["delivery_dtime"] as? LocalDateTime)?.toLocalDate(),
             deliverer = row["deliverer"]?.toString(),
             atchGrupId = row["atch_grup_id"]?.toString(),
             rstShort = row["rst_short"]?.toString(),
             rstTxt = row["rst_txt"]?.toString(),
-            rstUrl = row["rst_url"]?.toString()
+            rstUrl = row["rst_url"]?.toString(),
+            tstReqStatCd = row["tst_req_stat_cd"]?.toString(),
+            rerYn = row["rer_yn"]?.toString(),
         )
     }
 }

@@ -7,17 +7,16 @@ import java.time.LocalDateTime
  * 검사결과 검색 조건
  */
 data class TestResultSearchParam(
-    val reqStartDt: LocalDate,
-    val reqEndDt: LocalDate,
-    val reportDt: LocalDate? = null,
-    val directAcctCd: String? = null,
-    val custCd: String? = null,
-    val reqNoFrom: Long? = null,
-    val reqNoTo: Long? = null,
-    val tstCd: String? = null,
-    val deptCd: String? = null,
-    val tstStatusCd: String? = null,
-    val reportStatusCd: String? = null
+  val reqStartDt: LocalDate,
+  val reqEndDt: LocalDate,
+  val reportDt: LocalDate? = null,
+  val directAcctCd: String? = null,
+  val custCd: String? = null,
+  val reqNoFrom: Long? = null,
+  val reqNoTo: Long? = null,
+  val tstCd: String? = null,
+  val deptCd: String? = null,
+  val deliveryYn: String? = null,
 )
 
 /**
@@ -28,21 +27,22 @@ data class TestResultResponse(
   val tstReqDt: LocalDate,
   val tstReqNo: Long,
   val patientNm: String,
-  val tstStatusCd: String,
-  val deliveryYn: Boolean,
   val tstCd: String,
   val tstNm: String,
-  val limsRcvDtime: LocalDate?,
-  val deliveryDtime: LocalDate?,
   val directAcctCd: String,
   val custCd: String,
   var directAcctNm: String,
   var custNm: String,
+  val deliveryYn: Boolean,
+  val deliveryCd: String?,
+  val deliveryDtime: LocalDate?,
   val deliverer: String?,
   val atchGrupId: String?,
   val rstShort: String?,
   val rstTxt: String?,
-  val rstUrl: String?
+  val rstUrl: String?,
+  val tstReqStatCd: String?,
+  var rerYn: String? = null
 )
 
 /**

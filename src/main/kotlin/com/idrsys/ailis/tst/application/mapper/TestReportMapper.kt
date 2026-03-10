@@ -24,14 +24,10 @@ class TestReportMapper {
 
             patientNm = "",
 
-            tstStatusCd = "",
-            deliveryYn = entity.deliveryYn,
 
             tstCd = entity.tstCd,
             tstNm = "",
 
-            limsRcvDtime = entity.limsRcvDtime?.toLocalDate(),
-            deliveryDtime = entity.deliveryDtime?.toLocalDate(),
 
             directAcctCd = "",
             custCd = "",
@@ -39,12 +35,16 @@ class TestReportMapper {
             directAcctNm = "",
             custNm = "",
 
+            deliveryYn = entity.deliveryYn,
+            deliveryCd = entity.deliveryCd,
+            deliveryDtime = entity.deliveryDtime?.toLocalDate(),
             deliverer = entity.deliverer,
 
             atchGrupId = entity.atchGrupId,
 
             rstShort = entity.rstShort,
             rstTxt = entity.rstTxt,
+            tstReqStatCd = "",
             rstUrl = entity.rstUrl
         )
     }
