@@ -210,7 +210,8 @@ class CustCustomRepositoryImpl(
         searchParam.name?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$it%")) }
         searchParam.registrationNumber?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BIZRNO.eq(it)) }
         searchParam.nursingNumber?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.CARE_INST_NO.eq(it)) }
-        searchParam.branchCode?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BRANCH_CD.eq(it)) }
+        searchParam.branchCode?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BZOFFI_CD.eq(it)) }
+        searchParam.branchCodes?.takeIf { it.isNotEmpty() }?.let { conditions.add(SCS_CUST_MST.BZOFFI_CD.`in`(it)) }
         searchParam.type?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BZSE.likeIgnoreCase("%$it%")) }
 
         val query = dslContext.selectFrom(SCS_CUST_MST)

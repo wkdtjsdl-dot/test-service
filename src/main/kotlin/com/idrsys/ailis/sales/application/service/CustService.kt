@@ -220,22 +220,21 @@ class CustService(
     }
 
     override suspend fun searchCust(searchParam: CustSearchCommand): List<CustResponseCommand> {
-        if (
-            searchParam.serial.isNullOrBlank() &&
-            searchParam.name.isNullOrBlank() &&
-            searchParam.registrationNumber.isNullOrBlank() &&
-            searchParam.nursingNumber.isNullOrBlank() &&
-            searchParam.branchCode.isNullOrBlank() &&
-            searchParam.branchName.isNullOrBlank() &&
-            searchParam.employeeId.isNullOrBlank() &&
-            searchParam.employeeName.isNullOrBlank() &&
-            searchParam.employeePhone.isNullOrBlank() &&
-            searchParam.type.isNullOrBlank()
-        ) {
-            throw IllegalArgumentException("검색 조건이 최소 1개 이상 필요합니다.")
+        var finalSearchParam = searchParam
+        if (!searchParam.branchName.isNullOrBlank()) {
+            val departments = baseServicePort.getDepartments() ?: emptyList()
+            val branchCodes = departments
+                .filter { it.deptNm.contains(searchParam.branchName, ignoreCase = true) }
+                .map { it.deptCd }
+
+            finalSearchParam = if (branchCodes.isNotEmpty()) {
+                searchParam.copy(branchCodes = branchCodes)
+            } else {
+                searchParam.copy(branchCodes = listOf("NOT_FOUND"))
+            }
         }
 
-        val custList = custCustomRepository.searchInnerCusts(searchParam)
+        val custList = custCustomRepository.searchInnerCusts(finalSearchParam)
 
         val branchCdList = custList.mapNotNull { it.bzoffiCd }.distinct()
 

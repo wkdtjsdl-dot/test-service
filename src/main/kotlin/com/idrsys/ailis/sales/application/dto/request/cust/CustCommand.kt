@@ -87,6 +87,7 @@ data class CustSearchCommand (
     val nursingNumber: String? = null,
     val branchCode: String? = null,
     val branchName: String? = null,
+    val branchCodes: List<String>? = null,
     val employeeId: String? = null,
     val employeeName: String? = null,
     val employeePhone: String? = null,
