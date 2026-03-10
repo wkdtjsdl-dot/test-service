@@ -15,6 +15,7 @@ import com.idrsys.ailis.sales.application.required.repository.cust.CustRepositor
 import com.idrsys.ailis.sales.application.required.repository.custreqposststitem.CustReqPossTstItemCustomRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
+import com.idrsys.ailis.sales.shared.exception.NotFoundException
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
 import com.idrsys.ailis.sales.shared.mapper.TestCodeMappingMapper
 import com.idrsys.web.exception.UserDefinedException
@@ -177,7 +178,7 @@ class CustService(
     @Transactional(readOnly = true)
     override suspend fun findCustByCustCd(custCd: String): CustResponse {
         val cust = custCustomRepository.findCustDetailInfoByCustCd(custCd)
-            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custCd")
+            ?: throw UserDefinedException("고객을 찾을 수 없습니다: $custCd")
 
         val response = custMapper.toDetailResponse(cust)
 
@@ -307,13 +308,13 @@ class CustService(
     }
 
     override suspend fun deleteCust(custCd: String) {
+        custCustomRepository.findCustDetailInfoByCustCd(custCd)
+            ?: throw NotFoundException("고객을 찾을 수 없습니다: $custCd")
+
         val requestCount = reqServicePort.checkRequestsByCustCd(custCd)
 
         if (requestCount > 0) {
-            throw UserDefinedException(
-                "CUST_DELETE_NOT_ALLOWED",
-                "삭제할 수 없습니다. 해당 고객으로 등록된 의뢰가 ${requestCount}건 존재합니다."
-            )
+            throw UserDefinedException("삭제할 수 없습니다. 해당 고객으로 등록된 의뢰가 ${requestCount}건 존재합니다.")
         }
 
         custCustomRepository.deleteByCustCd(custCd)
@@ -323,7 +324,7 @@ class CustService(
         val custCd = command.custCd
 
         val cust = custRepository.findByCustMstId(custMstId)
-            ?: throw UserDefinedException("USER_NOT_FOUND","고객을 찾을 수 없습니다: $custCd")
+            ?: throw NotFoundException("고객을 찾을 수 없습니다: $custCd")
 
         cust.update(command, updater)
         val updatedCust = custRepository.save(cust)
@@ -341,7 +342,7 @@ class CustService(
         updater: String
     ) {
         val cust = custRepository.findByCustMstId(custMstId)
-            ?: throw UserDefinedException("CUST_NOT_FOUND", "고객 정보를 찾을 수 없습니다")
+            ?: throw UserDefinedException("고객 정보를 찾을 수 없습니다")
 
         // atchFileGrupId만 업데이트
         cust.updateAtchFileGrupId(command.atchFileGrupId, updater)
@@ -355,7 +356,7 @@ class CustService(
         updater: String
     ) {
         val cust = custRepository.findByCustMstId(custMstId)
-            ?: throw UserDefinedException("CUST_NOT_FOUND", "고객 정보를 찾을 수 없습니다")
+            ?: throw UserDefinedException("고객 정보를 찾을 수 없습니다")
 
         cust.updateReqIfMethod(command.reqMethodCd, command.reqIfTypeCd, updater)
 

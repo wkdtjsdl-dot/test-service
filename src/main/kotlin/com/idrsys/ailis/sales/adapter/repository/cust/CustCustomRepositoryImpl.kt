@@ -470,7 +470,7 @@ class CustCustomRepositoryImpl(
         return sql
             .map { row, _ -> row.toCustDetailInfo() }
             .one()
-            .awaitSingle()
+            .awaitSingleOrNull()
     }
 
     override suspend fun findCustNmByCustCd(custCds: List<String>): Map<String, CustCdNmResponse> {
