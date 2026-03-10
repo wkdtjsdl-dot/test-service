@@ -452,9 +452,22 @@ data class RefItemSimple(
     val refNm: String
 )
 
+data class RefItemDetail(
+    val refCd: String,
+    val refNm: String,
+    val refEngNm: String?,
+    val estlYn: Boolean,
+    val dataFormat: String?
+)
+
 data class TestItemRefItemsResponse(
     val tstCd: String,
     val refItems: List<RefItemSimple>
+)
+
+data class TestItemRefDetailItemsResponse(
+    val tstCd: String,
+    val refItems: List<RefItemDetail>
 )
 
 // --- Test Item AutoComplete ---

@@ -856,6 +856,64 @@ class TestItemRepositoryImpl(
         }
     }
 
+    override suspend fun findRefItemsDetailByTstCds(tstCds: List<String>): Flow<TestItemRefDetailItemsResponse> {
+        if (tstCds.isEmpty()) {
+            return emptyFlow()
+        }
+
+        val refItem = BtsRefItem.BTS_REF_ITEM
+        val tstRef = BbsTstRef.BBS_TST_REF
+
+        val query = dslContext
+            .select(
+                refItem.TST_CD,
+                refItem.REF_CD,
+                tstRef.REF_NM,
+                tstRef.REF_ENG_NM,
+                refItem.ESTL_YN,
+                tstRef.DATA_FORMAT
+            )
+            .from(refItem)
+            .join(tstRef).on(refItem.REF_CD.eq(tstRef.REF_CD))
+            .where(refItem.TST_CD.`in`(tstCds))
+            .orderBy(refItem.TST_CD, refItem.SORT_ORDER)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        val list = executeSpec
+            .fetch()
+            .all()
+            .collectList()
+            .awaitSingleOrNull() ?: emptyList()
+
+        val grouped = list.groupBy(
+            { it[refItem.TST_CD.name] as String },
+            { RefItemDetail(
+                refCd = it[refItem.REF_CD.name] as String,
+                refNm = it[tstRef.REF_NM.name] as String,
+                refEngNm = it[tstRef.REF_ENG_NM.name] as String,
+                estlYn = it[refItem.ESTL_YN.name] as Boolean,
+                dataFormat = it[tstRef.DATA_FORMAT.name] as String,
+            )}
+        )
+
+        return kotlinx.coroutines.flow.flow {
+            grouped.forEach { (tstCd, refItems) ->
+                emit(TestItemRefDetailItemsResponse(
+                    tstCd = tstCd,
+                    refItems = refItems
+                ))
+            }
+        }
+    }
+
     private fun toTestItemRefItem(row: Map<String, Any>): TestItemRefItem {
         return TestItemRefItem(
             refItemId = row["ref_item_id"] as String?,

@@ -232,6 +232,11 @@ class TestItemService(
         return repository.findRefItemsByTstCds(tstCds)
     }
 
+    @Transactional(readOnly = true)
+    override suspend fun getRefItemsDetailByTstCds(tstCds: List<String>): Flow<TestItemRefDetailItemsResponse> {
+        return repository.findRefItemsDetailByTstCds(tstCds)
+    }
+
     // --- TestGene ---
     override fun getGenes(request: TestGeneRequest): Flow<TestGeneResponse> {
         return repository.getGenes(request).map { mapper.toResponse(it) }
