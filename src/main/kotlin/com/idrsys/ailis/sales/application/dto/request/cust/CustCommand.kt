@@ -17,7 +17,7 @@ data class CustCommand(
     val bzoffiCd: String?,               // 영업소코드
     val bzoffiPicId: String?,            // 영업소담당자ID
     val custStatCd: String,             // 고객상태코드
-    val reqPossYn: Boolean,             // 의뢰가능여부
+    val reqPossYn: Boolean = true,      // 의뢰가능여부
     val rprsCustYn: Boolean,            // 대표고객여부
     val rprsCustCd: String?,             // 대표고객코드
     val studyProjCustYn: Boolean,       // 연구과제고객여부

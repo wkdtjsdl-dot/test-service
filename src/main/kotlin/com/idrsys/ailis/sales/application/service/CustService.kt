@@ -573,8 +573,8 @@ class CustService(
         val cust = custCustomRepository.findByExtnAuthKey(extnAuthKey)
             ?: return null
 
-        // 거래처 상태가 비활성이거나 의뢰불가이면 null 반환
-        if (cust.custStatCd != "CSST_N" || !cust.reqPossYn) {
+        // 거래처 상태가 비활성이면 null 반환
+        if (cust.custStatCd != "CSST_N") {
             return null
         }
 
@@ -583,7 +583,6 @@ class CustService(
             custCd = cust.custCd,
             custNm = cust.custNm,
             custStatCd = cust.custStatCd,
-            reqPossYn = cust.reqPossYn
         )
     }
 }

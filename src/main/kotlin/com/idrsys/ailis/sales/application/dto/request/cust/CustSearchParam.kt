@@ -31,7 +31,6 @@ data class CustSearchParam(
     val studyProjCustYn: Boolean? = null,
     val sapCustCd: String? = null,
     val custTypeCd: String? = null,
-    val reqPossYn: Boolean? = null, // 의뢰가능여부
 )
 
 data class CustAutoCompleteSearchParam(
