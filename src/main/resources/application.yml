@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: sales-service
+  config:
+    import:
+      - "configserver:"
+  cloud:
+    config:
+      uri: http://${CONFIG_SERVER}:8888
+      username: configUser
+      password: configPassword
+
+comm-on:
+  reactive:
+    exception-handler:
+      enabled: true
+
+hira:
+  api:
+    service-key: "6ac1ffe1fd928615e4be6f6126172e446bf4e2b39d5ae02322d555ffd7838949"
+    url:
+      hosp-basis: "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList"
+      dgsbjt-info: "https://apis.data.go.kr/B551182/MadmDtlInfoService2.7/getDgsbjtInfo2.7"
+      med-oft-info: "https://apis.data.go.kr/B551182/MadmDtlInfoService2.7/getMedOftInfo2.7"
+      close-at-info: "https://apis.data.go.kr/B551182/yadmOpCloInfoService2/getHospPharmacyOpCloList1"

@@ -1,0 +1,51 @@
+### 관리자 Login 요청
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {% 
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+### 심평원 병원 검색
+GET {{api-service}}/api/sals/custs/hosp-mst?careInstNm=힘찬&page=0&size=10
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 병원정보 요양기관 기본정보 상세 조회
+GET {{api-service}}/api/sals/custs/hosp-mst/1c5d2543-62c9-3f8d-aad6-58d74e11df1e
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 병원정보 요양기관 장비정보 목록
+GET {{api-service}}/api/sals/custs/hosp-device/1c5d2543-62c9-3f8d-aad6-58d74e11df1e
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 병원정보 요양기관 진료과목 목록
+GET {{api-service}}/api/sals/custs/hosp-medi-sbjt/1c5d2543-62c9-3f8d-aad6-58d74e11df1e
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 고객 병원정보 심평원 데이터 연동
+PUT {{api-service}}/api/sals/custs/hosp-sync
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+

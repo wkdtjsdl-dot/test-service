@@ -40,8 +40,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
-    implementation("com.idrsys.comm-on:ko-r2dbc-lib:0.0.1")
-    implementation("com.idrsys.comm-on:kowebflux-lib:0.0.2")
+    implementation("com.idrsys.comm-on:ko-r2dbc-lib:0.0.2")
+    implementation("com.idrsys.comm-on:kowebflux-lib:0.0.4")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
     implementation("org.springdoc:springdoc-openapi-starter-webflux-api:2.8.13")
     implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.13")
@@ -52,14 +52,17 @@ dependencies {
     kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("org.postgresql:r2dbc-postgresql")
+    implementation("org.postgresql:r2dbc-postgresql")
     jooqGenerator("org.postgresql:postgresql")
     implementation("org.jooq:jooq:3.20.7")
+    implementation("software.amazon.awssdk:s3:2.29.39")
+    implementation("org.springframework.security:spring-security-crypto")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("io.r2dbc:r2dbc-h2")
 }
 
 dependencyManagement {
@@ -119,7 +122,7 @@ jooq {
                         isIndexes = false
                     }
                     target.apply {
-                        packageName = "com.idrsys.ailis.base.generated.jooq"
+                        packageName = "com.idrsys.ailis.sales.generated.jooq"
                         directory = "src/main/generated"
                     }
                     strategy.name = "org.jooq.codegen.DefaultGeneratorStrategy"

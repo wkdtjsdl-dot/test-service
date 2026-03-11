@@ -1,0 +1,81 @@
+spring:
+  application:
+    name: sales-service
+  cloud:
+    config:
+      enabled: false
+  main:
+    allow-bean-definition-overriding: true  # 테스트에서 bean override 허용
+
+  # R2DBC Configuration for Test (H2 in-memory)
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
+    pool:
+      initial-size: 1
+      max-size: 5
+      max-idle-time: 10m
+
+  # SQL init (schema.sql auto-execution)
+  sql:
+    init:
+      mode: embedded
+      schema-locations: classpath:schema.sql
+
+  # jOOQ Configuration
+  jooq:
+    sql-dialect: h2
+
+# Database Configuration
+database:
+  enable-master-slave: false  # 테스트 환경에서는 Master/Slave 설정 비활성화
+
+comm-on:
+  reactive:
+    excel:
+      enabled: false
+    webflux-config:
+      enabled: true
+    exception-handler:
+      enabled: true
+
+# HIRA API Configuration (test values)
+hira:
+  api:
+    service-key: "test-key"
+    url:
+      hosp-basis: "http://localhost:8080/test/hosp-basis"
+      dgsbjt-info: "http://localhost:8080/test/dgsbjt-info"
+      med-oft-info: "http://localhost:8080/test/med-oft-info"
+      close-at-info: "http://localhost:8080/test/close-at-info"
+
+# Logging
+logging:
+  level:
+    com.idrsys.ailis.sales: DEBUG
+    org.springframework.r2dbc: DEBUG
+
+uri:
+  services:
+    - name: base-service
+      end-point: http://localhost:8200
+    - name: sales-service
+      end-point: http://localhost:8300
+    - name: tst-service
+      end-point: http://localhost:8500
+    - name: datacoll-service
+      end-point: http://localhost:8400
+    - name: req-service
+      end-point: http://localhost:8340
+    - name: examresult-service
+      end-point: http://localhost:8260
+    - name: partner-service
+      end-point: http://localhost:8160
+
+jwt:
+  secretkey: "JYSmhuti3jpyvv4kr6sitUntbDNY4EKrktXPoO3Iwj18y6exZF"
+  access-token:
+    timeout: 3600
+  refresh-token:
+    timeout: 7200
