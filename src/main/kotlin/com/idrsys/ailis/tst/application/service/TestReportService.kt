@@ -42,7 +42,9 @@ class TestReportService(
         val custCds = results.map { it.custCd }
         val directAcctCds = results.map { it.directAcctCd }
 
-        val allCustCds = (custCds + directAcctCds).distinct()
+        val allCustCds = (custCds + directAcctCds)
+            .filterNotNull()
+            .distinct()
 
         val custMap = salesServiceClient.findCustNmByCustCd(allCustCds)
 
@@ -92,14 +94,23 @@ class TestReportService(
         request: TestReportUpdateRequest,
         adminId: String
     ): TestResultResponse {
+        // 1. reportId로 기존 report 정보 가져오기
         val report = testReportRepository.findById(reportId)
             ?: throw NoSuchElementException("Test report not found: $reportId")
 
+        // 2. report를 req 상태로 수정
         val command = commandMapper.toUpdateCommand(request)
         val now = LocalDateTime.now()
         report.update(command, adminId, now)
 
+        // 3. 수정된 report 저장
         val saved = testReportRepository.save(report)
+
+        // 4. hst 저장
+        val hist = testReportMapper.toDomain(report, request.memo ?: "").apply {
+            setAsNew()
+        }
+        testReportRepository.saveTestReportHistory(hist)
         return testReportMapper.toResponse(saved)
     }
 
@@ -135,7 +146,7 @@ class TestReportService(
         val report = testReportRepository.findById(reportId)
             ?: throw NoSuchElementException("Test report not found: $reportId")
 
-        val filePath = report.rstFilePath
+        val filePath = report.atchGrupId // rstFilePath -> atchGrupId 임시 변경
             ?: throw IllegalStateException("No file path for report: $reportId")
 
         val fileSystemPath = Paths.get("/var/data/reports", filePath)
