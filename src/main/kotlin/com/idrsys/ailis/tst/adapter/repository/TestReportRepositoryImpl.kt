@@ -4,11 +4,15 @@ import com.idrsys.ailis.tst.application.dto.TestResultResponse
 import com.idrsys.ailis.tst.application.dto.TestResultSearchParam
 import com.idrsys.ailis.tst.application.required.repository.TestReportRepository
 import com.idrsys.ailis.tst.domain.model.TestReport
+import com.idrsys.ailis.tst.domain.model.TestReportHst
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem.BTS_ITEM
 import com.idrsys.ailis.tst.generated.jooq.tables.RbsPatient.RBS_PATIENT
 import com.idrsys.ailis.tst.generated.jooq.tables.RbsTstItem.RBS_TST_ITEM
 import com.idrsys.ailis.tst.generated.jooq.tables.TbsTstReport.TBS_TST_REPORT
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem.BBS_DEPT_TST_ITEM
+import com.idrsys.ailis.tst.generated.jooq.tables.TbsTstReportHst.TBS_TST_REPORT_HST
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.DSLContext
@@ -28,12 +32,16 @@ import java.time.LocalDateTime
 @Repository
 interface TestReportDataRepository : CoroutineCrudRepository<TestReport, String>
 
+@Repository
+interface TestReportHstDataRepository : CoroutineCrudRepository<TestReportHst, String>
+
 /**
  * 검사결과 보고서 Repository 구현체
  */
 @Repository
 class TestReportRepositoryImpl(
     private val testReportDataRepository: TestReportDataRepository,
+    private val testReportHstDataRepository: TestReportHstDataRepository,
     private val r2dbcEntityTemplate: R2dbcEntityTemplate,
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient
@@ -204,6 +212,65 @@ class TestReportRepositoryImpl(
             rstUrl = row["rst_url"]?.toString(),
             tstReqStatCd = row["tst_req_stat_cd"]?.toString(),
             rerYn = row["rer_yn"]?.toString(),
+        )
+    }
+
+
+    // --- TestReportHst ---
+    override suspend fun saveTestReportHistory(entity: TestReportHst): TestReportHst = testReportHstDataRepository.save(entity)
+    override suspend fun findTestItemHistoryByTstCd(tstCd: String): Flow<TestReportHst> {
+        val table = TBS_TST_REPORT_HST
+        val query = dslContext
+            .select(table.fields().toList())
+            .from(table)
+            .where(table.TST_CD.eq(tstCd))
+            .orderBy(table.UPDATE_DTIME.desc())
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row -> toTestReportHst(row) }
+            .asFlow()
+    }
+
+    private fun toTestReportHst(row: Map<String, Any>): TestReportHst {
+        return TestReportHst(
+            tstReportHstId = row["tst_report_hst_id"] as String,
+            hstCd = row["hst_cd"] as String,
+            hstMemo = row["hst_memo"] as String,
+            worker = row["worker"] as String,
+            workDtime = row["work_dtime"] as LocalDateTime,
+
+            tstReqDt = row["tst_req_dt"] as LocalDate,
+            tstReqNo = row["tst_req_no"] as Long,
+            tstCd = row["tst_cd"] as String,
+
+            memo = row["memo"] as String?,
+            limsRcvDtime = row["lims_rcv_dtime"] as LocalDateTime?,
+
+            rstShort = row["rst_short"] as String?,
+            rstTxt = row["rst_txt"] as String?,
+            atchGrupId = row["atch_grup_id"] as String?,
+            rstUrl = row["rst_url"] as String?,
+
+            deliveryYn = row["delivery_yn"] as Boolean?,
+            deliveryCd = row["delivery_cd"] as String?,
+            deliveryDtime = row["delivery_dtime"] as LocalDateTime?,
+            deliverer = row["deliverer"] as String,
+
+            creator = row["creator"] as String,
+            createDtime = row["create_dtime"] as LocalDateTime,
+            updater = row["updater"] as String,
+            updateDtime = row["update_dtime"] as LocalDateTime
         )
     }
 }

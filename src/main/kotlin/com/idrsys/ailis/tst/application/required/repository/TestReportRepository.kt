@@ -3,6 +3,8 @@ package com.idrsys.ailis.tst.application.required.repository
 import com.idrsys.ailis.tst.application.dto.TestResultResponse
 import com.idrsys.ailis.tst.application.dto.TestResultSearchParam
 import com.idrsys.ailis.tst.domain.model.TestReport
+import com.idrsys.ailis.tst.domain.model.TestReportHst
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 /**
@@ -37,4 +39,8 @@ interface TestReportRepository {
      * 보고서 삭제
      */
     suspend fun deleteById(id: String)
+
+    suspend fun saveTestReportHistory(entity: TestReportHst): TestReportHst
+
+    suspend fun findTestItemHistoryByTstCd(tstCd: String): Flow<TestReportHst>
 }

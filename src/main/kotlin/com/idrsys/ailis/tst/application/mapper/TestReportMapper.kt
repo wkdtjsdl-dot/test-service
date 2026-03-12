@@ -2,13 +2,17 @@ package com.idrsys.ailis.tst.application.mapper
 
 import com.idrsys.ailis.tst.application.dto.TestResultResponse
 import com.idrsys.ailis.tst.domain.model.TestReport
-import org.springframework.stereotype.Component
+import com.idrsys.ailis.tst.domain.model.TestReportHst
+import org.mapstruct.Mapper
+import org.mapstruct.Mapping
+import org.mapstruct.Mappings
+import org.mapstruct.ReportingPolicy
 
 /**
  * TestReport Entity to DTO Mapper
  */
-@Component
-class TestReportMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+interface TestReportMapper {
 
     /**
      * TestReport 엔티티를 TestResultResponse DTO로 변환
@@ -24,10 +28,8 @@ class TestReportMapper {
 
             patientNm = "",
 
-
             tstCd = entity.tstCd,
             tstNm = "",
-
 
             directAcctCd = "",
             custCd = "",
@@ -48,4 +50,15 @@ class TestReportMapper {
             rstUrl = entity.rstUrl
         )
     }
+
+    // --- TestReportHst ---
+    @Mappings(
+        Mapping(target = "tstReportHstId", ignore = true),
+        Mapping(target = "hstCd", source = "testReport.tstReportId"),
+        Mapping(target = "hstMemo", source = "updateReason"),
+        Mapping(target = "worker", source = "testReport.updater"),
+        Mapping(target = "workDtime", source = "testReport.updateDtime")
+    )
+    fun toDomain(testReport: TestReport, updateReason: String): TestReportHst
+
 }
