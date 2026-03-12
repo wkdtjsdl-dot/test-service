@@ -26,13 +26,13 @@ data class TestResultResponse(
   val tstReportId: String,
   val tstReqDt: LocalDate,
   val tstReqNo: Long,
-  val patientNm: String,
+  val patientNm: String?,
   val tstCd: String,
-  val tstNm: String,
-  val directAcctCd: String,
-  val custCd: String,
-  var directAcctNm: String,
-  var custNm: String,
+  val tstNm: String?,
+  val directAcctCd: String?,
+  val custCd: String?,
+  var directAcctNm: String?,
+  var custNm: String?,
   val deliveryYn: Boolean,
   val deliveryCd: String?,
   val deliveryDtime: LocalDate?,
@@ -67,14 +67,13 @@ data class TestReportRegisterRequest(
  * 검사결과 보고서 업데이트 요청 DTO
  */
 data class TestReportUpdateRequest(
+    val tstReportId: String,
+    val atchGrupId: String?,
     val rstShort: String?,
     val rstTxt: String?,
-    val rstFileNm: String?,
-    val rstFileExt: String?,
-    val rstFilePath: String?,
     val rstUrl: String?,
-    val atchGrupId: String?,
-    val memo: String?
+    val memo: String?,
+    val deliveryYn: Boolean?
 )
 
 /**

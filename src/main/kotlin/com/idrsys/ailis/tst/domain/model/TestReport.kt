@@ -23,9 +23,6 @@ class TestReport(
     tstCd: String,
     rstShort: String? = null,
     rstTxt: String? = null,
-    rstFileNm: String? = null,
-    rstFileExt: String? = null,
-    rstFilePath: String? = null,
     rstUrl: String? = null,
     atchGrupId: String? = null,
     deliveryYn: Boolean = false,
@@ -37,7 +34,8 @@ class TestReport(
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
-    updateDtime: LocalDateTime
+    updateDtime: LocalDateTime,
+    transmissionId: String? = null,
 ) : Persistable<String> {
 
     @Id
@@ -62,18 +60,6 @@ class TestReport(
 
     @Column("rst_txt")
     var rstTxt: String? = rstTxt
-        private set
-
-    @Column("rst_file_nm")
-    var rstFileNm: String? = rstFileNm
-        private set
-
-    @Column("rst_file_ext")
-    var rstFileExt: String? = rstFileExt
-        private set
-
-    @Column("rst_file_path")
-    var rstFilePath: String? = rstFilePath
         private set
 
     @Column("rst_url")
@@ -124,6 +110,10 @@ class TestReport(
     var updateDtime: LocalDateTime = updateDtime
         private set
 
+    @Column("transmission_id")
+    var transmissionId: String? = transmissionId
+        private set
+
     @Transient
     private var _isNew: Boolean = false
 
@@ -143,14 +133,20 @@ class TestReport(
         updater: String,
         updateDtime: LocalDateTime
     ) {
+        this.atchGrupId = command.atchGrupId
         this.rstShort = command.rstShort
         this.rstTxt = command.rstTxt
-        this.rstFileNm = command.rstFileNm
-        this.rstFileExt = command.rstFileExt
-        this.rstFilePath = command.rstFilePath
         this.rstUrl = command.rstUrl
-        this.atchGrupId = command.atchGrupId
         this.memo = command.memo
+
+        // deliveryYn이 true일 때 초기화 로직 추가
+        if (command.deliveryYn == true) {
+            this.deliveryYn = false
+            this.deliveryCd = null
+            this.deliveryDtime = null
+            this.deliverer = null
+        }
+
         this.updater = updater
         this.updateDtime = updateDtime
     }
@@ -189,9 +185,6 @@ class TestReport(
                 tstCd = command.tstCd,
                 rstShort = command.rstShort,
                 rstTxt = command.rstTxt,
-                rstFileNm = command.rstFileNm,
-                rstFileExt = command.rstFileExt,
-                rstFilePath = command.rstFilePath,
                 rstUrl = command.rstUrl,
                 atchGrupId = command.atchGrupId,
                 deliveryYn = false,
@@ -203,7 +196,8 @@ class TestReport(
                 creator = creator,
                 createDtime = now,
                 updater = creator,
-                updateDtime = now
+                updateDtime = now,
+                transmissionId = null
             ).apply { setAsNew() }
         }
     }

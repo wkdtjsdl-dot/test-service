@@ -39,14 +39,13 @@ class TestReportCommandMapper {
      */
     fun toUpdateCommand(request: TestReportUpdateRequest): TestReportUpdateCommand {
         return TestReportUpdateCommand(
+            tstReportId = request.tstReportId,
+            atchGrupId = request.atchGrupId,
             rstShort = request.rstShort,
             rstTxt = request.rstTxt,
-            rstFileNm = request.rstFileNm,
-            rstFileExt = request.rstFileExt,
-            rstFilePath = request.rstFilePath,
             rstUrl = request.rstUrl,
-            atchGrupId = request.atchGrupId,
-            memo = request.memo
+            memo = request.memo,
+            deliveryYn = request.deliveryYn
         )
     }
 }

@@ -26,14 +26,13 @@ data class TestReportCreateCommand(
  * 검사결과 보고서 업데이트 Command
  */
 data class TestReportUpdateCommand(
+    val tstReportId: String?,
+    val atchGrupId: String?,
     val rstShort: String?,
     val rstTxt: String?,
-    val rstFileNm: String?,
-    val rstFileExt: String?,
-    val rstFilePath: String?,
     val rstUrl: String?,
-    val atchGrupId: String?,
-    val memo: String?
+    val memo: String?,
+    val deliveryYn: Boolean?
 )
 
 /**
