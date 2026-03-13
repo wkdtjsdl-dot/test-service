@@ -10,8 +10,11 @@ import com.idrsys.ailis.tst.application.usecase.RequestDocumentUseCase
 import com.idrsys.ailis.tst.domain.model.RequestDocument
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.apache.hc.core5.http.HttpStatus
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 
 @Service
@@ -36,12 +39,16 @@ class RequestDocumentService(
 
     @Transactional
     override suspend fun registerDocument(request: RequestDocumentRegisterRequest, adminId: String): RequestDocumentResponse {
-        val command = commandMapper.toCreateCommand(request)
-        val now = LocalDateTime.now()
-        val document = RequestDocument.create(command, adminId, now)
+        return try {
+            val command = commandMapper.toCreateCommand(request)
+            val now = LocalDateTime.now()
+            val document = RequestDocument.create(command, adminId, now)
 
-        val saved = requestDocumentRepository.save(document)
-        return requestDocumentMapper.toResponse(saved)
+            val saved = requestDocumentRepository.save(document)
+            requestDocumentMapper.toResponse(saved)
+        } catch (e: DataIntegrityViolationException) {
+            throw ResponseStatusException(HttpStatus.SC_CONFLICT, "중복 데이터 등록 시도로 인한 요청 거절 (Unique Constraint Violation)", e)
+        }
     }
 
     @Transactional
