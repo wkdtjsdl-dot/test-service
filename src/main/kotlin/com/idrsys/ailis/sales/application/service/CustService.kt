@@ -23,8 +23,10 @@ import kotlinx.coroutines.flow.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 
 @Service
@@ -159,7 +161,7 @@ class CustService(
     @Transactional(readOnly = true)
     override suspend fun findCustByCustMstId(custMstId: String): CustResponse {
         val cust = custCustomRepository.findCustDetailInfoByCustMstId(custMstId)
-            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND,"고객을 찾을 수 없습니다: $custMstId")
 
         val response = custMapper.toDetailResponse(cust)
 
@@ -178,7 +180,7 @@ class CustService(
     @Transactional(readOnly = true)
     override suspend fun findCustByCustCd(custCd: String): CustResponse {
         val cust = custCustomRepository.findCustDetailInfoByCustCd(custCd)
-            ?: throw UserDefinedException("고객을 찾을 수 없습니다: $custCd")
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND,"고객을 찾을 수 없습니다: $custCd")
 
         val response = custMapper.toDetailResponse(cust)
 
@@ -308,7 +310,7 @@ class CustService(
 
     override suspend fun deleteCust(custCd: String) {
         custCustomRepository.findCustDetailInfoByCustCd(custCd)
-            ?: throw NotFoundException("고객을 찾을 수 없습니다: $custCd")
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND,"고객을 찾을 수 없습니다: $custCd")
 
         val requestCount = reqServicePort.checkRequestsByCustCd(custCd)
 
