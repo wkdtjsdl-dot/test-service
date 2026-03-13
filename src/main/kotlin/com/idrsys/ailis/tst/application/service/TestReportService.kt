@@ -1,6 +1,7 @@
 package com.idrsys.ailis.tst.application.service
 
 import com.idrsys.ailis.tst.adapter.external.BaseServiceClient
+import com.idrsys.ailis.tst.adapter.external.ReqServiceClient
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.mapper.TestReportCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestReportMapper
@@ -25,6 +26,7 @@ class TestReportService(
     private val commandMapper: TestReportCommandMapper,
     private val baseServiceClient: BaseServiceClient,
     private val salesServiceClient: SalesServicePort,
+    private val reqServiceClient: ReqServiceClient,
 ) : TestReportUseCase {
 
     @Transactional(readOnly = true)
@@ -98,19 +100,24 @@ class TestReportService(
         val report = testReportRepository.findById(reportId)
             ?: throw NoSuchElementException("Test report not found: $reportId")
 
-        // 2. report를 req 상태로 수정
-        val command = commandMapper.toUpdateCommand(request)
-        val now = LocalDateTime.now()
-        report.update(command, adminId, now)
+        // 2. report를 수정/저장
+        val saved = testReportRepository.save(report.apply {
+            update(commandMapper.toUpdateCommand(request), adminId, LocalDateTime.now())
+        })
 
-        // 3. 수정된 report 저장
-        val saved = testReportRepository.save(report)
+        // 3. req-service Inner API 호출(tstItem, patient 수정)
+        reqServiceClient.updateTstItemStatus(
+            tstReqDt = saved.tstReqDt,
+            tstReqNo = saved.tstReqNo,
+            tstCd = saved.tstCd,
+            statusCd = "RQST_F",
+            updater = adminId
+        )
 
-        // 4. hst 저장
-        val hist = testReportMapper.toDomain(report, request.memo ?: "").apply {
-            setAsNew()
-        }
+        // 4. history 저장
+        val hist = testReportMapper.toDomain(report, request.memo ?: "").apply { setAsNew() }
         testReportRepository.saveTestReportHistory(hist)
+
         return testReportMapper.toResponse(saved)
     }
 

@@ -1,18 +1,16 @@
 package com.idrsys.ailis.tst.adapter.external
 
-import com.idrsys.ailis.tst.application.dto.inner.TestItemKey
-import com.idrsys.ailis.tst.application.dto.inner.TestItemStatusInfo
-import com.idrsys.ailis.tst.application.dto.inner.TestRequestInfo
-import com.idrsys.ailis.tst.application.dto.inner.TestRequestKey
-import com.idrsys.ailis.tst.application.dto.inner.TstRequestDetailResponse
-import com.idrsys.ailis.tst.application.dto.inner.toTestRequestInfo
+import com.idrsys.ailis.tst.application.dto.inner.*
 import com.idrsys.ailis.tst.application.required.external.ReqServicePort
 import com.idrsys.ailis.tst.infrastructure.config.AppConfig
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /**
  * req-service Inner API 클라이언트
@@ -121,6 +119,35 @@ class ReqServiceClient(
         } catch (e: Exception) {
             logger.error("Failed to fetch test items status from req-service: keys=$keys", e)
             emptyList()
+        }
+    }
+
+    override suspend fun updateTstItemStatus(
+        tstReqDt: LocalDate,
+        tstReqNo: Long,
+        tstCd: String,
+        statusCd: String,
+        updater: String
+    ): Boolean {
+        val tstReqDtNo = "${tstReqDt.format(DateTimeFormatter.BASIC_ISO_DATE)}$tstReqNo"
+
+        val command = TstItemStatusPatchCommand(
+            statusCd = statusCd,
+            updater = updater
+        )
+
+        return try {
+            client.patch()
+                .uri("/api/inner/rbs/tst-items/${tstReqDtNo}/${tstCd}/status")
+                .bodyValue(command)
+                .retrieve()
+                .toBodilessEntity()
+                .awaitSingle()
+
+            true
+        } catch (e: Exception) {
+            logger.error("Failed to update tst-item status: $tstReqDtNo, $tstCd", e)
+            false
         }
     }
 }

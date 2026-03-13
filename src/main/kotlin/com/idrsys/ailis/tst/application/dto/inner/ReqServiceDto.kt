@@ -24,6 +24,14 @@ data class TestItemKey(
 )
 
 /**
+ * 검사 수정 요청
+ */
+data class TstItemStatusPatchCommand(
+    val statusCd: String,
+    val updater: String
+)
+
+/**
  * 검사 의뢰 정보 응답 (Inner API)
  */
 data class TestRequestInfo(
