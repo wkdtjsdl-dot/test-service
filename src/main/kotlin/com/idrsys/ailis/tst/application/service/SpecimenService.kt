@@ -10,8 +10,11 @@ import com.idrsys.ailis.tst.application.usecase.SpecimenUseCase
 import com.idrsys.ailis.tst.domain.model.Specimen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.apache.hc.core5.http.HttpStatus
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 
 @Service
@@ -36,12 +39,16 @@ class SpecimenService(
 
     @Transactional
     override suspend fun registerSpecimen(request: SpecimenRegisterRequest, adminId: String): SpecimenResponse {
-        val command = commandMapper.toCreateCommand(request)
-        val now = LocalDateTime.now()
-        val specimen = Specimen.create(command, adminId, now)
+        return try {
+            val command = commandMapper.toCreateCommand(request)
+            val now = LocalDateTime.now()
+            val specimen = Specimen.create(command, adminId, now)
 
-        val saved = specimenRepository.save(specimen)
-        return specimenMapper.toResponse(saved)
+            val saved = specimenRepository.save(specimen)
+            specimenMapper.toResponse(saved)
+        } catch (e: DataIntegrityViolationException) {
+            throw ResponseStatusException(HttpStatus.SC_CONFLICT, "중복 데이터 등록 시도로 인한 요청 거절 (Unique Constraint Violation)", e)
+        }
     }
 
     @Transactional
