@@ -40,6 +40,10 @@ class SpecimenContainerService(
         val now = LocalDateTime.now()
         val container = SpecimenContainer.create(command, adminId, now)
 
+        specimenContainerRepository.findById(command.spcmCntnCd)?.let {
+            throw IllegalArgumentException("중복된 용기 코드가 존재합니다")
+        }
+
         val saved = specimenContainerRepository.save(container)
         return specimenContainerMapper.toResponse(saved)
     }
