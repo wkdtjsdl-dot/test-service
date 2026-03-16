@@ -1,0 +1,210 @@
+### 관리자 Login 요청 (테스트용)
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {%
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+###########################
+# 검사결과 보고서 (Test Report)
+###########################
+
+### 검사결과 목록 조회 - 기본 (최근 1개월)
+GET {{api-service}}/api/tst/bts/tst-report?reqStartDt=2020-11-01&reqEndDt=2020-11-04
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사결과 목록 조회
+GET {{api-service}}/api/tst/bts/tst-report?reqStartDt=2020-11-01&reqEndDt=2020-11-03&reportDt=&reqNoFrom=&reqNoTo=&custCd=&hospCd=&tstCd=&deptCd=&tstStatusCd=&reportStatusCd=
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사결과 목록 조회 - 보고일 포함
+GET {{api-service}}/api/tst/bts/tst-report?reqStartDt=2024-12-01&reqEndDt=2024-12-31&reportDt=2024-12-15
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사결과 목록 조회 - 의뢰번호 범위
+GET {{api-service}}/api/tst/bts/tst-report?reqStartDt=2024-12-01&reqEndDt=2024-12-31&reqNoFrom=1000&reqNoTo=2000
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사결과 목록 조회 - 검사코드 필터
+GET {{api-service}}/api/tst/bts/tst-report?reqStartDt=2024-12-01&reqEndDt=2024-12-31&tstCd=TST001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사결과 목록 조회 - 모든 조건
+GET {{api-service}}/api/tst/bts/tst-report?reqStartDt=2024-12-01&reqEndDt=2024-12-31&reportDt=2024-12-15&reqNoFrom=1000&reqNoTo=2000&tstCd=TST001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사결과 상세 조회
+GET {{api-service}}/api/tst/bts/tst-report/REPORT_ID_001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사결과 보고서 등록
+POST {{api-service}}/api/tst/bts/tst-report
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstReqDt": "2024-12-18",
+  "tstReqNo": 1001,
+  "tstCd": "TST001",
+  "rstShort": "정상",
+  "rstTxt": "검사 결과 모든 수치가 정상 범위 내에 있습니다.\n\n1. 혈당: 95 mg/dL\n2. 콜레스테롤: 180 mg/dL\n3. 중성지방: 120 mg/dL",
+  "rstFileNm": "report_20241218_001.pdf",
+  "rstFileExt": "pdf",
+  "rstFilePath": "/reports/2024/12/report_20241218_001.pdf",
+  "rstUrl": null,
+  "atchGrupId": null,
+  "limsRcvDtime": "2024-12-18T10:30:00",
+  "memo": "정기 건강검진 결과"
+}
+
+> {%
+    client.global.set("reportId", response.body.tstReportId);
+    client.log("생성된 reportId: " + client.global.get("reportId"));
+%}
+
+### 검사결과 보고서 수정
+PUT {{api-service}}/api/tst/bts/tst-report/{{reportId}}
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "rstShort": "정상 (수정)",
+  "rstTxt": "검사 결과 모든 수치가 정상 범위 내에 있습니다. (재검토 완료)\n\n1. 혈당: 95 mg/dL\n2. 콜레스테롤: 180 mg/dL\n3. 중성지방: 120 mg/dL\n\n* 재검토 의견: 모든 수치 정상 확인",
+  "rstFileNm": "report_20241218_001_v2.pdf",
+  "rstFileExt": "pdf",
+  "rstFilePath": "/reports/2024/12/report_20241218_001_v2.pdf",
+  "rstUrl": null,
+  "atchGrupId": null,
+  "memo": "정기 건강검진 결과 (재검토 완료)"
+}
+
+### 보고서 파일 다운로드
+GET {{api-service}}/api/tst/bts/tst-report/{{reportId}}/file
+Accept: application/pdf
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 보고서 배포 처리
+POST {{api-service}}/api/tst/bts/tst-report/{{reportId}}/deliver
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "deliveryMethod": "EMAIL"
+}
+
+### 검사결과 보고서 삭제
+DELETE {{api-service}}/api/tst/bts/tst-report/{{reportId}}
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+###########################
+# 직접 tst-service 호출 (Gateway 우회)
+###########################
+
+### [Direct] 검사결과 목록 조회
+GET {{tst-service}}/api/bts/tst-report?reqStartDt=2024-12-01&reqEndDt=2024-12-31
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### [Direct] 검사결과 보고서 등록
+POST {{tst-service}}/api/bts/tst-report
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstReqDt": "2024-12-18",
+  "tstReqNo": 2001,
+  "tstCd": "TST002",
+  "rstShort": "주의 필요",
+  "rstTxt": "일부 수치가 정상 범위를 벗어났습니다.\n\n1. 혈당: 125 mg/dL (높음)\n2. 콜레스테롤: 240 mg/dL (높음)\n3. 중성지방: 180 mg/dL (정상)\n\n추가 검사 권장",
+  "rstFileNm": "report_20241218_002.pdf",
+  "rstFileExt": "pdf",
+  "rstFilePath": "/reports/2024/12/report_20241218_002.pdf",
+  "rstUrl": null,
+  "atchGrupId": null,
+  "limsRcvDtime": "2024-12-18T11:00:00",
+  "memo": "추적 관찰 필요"
+}
+
+###########################
+# 테스트 데이터 시나리오
+###########################
+
+### 시나리오 1: 보고서 등록 → 조회 → 배포
+# 1단계: 보고서 등록
+POST {{api-service}}/api/tst/bts/tst-report
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstReqDt": "2024-12-18",
+  "tstReqNo": 3001,
+  "tstCd": "TST003",
+  "rstShort": "시나리오 테스트",
+  "rstTxt": "시나리오 테스트용 보고서입니다.",
+  "rstFileNm": "scenario_test.pdf",
+  "rstFileExt": "pdf",
+  "rstFilePath": "/reports/2024/12/scenario_test.pdf",
+  "memo": "시나리오 테스트"
+}
+
+> {%
+    client.global.set("scenarioReportId", response.body.tstReportId);
+    client.log("시나리오 reportId: " + client.global.get("scenarioReportId"));
+%}
+
+### 시나리오 2단계: 생성된 보고서 조회
+GET {{api-service}}/api/tst/bts/tst-report/{{scenarioReportId}}
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 시나리오 3단계: 보고서 배포
+POST {{api-service}}/api/tst/bts/tst-report/{{scenarioReportId}}/deliver
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "deliveryMethod": "EMAIL"
+}
+
+### 시나리오 4단계: 배포 후 다시 조회 (deliveryYn 확인)
+GET {{api-service}}/api/tst/bts/tst-report/{{scenarioReportId}}
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

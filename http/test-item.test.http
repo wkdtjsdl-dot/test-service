@@ -1,0 +1,273 @@
+### 관리자 Login 요청 (테스트용)
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {%
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+###########################
+# 검사항목 (Test Item)
+###########################
+
+### 검사 검사종목 목록
+GET {{api-service}}/api/tst/bts/item
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 검사종목 목록 (대분류별)
+GET {{api-service}}/api/tst/bts/item/by-large-cate/01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 검사종목 기본정보 조회
+GET {{api-service}}/api/tst/bts/item/base/TST001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 검사종목 기본정보 등록
+POST {{api-service}}/api/tst/bts/item/base
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstCd": "TEST_ITEM01",
+  "tstLargeCateCd": "01",
+  "tstMediumCateCd": "01",
+  "useTypeFlag": true,
+  "tstNm": "테스트 검사항목",
+  "tstAbbrNm": "테스트항목",
+  "tstEngNm": "Test Item",
+  "tstEngAbbrNm": "TestItem",
+  "sortOrder": 1,
+  "sameJudge": "N",
+  "tstGroupCd": "GRP01",
+  "tstSubsidyCd": "SUB01",
+  "tstMaterialCd": "MAT01",
+  "printOrder": 1,
+  "deleteYn": false,
+  "externalYn": false,
+  "sendYn": false,
+  "autoInputYn": false,
+  "resultInputTimeLimit": 24
+}
+
+### 검사 검사종목 기본정보 수정
+PUT {{api-service}}/api/tst/bts/item/base/TEST_ITEM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstLargeCateCd": "02",
+  "tstMediumCateCd": "02",
+  "useTypeFlag": false,
+  "tstNm": "수정된 검사항목",
+  "tstAbbrNm": "수정항목",
+  "tstEngNm": "Updated Test Item",
+  "tstEngAbbrNm": "UpdItem",
+  "sortOrder": 2,
+  "sameJudge": "Y",
+  "tstGroupCd": "GRP02",
+  "tstSubsidyCd": "SUB02",
+  "tstMaterialCd": "MAT02",
+  "printOrder": 2,
+  "deleteYn": false,
+  "externalYn": true,
+  "sendYn": true,
+  "autoInputYn": true,
+  "resultInputTimeLimit": 48
+}
+
+### 검사 검사종목 기본정보 삭제
+DELETE {{api-service}}/api/tst/bts/item/base/TEST_ITEM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 코드 자동완성 (검색어로 검색)
+GET {{api-service}}/api/tst/bts/item/auto-complete?keyword=테스트
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 코드 자동완성 (검사 코드로 검색)
+GET {{api-service}}/api/tst/bts/item/auto-complete?keyword=N119
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 코드 innerApi 조회
+GET {{tst-service}}/api/inner/bts/item?cds=N119,N110,N112
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 코드 innerApi 조회
+GET {{tst-service}}/api/inner/bts/item/specimens?cds=N119,J020,A023
+Content-Type: application/json
+Accept: application/json
+
+### 검사 코드 innerApi 조회
+GET {{tst-service}}/api/inner/bts/item/ref-items?cds=N118,M006,ON156
+Content-Type: application/json
+Accept: application/json
+
+### 검사 코드 상세 innerApi 조회
+GET {{tst-service}}/api/inner/bts/item/ref-items/detail?cds=N118,M006,ON156,N019
+Content-Type: application/json
+Accept: application/json
+
+
+###########################
+# 표준수가 (Standard Charge)
+###########################
+
+### 검사 검사종목 기준수가 조회
+GET {{api-service}}/api/tst/bts/item/stnd-charge/39cd94c9-eb8c-4479-b3e9-30128d28d101
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 검사종목 기준수가 목록
+GET {{api-service}}/api/tst/bts/item/stnd-charge/by-test/TST001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 검사종목 기준수가 등록
+POST {{api-service}}/api/tst/bts/item/stnd-charge
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstCd": "TST001",
+  "stndChargeCd": "CHG001",
+  "applyStartDt": "2024-01-01",
+  "applyEndDt": "2024-12-31",
+  "charge": 50000,
+  "sortOrder": 1
+}
+
+### 검사 검사종목 기준수가 등록
+PUT {{api-service}}/api/tst/bts/item/stnd-charge/39cd94c9-eb8c-4479-b3e9-30128d28d101
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "stndChargeId": "39cd94c9-eb8c-4479-b3e9-30128d28d101",
+  "tstCd": "TST001",
+  "applyStartDt": "2024-01-01",
+  "applyEndDt": "2024-12-31",
+  "insuCd": null,
+  "insuCateNo": null,
+  "relatValuePoint": null,
+  "insuCharge": 100000,
+  "qladCharge": 2000,
+  "stndCharge": 300,
+  "lowestCharge": 0.0,
+  "qladCd": null,
+  "relatValueQladPoint": 0.0,
+  "outputInsuCd": null,
+  "totalQladCharge": 0.0,
+  "supval": 0.0,
+  "addtax": 0.0
+}
+
+### 검사 검사종목 기준수가 삭제
+DELETE {{api-service}}/api/tst/bts/item/stnd-charge/TEST_CHARGE01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+###########################
+# 검사항목별 검체 (Test Item Specimen)
+###########################
+
+### 검사 검사종목 검체 조회
+GET {{api-service}}/api/tst/bts/spcm/2959A7FB-1301-464C-9AF6-B0CFA9881AEC
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 검사종목 검체 목록
+GET {{api-service}}/api/tst/bts/spcm?tstCd=TST001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 검사종목 검체 등록
+POST {{api-service}}/api/tst/bts/spcm
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstCd": "TST001",
+  "spcmCd": "02",
+  "sortOrder": 1,
+  "estlYn": true,
+  "takeQnty": "5mL",
+  "engTakeQnty": "5mL",
+  "useQnty": "3mL",
+  "engUseQnty": "3mL",
+  "strgMethodCd": "01",
+  "spcmStbl": "냉장보관 시 7일",
+  "engSpcmStbl": "7 days at refrigerated",
+  "takeMethod": "정맥천자",
+  "engTakeMethod": "Venipuncture",
+  "spcmDesc": "혈청 검체",
+  "engDesc": "Serum specimen",
+  "caution": "채혈 후 30분 이내 분리",
+  "engCaution": "Separate within 30 minutes after collection",
+  "spcmCntnCd": "01"
+}
+
+### 검사 검사종목 검체 수정
+PUT {{api-service}}/api/tst/bts/spcm/2959A7FB-1301-464C-9AF6-B0CFA9881AEC
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "sortOrder": 2,
+  "estlYn": false,
+  "takeQnty": "10mL",
+  "engTakeQnty": "10mL",
+  "useQnty": "5mL",
+  "engUseQnty": "5mL",
+  "strgMethodCd": "02",
+  "spcmStbl": "냉동보관 시 30일",
+  "engSpcmStbl": "30 days at frozen",
+  "takeMethod": "정맥천자 또는 동맥천자",
+  "engTakeMethod": "Venipuncture or Arterial puncture",
+  "spcmDesc": "혈장 검체 (수정됨)",
+  "engDesc": "Plasma specimen (Updated)",
+  "caution": "채혈 후 즉시 원심분리",
+  "engCaution": "Centrifuge immediately after collection",
+  "spcmCntnCd": "02"
+}
+
+### 검사 검사종목 검체 삭제
+DELETE {{api-service}}/api/tst/bts/spcm/TEST_SPCM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

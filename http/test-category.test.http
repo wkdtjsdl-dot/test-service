@@ -1,0 +1,63 @@
+### 관리자 Login 요청 (테스트용)
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST001",
+  "passwd": "test1234"
+}
+
+> {%
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+### 검사 기준정보 검사코드분류 중분류 조회
+GET {{api-service}}/api/tst/bbs/tst-cate/TC_20
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 검사코드분류 중분류 등록
+POST {{api-service}}/api/tst/bbs/tst-cate
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "tstLargeCateCd": "TC_20",
+  "tstMediumCateCd": "TEST01",
+  "cateNm": "테스트 검사분류",
+  "cateAbbrNm": "테스트분류",
+  "cateEngNm": "Test Category",
+  "cateEngAbbrNm": "TestCat",
+  "useYn": true,
+  "sortOrder": 1
+}
+
+### 검사 기준정보 검사코드분류 중분류 수정
+PUT {{api-service}}/api/tst/bbs/tst-cate/96d81069-c74f-440a-b59d-21decd798782
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "cateNm": "수정된 검사분류",
+  "cateAbbrNm": "수정분류",
+  "cateEngNm": "Updated Category",
+  "cateEngAbbrNm": "UpdCat",
+  "useYn": true,
+  "sortOrder": 2
+}
+
+### 검사 기준정보 검사코드분류 중분류 삭제
+DELETE {{api-service}}/api/tst/bbs/tst-cate/96d81069-c74f-440a-b59d-21decd798782
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

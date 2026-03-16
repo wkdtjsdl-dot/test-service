@@ -1,0 +1,74 @@
+package com.idrsys.ailis.tst.adapter.web
+
+import com.idrsys.ailis.tst.application.dto.RequestDocumentRegisterRequest
+import com.idrsys.ailis.tst.application.dto.RequestDocumentResponse
+import com.idrsys.ailis.tst.application.dto.RequestDocumentUpdateRequest
+import com.idrsys.ailis.tst.application.usecase.RequestDocumentUseCase
+import com.idrsys.ailis.tst.shared.vo.AuthenticationAdmin
+import com.idrsys.web.annotation.JwtAuthorization
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.reactive.asPublisher
+import kotlinx.coroutines.reactor.mono
+import org.springframework.web.bind.annotation.*
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+
+@Tag(name = "Request Document", description = "검사 기준정보 의뢰서서류 API")
+@RestController
+@RequestMapping("/api/bbs/req-doc")
+class RequestDocumentController(
+    private val requestDocumentUseCase: RequestDocumentUseCase
+) {
+
+    @Operation(summary = "검사 기준정보 검사의뢰서류 목록")
+    @GetMapping
+    fun getDocuments(@RequestParam(required = false) docDivCd: String?): Flux<RequestDocumentResponse> {
+        return mono {
+            requestDocumentUseCase.getDocuments(docDivCd)
+        }.flatMapMany { flow -> Flux.from(flow.asPublisher()) }
+    }
+
+    @Operation(summary = "검사 기준정보 검사의뢰서류 조회")
+    @GetMapping("/{docCd}")
+    fun getDocument(@PathVariable docCd: String): Mono<RequestDocumentResponse> {
+        return mono {
+            requestDocumentUseCase.getDocument(docCd)
+        }
+    }
+
+    @Operation(summary = "검사 기준정보 검사의뢰서류 등록")
+    @PostMapping
+    fun registerDocument(
+        @RequestBody request: RequestDocumentRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<RequestDocumentResponse> {
+        return mono {
+            requestDocumentUseCase.registerDocument(request, auth.adminId)
+        }
+    }
+
+    @Operation(summary = "검사 기준정보 검사의뢰서류 수정")
+    @PutMapping("/{docCd}")
+    fun updateDocument(
+        @PathVariable docCd: String,
+        @RequestBody request: RequestDocumentUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<RequestDocumentResponse> {
+        return mono {
+            requestDocumentUseCase.updateDocument(docCd, request, auth.adminId)
+        }
+    }
+
+    @Operation(summary = "검사 기준정보 검사의뢰서류 삭제")
+    @DeleteMapping("/{docCd}")
+    fun deleteDocument(
+        @PathVariable docCd: String,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Void> {
+        return mono {
+            requestDocumentUseCase.deleteDocument(docCd, auth.adminId)
+        }.then()
+    }
+}

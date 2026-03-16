@@ -1,0 +1,195 @@
+### 관리자 Login 요청 (테스트용)
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {%
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+###########################
+# 부서별 그룹 (Department Group)
+###########################
+
+### 검사 기준정보 부서분류그룹 목록
+GET {{api-service}}/api/tst/bbs/dept-group
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 부서분류그룹 조회
+GET {{api-service}}/api/tst/bbs/dept-group/GRP001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 부서분류그룹 등록
+POST {{api-service}}/api/tst/bbs/dept-group
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "deptCd": "DEPT01",
+  "deptGroupNm": "테스트 부서 그룹",
+  "deptGroupEngNm": "Test Department Group",
+  "sortOrder": 1
+}
+
+### 검사 기준정보 부서분류그룹 수정
+PUT {{api-service}}/api/tst/bbs/dept-group/TEST_GRP01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "deptCd": "DEPT02",
+  "deptGroupNm": "수정된 부서 그룹",
+  "deptGroupEngNm": "Updated Department Group",
+  "sortOrder": 2
+}
+
+### 검사 기준정보 부서분류그룹 삭제
+DELETE {{api-service}}/api/tst/bbs/dept-group/TEST_GRP01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+###########################
+# 부서별 그룹항목 (Department Group Item)
+###########################
+
+### 검사 기준정보 부서분류그룹항목 조회
+GET {{api-service}}/api/tst/bbs/dept-group-item/ITEM001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 부서분류그룹항목 목록 (부서별)
+GET {{api-service}}/api/tst/bbs/dept-group-item/by-dept/DEPT01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 부서분류그룹항목 등록
+POST {{api-service}}/api/tst/bbs/dept-group-item
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "deptGroupCd": "GRP001",
+  "tstCd": "TST001",
+  "sortOrder": 1
+}
+
+### 검사 기준정보 부서분류그룹항목 수정
+PUT {{api-service}}/api/tst/bbs/dept-group-item/TEST_ITEM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "deptGroupCd": "GRP002",
+  "tstCd": "TST002",
+  "sortOrder": 2
+}
+
+### 검사 기준정보 부서분류그룹항목 삭제
+DELETE {{api-service}}/api/tst/bbs/dept-group-item/TEST_ITEM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+###########################
+# 부서별 그룹항목 검사 (Department Group Item Test)
+###########################
+
+### 검사 기준정보 부서검사종목 조회
+GET {{api-service}}/api/tst/bts/dept-group-item-tst/TEST001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 부서검사종목 목록 (부서별)
+GET {{api-service}}/api/tst/bts/dept-group-item-tst/by-dept/DEPT01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 부서검사종목 등록
+POST {{api-service}}/api/tst/bts/dept-group-item-tst
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "deptGroupItemCd": "ITEM001",
+  "tstCd": "TST001",
+  "sortOrder": 1
+}
+
+### 검사 기준정보 부서검사종목 삭제
+DELETE {{api-service}}/api/tst/bts/dept-group-item-tst/TEST_TEST01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+###########################
+# 부서별 검사항목 (Department Test Item)
+###########################
+
+### 검사 기준정보 부서검사종목 조회
+GET {{api-service}}/api/tst/bbs/dept-tst-item/DEPTITEM001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 부서검사종목 목록 (부서별)
+GET {{api-service}}/api/tst/bbs/dept-tst-item/by-dept/DEPT01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 부서검사종목 등록
+POST {{api-service}}/api/tst/bbs/dept-tst-item
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "deptCd": "DEPT01",
+  "tstCd": "TST001",
+  "useYn": true,
+  "sortOrder": 1
+}
+
+### 검사 기준정보 부서검사종목 수정
+PUT {{api-service}}/api/tst/bbs/dept-tst-item/TEST_DEPTITEM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "deptCd": "DEPT02",
+  "tstCd": "TST002",
+  "useYn": false,
+  "sortOrder": 2
+}
+
+### 검사 기준정보 부서검사종목 삭제
+DELETE {{api-service}}/api/tst/bbs/dept-tst-item/TEST_DEPTITEM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

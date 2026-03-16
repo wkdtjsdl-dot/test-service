@@ -1,0 +1,197 @@
+### 관리자 Login 요청 (테스트용)
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST003",
+  "passwd": "test1234"
+}
+
+> {%
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+###########################
+# 검사기준치 (Test Reference)
+###########################
+
+### 검사 기준정보 검사참조항목 목록
+GET {{api-service}}/api/tst/bbs/tst-ref
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 검사참조항목 조회
+GET {{api-service}}/api/tst/bbs/tst-ref/REF001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 참조항목 코드 자동완성
+GET {{api-service}}/api/tst/bbs/tst-ref/auto-complete?refCdNm=00
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 검사참조항목 등록
+POST {{api-service}}/api/tst/bbs/tst-ref
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "refCateCd": "01",
+  "useYn": true,
+  "refNm": "테스트 검사기준치",
+  "refAbbrNm": "테스트기준",
+  "refEngNm": "Test Reference",
+  "refEngAbbrNm": "TestRef",
+  "sortOrder": 1,
+  "refType": "NUMERIC",
+  "refSize": 10,
+  "rangeChkYn": true,
+  "refMinVal": "0",
+  "refMaxVal": "100",
+  "dataFormat": "##.##",
+  "dftData": "50",
+  "dftEngData": "50"
+}
+
+### 검사 기준정보 검사참조항목 수정
+PUT {{api-service}}/api/tst/bbs/tst-ref/TEST_REF01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "refCateCd": "02",
+  "useYn": true,
+  "refNm": "수정된 검사기준치",
+  "refAbbrNm": "수정기준",
+  "refEngNm": "Updated Reference",
+  "refEngAbbrNm": "UpdRef",
+  "sortOrder": 2,
+  "refType": "TEXT",
+  "refSize": 20,
+  "rangeChkYn": false,
+  "refMinVal": "",
+  "refMaxVal": "",
+  "dataFormat": "",
+  "dftData": "Normal",
+  "dftEngData": "Normal"
+}
+
+### 검사 기준정보 검사참조항목 삭제
+DELETE {{api-service}}/api/tst/bbs/tst-ref/TEST_REF01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 검사참조항목 조회
+GET {{tst-service}}/api/inner/bbs/tst-ref?cds=TA0018,TA0014,TA0999
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+###########################
+# 검사기준치 그룹 (Test Reference Group)
+###########################
+
+### 검사 기준정보 검사 참조그룹 목록
+GET {{api-service}}/api/tst/bbs/tst-ref-group
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 검사 참조그룹 조회
+GET {{api-service}}/api/tst/bbs/tst-ref-group/GRP001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 검사 참조그룹 등록
+POST {{api-service}}/api/tst/bbs/tst-ref-group
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "refNm": "테스트 그룹",
+  "refAbbrNm": "테스트",
+  "refEngNm": "Test Group",
+  "refEngAbbrNm": "TestGrp",
+  "sortOrder": 1
+}
+
+### 검사 기준정보 검사 참조그룹 수정
+PUT {{api-service}}/api/tst/bbs/tst-ref-group/TEST_GRP01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "refNm": "수정된 그룹",
+  "refAbbrNm": "수정",
+  "refEngNm": "Updated Group",
+  "refEngAbbrNm": "UpdGrp",
+  "sortOrder": 2
+}
+
+### 검사 기준정보 검사 참조그룹 삭제
+DELETE {{api-service}}/api/tst/bbs/tst-ref-group/TEST_GRP01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+###########################
+# 검사기준치 그룹항목 (Test Reference Group Item)
+###########################
+
+### 검사 기준정보 검사 참조그룹 참조항목 조회
+GET {{api-service}}/api/tst/bbs/tst-ref-group-item/ITEM001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 검사 참조그룹 참조항목 목록
+GET {{api-service}}/api/tst/bbs/tst-ref-group-item/by-group/GRP001
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 검사 기준정보 검사 참조그룹 참조항목 추가
+POST {{api-service}}/api/tst/bbs/tst-ref-group-item
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "refGroupCd": "GRP001",
+  "refCd": "REF001",
+  "sortOrder": 1
+}
+
+### 검사 기준정보 검사 참조그룹 참조항목 수정
+PUT {{api-service}}/api/tst/bbs/tst-ref-group-item/TEST_ITEM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "refGroupCd": "GRP002",
+  "refCd": "REF002",
+  "sortOrder": 2
+}
+
+### 검사 기준정보 검사 참조그룹 참조항목 삭제
+DELETE {{api-service}}/api/tst/bbs/tst-ref-group-item/TEST_ITEM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

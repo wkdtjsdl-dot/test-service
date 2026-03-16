@@ -1,0 +1,14 @@
+package com.idrsys.ailis.tst.application.required.repository
+
+import com.idrsys.ailis.tst.domain.model.TestCategory
+import kotlinx.coroutines.flow.Flow
+
+interface TestCategoryRepository {
+    // Basic CRUD (Delegated to Spring Data)
+    suspend fun save(testCategory: TestCategory): TestCategory
+    suspend fun findById(id: String): TestCategory?
+    suspend fun deleteById(id: String)
+
+    // Custom Queries (Implemented with jOOQ)
+    fun findByLargeCateCd(largeCateCd: String?, useYn: Boolean?): Flow<TestCategory>
+}

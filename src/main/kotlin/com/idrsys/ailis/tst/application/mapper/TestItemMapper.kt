@@ -1,0 +1,78 @@
+package com.idrsys.ailis.tst.application.mapper
+
+import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.domain.model.StandardCharge
+import com.idrsys.ailis.tst.domain.model.TestGene
+import com.idrsys.ailis.tst.domain.model.TestItem
+import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
+import com.idrsys.ailis.tst.domain.model.TestItemGene
+import com.idrsys.ailis.tst.domain.model.TestItemHst
+import com.idrsys.ailis.tst.domain.model.TestItemRefItem
+import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
+import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
+import org.mapstruct.Mapper
+import org.mapstruct.Mapping
+import org.mapstruct.Mappings
+import org.mapstruct.ReportingPolicy
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+interface TestItemMapper {
+
+    // --- TestItem ---
+    fun toDomain(request: TestItemRegisterRequest): TestItem
+    fun toResponse(domain: TestItem): TestItemResponse
+    fun toSimpleResponse(domain: TestItem): TestItemSimpleResponse
+
+    // --- StandardCharge ---
+    fun toDomain(request: StandardChargeRegisterRequest): StandardCharge
+    fun toResponse(domain: StandardCharge): StandardChargeResponse
+
+    // --- TestItemSpecimen ---
+    fun toDomain(request: TestItemSpecimenRegisterRequest): TestItemSpecimen
+    fun toResponse(domain: TestItemSpecimen): TestItemSpecimenDetailResponse
+
+    // --- TestItemRefItem ---
+    fun toResponse(domain: TestItemRefItem): TestItemRefItemResponse
+
+    // --- TestGene ---
+    fun  toResponse(domain: TestGene): TestGeneResponse
+    // --- TestItemGene ---
+    fun toResponse(domain: TestItemGene): TestItemGeneResponse
+
+    // --- TestItemEssentialDoc ---
+    fun toResponse(domain: TestItemEssentialDoc): TestItemEssentialDocResponse
+
+    // --- TestItemHst ---
+    @Mappings(
+        Mapping(target = "itemHstId", ignore = true),
+        Mapping(target = "hstDesc", source = "updateReason")
+    )
+    fun toDomain(testItem: TestItem, updateReason: String = ""): TestItemHst
+    @Mappings(
+        Mapping(source = "newLog.itemHstId", target = "itemHstId"),
+        Mapping(source = "newLog.updater", target = "editBy"),
+        Mapping(source = "newLog.updateDtime", target = "editAt"),
+        Mapping(source = "newLog.hstDesc", target = "hstDesc"),
+        Mapping(source = "diffString", target = "editContents"),
+        Mapping(source = "oldLog.tstCd", target = "tstCd"),
+        Mapping(source = "oldLog.tstNm", target = "tstNm")
+    )
+    fun toLogsEditResponse(oldLog: TestItemHst, newLog: TestItemHst, diffString: String): TestItemLogsResponse
+
+    // --- TestItemSpecimenHst ---
+    @Mappings(
+        Mapping(target = "spcmHstId", ignore = true),
+        Mapping(target = "hstDesc", source = "updateReason")
+    )
+    fun toDomain(specimen: TestItemSpecimen, updateReason: String = ""): TestItemSpecimenHst
+    @Mappings(
+        Mapping(source = "newLog.spcmHstId", target = "spcmHstId"),
+        Mapping(source = "newLog.updater", target = "editBy"),
+        Mapping(source = "newLog.updateDtime", target = "editAt"),
+        Mapping(source = "newLog.hstDesc", target = "hstDesc"),
+        Mapping(source = "diffString", target = "editContents"),
+        Mapping(source = "oldLog.tstCd", target = "tstCd"),
+        Mapping(source = "oldLog.spcmCd", target = "spcmCd")
+    )
+    fun toSpecimenLogsResponse(oldLog: TestItemSpecimenHst, newLog: TestItemSpecimenHst, diffString: String): TestItemSpecimenLogsResponse
+}
