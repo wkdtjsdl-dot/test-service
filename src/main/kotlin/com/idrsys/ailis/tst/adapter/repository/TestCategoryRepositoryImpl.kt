@@ -5,6 +5,7 @@ import com.idrsys.ailis.tst.domain.model.TestCategory
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsTstCate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
@@ -23,6 +24,33 @@ class TestCategoryRepositoryImpl(
 ) : TestCategoryRepository {
 
     override suspend fun save(testCategory: TestCategory): TestCategory {
+
+        val table = BbsTstCate.BBS_TST_CATE
+
+        val query = dslContext
+            .selectCount()
+            .from(table)
+            .where(table.TST_MEDIUM_CATE_CD.eq(testCategory.tstMediumCateCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        val count = executeSpec
+            .fetch()
+            .one()
+            .map { row -> (row.values.first() as Number).toLong() }
+            .awaitSingleOrNull() ?: 0L
+
+        if (count > 0) {
+            throw IllegalStateException("이미 존재하는 중분류 코드입니다")
+        }
+
         return testCategoryDataRepository.save(testCategory)
     }
 
