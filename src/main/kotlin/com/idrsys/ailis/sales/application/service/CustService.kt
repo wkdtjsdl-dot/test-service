@@ -382,10 +382,7 @@ class CustService(
 
     @Transactional(readOnly = true)
     override fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<CustCdNmAutoCompleteResponse> {
-        return if (isUserAdmin(roles)) {
-            custCustomRepository.findCustCdNmAutoComplete(searchParam)
-                .map(custMapper::toCustCdNmAutoCompleteResponse)
-        } else {
+        return if (isUserRoleSlcp(roles)) {
             flow {
                 val user = baseServicePort.getUser(empUserId)
                 val modifiedParam = searchParam.copy(bzoffiCd = user?.deptCd)
@@ -394,6 +391,9 @@ class CustService(
                         .map(custMapper::toCustCdNmAutoCompleteResponse)
                 )
             }
+        } else {
+            custCustomRepository.findCustCdNmAutoComplete(searchParam)
+                .map(custMapper::toCustCdNmAutoCompleteResponse)
         }
     }
 
@@ -405,11 +405,11 @@ class CustService(
 
     @Transactional(readOnly = true)
     override fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<DirectAcctCdNmAutoCompleteResponse> {
-        return if (isUserAdmin(roles)) {
-            val autoCompleteList = custCustomRepository.findDirectAcctCdNmAutoComplete(searchParam)
+        return if (isUserRoleSlcp(roles)) {
+            val autoCompleteList = custCustomRepository.findMyDirectAcctCdNmAutoComplete(searchParam, empUserId)
             autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
         } else {
-            val autoCompleteList = custCustomRepository.findMyDirectAcctCdNmAutoComplete(searchParam, empUserId)
+            val autoCompleteList = custCustomRepository.findDirectAcctCdNmAutoComplete(searchParam)
             autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
         }
     }
@@ -417,12 +417,12 @@ class CustService(
     @Transactional(readOnly = true)
     override suspend fun getCustList(searchParam: CustSearchParam, empUserId: String, roles: List<String>): List<CustBasicResponse> {
         // join 없는 cust_mst 최소한의 데이터
-        return if (isUserAdmin(roles)) {
-            custCustomRepository.findCustList(searchParam)
+        return if (isUserRoleSlcp(roles)) {
+            custCustomRepository.findMyCustList(searchParam, empUserId)
                 .map(custMapper::toBasicResponse)
                 .toList()
         } else {
-            custCustomRepository.findMyCustList(searchParam, empUserId)
+            custCustomRepository.findCustList(searchParam)
                 .map(custMapper::toBasicResponse)
                 .toList()
         }
@@ -432,14 +432,6 @@ class CustService(
     override suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse> {
         return custCustomRepository.findCustTstMpgsByCustMstId(custMstId)
             .map(testCodeMappingMapper::toResponse)
-    }
-
-    companion object {
-        private val ADMIN_ROLE_CODES = setOf("RO_DPP")
-    }
-
-    private fun isUserAdmin(roles: List<String>): Boolean {
-        return ADMIN_ROLE_CODES.any { roles.contains(it) }
     }
 
     private fun isUserRoleSlcp(roles: List<String>): Boolean {
