@@ -121,7 +121,7 @@ spec:
                 remote.user = userName
                 remote.identityFile = identity
                 stage("SSH Docker run") {
-                    sshCommand remote: remote, command: "sed -e \"s/REPLACE_BUILD_VERSION_NUMBER/${ACTIVE_PROFILE}-${env.version}-${BUILD_NUMBER}/g\" -e \"s/REPLACE_TAG/${env.tag}/g\" -e \"s/REPLACE_PROFILE/${ACTIVE_PROFILE}/g\" ~/workspace/ailis-deploy/ailis/auto-deploy-temp/tst-deployment.template > ~/workspace/k8s-deploy/ailis/${ACTIVE_PROFILE}/tst-deployment.yaml"
+                    sshCommand remote: remote, command: "sed -e \"s/REPLACE_BUILD_VERSION_NUMBER/${ACTIVE_PROFILE}-${env.version}-${BUILD_NUMBER}/g\" -e \"s/REPLACE_TAG/${env.tag}/g\" -e \"s/REPLACE_PROFILE/${ACTIVE_PROFILE}/g\" ~/workspace/ailis-deploy/ailis/auto-deploy-temp/tst-deployment.template > ~/workspace/ailis-deploy/ailis/${ACTIVE_PROFILE}/tst-deployment.yaml"
                     sshCommand remote: remote, command: "kubectl apply -f ~/workspace/ailis-deploy/ailis/${ACTIVE_PROFILE}/tst-deployment.yaml"
                 }
             }
@@ -142,7 +142,7 @@ spec:
             remote.user = userName
             remote.identityFile = identity
             stage("SSH Docker run") {
-                sshCommand remote: remote, command: "sh ~/workspace/k8s-deploy/ailis/lb/switchingLb.sh tst-dep ${env.tag} tst-service"
+                sshCommand remote: remote, command: "sh ~/workspace/k8s-deploy/ailis/lb/switchingLb.sh tst-dep ${env.tag} tst-service ${ACTIVE_PROFILE}"
             }
           }
         }
