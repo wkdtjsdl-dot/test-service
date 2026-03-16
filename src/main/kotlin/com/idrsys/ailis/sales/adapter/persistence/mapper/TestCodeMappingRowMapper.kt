@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.adapter.persistence.mapper
 
 import com.idrsys.ailis.sales.application.dto.query.TestCodeMappingQuery
+import com.idrsys.ailis.sales.application.dto.response.InnerTestCodeMappingResponse
 import io.r2dbc.spi.Row
 import java.time.LocalDateTime
 
@@ -18,4 +19,12 @@ internal fun Row.toTestCodeMappingQuery(): TestCodeMappingQuery = TestCodeMappin
     updater = this.get("updater", String::class.java)!!,
     updateDtime = this.get("update_dtime", LocalDateTime::class.java)!!,
     custNm = this.get("cust_nm", String::class.java)
+)
+
+internal fun Row.toTestCodeMappingInnerTestCode(): InnerTestCodeMappingResponse = InnerTestCodeMappingResponse(
+    code = this.get("tst_cd", String::class.java)!!,
+    serial = this.get("cust_tst_cd", String::class.java)!!,
+    nameKr = this.get("tst_nm", String::class.java)!!,
+    sampleType = emptyList(),
+    extensions = null
 )

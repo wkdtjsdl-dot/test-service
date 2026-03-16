@@ -1,8 +1,10 @@
 package com.idrsys.ailis.sales.application.service
 
+import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.InnerTestCodeSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingCommand
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.ValidateTstMappingRequest
+import com.idrsys.ailis.sales.application.dto.response.InnerTestCodeMappingResponse
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingExcelValidResponse
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingResponse
 import com.idrsys.ailis.sales.application.dto.response.ValidateTstMappingResponse
@@ -116,6 +118,10 @@ class TestCodeMappingService(
             .map { testCodeMapping ->
                 testCodeMappingMapper.toResponse(testCodeMapping)
             }
+
+    override suspend fun innerSearchTestCodeMappingList(searchParam: InnerTestCodeSearchParam): List<InnerTestCodeMappingResponse> {
+        return testCodeMappingCustomRepository.innerSearchTestCodeMappingList(searchParam)
+    }
 
     override suspend fun getTstCdByCustCdAndCustTstCd(custCd: String, custTstCd: String): String? =
         testCodeMappingCustomRepository.findTstCdByCustCdAndCustTstCd(custCd, custTstCd)

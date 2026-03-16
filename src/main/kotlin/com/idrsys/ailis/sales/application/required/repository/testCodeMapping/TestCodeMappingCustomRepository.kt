@@ -1,7 +1,9 @@
 package com.idrsys.ailis.sales.application.required.repository.testCodeMapping
 
 import com.idrsys.ailis.sales.application.dto.query.TestCodeMappingQuery
+import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.InnerTestCodeSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingSearchParam
+import com.idrsys.ailis.sales.application.dto.response.InnerTestCodeMappingResponse
 import com.idrsys.ailis.sales.domain.model.CustTestCodeMapping
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Pageable
@@ -10,6 +12,7 @@ interface TestCodeMappingCustomRepository {
     suspend fun countTestCodeMapping(searchParam: TestCodeMappingSearchParam): Long
     fun findTestCodeMappings(searchParam: TestCodeMappingSearchParam, pageable: Pageable): Flow<TestCodeMappingQuery>
     fun searchTestCodeMappingList(searchParam: TestCodeMappingSearchParam): Flow<TestCodeMappingQuery>
+    suspend fun innerSearchTestCodeMappingList(searchParam: InnerTestCodeSearchParam): List<InnerTestCodeMappingResponse>
     suspend fun deleteById(id: String)
     suspend fun findById(id: String): CustTestCodeMapping?
     /**

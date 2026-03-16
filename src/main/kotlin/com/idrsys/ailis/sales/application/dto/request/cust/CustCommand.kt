@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.application.dto.cust
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class CustCommand(
     // 기본정보
@@ -16,7 +17,7 @@ data class CustCommand(
     val bzoffiCd: String?,               // 영업소코드
     val bzoffiPicId: String?,            // 영업소담당자ID
     val custStatCd: String,             // 고객상태코드
-    val reqPossYn: Boolean,             // 의뢰가능여부
+    val reqPossYn: Boolean = true,      // 의뢰가능여부
     val rprsCustYn: Boolean,            // 대표고객여부
     val rprsCustCd: String?,             // 대표고객코드
     val studyProjCustYn: Boolean,       // 연구과제고객여부
@@ -76,6 +77,40 @@ data class CustCommand(
     val atchFileGrupId: String?,         // 첨부파일그룹아이디
     val reqPossTstLimitYn: Boolean?,     // 의뢰가능검사제한여부
     val updateReason: String? = null    // 변경사유 (히스토리 테이블용)
+)
+
+data class CustSearchCommand (
+    val directAcctCd: String,
+    val serial: String? = null,
+    val name: String? = null,
+    val registrationNumber: String? = null,
+    val nursingNumber: String? = null,
+    val branchCode: String? = null,
+    val branchName: String? = null,
+    val branchCodes: List<String>? = null,
+    val employeeId: String? = null,
+    val employeeName: String? = null,
+    val employeePhone: String? = null,
+    val type: String? = null,
+)
+
+data class CustResponseCommand (
+    val serial: String,
+    val name: String?,
+    val registrationNumber: String?,
+    val nursingNumber: String?,
+    val branchCode: String?,
+    val branchName: String?,
+    val employeeId: String?,
+    val employeeName: String?,
+    val employeePhone: String?,
+    val type: String?,
+    val createAt: LocalDateTime?
+)
+
+data class CustRegisterWrapper(
+    val command: CustCommand,
+    val authId: String
 )
 
 typealias CustRegisterCommand = CustCommand

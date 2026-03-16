@@ -31,11 +31,11 @@ data class CustSearchParam(
     val studyProjCustYn: Boolean? = null,
     val sapCustCd: String? = null,
     val custTypeCd: String? = null,
-    val reqPossYn: Boolean? = null, // 의뢰가능여부
 )
 
 data class CustAutoCompleteSearchParam(
     val custCdNm: String? = null, // 고객코드/명 자동완성 검색어
     val rprsCustCdNm: String? = null, // 대표고객코드/명 자동완성 검색어
     val directAcctCdNm: String? = null, // 직접거래처코드/명 자동완성 검색어
+    val bzoffiCd: String? = null, // 영업소코드 (비admin용 영업소 기준 필터링)
 )

@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.domain.model
 
 import com.idrsys.ailis.sales.application.dto.request.hploginuser.HpLoginUserCommand
+import com.idrsys.ailis.sales.application.dto.request.hploginuser.HpLoginUserUpdateCommand
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
@@ -110,6 +111,21 @@ class HpLoginUser(
         this.loginFailNum = command.loginFailNum
         this.pswdChngDtime = command.pswdChngDtime
         this.lastLoginDtime = command.lastLoginDtime
+        this.loginNm = command.loginNm
+        this.loginPersonContact = command.loginPersonContact
+        this.useYn = command.useYn
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
+
+    fun update(command: HpLoginUserUpdateCommand, encodedPswd: String?, updater: String) {
+        this.custMstId = command.custMstId
+        this.custCd = command.custCd
+        this.hpCustDiv = command.hpCustDiv
+        this.loginId = command.loginId
+        if (encodedPswd != null) {
+            this.loginPswd = encodedPswd
+        }
         this.loginNm = command.loginNm
         this.loginPersonContact = command.loginPersonContact
         this.useYn = command.useYn

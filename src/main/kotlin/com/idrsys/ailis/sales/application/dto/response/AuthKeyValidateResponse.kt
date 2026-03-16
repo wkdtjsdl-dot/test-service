@@ -5,5 +5,4 @@ data class AuthKeyValidateResponse(
     val custCd: String,
     val custNm: String,
     val custStatCd: String,
-    val reqPossYn: Boolean
 )

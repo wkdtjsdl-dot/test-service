@@ -44,3 +44,6 @@ out/
 gradle.properties
 GEMINI.md
 CLAUDE.md
+
+# misc
+.DS_Store

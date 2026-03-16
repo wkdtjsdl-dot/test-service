@@ -1,15 +1,13 @@
 package com.idrsys.ailis.sales.application.service
 
-import com.idrsys.ailis.sales.application.dto.cust.CustAutoCompleteSearchParam
-import com.idrsys.ailis.sales.application.dto.cust.CustRegisterCommand
-import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
-import com.idrsys.ailis.sales.application.dto.cust.CustUpdateCommand
+import com.idrsys.ailis.sales.application.dto.cust.*
 import com.idrsys.ailis.sales.application.dto.request.cust.CustAtchFileUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.cust.CustReqIfMethodUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.custreqposststitem.CustReqPossTstItemSearchParam
 import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
 import com.idrsys.ailis.sales.application.required.external.BaseServicePort
+import com.idrsys.ailis.sales.application.required.external.ReqServicePort
 import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustMstHstRepository
@@ -17,6 +15,7 @@ import com.idrsys.ailis.sales.application.required.repository.cust.CustRepositor
 import com.idrsys.ailis.sales.application.required.repository.custreqposststitem.CustReqPossTstItemCustomRepository
 import com.idrsys.ailis.sales.application.usecase.cust.CustUseCase
 import com.idrsys.ailis.sales.domain.model.Cust
+import com.idrsys.ailis.sales.shared.exception.NotFoundException
 import com.idrsys.ailis.sales.shared.mapper.CustMapper
 import com.idrsys.ailis.sales.shared.mapper.TestCodeMappingMapper
 import com.idrsys.web.exception.UserDefinedException
@@ -24,8 +23,10 @@ import kotlinx.coroutines.flow.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 
 @Service
@@ -38,6 +39,7 @@ class CustService(
     private val custMapper: CustMapper,
     private val baseServicePort: BaseServicePort,
     private val tstServicePort: TstServicePort,
+    private val reqServicePort: ReqServicePort,
     private val hospitalDataService: HospitalDataService,
     private val testCodeMappingMapper: TestCodeMappingMapper,
 ) : CustUseCase {
@@ -159,7 +161,7 @@ class CustService(
     @Transactional(readOnly = true)
     override suspend fun findCustByCustMstId(custMstId: String): CustResponse {
         val cust = custCustomRepository.findCustDetailInfoByCustMstId(custMstId)
-            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custMstId")
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND,"고객을 찾을 수 없습니다: $custMstId")
 
         val response = custMapper.toDetailResponse(cust)
 
@@ -178,7 +180,7 @@ class CustService(
     @Transactional(readOnly = true)
     override suspend fun findCustByCustCd(custCd: String): CustResponse {
         val cust = custCustomRepository.findCustDetailInfoByCustCd(custCd)
-            ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custCd")
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND,"고객을 찾을 수 없습니다: $custCd")
 
         val response = custMapper.toDetailResponse(cust)
 
@@ -192,6 +194,11 @@ class CustService(
         }
 
         return response
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun findCustNmByCustCd(custCds:List<String>): Map<String, CustCdNmResponse> {
+        return custCustomRepository.findCustNmByCustCd(custCds)
     }
 
     override suspend fun findTstItemsByCustMstId(custMstId: String): Flow<TstServiceTstItemsResponse> {
@@ -214,6 +221,45 @@ class CustService(
         }
     }
 
+    override suspend fun searchCust(searchParam: CustSearchCommand): List<CustResponseCommand> {
+        var finalSearchParam = searchParam
+        if (!searchParam.branchName.isNullOrBlank()) {
+            val departments = baseServicePort.getDepartments() ?: emptyList()
+            val branchCodes = departments
+                .filter { it.deptNm.contains(searchParam.branchName, ignoreCase = true) }
+                .map { it.deptCd }
+
+            finalSearchParam = if (branchCodes.isNotEmpty()) {
+                searchParam.copy(branchCodes = branchCodes)
+            } else {
+                searchParam.copy(branchCodes = listOf("NOT_FOUND"))
+            }
+        }
+
+        val custList = custCustomRepository.searchInnerCusts(finalSearchParam)
+
+        val branchCdList = custList.mapNotNull { it.bzoffiCd }.distinct()
+
+        val departments = baseServicePort.getDepartmentsByIds(branchCdList)
+        val branchMap = departments?.associateBy({ it.deptCd }, { it.deptNm })
+
+        return custList.map { cust ->
+            CustResponseCommand(
+                serial = cust.custCd,
+                name = cust.custNm,
+                registrationNumber = cust.bizrno,
+                nursingNumber = cust.careInstNo,
+                branchCode = cust.bzoffiCd,
+                branchName = cust.bzoffiCd?.let { branchMap?.get(it) },
+                employeeId = cust.bzoffiPicId,
+                employeeName = null,
+                employeePhone = null,
+                type = cust.custTypeCd,
+                createAt = cust.createDtime
+            )
+        }
+    }
+
     override suspend fun registerCust(command: CustRegisterCommand, creator: String): Cust {
         val custCd = command.custCd
 
@@ -233,11 +279,53 @@ class CustService(
         return savedCust
     }
 
+    override suspend fun upsertCust(command: CustRegisterCommand, authId: String): Cust {
+        val custCd = command.custCd
+        val now = LocalDateTime.now()
+
+        val existingCust = custCustomRepository.findByCustCd(custCd)
+
+        return if (existingCust == null) {
+            // create
+            val newCust = custMapper.toDomain(command, authId, now)
+            val savedCust = custRepository.save(newCust)
+
+            val hist = custMapper.toHistDomain(savedCust, command.updateReason)
+            custMstHistRepository.save(hist)
+
+            savedCust
+        } else {
+            // update
+            val updateCommand = custMapper.toUpdateCommand(command)
+
+            existingCust.updateCust(updateCommand, authId)
+            val updatedCust = custRepository.save(existingCust)
+
+            val hist = custMapper.toHistDomain(updatedCust, command.updateReason)
+            custMstHistRepository.save(hist)
+
+            updatedCust
+        }
+    }
+
+    override suspend fun deleteCust(custCd: String) {
+        custCustomRepository.findCustDetailInfoByCustCd(custCd)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND,"고객을 찾을 수 없습니다: $custCd")
+
+        val requestCount = reqServicePort.checkRequestsByCustCd(custCd)
+
+        if (requestCount > 0) {
+            throw UserDefinedException("삭제할 수 없습니다. 해당 고객으로 등록된 의뢰가 ${requestCount}건 존재합니다.")
+        }
+
+        custCustomRepository.deleteByCustCd(custCd)
+    }
+
     override suspend fun updateCust(custMstId: String, command: CustUpdateCommand, updater: String): Cust {
         val custCd = command.custCd
 
         val cust = custRepository.findByCustMstId(custMstId)
-            ?: throw UserDefinedException("USER_NOT_FOUND","고객을 찾을 수 없습니다: $custCd")
+            ?: throw NotFoundException("고객을 찾을 수 없습니다: $custCd")
 
         cust.update(command, updater)
         val updatedCust = custRepository.save(cust)
@@ -255,7 +343,7 @@ class CustService(
         updater: String
     ) {
         val cust = custRepository.findByCustMstId(custMstId)
-            ?: throw UserDefinedException("CUST_NOT_FOUND", "고객 정보를 찾을 수 없습니다")
+            ?: throw UserDefinedException("고객 정보를 찾을 수 없습니다")
 
         // atchFileGrupId만 업데이트
         cust.updateAtchFileGrupId(command.atchFileGrupId, updater)
@@ -269,7 +357,7 @@ class CustService(
         updater: String
     ) {
         val cust = custRepository.findByCustMstId(custMstId)
-            ?: throw UserDefinedException("CUST_NOT_FOUND", "고객 정보를 찾을 수 없습니다")
+            ?: throw UserDefinedException("고객 정보를 찾을 수 없습니다")
 
         cust.updateReqIfMethod(command.reqMethodCd, command.reqIfTypeCd, updater)
 
@@ -294,12 +382,18 @@ class CustService(
 
     @Transactional(readOnly = true)
     override fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<CustCdNmAutoCompleteResponse> {
-        return if (isUserAdmin(roles)) {
-            val autoCompleteList = custCustomRepository.findCustCdNmAutoComplete(searchParam)
-            autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
+        return if (isUserRoleSlcp(roles)) {
+            flow {
+                val user = baseServicePort.getUser(empUserId)
+                val modifiedParam = searchParam.copy(bzoffiCd = user?.deptCd)
+                emitAll(
+                    custCustomRepository.findCustCdNmAutoComplete(modifiedParam)
+                        .map(custMapper::toCustCdNmAutoCompleteResponse)
+                )
+            }
         } else {
-            val autoCompleteList = custCustomRepository.findMyCustCdNmAutoComplete(searchParam, empUserId)
-            autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
+            custCustomRepository.findCustCdNmAutoComplete(searchParam)
+                .map(custMapper::toCustCdNmAutoCompleteResponse)
         }
     }
 
@@ -311,11 +405,11 @@ class CustService(
 
     @Transactional(readOnly = true)
     override fun getDirectAcctCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<DirectAcctCdNmAutoCompleteResponse> {
-        return if (isUserAdmin(roles)) {
-            val autoCompleteList = custCustomRepository.findDirectAcctCdNmAutoComplete(searchParam)
+        return if (isUserRoleSlcp(roles)) {
+            val autoCompleteList = custCustomRepository.findMyDirectAcctCdNmAutoComplete(searchParam, empUserId)
             autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
         } else {
-            val autoCompleteList = custCustomRepository.findMyDirectAcctCdNmAutoComplete(searchParam, empUserId)
+            val autoCompleteList = custCustomRepository.findDirectAcctCdNmAutoComplete(searchParam)
             autoCompleteList.map(custMapper::toDirectAcctCdNmAutoCompleteResponse)
         }
     }
@@ -323,12 +417,12 @@ class CustService(
     @Transactional(readOnly = true)
     override suspend fun getCustList(searchParam: CustSearchParam, empUserId: String, roles: List<String>): List<CustBasicResponse> {
         // join 없는 cust_mst 최소한의 데이터
-        return if (isUserAdmin(roles)) {
-            custCustomRepository.findCustList(searchParam)
+        return if (isUserRoleSlcp(roles)) {
+            custCustomRepository.findMyCustList(searchParam, empUserId)
                 .map(custMapper::toBasicResponse)
                 .toList()
         } else {
-            custCustomRepository.findMyCustList(searchParam, empUserId)
+            custCustomRepository.findCustList(searchParam)
                 .map(custMapper::toBasicResponse)
                 .toList()
         }
@@ -338,14 +432,6 @@ class CustService(
     override suspend fun findCustTstMpgsByCustMstId(custMstId: String): Flow<TestCodeMappingResponse> {
         return custCustomRepository.findCustTstMpgsByCustMstId(custMstId)
             .map(testCodeMappingMapper::toResponse)
-    }
-
-    companion object {
-        private val ADMIN_ROLE_CODES = setOf("RO_DPP")
-    }
-
-    private fun isUserAdmin(roles: List<String>): Boolean {
-        return ADMIN_ROLE_CODES.any { roles.contains(it) }
     }
 
     private fun isUserRoleSlcp(roles: List<String>): Boolean {
@@ -481,8 +567,8 @@ class CustService(
         val cust = custCustomRepository.findByExtnAuthKey(extnAuthKey)
             ?: return null
 
-        // 거래처 상태가 비활성이거나 의뢰불가이면 null 반환
-        if (cust.custStatCd != "CSST_N" || !cust.reqPossYn) {
+        // 거래처 상태가 비활성이면 null 반환
+        if (cust.custStatCd != "CSST_N") {
             return null
         }
 
@@ -491,7 +577,6 @@ class CustService(
             custCd = cust.custCd,
             custNm = cust.custNm,
             custStatCd = cust.custStatCd,
-            reqPossYn = cust.reqPossYn
         )
     }
 }

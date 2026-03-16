@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.adapter.web
 
 import com.idrsys.ailis.sales.application.dto.request.hploginuser.HpLoginUserCommand
+import com.idrsys.ailis.sales.application.dto.request.hploginuser.HpLoginUserUpdateCommand
 import com.idrsys.ailis.sales.application.dto.request.hploginuser.HpLoginUserSearchParam
 import com.idrsys.ailis.sales.application.dto.response.HpLoginUserResponse
 import com.idrsys.ailis.sales.application.usecase.hploginuser.HpLoginUserUseCase
@@ -48,7 +49,7 @@ class HpLoginUserController(
     @Operation(summary = "updateHpLoginUser", description = "홈페이지 로그인 사용자 수정")
     suspend fun updateHpLoginUser(
         @PathVariable hpLoginUserId: String,
-        @RequestBody command: HpLoginUserCommand,
+        @RequestBody command: HpLoginUserUpdateCommand,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): HpLoginUserResponse {
         return useCase.updateHpLoginUser(hpLoginUserId, command, auth.adminId)

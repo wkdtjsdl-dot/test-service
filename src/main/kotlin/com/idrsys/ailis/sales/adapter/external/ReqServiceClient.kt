@@ -165,4 +165,15 @@ class ReqServiceClient(
             )
         }
     }
+
+    override suspend fun checkRequestsByCustCd(custCd: String): Int {
+        return client.get()
+            .uri("/api/inner/rbs/api-requests/{custCd}", custCd)
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.bodyToMono(String::class.java)
+                    .map { RuntimeException("External API error: $it") }
+            }
+            .awaitBody()
+    }
 }

@@ -1,8 +1,10 @@
 package com.idrsys.ailis.sales.application.usecase.testCodeMapping
 
+import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.InnerTestCodeSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingCommand
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.ValidateTstMappingRequest
+import com.idrsys.ailis.sales.application.dto.response.InnerTestCodeMappingResponse
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingExcelValidResponse
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingResponse
 import com.idrsys.ailis.sales.application.dto.response.ValidateTstMappingResponse
@@ -24,6 +26,8 @@ interface TestCodeMappingUseCase {
     suspend fun createTestCodeMappingByExcel(commands: List<TestCodeMappingCommand>, adminId: String): Flow<TestCodeMappingResponse>
 
     suspend fun searchTestCodeMappingList(searchParam: TestCodeMappingSearchParam): Flow<TestCodeMappingResponse>
+
+    suspend fun innerSearchTestCodeMappingList(searchParam: InnerTestCodeSearchParam): List<InnerTestCodeMappingResponse>
 
     /**
      * 고객코드 + 고객검사코드로 내부 검사코드 조회 (Inner API용)

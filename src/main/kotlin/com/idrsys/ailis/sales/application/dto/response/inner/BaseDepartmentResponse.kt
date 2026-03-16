@@ -12,7 +12,7 @@ data class BaseDepartmentResponse(
     val deptLvl: Int,
     val sortOrder: Int,
     val deptheadId: String?,
-    val deptTypeCd: String,
+    val deptTypeCd: String?,
     val locDivCd: String?,
     val deptOpenDt: LocalDate?,
     val deptCloseDt: LocalDate?,

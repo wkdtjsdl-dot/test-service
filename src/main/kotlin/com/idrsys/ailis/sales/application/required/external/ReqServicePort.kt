@@ -82,4 +82,11 @@ interface ReqServicePort {
         endDt: LocalDate,
         updater: String
     ): Int
+
+    /**
+     * 의뢰 검색
+     * @param param 검색 조건
+     * @return 의뢰 목록
+     */
+    suspend fun checkRequestsByCustCd(custCd: String): Int
 }

@@ -36,3 +36,25 @@ data class TestCodeMappingExcelValidResponse (
     val validCustCd: Boolean,
     val validTstCd: Boolean
 )
+
+data class InnerTestCodeMappingResponse (
+    val code: String,
+    val serial: String,
+    val nameKr: String,
+    val sampleType: List<InnerSampleType>?,
+    val extensions: List<InnerSampleExtension>?
+)
+
+data class InnerSampleType (
+    val code: String,
+    val serial: String,
+    val nameKr: String
+)
+
+data class InnerSampleExtension (
+    val code: String,
+    val nameKr: String,
+    val nameEn: String?,
+    val isRequired: Boolean,
+    val regex: String
+)
