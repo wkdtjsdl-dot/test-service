@@ -142,7 +142,7 @@ spec:
             remote.user = userName
             remote.identityFile = identity
             stage("SSH Docker run") {
-                sshCommand remote: remote, command: "sh ~/workspace/k8s-deploy/ailis/lb/switchingLb.sh sales-dep ${env.tag} sales-service ${ACTIVE_PROFILE}"
+                sshCommand remote: remote, command: "sh ~/workspace/ailis-deploy/ailis/lb/switchingLb.sh sales-dep ${env.tag} sales-service ${ACTIVE_PROFILE}"
             }
           }
         }
