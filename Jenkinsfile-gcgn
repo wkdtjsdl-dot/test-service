@@ -35,16 +35,43 @@ spec:
   }
 
   parameters {
+    // 브랜치 선택 (드롭다운)
+    choice(
+        name: 'BRANCH_NAME',
+        choices: ['-- 선택하세요 (dev: develop / prod: main) --', 'develop', 'main'],
+        description: '배포할 브랜치를 선택하세요. 선택에 따라 Profile(dev/prod), JOOQ_URL(172.19.207.212/172.19.207.210)이 자동 지정됩니다.'
+    )
+
     string name: 'DEPLOY_REMOTE_NAME', defaultValue: 'k8s-manager'
     string name: 'DEPLOY_REMOTE_HOST', defaultValue: '172.19.207.198'
     string name: 'DEPLOY_CREDENTIALS_ID', defaultValue: 'k8s-manager-credential'
-    string name: 'ACTIVE_PROFILE', defaultValue: 'dev'
-    string name: 'JOOQ_URL', defaultValue: 'jdbc:postgresql://172.19.207.210:30432/ailis'
+    // string name: 'ACTIVE_PROFILE', defaultValue: 'dev'
+    // string name: 'JOOQ_URL', defaultValue: 'jdbc:postgresql://172.19.207.210:30432/ailis'
     string name: 'JOOQ_USER', defaultValue: ''
     password name: 'JOOQ_PASSWORD', defaultValue: ''
   }
 
+  environment {
+    // 선택된 브랜치에 따라 프로필 자동 매핑
+    ACTIVE_PROFILE = "${params.BRANCH_NAME == 'main' ? 'prod' : (params.BRANCH_NAME == 'develop' ? 'dev' : 'none')}"
+    JOOQ_URL = "${params.BRANCH_NAME == 'main' ? 'jdbc:postgresql://172.19.207.210:30432/ailis' : (params.BRANCH_NAME == 'develop' ? 'jdbc:postgresql://172.19.207.212:30432/ailis' : 'none')}"
+  }
+
   stages {
+    stage('Validate Parameters') {
+      steps {
+        script {
+          // 아무것도 선택하지 않고 빌드했을 경우 중단
+          if (env.ACTIVE_PROFILE == 'none') {
+            error "❌ [빌드 중단] 올바른 브랜치를 선택해야 합니다!"
+          }
+          echo "✅ 실행 브랜치: ${params.BRANCH_NAME}"
+          echo "✅ 적용 프로필: ${env.ACTIVE_PROFILE}"
+          echo "✅ 적용 JOOQ: ${env.JOOQ_URL}"
+        }
+      }
+    }
+
     stage ('init') {
       steps {
         container('gradle') {
@@ -81,7 +108,7 @@ spec:
           script {
             sh 'chmod 755 gradlew'
             withEnv([
-              "JOOQ_URL=${params.JOOQ_URL}",
+              "JOOQ_URL=${env.JOOQ_URL}",
               "JOOQ_USER=${params.JOOQ_USER}",
               "JOOQ_PASSWORD=${params.JOOQ_PASSWORD}"
             ]) {
@@ -103,7 +130,7 @@ spec:
         container('kaniko') {
           sh "executor --dockerfile=Dockerfile \
           --context=dir://${env.WORKSPACE} \
-          --destination=${DOCKER_REGISTRY_URL}/ailis-${ACTIVE_PROFILE}/sales-service:${ACTIVE_PROFILE}-${env.version}-${BUILD_NUMBER}"
+          --destination=${DOCKER_REGISTRY_URL}/ailis-${env.ACTIVE_PROFILE}/sales-service:${env.ACTIVE_PROFILE}-${env.version}-${BUILD_NUMBER}"
         }
       }
     }
@@ -121,8 +148,8 @@ spec:
                 remote.user = userName
                 remote.identityFile = identity
                 stage("SSH Docker run") {
-                    sshCommand remote: remote, command: "sed -e \"s/REPLACE_BUILD_VERSION_NUMBER/${ACTIVE_PROFILE}-${env.version}-${BUILD_NUMBER}/g\" -e \"s/REPLACE_TAG/${env.tag}/g\" -e \"s/REPLACE_PROFILE/${ACTIVE_PROFILE}/g\" ~/workspace/ailis-deploy/ailis/auto-deploy-temp/sales-deployment.template > ~/workspace/ailis-deploy/ailis/${ACTIVE_PROFILE}/sales-deployment.yaml"
-                    sshCommand remote: remote, command: "kubectl apply -f ~/workspace/ailis-deploy/ailis/${ACTIVE_PROFILE}/sales-deployment.yaml"
+                    sshCommand remote: remote, command: "sed -e \"s/REPLACE_BUILD_VERSION_NUMBER/${env.ACTIVE_PROFILE}-${env.version}-${BUILD_NUMBER}/g\" -e \"s/REPLACE_TAG/${env.tag}/g\" -e \"s/REPLACE_PROFILE/${env.ACTIVE_PROFILE}/g\" ~/workspace/ailis-deploy/ailis/auto-deploy-temp/sales-deployment.template > ~/workspace/ailis-deploy/ailis/${env.ACTIVE_PROFILE}/sales-deployment.yaml"
+                    sshCommand remote: remote, command: "kubectl apply -f ~/workspace/ailis-deploy/ailis/${env.ACTIVE_PROFILE}/sales-deployment.yaml"
                 }
             }
         }
@@ -142,7 +169,7 @@ spec:
             remote.user = userName
             remote.identityFile = identity
             stage("SSH Docker run") {
-                sshCommand remote: remote, command: "sh ~/workspace/ailis-deploy/ailis/lb/switchingLb.sh sales-dep ${env.tag} sales-service ${ACTIVE_PROFILE}"
+                sshCommand remote: remote, command: "sh ~/workspace/ailis-deploy/ailis/lb/switchingLb.sh sales-dep ${env.tag} sales-service ${env.ACTIVE_PROFILE}"
             }
           }
         }
