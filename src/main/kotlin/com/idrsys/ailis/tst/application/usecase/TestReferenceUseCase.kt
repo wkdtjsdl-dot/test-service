@@ -13,6 +13,7 @@ interface TestReferenceUseCase {
     fun autoCompleteReferences(searchParam: TestReferenceAutoCompleteParam): Flow<TestReferenceAutoCompleteResponse>
     fun getReferenceByRefGroupCd(searchParam: TestReferenceByGroupParam): Flow<TestReferenceResponse>
     suspend fun findSimpleReferenceByRefCd(refCds: List<String>): Flow<TestReferenceSimpleResponse>
+    suspend fun getRefValidationInfoByRefCds(refCds: List<String>): Flow<RefValidationInfo>
 
     // --- TestReferenceGroup ---
     suspend fun registerGroup(request: TestReferenceGroupRegisterRequest, adminId: String): TestReferenceGroupResponse

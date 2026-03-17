@@ -82,6 +82,10 @@ class TestReferenceService(
         return repository.findSimpleReferenceByRefCd(refCds)
     }
 
+    override suspend fun getRefValidationInfoByRefCds(refCds: List<String>): Flow<RefValidationInfo> {
+        return repository.findValidationInfoByRefCds(refCds)
+    }
+
     // --- TestReferenceGroup ---
 
     override suspend fun registerGroup(request: TestReferenceGroupRegisterRequest, adminId: String): TestReferenceGroupResponse {
