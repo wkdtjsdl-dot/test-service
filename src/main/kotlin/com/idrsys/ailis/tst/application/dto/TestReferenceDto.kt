@@ -86,6 +86,16 @@ data class TestReferenceResponse(
     val updateDtime: LocalDateTime
 )
 
+data class RefValidationInfo(
+    val refCd: String,
+    val refType: String,
+    val dataFormat: String,
+    val refSize: Int,
+    val rangeChkYn: Boolean,
+    val refMinVal: Int,
+    val refMaxVal: Int
+)
+
 // --- Test Reference Group ---
 
 data class TestReferenceGroupRegisterRequest(
