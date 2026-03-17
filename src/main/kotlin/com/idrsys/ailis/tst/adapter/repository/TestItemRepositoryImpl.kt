@@ -748,7 +748,8 @@ class TestItemRepositoryImpl(
 
         val query = dslContext
             .select(refItem.REF_ITEM_ID, refItem.TST_CD, refItem.REF_CD, tstRef.REF_CATE_CD,
-                    refItem.SORT_ORDER, tstRef.REF_NM, tstRef.REF_ENG_NM,refItem.ESTL_YN)
+                    refItem.SORT_ORDER, tstRef.REF_NM, tstRef.REF_ENG_NM, refItem.ESTL_YN,
+                    tstRef.REF_TYPE, tstRef.DATA_FORMAT, tstRef.REF_MIN_VAL, tstRef.REF_MAX_VAL)
             .from(tstRef)
             .join(refItem).on(tstRef.REF_CD.eq(refItem.REF_CD))
             .where(conditions)
@@ -782,7 +783,8 @@ class TestItemRepositoryImpl(
 
         val query = dslContext
             .select(refItem.REF_ITEM_ID, tstRef.REF_CATE_CD, refItem.TST_CD, tstRef.REF_CD, tstRef.REF_NM,
-                tstRef.REF_TYPE, tstRef.REF_SIZE, refItem.SORT_ORDER, refItem.ESTL_YN)
+                tstRef.REF_TYPE, tstRef.REF_SIZE, refItem.SORT_ORDER, refItem.ESTL_YN,
+                tstRef.DATA_FORMAT, tstRef.REF_MIN_VAL, tstRef.REF_MAX_VAL)
             .from(tstRef)
             .join(refItem).on(tstRef.REF_CD.eq(refItem.REF_CD))
             .where(conditions)
@@ -937,7 +939,11 @@ class TestItemRepositoryImpl(
             sortOrder = row["sort_order"] as Int?,
             refNm = row["ref_nm"] as String,
             refEngNm = row["ref_eng_nm"] as String,
-            estlYn = row["estl_yn"] as Boolean
+            estlYn = row["estl_yn"] as Boolean,
+            refType = row["ref_type"] as String?,
+            dataFormat = row["data_format"] as String?,
+            refMinVal = (row["ref_min_val"] as Number?)?.toInt(),
+            refMaxVal = (row["ref_max_val"] as Number?)?.toInt(),
         )
     }
 
@@ -951,7 +957,10 @@ class TestItemRepositoryImpl(
             refType = row["ref_type"] as String,
             refSize = row["ref_size"] as Int?,
             sortOrder = row["sort_order"] as Int?,
-            estlYn = row["estl_yn"] as Boolean
+            estlYn = row["estl_yn"] as Boolean,
+            dataFormat = row["data_format"] as String?,
+            refMinVal = (row["ref_min_val"] as Number?)?.toInt(),
+            refMaxVal = (row["ref_max_val"] as Number?)?.toInt(),
         )
     }
 

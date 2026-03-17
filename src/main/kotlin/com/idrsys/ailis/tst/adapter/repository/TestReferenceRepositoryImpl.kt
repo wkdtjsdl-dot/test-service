@@ -136,6 +136,45 @@ class TestReferenceRepositoryImpl(
             .asFlow()
     }
 
+    override suspend fun findValidationInfoByRefCds(refCds: List<String>): Flow<RefValidationInfo> {
+        if (refCds.isEmpty()) return kotlinx.coroutines.flow.emptyFlow()
+
+        val tstRef = BbsTstRef.BBS_TST_REF
+
+        val query = dslContext
+            .select(
+                tstRef.REF_CD,
+                tstRef.REF_TYPE,
+                tstRef.DATA_FORMAT,
+                tstRef.REF_SIZE,
+                tstRef.RANGE_CHK_YN,
+                tstRef.REF_MIN_VAL,
+                tstRef.REF_MAX_VAL
+            )
+            .from(tstRef)
+            .where(tstRef.REF_CD.`in`(refCds))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value ->
+            executeSpec = if (value != null) executeSpec.bind(index, value) else executeSpec.bindNull(index, String::class.java)
+        }
+
+        return executeSpec
+            .map { row, _ ->
+                RefValidationInfo(
+                    refCd = row.get(tstRef.REF_CD.name, String::class.java)!!,
+                    refType = row.get(tstRef.REF_TYPE.name, String::class.java)!!,
+                    dataFormat = row.get(tstRef.DATA_FORMAT.name, String::class.java)!!,
+                    refSize = row.get(tstRef.REF_SIZE.name, Int::class.java)!!,
+                    rangeChkYn = row.get(tstRef.RANGE_CHK_YN.name, Boolean::class.java)!!,
+                    refMinVal = row.get(tstRef.REF_MIN_VAL.name, Int::class.java)!!,
+                    refMaxVal = row.get(tstRef.REF_MAX_VAL.name, Int::class.java)!!
+                )
+            }
+            .all()
+            .asFlow()
+    }
+
     private fun toRequestRef(row: Map<String, Any>): TestReference {
         return TestReference(
             refCd = row["ref_cd"] as String,

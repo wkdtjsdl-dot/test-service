@@ -315,7 +315,11 @@ data class TestItemRefResponse(
     val sortOrder: Int?,
     val refNm: String,
     val refEngNm: String?,
-    val estlYn: Boolean
+    val estlYn: Boolean,
+    val refType: String?,
+    val dataFormat: String?,
+    val refMinVal: Int?,
+    val refMaxVal: Int?,
 )
 
 data class TestItemRefDetailResponse(
@@ -327,7 +331,10 @@ data class TestItemRefDetailResponse(
     val refType: String,
     val refSize: Int?,
     val sortOrder: Int?,
-    val estlYn: Boolean
+    val estlYn: Boolean,
+    val dataFormat: String?,
+    val refMinVal: Int?,
+    val refMaxVal: Int?,
 )
 
 // --- Gene ---

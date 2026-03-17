@@ -2,6 +2,7 @@ package com.idrsys.ailis.tst.adapter.web
 
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.usecase.TestItemUseCase
+import com.idrsys.ailis.tst.application.usecase.TestReferenceUseCase
 import io.swagger.v3.oas.annotations.Operation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactor.mono
@@ -11,7 +12,8 @@ import reactor.core.publisher.Mono
 
 @RestController
 class TestItemInnerController(
-    private val testItemUseCase: TestItemUseCase
+    private val testItemUseCase: TestItemUseCase,
+    private val testReferenceUseCase: TestReferenceUseCase
 ) {
 
     @Operation(summary = "검사 종목 inner 조회")
@@ -79,4 +81,13 @@ class TestItemInnerController(
     @GetMapping("/api/inner/bts/spcm")
     fun getSpecimensByTest(@RequestParam tstCd: String): Flow<TestItemSpecimenListResponse> =
         testItemUseCase.getSpecimensByTest(tstCd)
+
+    @Operation(summary = "참조항목 validation 정보 조회 (refCd 기준)")
+    @GetMapping("/api/inner/bts/ref")
+    suspend fun getRefValidationInfo(
+        @RequestParam refCds: String
+    ): Flow<RefValidationInfo> {
+        val codes = refCds.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        return testReferenceUseCase.getRefValidationInfoByRefCds(codes)
+    }
 }
