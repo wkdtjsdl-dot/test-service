@@ -146,6 +146,14 @@ class SalesTargetRepositoryImpl(
             conds += SCS_CUST_MST.DIRECT_ACCT_CD.eq(it)
         }
 
+        searchParam.salsTeamCd?.takeIf { it.isNotBlank() }?.let {
+            conds += SBL_SALES_TARGET.SALS_TEAM_CD.eq(it)
+        }
+
+        searchParam.empUserId?.takeIf { it.isNotBlank() }?.let {
+            conds += SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(it)
+        }
+
         return conds
     }
 

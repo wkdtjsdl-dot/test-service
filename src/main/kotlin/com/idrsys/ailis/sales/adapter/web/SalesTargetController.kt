@@ -11,6 +11,7 @@ import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -24,12 +25,9 @@ class SalesTargetController(
     @GetMapping
     @Operation(summary = "getSalesTargets", description = "매출목표 조회 - 년도별 고객별 salesTeamCd별 집계")
     suspend fun getSalesTargets(
-        @RequestParam year: Int,
-        @RequestParam(required = false) directAcctCd: String?,
+        @ParameterObject request: SalesTargetSearchParam,
     ): ContentWrapper<SalesTargetResponse> {
-        val result = salesTargetUseCase.getSalesTargets(
-            SalesTargetSearchParam(year = year, directAcctCd = directAcctCd)
-        )
+        val result = salesTargetUseCase.getSalesTargets(request)
         return ContentWrapper(result)
     }
 

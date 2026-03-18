@@ -6,5 +6,7 @@ package com.idrsys.ailis.sales.application.dto.request.salesTarget
  */
 data class SalesTargetSearchParam(
     val year: Int,
-    val directAcctCd: String? = null
+    val directAcctCd: String? = null,
+    val salsTeamCd: String? = null,
+    val empUserId: String? = null,
 )
