@@ -251,9 +251,9 @@ class CustService(
                 nursingNumber = cust.careInstNo,
                 branchCode = cust.bzoffiCd,
                 branchName = cust.bzoffiCd?.let { branchMap?.get(it) },
-                employeeId = cust.bzoffiPicId,
-                employeeName = null,
-                employeePhone = null,
+                employeeId = cust.gcAcctPicId,
+                employeeName = cust.gcAcctPicNm,
+                employeePhone = cust.gcAcctPicTelno,
                 type = cust.custTypeCd,
                 createAt = cust.createDtime
             )

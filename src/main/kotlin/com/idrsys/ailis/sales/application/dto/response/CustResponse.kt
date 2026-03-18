@@ -87,7 +87,11 @@ data class CustResponse(
     val creator: String,                // 생성자
     val createDtime: LocalDateTime,     // 생성일시
     val updater: String,                // 수정자
-    val updateDtime: LocalDateTime      // 수정일시
+    val updateDtime: LocalDateTime,      // 수정일시
+    // 담당자 정보
+    val gcAcctPicId: String?,
+    val gcAcctPicNm: String?,
+    val gcAcctPicTelno: String?
 )
 
 // 고객 관리 목록

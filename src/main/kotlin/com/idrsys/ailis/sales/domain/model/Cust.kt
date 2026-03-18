@@ -90,7 +90,12 @@ class Cust(
     creator: String,                // 생성자
     createDtime: LocalDateTime,     // 생성일시
     updater: String,                // 수정자
-    updateDtime: LocalDateTime      // 수정일시
+    updateDtime: LocalDateTime,      // 수정일시
+
+    // 담당자 정보
+    gcAcctPicId: String?,
+    gcAcctPicNm: String?,
+    gcAcctPicTelno: String?
 ) {
     @Id
     @UuidGeneratedId(idFieldName = "custMstId")
@@ -374,6 +379,19 @@ class Cust(
     var extnAuthKey: String? = extnAuthKey
         private set
 
+    // 담당자 정보 매핑 (추가)
+    @Column("gc_acct_pic_id")
+    var gcAcctPicId: String? = gcAcctPicId
+        private set
+
+    @Column("gc_acct_pic_nm")
+    var gcAcctPicNm: String? = gcAcctPicNm
+        private set
+
+    @Column("gc_acct_pic_telno")
+    var gcAcctPicTelno: String? = gcAcctPicTelno
+        private set
+
     // 테이블공통
     @Column("creator")
     var creator: String = creator
@@ -464,6 +482,10 @@ class Cust(
         this.reqIfTypeCd = command.reqIfTypeCd
         this.atchFileGrupId = command.atchFileGrupId
         this.reqPossTstLimitYn = command.reqPossTstLimitYn
+        // 담당자 정보 업데이트
+        this.gcAcctPicId = command.gcAcctPicId
+        this.gcAcctPicNm = command.gcAcctPicNm
+        this.gcAcctPicTelno = command.gcAcctPicTelno
         // 테이블공통
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
@@ -568,6 +590,10 @@ class Cust(
         updateIfNotNull(command.reqIfTypeCd) { reqIfTypeCd = it }
         updateIfNotNull(command.atchFileGrupId) { atchFileGrupId = it }
         updateIfNotNull(command.reqPossTstLimitYn) { reqPossTstLimitYn = it }
+        // 담당자 정보
+        updateIfNotNull(command.gcAcctPicId) { gcAcctPicId = it }
+        updateIfNotNull(command.gcAcctPicNm) { gcAcctPicNm = it }
+        updateIfNotNull(command.gcAcctPicTelno) { gcAcctPicTelno = it }
 
         // 공통
         this.updater = updater

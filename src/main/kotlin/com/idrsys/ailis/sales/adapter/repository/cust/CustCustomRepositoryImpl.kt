@@ -212,10 +212,13 @@ class CustCustomRepositoryImpl(
         searchParam.nursingNumber?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.CARE_INST_NO.eq(it)) }
         searchParam.branchCode?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BZOFFI_CD.eq(it)) }
         searchParam.branchCodes?.takeIf { it.isNotEmpty() }?.let { conditions.add(SCS_CUST_MST.BZOFFI_CD.`in`(it)) }
-        searchParam.type?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BZSE.likeIgnoreCase("%$it%")) }
+        searchParam.employeeId?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.GC_ACCT_PIC_ID.eq(it)) }
+        searchParam.employeeName?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.GC_ACCT_PIC_NM.likeIgnoreCase("%$it%")) }
+        searchParam.employeePhone?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.GC_ACCT_PIC_TELNO.likeIgnoreCase("%$it%")) }
+        searchParam.type?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.CUST_TYPE_CD.eq(it)) }
 
         val query = dslContext.selectFrom(SCS_CUST_MST)
-            .where(conditions)
+            .where(and(conditions))
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }

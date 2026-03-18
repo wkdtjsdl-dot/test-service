@@ -81,7 +81,10 @@ fun Row.toCustDetailInfo(): CustDetailInfo {
         creator = this.get("creator", String::class.java)!!,
         createDtime = this.get("create_dtime", LocalDateTime::class.java)!!,
         updater = this.get("updater", String::class.java)!!,
-        updateDtime = this.get("update_dtime", LocalDateTime::class.java)!!
+        updateDtime = this.get("update_dtime", LocalDateTime::class.java)!!,
+        gcAcctPicId = this.get("gc_acct_pic_id", String::class.java),
+        gcAcctPicNm = this.get("gc_acct_pic_nm", String::class.java),
+        gcAcctPicTelno = this.get("gc_acct_pic_telno", String::class.java)
     )
 }
 
@@ -159,6 +162,9 @@ internal fun Row.toCustMst(): Cust {
         faxNo = this.get("fax_no", String::class.java),
         atchFileGrupId = this.get("atch_file_grup_id", String::class.java),
         reqPossTstLimitYn = this.get("req_poss_tst_limit_yn", Boolean::class.java) ?: false,
-        extnAuthKey = this.get("extn_auth_key", String::class.java)
+        extnAuthKey = this.get("extn_auth_key", String::class.java),
+        gcAcctPicId = this.get("gc_acct_pic_id", String::class.java),
+        gcAcctPicNm = this.get("gc_acct_pic_nm", String::class.java),
+        gcAcctPicTelno = this.get("gc_acct_pic_telno", String::class.java)
     )
 }

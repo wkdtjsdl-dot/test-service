@@ -75,7 +75,7 @@ data class InnerRequestServiceResponse(
 data class InnerRequestSampleResponse(
     val serial: String,
     val count: Int?,
-    val samplingOn: LocalDate,
+    val samplingOn: LocalDate? = null,
     val age: Int?,
     val type: RequestSampleTypeResponse? = null
 )
