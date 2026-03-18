@@ -167,6 +167,8 @@ class TestReportRepositoryImpl(
                     .and(report.TST_CD.eq(tstItem.TST_CD))
                 .join(item)
                     .on(report.TST_CD.eq(item.TST_CD))
+                .join(deptItem)
+                    .on(deptItem.TST_CD.eq(report.TST_CD))
             .where(conditions)
             .orderBy(report.TST_REQ_DT.desc(), report.TST_REQ_NO.desc())
 
