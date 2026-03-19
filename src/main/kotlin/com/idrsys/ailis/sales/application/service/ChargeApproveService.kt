@@ -436,6 +436,7 @@ class ChargeApproveService(
     override suspend fun getApprovalPage(
         searchParam: ChargeApproveSearchParam,
         userId: String,
+        roleCodes: List<String>,
         pageable: Pageable
     ): Page<ChargeApproveResponse> {
         // 1. Get user role
@@ -444,9 +445,16 @@ class ChargeApproveService(
             "사용자 정보를 찾을 수 없습니다."
         )
 
-        // 2. Count total
+        // 2. SLCP 역할이면 영업소 코드로 필터링
+        val finalSearchParam = if (isUserRoleSlcp(roleCodes)) {
+            searchParam.copy(bzoffiCd = user.deptCd)
+        } else {
+            searchParam
+        }
+
+        // 3. Count total
         val total = apprInfoCustomRepository.countApprovalCharges(
-            searchParam,
+            finalSearchParam,
             userId,
             user.jbpoCd ?: "JP_TM",
             user.empNo
@@ -454,16 +462,16 @@ class ChargeApproveService(
 
         if (total == 0L) return PageImpl(emptyList(), pageable, 0)
 
-        // 3. Fetch approval charges
+        // 4. Fetch approval charges
         val charges = apprInfoCustomRepository.findApprovalCharges(
-            searchParam,
+            finalSearchParam,
             userId,
             user.jbpoCd ?: "JP_TM",
             user.empNo,
             pageable
         ).toList()
 
-        // 4. Populate name fields and calculate canApproveThisItem
+        // 5. Populate name fields and calculate canApproveThisItem
         val responses = populateNameFields(queries = charges, currentUser = user)
 
         return PageImpl(responses, pageable, total)
@@ -474,7 +482,8 @@ class ChargeApproveService(
      */
     override suspend fun getApprovals(
         searchParam: ChargeApproveSearchParam,
-        userId: String
+        userId: String,
+        roleCodes: List<String>
     ): List<ChargeApproveResponse> {
         // 1. Get user role
         val user = baseServicePort.getUser(userId) ?: throw UserDefinedException(
@@ -482,20 +491,31 @@ class ChargeApproveService(
             "사용자 정보를 찾을 수 없습니다."
         )
 
-        // 2. Fetch all approval charges
+        // 2. SLCP 역할이면 영업소 코드로 필터링
+        val finalSearchParam = if (isUserRoleSlcp(roleCodes)) {
+            searchParam.copy(bzoffiCd = user.deptCd)
+        } else {
+            searchParam
+        }
+
+        // 3. Fetch all approval charges
         val charges = apprInfoCustomRepository.findApprovalCharges(
-            searchParam,
+            finalSearchParam,
             userId,
             user.jbpoCd ?: "JP_TM",
             user.empNo,
             Pageable.unpaged()
         ).toList()
 
-        // 3. Populate name fields
+        // 4. Populate name fields
         return populateNameFields(
             queries = charges,
             currentUser = user
         )
+    }
+
+    private fun isUserRoleSlcp(roles: List<String>): Boolean {
+        return roles.contains("RO_SLCP")
     }
 
     /**

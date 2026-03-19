@@ -375,6 +375,21 @@ class CustService(
     }
 
     @Transactional(readOnly = true)
+    override fun getCustSimpleList(empUserId: String, roleCodes: List<String>): Flow<CustCdNmAutoCompleteResponse> {
+        return if (isUserRoleSlcp(roleCodes)) {
+            flow {
+                val user = baseServicePort.getUser(empUserId)
+                emitAll(
+                    custCustomRepository.findCustSimple(bzoffiCd = user?.deptCd)
+                        .map(custMapper::toCustCdNmAutoCompleteResponse)
+                )
+            }
+        } else {
+            custCustomRepository.findCustSimple().map(custMapper::toCustCdNmAutoCompleteResponse)
+        }
+    }
+
+    @Transactional(readOnly = true)
     override fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteResponse> {
         val autoCompleteList = custCustomRepository.findCustCdNmAutoComplete(searchParam)
         return autoCompleteList.map(custMapper::toCustCdNmAutoCompleteResponse)
