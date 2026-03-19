@@ -1,7 +1,9 @@
 package com.idrsys.ailis.sales.adapter.web
 
 import com.idrsys.ailis.sales.application.dto.request.custContact.CustContactCommand
+import com.idrsys.ailis.sales.application.dto.request.custContact.CustContactPhnoRequest
 import com.idrsys.ailis.sales.application.dto.request.custContact.CustContactSearchParam
+import com.idrsys.ailis.sales.application.dto.response.CustContactPhnoResponse
 import com.idrsys.ailis.sales.application.dto.response.CustContactResponse
 import com.idrsys.ailis.sales.application.usecase.custContact.CustContactUseCase
 import com.idrsys.ailis.sales.shared.vo.AuthenticationAdmin
@@ -68,5 +70,13 @@ class CustContactController(
         @PathVariable custContactId: Long,
     ) {
         custContactUseCase.deleteCustContact(custContactId)
+    }
+
+    @PostMapping("/phno")
+    @Operation(summary = "getPhnosByCustCds", description = "거래처 코드 목록으로 폰번호 일괄 조회")
+    suspend fun getPhnosByCustCds(
+        @RequestBody request: CustContactPhnoRequest
+    ): List<CustContactPhnoResponse> {
+        return custContactUseCase.getPhnosByCustCds(request.custCdList)
     }
 }
