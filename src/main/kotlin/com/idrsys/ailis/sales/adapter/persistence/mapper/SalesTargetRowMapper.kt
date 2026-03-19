@@ -27,7 +27,6 @@ internal fun Row.toSalesTargetQuery(): SalesTargetQuery = SalesTargetQuery(
     custCd = this.get("cust_cd", String::class.java)!!,
     custNm = this.get("cust_nm", String::class.java)!!,
     salsTeamCd = this.get("sals_team_cd", String::class.java)!!,
-    salsTeamNm = this.get("sals_team_nm", String::class.java),
     totalTarget = this.get("total_target", BigDecimal::class.java) ?: BigDecimal.ZERO,
     prevYearSales = this.get("prev_year_sales", BigDecimal::class.java) ?: BigDecimal.ZERO,
     empUserId = this.get("emp_user_id", String::class.java)
@@ -40,7 +39,6 @@ internal fun Row.toSalesTargetDetailQuery(): SalesTargetDetailQuery = SalesTarge
     custCd = this.get("cust_cd", String::class.java)!!,
     custNm = this.get("cust_nm", String::class.java)!!,
     salsTeamCd = this.get("sals_team_cd", String::class.java)!!,
-    salsTeamNm = this.get("sals_team_nm", String::class.java),
     monthlyTarget = this.get("monthly_target", BigDecimal::class.java) ?: BigDecimal.ZERO,
     prevYearSales = this.get("prev_year_sales", BigDecimal::class.java) ?: BigDecimal.ZERO
 )
