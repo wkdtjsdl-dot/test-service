@@ -205,19 +205,18 @@ class CustService(
         val custMst = custRepository.findByCustMstId(custMstId)
 
         return if (custMst?.reqPossTstLimitYn == true) {
-            val allTestItemsMap = (tstServicePort.findAllTstItems() ?: emptyList())
+            val allTestItemsMap = (tstServicePort.findAllTstItems(useYn = true, reqPossYn = true) ?: emptyList())
                 .associateBy { it.tstCd }
 
             val searchParam = CustReqPossTstItemSearchParam(custMstId = custMstId)
             custReqPossTstItemCustomRepository.findAllByCustMstId(searchParam)
-                .map { allowedItem ->
-                    TstServiceTstItemsResponse(
-                        tstCd = allowedItem.tstCd,
-                        tstNm = allTestItemsMap[allowedItem.tstCd]?.tstNm
-                    )
+                .mapNotNull { allowedItem ->
+                    allTestItemsMap[allowedItem.tstCd]?.let {
+                        TstServiceTstItemsResponse(tstCd = it.tstCd, tstNm = it.tstNm)
+                    }
                 }
         } else {
-            (tstServicePort.findAllTstItems() ?: emptyList()).asFlow()
+            (tstServicePort.findAllTstItems(useYn = true, reqPossYn = true) ?: emptyList()).asFlow()
         }
     }
 
