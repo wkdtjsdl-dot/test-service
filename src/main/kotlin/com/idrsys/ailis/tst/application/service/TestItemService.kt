@@ -84,8 +84,8 @@ class TestItemService(
         return repository.findSimpleItemByTstCd(tstCds)
     }
 
-    override suspend fun findSimpleItemAll(): Flow<TestItemSimpleResponse> {
-        return repository.findAll().map { mapper.toSimpleResponse(it) }
+    override suspend fun findSimpleItemAll(searchParam: TestItemAllSearchParam): Flow<TestItemSimpleResponse> {
+        return repository.findAll(searchParam).map { mapper.toSimpleResponse(it) }
     }
 
     // --- StandardCharge ---

@@ -64,10 +64,15 @@ class TestItemRepositoryImpl(
     override suspend fun save(entity: TestItem): TestItem = itemDataRepo.save(entity)
     override suspend fun findById(tstCd: String): TestItem? = itemDataRepo.findById(tstCd)
 //    override suspend fun findAll(): Flow<TestItem> = itemDataRepo.findAll()
-    override suspend fun findAll(): Flow<TestItem> {
+    override suspend fun findAll(searchParam: TestItemAllSearchParam): Flow<TestItem> {
+        var condition: Condition = DSL.noCondition()
+        if (searchParam.useYn != null) condition = condition.and(BTS_ITEM.USE_YN.eq(searchParam.useYn))
+        if (searchParam.reqPossYn != null) condition = condition.and(BTS_ITEM.REQ_POSS_YN.eq(searchParam.reqPossYn))
+
         val query = dslContext
             .select(BTS_ITEM.asterisk())
             .from(BTS_ITEM)
+            .where(condition)
             .orderBy(BTS_ITEM.TST_CD.asc())
 
         var executeSpec = databaseClient.sql(query.sql)
