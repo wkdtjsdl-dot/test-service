@@ -131,7 +131,7 @@ class TestReportRepositoryImpl(
             }
 
         val query = dslContext
-            .select(
+            .selectDistinct(
                 report.TST_REPORT_ID,
                 report.TST_REQ_DT,
                 report.TST_REQ_NO,
