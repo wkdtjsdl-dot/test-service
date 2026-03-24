@@ -23,6 +23,7 @@ interface CustCustomRepository {
     suspend fun deleteByCustCd(custCd: String)
     fun findCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteInfo>
     fun findCustSimple(): Flow<CustCdNmAutoCompleteInfo>
+    fun findCustSimple(bzoffiCd: String?): Flow<CustCdNmAutoCompleteInfo>
     fun findRprsCustCdNmAutoComplete(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteInfo>
     suspend fun findCustDetailInfoByCustMstId(custMstId: String): CustDetailInfo?
     suspend fun findCustDetailInfoByCustCd(custCd: String): CustDetailInfo?

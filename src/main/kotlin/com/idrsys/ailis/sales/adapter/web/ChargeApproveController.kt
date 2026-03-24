@@ -76,7 +76,7 @@ class ChargeApproveController(
         @PageableDefault(page = 0, size = 15) pageable: Pageable,
         @JwtAuthorization auth: AuthenticationAdmin
     ): Page<ChargeApproveResponse> {
-        return chargeApproveUseCase.getApprovalPage(searchParam, auth.adminId, pageable)
+        return chargeApproveUseCase.getApprovalPage(searchParam, auth.adminId, auth.roleCodes, pageable)
     }
 
     @GetMapping("/list")
@@ -85,7 +85,7 @@ class ChargeApproveController(
         @ParameterObject @Parameter(hidden = true) searchParam: ChargeApproveSearchParam,
         @JwtAuthorization auth: AuthenticationAdmin
     ): List<ChargeApproveResponse> {
-        return chargeApproveUseCase.getApprovals(searchParam, auth.adminId)
+        return chargeApproveUseCase.getApprovals(searchParam, auth.adminId, auth.roleCodes)
     }
 
     @GetMapping("/{custChargeId}")

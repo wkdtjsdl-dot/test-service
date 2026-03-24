@@ -101,11 +101,10 @@ class SalesTargetService(
 
         return SalesTargetResponse(
             rowId = rowId,
-            year = salesYear.toInt(),
+            year = salesYear,
             custCd = custCd,
             custNm = custNm,
             salesTeamCd = salsTeamCd,
-            salesTeamNm = salsTeamNm,
             totalTarget = totalTarget,
             prevYearSales = prevYearSales,
             targetGrowthRate = growthRate,
@@ -117,12 +116,11 @@ class SalesTargetService(
     private fun SalesTargetDetailQuery.toResponse(): SalesTargetDetailResponse {
         return SalesTargetDetailResponse(
             rowId = rowId,
-            year = salesYear.toInt(),
+            year = salesYear,
             custCd = custCd,
             custNm = custNm,
             salesTeamCd = salsTeamCd,
-            salesTeamNm = salsTeamNm,
-            month = salesMonth.toInt(),
+            month = salesMonth,
             monthlyTarget = monthlyTarget,
             prevYearSales = prevYearSales
         )

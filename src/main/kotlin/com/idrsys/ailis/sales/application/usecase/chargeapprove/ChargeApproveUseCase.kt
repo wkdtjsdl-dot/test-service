@@ -39,6 +39,7 @@ interface ChargeApproveUseCase {
     suspend fun getApprovalPage(
         searchParam: ChargeApproveSearchParam,
         userId: String,
+        roleCodes: List<String>,
         pageable: Pageable
     ): Page<ChargeApproveResponse>
 
@@ -47,7 +48,8 @@ interface ChargeApproveUseCase {
      */
     suspend fun getApprovals(
         searchParam: ChargeApproveSearchParam,
-        userId: String
+        userId: String,
+        roleCodes: List<String>
     ): List<ChargeApproveResponse>
 
     /**

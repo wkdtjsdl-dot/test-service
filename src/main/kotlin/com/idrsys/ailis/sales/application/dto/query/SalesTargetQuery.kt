@@ -12,7 +12,6 @@ data class SalesTargetQuery(
     val custCd: String,
     val custNm: String,
     val salsTeamCd: String,
-    val salsTeamNm: String?,
     val totalTarget: BigDecimal,
     val prevYearSales: BigDecimal,
     val empUserId: String?
@@ -29,7 +28,6 @@ data class SalesTargetDetailQuery(
     val custCd: String,
     val custNm: String,
     val salsTeamCd: String,
-    val salsTeamNm: String?,
     val monthlyTarget: BigDecimal,
     val prevYearSales: BigDecimal
 )

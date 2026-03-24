@@ -5,7 +5,7 @@ package com.idrsys.ailis.sales.application.dto.request.salesTarget
  * 년도별 고객별 salesTeamCd별 집계 조회
  */
 data class SalesTargetSearchParam(
-    val year: Int,
+    val year: String,
     val directAcctCd: String? = null,
     val salsTeamCd: String? = null,
     val empUserId: String? = null,

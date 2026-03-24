@@ -31,7 +31,9 @@ interface TstServicePort {
 
     /**
      * 전체 검사항목 조회
+     * @param useYn 사용여부 필터 (null이면 전체)
+     * @param reqPossYn 의뢰가능여부 필터 (null이면 전체)
      * @return 검사항목 목록
      */
-    suspend fun findAllTstItems(): List<TstServiceTstItemsResponse>?
+    suspend fun findAllTstItems(useYn: Boolean? = null, reqPossYn: Boolean? = null): List<TstServiceTstItemsResponse>?
 }
