@@ -6,7 +6,6 @@ import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -122,11 +121,13 @@ class EstimateItem(
             item: String,
             qnty: BigDecimal,
             unitPrice: BigDecimal,
+            supval: BigDecimal? = null,
+            addtax: BigDecimal? = null,
             creator: String
         ): EstimateItem {
-            val supval = qnty.multiply(unitPrice).setScale(0, RoundingMode.HALF_UP)
-            val addtax = supval.multiply(BigDecimal("0.1")).setScale(0, RoundingMode.HALF_UP)
-            val demandCharge = supval.add(addtax)
+            val resolvedSupval = supval ?: BigDecimal.ZERO
+            val resolvedAddtax = addtax ?: BigDecimal.ZERO
+            val demandCharge = resolvedSupval.add(resolvedAddtax)
 
             return EstimateItem(
                 estimateDtlId = UUID.randomUUID().toString(),
@@ -135,8 +136,8 @@ class EstimateItem(
                 item = item,
                 qnty = qnty,
                 unitPrice = unitPrice,
-                supval = supval,
-                addtax = addtax,
+                supval = resolvedSupval,
+                addtax = resolvedAddtax,
                 demandCharge = demandCharge,
                 creator = creator,
                 createDtime = LocalDateTime.now(),
