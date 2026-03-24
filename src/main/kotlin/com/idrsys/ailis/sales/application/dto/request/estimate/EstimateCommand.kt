@@ -39,5 +39,7 @@ data class UpdateEstimateCommand(
 data class EstimateItemCommand(
     val item: String,
     val qnty: BigDecimal,
-    val unitPrice: BigDecimal
+    val unitPrice: BigDecimal,
+    val supval: BigDecimal? = null,
+    val addtax: BigDecimal? = null,
 )
