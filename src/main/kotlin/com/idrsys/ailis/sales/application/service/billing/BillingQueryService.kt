@@ -115,7 +115,8 @@ class BillingQueryService(
                 invcRecpEmailYn = custBillingInfo?.invcRecpEmailYn ?: false,
                 invcRecpEmailAddr = custBillingInfo?.invcRecpEmailAddr ?: "",
                 bzoffiCd = custBillingInfo?.bzoffiCd,
-                sapCustCd = custBillingInfo?.sapCustCd
+                sapCustCd = custBillingInfo?.sapCustCd,
+                crcyCd = custBillingInfo?.crcyCd
             ))
         }
     }

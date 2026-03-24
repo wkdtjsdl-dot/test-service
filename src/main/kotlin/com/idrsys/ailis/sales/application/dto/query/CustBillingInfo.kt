@@ -9,5 +9,6 @@ data class CustBillingInfo(
     val invcRecpEmailYn: Boolean,
     val invcRecpEmailAddr: String,
     val bzoffiCd: String?,
-    val sapCustCd: String?
+    val sapCustCd: String?,
+    val crcyCd: String?
 )

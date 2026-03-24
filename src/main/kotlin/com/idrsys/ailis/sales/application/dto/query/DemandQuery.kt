@@ -32,5 +32,6 @@ data class DemandWithCustInfo(
     // Customer info from scs_cust_mst
     val custNm: String?,
     val bzoffiCd: String?,
-    val sapCustCd: String?
+    val sapCustCd: String?,
+    val crcyCd: String?
 )

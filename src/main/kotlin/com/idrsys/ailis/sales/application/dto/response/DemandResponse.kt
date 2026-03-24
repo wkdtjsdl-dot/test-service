@@ -34,7 +34,8 @@ data class DemandResponse(
     val creator: String,
     val createDtime: LocalDateTime,
     val colledgerId: String? = null,
-    val createdRequestCount: Int? = null
+    val createdRequestCount: Int? = null,
+    val crcyCd: String? = null,
 ) {
     companion object {
         fun from(demand: Demand, colledgerId: String? = null, createdRequestCount: Int? = null): DemandResponse {
@@ -61,7 +62,8 @@ data class DemandResponse(
                 creator = demand.creator,
                 createDtime = demand.createDtime,
                 colledgerId = colledgerId,
-                createdRequestCount = createdRequestCount
+                createdRequestCount = createdRequestCount,
+                crcyCd = demand.crcyCd
             )
         }
 
@@ -89,7 +91,8 @@ data class DemandResponse(
                 demandMemo = demandWithCust.demandMemo,
                 creator = demandWithCust.creator,
                 createDtime = demandWithCust.createDtime,
-                colledgerId = demandWithCust.colledgerId
+                colledgerId = demandWithCust.colledgerId,
+                crcyCd = demandWithCust.crcyCd
             )
         }
     }

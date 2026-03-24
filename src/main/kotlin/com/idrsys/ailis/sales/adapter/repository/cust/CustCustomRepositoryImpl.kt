@@ -857,7 +857,8 @@ class CustCustomRepositoryImpl(
                 SCS_CUST_MST.INVC_EMAIL_RECP_YN,
                 SCS_CUST_MST.INVC_RECP_EMAIL_ADDR,
                 SCS_CUST_MST.BZOFFI_CD,
-                SCS_CUST_MST.SAP_CUST_CD
+                SCS_CUST_MST.SAP_CUST_CD,
+                SCS_CUST_MST.CRCY_CD
             )
                 .from(SCS_CUST_MST)
                 .where(SCS_CUST_MST.CUST_CD.`in`(chunk))
@@ -872,7 +873,8 @@ class CustCustomRepositoryImpl(
                             invcRecpEmailYn = row.get("invc_email_recp_yn") as? Boolean ?: false,
                             invcRecpEmailAddr = row.get("invc_recp_email_addr", String::class.java) ?: "",
                             bzoffiCd = row.get("bzoffi_cd", String::class.java),
-                            sapCustCd = row.get("sap_cust_cd", String::class.java)
+                            sapCustCd = row.get("sap_cust_cd", String::class.java),
+                            crcyCd = row.get("crcy_cd", String::class.java)
                         )
             }.all().collectList().awaitSingle()
 
