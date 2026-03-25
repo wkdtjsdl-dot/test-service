@@ -59,7 +59,7 @@ data class InnerRequestOrganizationResponse(
 )
 
 data class InnerRequestPatientResponse(
-    val serial: String,
+    val serial: String? = null,
     val name: String,
     val sex: String? = null,
     val birth: LocalDate? = null,
