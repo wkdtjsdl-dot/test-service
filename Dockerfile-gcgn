@@ -1,7 +1,7 @@
 FROM eclipse-temurin:21-jdk
 VOLUME /tmp
 
-COPY /build/libs/*-0.0.1-SNAPSHOT.jar ./app.jar
+COPY /build/libs/*.jar ./app.jar
 
 # SAP JCo 네이티브 라이브러리(.so) 복사 및 권한 설정
 COPY /sap-so/libsapjco3.so /usr/local/lib/libsapjco3.so
