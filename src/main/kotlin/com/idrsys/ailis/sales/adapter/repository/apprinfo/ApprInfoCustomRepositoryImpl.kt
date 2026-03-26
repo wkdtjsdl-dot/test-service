@@ -320,6 +320,9 @@ class ApprInfoCustomRepositoryImpl(
         searchParam.apprLvlCd?.takeIf { it.isNotBlank() }?.let {
             conditions += SCS_CUST_CHARGE.APPR_LVL_CD.eq(it)
         }
+        searchParam.bzoffiCd?.takeIf { it.isNotBlank() }?.let {
+            conditions += SCS_CUST_MST.BZOFFI_CD.eq(it)
+        }
 
         return conditions
     }

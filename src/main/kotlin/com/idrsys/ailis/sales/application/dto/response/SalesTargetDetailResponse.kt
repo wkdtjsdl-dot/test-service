@@ -8,12 +8,11 @@ import java.math.BigDecimal
  */
 data class SalesTargetDetailResponse(
     val rowId: String,
-    val year: Int,
+    val year: String,
     val custCd: String,
     val custNm: String,
     val salesTeamCd: String,
-    val salesTeamNm: String?,
-    val month: Int,
+    val month: String,
     val monthlyTarget: BigDecimal,
     val prevYearSales: BigDecimal
 )

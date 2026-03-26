@@ -110,6 +110,8 @@ class EstimateCommandService(
                     item = itemCommand.item,
                     qnty = itemCommand.qnty,
                     unitPrice = itemCommand.unitPrice,
+                    supval = itemCommand.supval,
+                    addtax = itemCommand.addtax,
                     creator = adminId
                 )
             }
@@ -180,6 +182,8 @@ class EstimateCommandService(
                     item = itemCommand.item,
                     qnty = itemCommand.qnty,
                     unitPrice = itemCommand.unitPrice,
+                    supval = itemCommand.supval,
+                    addtax = itemCommand.addtax,
                     creator = adminId
                 )
             }

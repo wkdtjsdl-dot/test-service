@@ -212,10 +212,13 @@ class CustCustomRepositoryImpl(
         searchParam.nursingNumber?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.CARE_INST_NO.eq(it)) }
         searchParam.branchCode?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BZOFFI_CD.eq(it)) }
         searchParam.branchCodes?.takeIf { it.isNotEmpty() }?.let { conditions.add(SCS_CUST_MST.BZOFFI_CD.`in`(it)) }
-        searchParam.type?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.BZSE.likeIgnoreCase("%$it%")) }
+        searchParam.employeeId?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.GC_ACCT_PIC_ID.eq(it)) }
+        searchParam.employeeName?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.GC_ACCT_PIC_NM.likeIgnoreCase("%$it%")) }
+        searchParam.employeePhone?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.GC_ACCT_PIC_TELNO.likeIgnoreCase("%$it%")) }
+        searchParam.type?.takeIf { it.isNotBlank() }?.let { conditions.add(SCS_CUST_MST.CUST_TYPE_CD.eq(it)) }
 
         val query = dslContext.selectFrom(SCS_CUST_MST)
-            .where(conditions)
+            .where(and(conditions))
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
@@ -590,6 +593,15 @@ class CustCustomRepositoryImpl(
     }
 
     override fun findCustSimple(): Flow<CustCdNmAutoCompleteInfo> {
+        return findCustSimple(bzoffiCd = null)
+    }
+
+    override fun findCustSimple(bzoffiCd: String?): Flow<CustCdNmAutoCompleteInfo> {
+        val conditions = mutableListOf<Condition>()
+        bzoffiCd?.takeIf { it.isNotBlank() }?.let {
+            conditions += SCS_CUST_MST.BZOFFI_CD.eq(it)
+        }
+
         val query = dslContext.selectDistinct(
             SCS_CUST_MST.CUST_MST_ID,
             SCS_CUST_MST.CUST_CD,
@@ -597,6 +609,7 @@ class CustCustomRepositoryImpl(
             SCS_CUST_MST.CRCY_CD
         )
             .from(SCS_CUST_MST)
+            .apply { if (conditions.isNotEmpty()) where(conditions) }
             .orderBy(SCS_CUST_MST.CUST_CD.asc())
 
         var sql = databaseClient.sql(query.sql)
@@ -844,7 +857,8 @@ class CustCustomRepositoryImpl(
                 SCS_CUST_MST.INVC_EMAIL_RECP_YN,
                 SCS_CUST_MST.INVC_RECP_EMAIL_ADDR,
                 SCS_CUST_MST.BZOFFI_CD,
-                SCS_CUST_MST.SAP_CUST_CD
+                SCS_CUST_MST.SAP_CUST_CD,
+                SCS_CUST_MST.CRCY_CD
             )
                 .from(SCS_CUST_MST)
                 .where(SCS_CUST_MST.CUST_CD.`in`(chunk))
@@ -859,7 +873,8 @@ class CustCustomRepositoryImpl(
                             invcRecpEmailYn = row.get("invc_email_recp_yn") as? Boolean ?: false,
                             invcRecpEmailAddr = row.get("invc_recp_email_addr", String::class.java) ?: "",
                             bzoffiCd = row.get("bzoffi_cd", String::class.java),
-                            sapCustCd = row.get("sap_cust_cd", String::class.java)
+                            sapCustCd = row.get("sap_cust_cd", String::class.java),
+                            crcyCd = row.get("crcy_cd", String::class.java)
                         )
             }.all().collectList().awaitSingle()
 

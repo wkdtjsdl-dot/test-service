@@ -59,7 +59,7 @@ data class InnerRequestOrganizationResponse(
 )
 
 data class InnerRequestPatientResponse(
-    val serial: String,
+    val serial: String? = null,
     val name: String,
     val sex: String? = null,
     val birth: LocalDate? = null,
@@ -75,7 +75,7 @@ data class InnerRequestServiceResponse(
 data class InnerRequestSampleResponse(
     val serial: String,
     val count: Int?,
-    val samplingOn: LocalDate,
+    val samplingOn: LocalDate? = null,
     val age: Int?,
     val type: RequestSampleTypeResponse? = null
 )

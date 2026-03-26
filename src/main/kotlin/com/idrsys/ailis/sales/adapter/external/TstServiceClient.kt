@@ -64,11 +64,13 @@ class TstServiceClient(
         }
     }
 
-    override suspend fun findAllTstItems(): List<TstServiceTstItemsResponse>? {
+    override suspend fun findAllTstItems(useYn: Boolean?, reqPossYn: Boolean?): List<TstServiceTstItemsResponse>? {
         return try {
             client.get()
                 .uri { uriBuilder ->
                     val builder = uriBuilder.path("/api/inner/bts/item/all")
+                    if (useYn != null) builder.queryParam("useYn", useYn)
+                    if (reqPossYn != null) builder.queryParam("reqPossYn", reqPossYn)
                     builder.build()
                 }
                 .retrieve()

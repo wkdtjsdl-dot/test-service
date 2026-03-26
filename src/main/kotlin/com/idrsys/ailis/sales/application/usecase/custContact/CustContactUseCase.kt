@@ -2,6 +2,7 @@ package com.idrsys.ailis.sales.application.usecase.custContact
 
 import com.idrsys.ailis.sales.application.dto.request.custContact.CustContactCommand
 import com.idrsys.ailis.sales.application.dto.request.custContact.CustContactSearchParam
+import com.idrsys.ailis.sales.application.dto.response.CustContactPhnoResponse
 import com.idrsys.ailis.sales.application.dto.response.CustContactResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -12,4 +13,5 @@ interface CustContactUseCase {
     suspend fun createCustContact(command: CustContactCommand, adminId: String): CustContactResponse
     suspend fun updateCustContact(custContactId: Long, command: CustContactCommand, adminId: String): CustContactResponse
     suspend fun deleteCustContact(custContactId: Long)
+    suspend fun getPhnosByCustCds(custCdList: List<String>): List<CustContactPhnoResponse>
 }

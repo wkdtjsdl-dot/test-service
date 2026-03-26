@@ -76,7 +76,11 @@ data class CustCommand(
     val reqIfTypeCd: String?,           // 의뢰연동유형코드
     val atchFileGrupId: String?,         // 첨부파일그룹아이디
     val reqPossTstLimitYn: Boolean?,     // 의뢰가능검사제한여부
-    val updateReason: String? = null    // 변경사유 (히스토리 테이블용)
+    val updateReason: String? = null,    // 변경사유 (히스토리 테이블용)
+    // 담당자 정보
+    val gcAcctPicId: String?,
+    val gcAcctPicNm: String?,
+    val gcAcctPicTelno: String?
 )
 
 data class CustSearchCommand (

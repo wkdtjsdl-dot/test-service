@@ -87,6 +87,8 @@ class EstimateTest {
                 item = "BRCA1/2",
                 qnty = BigDecimal("100"),
                 unitPrice = BigDecimal("90000"),
+                supval = BigDecimal("9000000"),
+                addtax = BigDecimal("900000"),
                 creator = "admin"
             ),
             EstimateItem.create(
@@ -95,6 +97,8 @@ class EstimateTest {
                 item = "KRAS",
                 qnty = BigDecimal("50"),
                 unitPrice = BigDecimal("50000"),
+                supval = BigDecimal("2500000"),
+                addtax = BigDecimal("250000"),
                 creator = "admin"
             )
         )

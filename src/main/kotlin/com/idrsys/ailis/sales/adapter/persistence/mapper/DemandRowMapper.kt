@@ -67,6 +67,7 @@ internal fun Row.toDemandWithCustInfo(): DemandWithCustInfo {
         colledgerId = this.get("colledger_id", String::class.java),
         custNm = this.get("cust_nm", String::class.java),
         bzoffiCd = this.get("bzoffi_cd", String::class.java),
-        sapCustCd = this.get("sap_cust_cd", String::class.java)
+        sapCustCd = this.get("sap_cust_cd", String::class.java),
+        crcyCd = this.get("crcy_cd", String::class.java)
     )
 }

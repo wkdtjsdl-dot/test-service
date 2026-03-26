@@ -50,7 +50,7 @@ class Demand(
     createDtime: LocalDateTime = LocalDateTime.now(),
     updater: String = creator,
     updateDtime: LocalDateTime = LocalDateTime.now(),
-    colledgerId: String? = null
+    colledgerId: String? = null,
 ) : Persistable<String> {
 
     init {

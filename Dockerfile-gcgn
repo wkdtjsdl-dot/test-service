@@ -1,0 +1,13 @@
+FROM eclipse-temurin:21-jdk
+VOLUME /tmp
+
+COPY /build/libs/*.jar ./app.jar
+
+# SAP JCo 네이티브 라이브러리(.so) 복사 및 권한 설정
+COPY /sap-so/libsapjco3.so /usr/local/lib/libsapjco3.so
+RUN chmod 755 /usr/local/lib/libsapjco3.so
+
+EXPOSE 8300
+
+ARG SPRING_PROFILE=dev
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-Dspring.profiles.active=${SPRING_PROFILE},sap","-Duser.timezone=Asia/Seoul","-Djava.library.path=/usr/local/lib","-jar","/app.jar"]

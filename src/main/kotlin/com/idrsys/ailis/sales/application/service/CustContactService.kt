@@ -2,6 +2,7 @@ package com.idrsys.ailis.sales.application.service
 
 import com.idrsys.ailis.sales.application.dto.request.custContact.CustContactCommand
 import com.idrsys.ailis.sales.application.dto.request.custContact.CustContactSearchParam
+import com.idrsys.ailis.sales.application.dto.response.CustContactPhnoResponse
 import com.idrsys.ailis.sales.application.dto.response.CustContactResponse
 import com.idrsys.ailis.sales.application.required.repository.custContact.CustContactCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.custContact.CustContactRepository
@@ -63,5 +64,9 @@ class CustContactService(
 
     override suspend fun deleteCustContact(custContactId: Long) {
         custContactRepository.deleteById(custContactId)
+    }
+
+    override suspend fun getPhnosByCustCds(custCdList: List<String>): List<CustContactPhnoResponse> {
+        return custContactCustomRepository.findPhnosByCustCds(custCdList)
     }
 }

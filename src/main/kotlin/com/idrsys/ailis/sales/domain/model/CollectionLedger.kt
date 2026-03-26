@@ -44,7 +44,7 @@ class CollectionLedger(
     init {
         require(custCd.isNotBlank()) { "Customer code is required" }
 //        require(colbillItemNm.isNotBlank()) { "Item name is required" }
-        require(colbillAmt >= BigDecimal.ZERO) { "Payment amount must be non-negative" }
+//        require(colbillAmt >= BigDecimal.ZERO) { "Payment amount must be non-negative" }
     }
 
     @Id

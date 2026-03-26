@@ -205,19 +205,18 @@ class CustService(
         val custMst = custRepository.findByCustMstId(custMstId)
 
         return if (custMst?.reqPossTstLimitYn == true) {
-            val allTestItemsMap = (tstServicePort.findAllTstItems() ?: emptyList())
+            val allTestItemsMap = (tstServicePort.findAllTstItems(useYn = true, reqPossYn = true) ?: emptyList())
                 .associateBy { it.tstCd }
 
             val searchParam = CustReqPossTstItemSearchParam(custMstId = custMstId)
             custReqPossTstItemCustomRepository.findAllByCustMstId(searchParam)
-                .map { allowedItem ->
-                    TstServiceTstItemsResponse(
-                        tstCd = allowedItem.tstCd,
-                        tstNm = allTestItemsMap[allowedItem.tstCd]?.tstNm
-                    )
+                .mapNotNull { allowedItem ->
+                    allTestItemsMap[allowedItem.tstCd]?.let {
+                        TstServiceTstItemsResponse(tstCd = it.tstCd, tstNm = it.tstNm)
+                    }
                 }
         } else {
-            (tstServicePort.findAllTstItems() ?: emptyList()).asFlow()
+            (tstServicePort.findAllTstItems(useYn = true, reqPossYn = true) ?: emptyList()).asFlow()
         }
     }
 
@@ -251,9 +250,9 @@ class CustService(
                 nursingNumber = cust.careInstNo,
                 branchCode = cust.bzoffiCd,
                 branchName = cust.bzoffiCd?.let { branchMap?.get(it) },
-                employeeId = cust.bzoffiPicId,
-                employeeName = null,
-                employeePhone = null,
+                employeeId = cust.gcAcctPicId,
+                employeeName = cust.gcAcctPicNm,
+                employeePhone = cust.gcAcctPicTelno,
                 type = cust.custTypeCd,
                 createAt = cust.createDtime
             )
@@ -372,6 +371,21 @@ class CustService(
     @Transactional(readOnly = true)
     override fun getCustSimpleList(): Flow<CustCdNmAutoCompleteResponse> {
         return custCustomRepository.findCustSimple().map(custMapper::toCustCdNmAutoCompleteResponse)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getCustSimpleList(empUserId: String, roleCodes: List<String>): Flow<CustCdNmAutoCompleteResponse> {
+        return if (isUserRoleSlcp(roleCodes)) {
+            flow {
+                val user = baseServicePort.getUser(empUserId)
+                emitAll(
+                    custCustomRepository.findCustSimple(bzoffiCd = user?.deptCd)
+                        .map(custMapper::toCustCdNmAutoCompleteResponse)
+                )
+            }
+        } else {
+            custCustomRepository.findCustSimple().map(custMapper::toCustCdNmAutoCompleteResponse)
+        }
     }
 
     @Transactional(readOnly = true)

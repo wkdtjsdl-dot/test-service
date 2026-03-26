@@ -174,17 +174,17 @@ class SalesTargetControllerIntegrationTest {
     fun `should save sales targets via POST endpoint`(): Unit = runBlocking {
         // Arrange
         val request = SalesTargetSaveRequest(
-            year = 2026,
+            year = "2026",
             custCd = TEST_CUST_CD,
             monthlyTargets = listOf(
                 MonthlyTargetItem(
-                    month = 1,
+                    month = "1",
                     salsTeamCd = "TS-G",
                     monthlyTarget = BigDecimal("10000000"),
                     prevYearSales = BigDecimal("8000000")
                 ),
                 MonthlyTargetItem(
-                    month = 2,
+                    month = "2",
                     salsTeamCd = "TS-G",
                     monthlyTarget = BigDecimal("11000000"),
                     prevYearSales = BigDecimal("8500000")
@@ -228,11 +228,11 @@ class SalesTargetControllerIntegrationTest {
 
         // Create update request with different amount
         val request = SalesTargetSaveRequest(
-            year = 2026,
+            year = "2026",
             custCd = TEST_CUST_CD,
             monthlyTargets = listOf(
                 MonthlyTargetItem(
-                    month = 1,
+                    month = "1",
                     salsTeamCd = "TS-G",
                     monthlyTarget = BigDecimal("15000000"),
                     prevYearSales = BigDecimal("9000000")
@@ -258,11 +258,11 @@ class SalesTargetControllerIntegrationTest {
     fun `should return 500 when saving without JWT token`() {
         // Arrange
         val request = SalesTargetSaveRequest(
-            year = 2026,
+            year = "2026",
             custCd = TEST_CUST_CD,
             monthlyTargets = listOf(
                 MonthlyTargetItem(
-                    month = 1,
+                    month = "1",
                     salsTeamCd = "TS-G",
                     monthlyTarget = BigDecimal("10000000")
                 )
