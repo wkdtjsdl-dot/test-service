@@ -86,6 +86,10 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
+tasks.getByName<Jar>("jar") {
+    enabled = false
+}
+
 tasks.test {
     environment("CONFIG_SERVER", "")
     systemProperty("spring.cloud.config.enabled", "false")
