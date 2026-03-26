@@ -20,6 +20,10 @@ java {
 repositories {
     mavenLocal()
     mavenCentral()
+    // 기존 레포지토리들...
+    maven {
+        url = uri("${rootProject.projectDir}/lib")
+    }
 }
 
 extra["springCloudVersion"] = "2025.0.0"
@@ -29,6 +33,7 @@ configurations.implementation {
 }
 
 dependencies {
+    implementation("com.sap.conn.jco:sapjco3:3.1.6") // SAP
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")

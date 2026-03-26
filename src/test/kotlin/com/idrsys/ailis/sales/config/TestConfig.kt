@@ -78,6 +78,10 @@ class TestConfig {
                 command: AttachedFileGroupCreateCommand,
                 creatorId: String
             ): BaseAttachedFileGroupResponse? = null
+
+            override suspend fun getDepartmentsByIds(deptCds: List<String>): List<BaseDepartmentResponse>? {
+                TODO("Not yet implemented")
+            }
         }
     }
 
@@ -120,6 +124,10 @@ class TestConfig {
                 endDt: LocalDate,
                 updater: String
             ): Int = 0
+
+            override suspend fun checkRequestsByCustCd(custCd: String): Int {
+                TODO("Not yet implemented")
+            }
         }
     }
 }
