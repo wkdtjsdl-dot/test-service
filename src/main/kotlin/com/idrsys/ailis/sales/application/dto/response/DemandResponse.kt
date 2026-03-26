@@ -63,7 +63,7 @@ data class DemandResponse(
                 createDtime = demand.createDtime,
                 colledgerId = colledgerId,
                 createdRequestCount = createdRequestCount,
-                crcyCd = demand.crcyCd
+                crcyCd = null
             )
         }
 

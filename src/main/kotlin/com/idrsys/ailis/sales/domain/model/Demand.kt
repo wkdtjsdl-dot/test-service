@@ -170,9 +170,6 @@ class Demand(
         private set
 
     @Transient
-    var crcyCd: String? = null
-
-    @Transient
     private var _isNew: Boolean = false
 
     fun setAsNew() {
