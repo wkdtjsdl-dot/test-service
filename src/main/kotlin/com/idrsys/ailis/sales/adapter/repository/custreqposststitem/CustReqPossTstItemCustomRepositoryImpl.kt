@@ -25,7 +25,7 @@ class CustReqPossTstItemCustomRepositoryImpl(
     override fun findAllByCustMstId(searchParam: CustReqPossTstItemSearchParam): Flow<CustReqPossTstItemQuery> {
         val query = dslContext.selectFrom(SCS_CUST_REQ_POSS_TST_ITEM)
             .where(SCS_CUST_REQ_POSS_TST_ITEM.CUST_MST_ID.eq(searchParam.custMstId))
-            .orderBy(SCS_CUST_REQ_POSS_TST_ITEM.CUST_CD.desc())
+            .orderBy(SCS_CUST_REQ_POSS_TST_ITEM.TST_CD.asc())
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
