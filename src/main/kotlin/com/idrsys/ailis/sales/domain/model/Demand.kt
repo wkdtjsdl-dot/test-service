@@ -51,7 +51,6 @@ class Demand(
     updater: String = creator,
     updateDtime: LocalDateTime = LocalDateTime.now(),
     colledgerId: String? = null,
-    crcyCd: String? = null,
 ) : Persistable<String> {
 
     init {
@@ -170,8 +169,8 @@ class Demand(
     var colledgerId: String? = colledgerId
         private set
 
-    @Column("crcy_cd")
-    var crcyCd: String? = crcyCd
+    @Transient
+    var crcyCd: String? = null
 
     @Transient
     private var _isNew: Boolean = false
