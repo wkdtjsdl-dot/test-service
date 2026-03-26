@@ -128,7 +128,7 @@ spec:
       steps {
         echo 'Docker step!'
         container('kaniko') {
-          sh "executor --dockerfile=Dockerfile \
+          sh "executor --dockerfile=Dockerfile-gcgn \
           --context=dir://${env.WORKSPACE} \
           --destination=${DOCKER_REGISTRY_URL}/ailis-${env.ACTIVE_PROFILE}/sales-service:${env.ACTIVE_PROFILE}-${env.version}-${BUILD_NUMBER}"
         }
