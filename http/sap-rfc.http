@@ -1,0 +1,35 @@
+### Test SAP Connection
+# Pings the configured SAP destination to verify connectivity.
+GET http://localhost:8300/api/sap/rfc/test-connection
+Accept: text/plain
+
+###
+### Call ZFI_CUSTOMER_IF_LABS RFC
+# Creates or updates customer data in SAP.
+POST {{sales-service}}/api/inner/sap/rfc/customer-if-labs
+Content-Type: application/json
+
+[
+  {
+    "lisgc": "",
+    "indcf": "2",
+    "stcd1": "2138203521",
+    "name1": "",
+    "ort01": "",
+    "pstlz": "",
+    "stras": "",
+    "land1": "KR",
+    "telf1": "",
+    "smtp_addr": "",
+    "j_1kfrepre": "",
+    "j_1kftbus": "",
+    "j_1kftind": "",
+    "gricd": null,
+    "gridt": null,
+    "zterm": null,
+    "kunnr": null,
+    "zbdnum": null,
+    "rtc": null,
+    "msg": null
+  }
+]
