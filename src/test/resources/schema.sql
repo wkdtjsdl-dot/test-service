@@ -22,6 +22,7 @@ CREATE TABLE sales_scm.scs_cust_mst (
     sap_cust_cd VARCHAR(50),
     cust_div_cd VARCHAR(50),
     frgn_acct_yn BOOLEAN DEFAULT FALSE,
+    crcy_cd VARCHAR(50),
     creator VARCHAR(50) NOT NULL,
     create_dtime TIMESTAMP NOT NULL,
     updater VARCHAR(50) NOT NULL,

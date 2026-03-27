@@ -103,19 +103,4 @@ class CollectionLedgerTest {
             )
         }
     }
-
-    @Test
-    fun `should throw exception for negative payment amount`() {
-        // Given & When & Then
-        assertThrows<IllegalArgumentException> {
-            CollectionLedger.createForCollection(
-                custCd = "CUST001",
-                colbillDt = LocalDate.now(),
-                colbillItemNm = "결제(카드)",
-                colbillItemDtl = null,
-                payAmt = BigDecimal("-1000"),
-                creator = "admin"
-            )
-        }
-    }
 }

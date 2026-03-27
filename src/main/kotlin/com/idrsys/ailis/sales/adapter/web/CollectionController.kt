@@ -52,15 +52,15 @@ class CollectionController(
         @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
     ): CollectionBillResponse {
         return when {
-            request.bankDepositId != "" && request.cardPayId == "" -> {
+            !request.bankDepositId.isNullOrBlank() && request.cardPayId.isNullOrBlank() -> {
                 // 은행 입금만 있음
                 collectionCommandUseCase.registerBankDeposit(request, auth.adminId)
             }
-            request.cardPayId != "" && request.bankDepositId == "" -> {
+            !request.cardPayId.isNullOrBlank() && request.bankDepositId.isNullOrBlank() -> {
                 // 카드 결제만 있음
                 collectionCommandUseCase.registerCardPayment(request, auth.adminId)
             }
-            request.bankDepositId == "" && request.cardPayId == "" -> {
+            request.bankDepositId.isNullOrBlank() && request.cardPayId.isNullOrBlank() -> {
                 // 둘 다 없음 → 현금/어음
                 collectionCommandUseCase.registerCashOrBillPayment(request, auth.adminId)
             }
