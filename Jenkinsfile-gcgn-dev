@@ -38,7 +38,7 @@ spec:
     // 브랜치 선택 (드롭다운)
     choice(
         name: 'BRANCH_NAME',
-        choices: ['main'],
+        choices: ['develop'],
         description: '배포할 브랜치를 선택하세요. 선택에 따라 Profile(dev/prod), JOOQ_URL(172.19.207.212/172.19.207.210)이 자동 지정됩니다.'
     )
 

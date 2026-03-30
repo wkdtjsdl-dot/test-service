@@ -1,35 +1,56 @@
-### Test SAP Connection
-# Pings the configured SAP destination to verify connectivity.
-GET http://localhost:8300/api/sap/rfc/test-connection
-Accept: text/plain
+### 관리자 Login 요청
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST001",
+  "passwd": "test1234"
+}
+
+> {%
+    client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+        .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+    );
+    client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+        .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+    );
+    client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
 
 ###
 ### Call ZFI_CUSTOMER_IF_LABS RFC
 # Creates or updates customer data in SAP.
-POST {{sales-service}}/api/inner/sap/rfc/customer-if-labs
+POST {{sales-service}}/api/sap/rfc/customer-if-labs
 Content-Type: application/json
 
-[
-  {
-    "lisgc": "",
-    "indcf": "2",
-    "stcd1": "2138203521",
-    "name1": "",
-    "ort01": "",
-    "pstlz": "",
-    "stras": "",
-    "land1": "KR",
-    "telf1": "",
-    "smtp_addr": "",
-    "j_1kfrepre": "",
-    "j_1kftbus": "",
-    "j_1kftind": "",
-    "gricd": null,
-    "gridt": null,
-    "zterm": null,
-    "kunnr": null,
-    "zbdnum": null,
-    "rtc": null,
-    "msg": null
-  }
-]
+{
+    "I_GSBER": "1000",
+    "customers":[
+      {
+        "indcf": "1",
+        "stcd1": "2138203521",
+        "land1": "KR"
+      }
+    ]
+}
+
+###
+### Call ZFI_CUSTOMER_IF_LABS RFC
+# Creates or updates customer data in SAP.
+POST {{api-service}}/api/sap/rfc/customer-if-labs
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "I_GSBER": "1000",
+  "customers":[
+    {
+      "indcf": "1",
+      "stcd1": "2138203521",
+      "land1": "KR"
+    }
+  ]
+}
