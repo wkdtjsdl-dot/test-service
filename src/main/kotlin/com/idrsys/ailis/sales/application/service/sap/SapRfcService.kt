@@ -1,7 +1,7 @@
 package com.idrsys.ailis.sales.application.service.sap
 
 import com.idrsys.ailis.sales.adapter.external.sap.SapRfcClient
-import com.idrsys.ailis.sales.application.dto.request.sap.CustomerIfLabsRow
+import com.idrsys.ailis.sales.application.dto.request.sap.CustomerIfLabsRequest
 import com.idrsys.ailis.sales.application.dto.response.sap.SapCustomerIfLabsResponse
 import com.idrsys.ailis.sales.application.usecase.sap.SapRfcUseCase
 import kotlinx.coroutines.Dispatchers
@@ -12,16 +12,9 @@ import org.springframework.stereotype.Service
 class SapRfcService(
     private val sapRfcClient: SapRfcClient
 ) : SapRfcUseCase {
-    override suspend fun callCustomerIfLabs(customers: List<CustomerIfLabsRow>): SapCustomerIfLabsResponse {
-        // RFC calls can be blocking, so it's good practice to run them on a dedicated dispatcher
+    override suspend fun callCustomerIfLabs(request: CustomerIfLabsRequest): SapCustomerIfLabsResponse {
         return withContext(Dispatchers.IO) {
-            sapRfcClient.executeCustomerIfLabs(customers)
-        }
-    }
-
-    override suspend fun testConnection(): String {
-        return withContext(Dispatchers.IO) {
-            sapRfcClient.testConnection()
+            sapRfcClient.executeCustomerIfLabs(request)
         }
     }
 }

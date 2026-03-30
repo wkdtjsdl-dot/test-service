@@ -1,6 +1,8 @@
 package com.idrsys.ailis.sales.adapter.external.sap
 
+import com.idrsys.ailis.sales.application.dto.request.sap.CustomerIfLabsRequest
 import com.idrsys.ailis.sales.application.dto.request.sap.CustomerIfLabsRow
+import com.idrsys.ailis.sales.application.dto.response.sap.CustomerIfLabsResult
 import com.idrsys.ailis.sales.application.dto.response.sap.SapCustomerIfLabsResponse
 import com.idrsys.ailis.sales.infrastructure.config.SapConfig
 import com.sap.conn.jco.JCoDestination
@@ -20,6 +22,14 @@ class SapRfcClient(private val sapConfig: SapConfig) {
 
     private val logger = LoggerFactory.getLogger(SapRfcClient::class.java)
     private val destinationName = "SAP_SALES_SERVICE"
+
+    companion object {
+        private const val BUKRS             = "3300"
+        private const val CUSTOMER_IF_LABS = "ZFI_CUSTOMER_IF_LABS" // 고객관리 - 고객정보 등록/수정 -사업자정보관리 탭 - ERP 코드확인
+        private const val IF_RE_010        = "ZFI_IF_RE_010"
+        private const val IF_RE_020        = "ZFI_IF_RE_020"
+        private const val INVC_POSTING     = "ZFI_INVC_POSTING_LABS"
+    }
 
     init {
         registerDestination()
@@ -47,31 +57,20 @@ class SapRfcClient(private val sapConfig: SapConfig) {
         }
     }
 
-    fun testConnection(): String {
-        return try {
-            val destination = JCoDestinationManager.getDestination(destinationName)
-            destination.ping()
-            "Successfully pinged SAP destination: $destinationName"
-        } catch (e: JCoException) {
-            logger.error("SAP connection test failed for destination $destinationName", e)
-            "SAP connection test failed: ${e.message}"
-        }
-    }
-
     @Throws(JCoException::class)
-    fun executeCustomerIfLabs(customers: List<CustomerIfLabsRow>): SapCustomerIfLabsResponse {
-        logger.info("Executing RFC: {}", sapConfig.rfc.customerIfLabs)
+    fun executeCustomerIfLabs(request: CustomerIfLabsRequest): SapCustomerIfLabsResponse {
+        logger.info("Executing RFC: {}", CUSTOMER_IF_LABS)
         val destination: JCoDestination = JCoDestinationManager.getDestination(destinationName)
-        val function = destination.repository.getFunction(sapConfig.rfc.customerIfLabs)
-            ?: throw JCoException(JCoException.JCO_ERROR_FUNCTION_NOT_FOUND, "Function ${sapConfig.rfc.customerIfLabs} not found in SAP.")
+        val function = destination.repository.getFunction(CUSTOMER_IF_LABS)
+            ?: throw JCoException(JCoException.JCO_ERROR_FUNCTION_NOT_FOUND, "Function $CUSTOMER_IF_LABS not found in SAP.")
 
         // Set import parameters
-        function.importParameterList?.setValue("I_BUKRS", sapConfig.rfc.params.i_bukrs)
-        function.importParameterList?.setValue("I_GSBER", sapConfig.rfc.params.i_gsber)
+        function.importParameterList?.setValue("I_BUKRS", BUKRS)
+        function.importParameterList?.setValue("I_GSBER", "1000")
 
         // Fill table parameter
         val table = function.tableParameterList?.getTable("T_ZFIS703")
-        table?.let { mapRequestToTable(customers, it) }
+        table?.let { mapRequestToTable(request.customers, it) }
 
         function.execute(destination)
 
@@ -82,54 +81,29 @@ class SapRfcClient(private val sapConfig: SapConfig) {
         return SapCustomerIfLabsResponse(returnCode, returnMessage, resultData)
     }
 
+    @Throws(JCoException::class)
+    fun executeIfRe010(): Unit = TODO("ZFI_IF_RE_010 not yet implemented")
+
+    @Throws(JCoException::class)
+    fun executeIfRe020(): Unit = TODO("ZFI_IF_RE_020 not yet implemented")
+
+    @Throws(JCoException::class)
+    fun executeInvcPosting(): Unit = TODO("ZFI_INVC_POSTING_LABS not yet implemented")
+
     private fun mapRequestToTable(customers: List<CustomerIfLabsRow>, table: JCoTable) {
         customers.forEach { customer ->
             table.appendRow()
-            table.setValue("LISGC", customer.lisgc)
-            table.setValue("INDCF", customer.indcf)
-            table.setValue("STCD1", customer.stcd1)
-            table.setValue("NAME1", customer.name1)
-            table.setValue("ORT01", customer.ort01)
-            table.setValue("PSTLZ", customer.pstlz)
-            table.setValue("STRAS", customer.stras)
-            table.setValue("LAND1", customer.land1)
-            table.setValue("TELF1", customer.telf1)
-            table.setValue("SMTP_ADDR", customer.smtp_addr)
-            table.setValue("J_1KFREPRE", customer.j_1kfrepre)
-            table.setValue("J_1KFTBUS", customer.j_1kftbus)
-            table.setValue("J_1KFTIND", customer.j_1kftind)
-            table.setValue("GRICD", customer.gricd)
-            table.setValue("GRIDT", customer.gridt)
-            table.setValue("ZTERM", customer.zterm)
-            table.setValue("KUNNR", customer.kunnr)
-            table.setValue("ZBDNUM", customer.zbdnum)
-            table.setValue("RTC", customer.rtc)
-            table.setValue("MSG", customer.msg)
+            table.setValue("INDCF", "1") // 법인 1/ 개인 2 법인 고정
+            table.setValue("STCD1", customer.stcd1) // front 사업자등록번호
+            table.setValue("LAND1", "KR") // 고정
         }
     }
 
-    private fun mapTableToResponse(table: JCoTable): List<CustomerIfLabsRow> {
+    private fun mapTableToResponse(table: JCoTable): List<CustomerIfLabsResult> {
         return List(table.numRows) { i ->
             table.setRow(i)
-            CustomerIfLabsRow(
-                lisgc = table.getString("LISGC"),
-                indcf = table.getString("INDCF"),
-                stcd1 = table.getString("STCD1"),
-                name1 = table.getString("NAME1"),
-                ort01 = table.getString("ORT01"),
-                pstlz = table.getString("PSTLZ"),
-                stras = table.getString("STRAS"),
-                land1 = table.getString("LAND1"),
-                telf1 = table.getString("TELF1"),
-                smtp_addr = table.getString("SMTP_ADDR"),
-                j_1kfrepre = table.getString("J_1KFREPRE"),
-                j_1kftbus = table.getString("J_1KFTBUS"),
-                j_1kftind = table.getString("J_1KFTIND"),
-                gricd = table.getString("GRICD"),
-                gridt = table.getString("GRIDT"),
-                zterm = table.getString("ZTERM"),
+            CustomerIfLabsResult(
                 kunnr = table.getString("KUNNR"),
-                zbdnum = table.getString("ZBDNUM"),
                 rtc = table.getString("RTC"),
                 msg = table.getString("MSG")
             )
