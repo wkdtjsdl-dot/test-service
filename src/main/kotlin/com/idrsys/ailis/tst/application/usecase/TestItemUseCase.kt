@@ -12,7 +12,7 @@ interface TestItemUseCase {
     fun getItemsSimple(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse>
     fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse>
     suspend fun findSimpleItemByTstCd(tstCds: List<String>): Flow<TestItemSimpleResponse>
-    suspend fun findSimpleItemAll(): Flow<TestItemSimpleResponse>
+    suspend fun findSimpleItemAll(searchParam: TestItemAllSearchParam): Flow<TestItemSimpleResponse>
 
     // --- StandardCharge ---
     suspend fun registerCharge(request: StandardChargeRegisterRequest, adminId: String): StandardChargeResponse

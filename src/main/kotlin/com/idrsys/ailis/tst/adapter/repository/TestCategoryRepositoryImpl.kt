@@ -31,6 +31,7 @@ class TestCategoryRepositoryImpl(
             .selectCount()
             .from(table)
             .where(table.TST_MEDIUM_CATE_CD.eq(testCategory.tstMediumCateCd))
+            .and(table.TST_CATE_ID.ne(testCategory.tstCateId))
 
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value: Any? ->

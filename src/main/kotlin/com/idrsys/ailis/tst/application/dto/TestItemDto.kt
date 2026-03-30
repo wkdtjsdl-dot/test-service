@@ -12,6 +12,11 @@ data class TestItemSearchParam(
     val useYn: Boolean?
 )
 
+data class TestItemAllSearchParam(
+    val useYn: Boolean? = null,
+    val reqPossYn: Boolean? = null
+)
+
 data class TestItemAutoCompleteParam(
     val keyword: String
 )

@@ -27,8 +27,11 @@ class TestItemInnerController(
 
     @Operation(summary = "검사 종목 inner 전체 조회")
     @GetMapping("/api/inner/bts/item/all")
-    suspend fun findTestItemAll(): Flow<TestItemSimpleResponse> {
-        return testItemUseCase.findSimpleItemAll()
+    suspend fun findTestItemAll(
+        @RequestParam useYn: Boolean? = null,
+        @RequestParam reqPossYn: Boolean? = null
+    ): Flow<TestItemSimpleResponse> {
+        return testItemUseCase.findSimpleItemAll(TestItemAllSearchParam(useYn, reqPossYn))
     }
 
     @Operation(summary = "검사 코드별 검체 조회")
