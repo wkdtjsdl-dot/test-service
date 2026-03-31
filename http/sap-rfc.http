@@ -39,7 +39,7 @@ Content-Type: application/json
 ###
 ### Call ZFI_CUSTOMER_IF_LABS RFC
 # Creates or updates customer data in SAP.
-POST {{api-service}}/api/sap/rfc/customer-if-labs
+POST {{api-service}}/api/sals/sap/rfc/customer-if-labs
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
@@ -54,3 +54,79 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
     }
   ]
 }
+
+###
+### BzVal BANKINFO 목록 조회 (base-service Inner API)
+GET {{base-service}}/api/inner/bz-vals/category/BANKINFO
+
+
+###
+### [ZFI_IF_RE_020] SAP 은행 입금 내역 조회 (Inner API)
+# IT_712: 은행 계좌 목록(BANKL, BANKN) 전달 → IT_713: 입금 내역 수신
+POST {{sales-service}}/api/inner/bank-deposits/sap?startDt=20250901&endDt=20251231
+Content-Type: application/json
+
+[
+  { "bankl": "05", "bankn": "630009519777" }
+]
+
+###
+### [ZFI_IF_RE_020] SAP 은행 입금 내역 조회 — 복수 계좌
+POST {{sales-service}}/api/inner/bank-deposits/sap?startDt=20250331&endDt=20250331
+Content-Type: application/json
+
+[
+  { "bankl": "004", "bankn": "123456789" },
+  { "bankl": "081", "bankn": "987654321" }
+]
+
+###
+### 은행 입금 내역 배치 저장 (Inner API)
+# 중복(surecpSlstmtNo) 체크 후 신규 건만 저장, 저장된 건수 반환
+POST {{sales-service}}/api/inner/bank-deposits/batch
+Content-Type: application/json
+
+[
+  {
+    "accountDivCd": "10",
+    "accountNo": "123456789",
+    "accountYear": "2025",
+    "surecpSlstmtNo": "1400000001",
+    "depositDt": "2025-01-15",
+    "depositAmt": 1000000,
+    "outamt": 0,
+    "crcyCd": "KRW",
+    "remark": "테스트 입금"
+  },
+  {
+    "accountDivCd": "10",
+    "accountNo": "123456789",
+    "accountYear": "2025",
+    "surecpSlstmtNo": "1400000002",
+    "depositDt": "2025-01-16",
+    "depositAmt": 500000,
+    "outamt": 500000,
+    "crcyCd": "KRW",
+    "remark": null
+  }
+]
+
+###
+### 은행 입금 내역 배치 저장 — 중복 테스트 (위 요청 재전송 시 저장 건수 0 반환 확인)
+POST {{sales-service}}/api/inner/bank-deposits/batch
+Content-Type: application/json
+
+[
+  {
+    "accountDivCd": "10",
+    "accountNo": "123456789",
+    "accountYear": "2025",
+    "surecpSlstmtNo": "1400000001",
+    "depositDt": "2025-01-15",
+    "depositAmt": 1000000,
+    "outamt": 0,
+    "crcyCd": "KRW",
+    "remark": "중복 테스트"
+  }
+]
+

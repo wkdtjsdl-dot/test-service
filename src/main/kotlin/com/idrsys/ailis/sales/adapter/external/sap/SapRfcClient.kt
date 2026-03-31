@@ -3,7 +3,10 @@ package com.idrsys.ailis.sales.adapter.external.sap
 import com.idrsys.ailis.sales.application.dto.request.sap.CustomerIfLabsRequest
 import com.idrsys.ailis.sales.application.dto.request.sap.CustomerIfLabsRow
 import com.idrsys.ailis.sales.application.dto.response.sap.CustomerIfLabsResult
+import com.idrsys.ailis.sales.application.dto.request.bankdeposit.BankAccountParam
+import com.idrsys.ailis.sales.application.dto.response.sap.SapBankDepositResult
 import com.idrsys.ailis.sales.application.dto.response.sap.SapCustomerIfLabsResponse
+import java.math.BigDecimal
 import com.idrsys.ailis.sales.infrastructure.config.SapConfig
 import com.sap.conn.jco.JCoDestination
 import com.sap.conn.jco.JCoDestinationManager
@@ -84,11 +87,65 @@ class SapRfcClient(private val sapConfig: SapConfig) {
     @Throws(JCoException::class)
     fun executeIfRe010(): Unit = TODO("ZFI_IF_RE_010 not yet implemented")
 
+    /**
+     * SAP RFC ZFI_IF_RE_020 호출 — 은행 계좌 입금 내역 조회
+     *
+     * Import: I_BUKRS, I_DATE_FROM, I_DATE_TO
+     * Input Table IT_712: 조회할 은행 계좌 목록 (BANKL, BANKN)
+     * Output Table IT_713: 입금 내역 (BANKL, BANKN, GJAHR, BELNR, BUDAT, WRBTR, AVLAMT, WAERS, SGTXT)
+     */
     @Throws(JCoException::class)
-    fun executeIfRe020(): Unit = TODO("ZFI_IF_RE_020 not yet implemented")
+    fun executeIfRe020(
+        startDt: String,
+        endDt: String,
+        bankAccounts: List<BankAccountParam>
+    ): List<SapBankDepositResult> {
+        logger.info("Executing RFC: {} | startDt={}, endDt={}, accounts={}", IF_RE_020, startDt, endDt, bankAccounts.size)
+        val destination: JCoDestination = JCoDestinationManager.getDestination(destinationName)
+        val function = destination.repository.getFunction(IF_RE_020)
+            ?: throw JCoException(JCoException.JCO_ERROR_FUNCTION_NOT_FOUND, "Function $IF_RE_020 not found in SAP.")
+
+        function.importParameterList?.setValue("I_BUKRS", BUKRS)
+        function.importParameterList?.setValue("I_DATE_FROM", startDt)
+        function.importParameterList?.setValue("I_DATE_TO", endDt)
+
+        // IT_712: 조회할 은행 계좌 목록
+        val inputTable = function.tableParameterList?.getTable("IT_712")
+        inputTable?.let { table ->
+            bankAccounts.forEach { account ->
+                table.appendRow()
+                table.setValue("BANKL", account.bankl)
+                table.setValue("BANKN", account.bankn)
+            }
+        }
+
+        function.execute(destination)
+
+        val outputTable = function.tableParameterList?.getTable("IT_713")
+            ?: return emptyList()
+
+        return mapBankDepositTableToResult(outputTable)
+    }
 
     @Throws(JCoException::class)
     fun executeInvcPosting(): Unit = TODO("ZFI_INVC_POSTING_LABS not yet implemented")
+
+    private fun mapBankDepositTableToResult(table: JCoTable): List<SapBankDepositResult> {
+        return List(table.numRows) { i ->
+            table.setRow(i)
+            SapBankDepositResult(
+                bankl = table.getString("BANKL").takeIf { it.isNotBlank() },      // 은행번호
+                bankn = table.getString("BANKN").takeIf { it.isNotBlank() },      // 계좌번호
+                accountYear = table.getString("GJAHR").takeIf { it.isNotBlank() }, // 회계연도
+                surecpSlstmtNo = table.getString("BELNR").takeIf { it.isNotBlank() }, // 가수금 전표번호
+                depositDt = table.getString("BUDAT"),                              // 입금일 (yyyyMMdd)
+                depositAmt = table.getBigDecimal("WRBTR") ?: BigDecimal.ZERO,     // 입금액
+                outamt = table.getBigDecimal("AVLAMT"),                            // 미정산금액
+                crcyCd = table.getString("WAERS").takeIf { it.isNotBlank() },     // 통화
+                remark = table.getString("SGTXT").takeIf { it.isNotBlank() }      // 적요
+            )
+        }
+    }
 
     private fun mapRequestToTable(customers: List<CustomerIfLabsRow>, table: JCoTable) {
         customers.forEach { customer ->
