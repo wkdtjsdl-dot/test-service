@@ -40,7 +40,7 @@ data class TestCodeMappingExcelValidResponse (
 data class InnerTestCodeMappingResponse (
     val code: String,
     val serial: String,
-    val nameKr: String,
+    val nameKr: String?,
     val sampleType: List<InnerSampleType>?,
     val extensions: List<InnerSampleExtension>?
 )
