@@ -24,7 +24,7 @@ internal fun Row.toTestCodeMappingQuery(): TestCodeMappingQuery = TestCodeMappin
 internal fun Row.toTestCodeMappingInnerTestCode(): InnerTestCodeMappingResponse = InnerTestCodeMappingResponse(
     code = this.get("tst_cd", String::class.java)!!,
     serial = this.get("cust_tst_cd", String::class.java)!!,
-    nameKr = this.get("tst_nm", String::class.java)!!,
+    nameKr = this.get("tst_nm", String::class.java),
     sampleType = emptyList(),
     extensions = null
 )
