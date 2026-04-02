@@ -94,22 +94,29 @@ class BankDepositRepositoryImpl(
 
         // 중복 체크: 배치 내 surecpSlstmtNo 목록 수집
         val surecpNos = commands.mapNotNull { it.surecpSlstmtNo }.distinct()
-        val existingNos: Set<String?> = if (surecpNos.isNotEmpty()) {
-            val query = dslContext.select(SBL_BANK_DEPOSIT.SURECP_SLSTMT_NO)
+        // existingKeys: "surecpSlstmtNo|accountYear" 조합으로 중복 체크
+        val existingKeys: Set<String> = if (surecpNos.isNotEmpty()) {
+            val query = dslContext.select(SBL_BANK_DEPOSIT.SURECP_SLSTMT_NO, SBL_BANK_DEPOSIT.ACCOUNT_YEAR)
                 .from(SBL_BANK_DEPOSIT)
                 .where(SBL_BANK_DEPOSIT.SURECP_SLSTMT_NO.`in`(surecpNos))
             var sql = databaseClient.sql(query.sql)
             query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
             sql.fetch().all()
-                .mapNotNull { row -> row[SBL_BANK_DEPOSIT.SURECP_SLSTMT_NO.name] as? String }
+                .mapNotNull { row ->
+                    val no = row[SBL_BANK_DEPOSIT.SURECP_SLSTMT_NO.name] as? String ?: return@mapNotNull null
+                    val year = row[SBL_BANK_DEPOSIT.ACCOUNT_YEAR.name] as? String ?: return@mapNotNull null
+                    "$no|$year"
+                }
                 .collectList()
                 .awaitSingle()
+                .filterNotNull()
                 .toSet()
         } else emptySet()
 
         // 신규 건만 필터링
         val newCommands = commands.filter { cmd ->
-            cmd.surecpSlstmtNo == null || cmd.surecpSlstmtNo !in existingNos
+            val key = "${cmd.surecpSlstmtNo}|${cmd.accountYear}"
+            cmd.surecpSlstmtNo == null || key !in existingKeys
         }
 
         if (newCommands.isEmpty()) return 0
