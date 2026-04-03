@@ -1,11 +1,13 @@
 package com.idrsys.ailis.sales.adapter.repository.collection
 
+import com.idrsys.ailis.sales.application.dto.request.bankdeposit.BankDepositBatchCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.BankDepositSearchParam
 import com.idrsys.ailis.sales.application.required.repository.collection.BankDepositRepository
 import com.idrsys.ailis.sales.domain.model.BankDeposit
-import com.idrsys.ailis.sales.generated.jooq.tables.SblBankDeposit
+import com.idrsys.ailis.sales.generated.jooq.tables.SblBankDeposit.SBL_BANK_DEPOSIT
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactor.awaitSingle
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.r2dbc.core.DatabaseClient
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Repository
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Repository
 class BankDepositRepositoryImpl(
@@ -35,7 +38,7 @@ class BankDepositRepositoryImpl(
     }
 
     override fun findBankDeposits(searchParam: BankDepositSearchParam): Flow<BankDeposit> {
-        val table = SblBankDeposit.SBL_BANK_DEPOSIT
+        val table = SBL_BANK_DEPOSIT
         var condition = DSL.noCondition()
 
         condition = condition.and(table.DEPOSIT_DT.ge(searchParam.startDt))
@@ -82,5 +85,85 @@ class BankDepositRepositoryImpl(
 
     override suspend fun updateRegYn(bankDepositId: String, regYn: Boolean, updater: String) {
         // TODO: Implement with jOOQ when needed
+    }
+
+    override suspend fun batchInsert(commands: List<BankDepositBatchCommand>, creator: String): Int {
+        if (commands.isEmpty()) return 0
+
+        val now = LocalDateTime.now()
+
+        // 중복 체크: 배치 내 surecpSlstmtNo 목록 수집
+        val surecpNos = commands.mapNotNull { it.surecpSlstmtNo }.distinct()
+        // existingKeys: "surecpSlstmtNo|accountYear" 조합으로 중복 체크
+        val existingKeys: Set<String> = if (surecpNos.isNotEmpty()) {
+            val query = dslContext.select(SBL_BANK_DEPOSIT.SURECP_SLSTMT_NO, SBL_BANK_DEPOSIT.ACCOUNT_YEAR)
+                .from(SBL_BANK_DEPOSIT)
+                .where(SBL_BANK_DEPOSIT.SURECP_SLSTMT_NO.`in`(surecpNos))
+            var sql = databaseClient.sql(query.sql)
+            query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+            sql.fetch().all()
+                .mapNotNull { row ->
+                    val no = row[SBL_BANK_DEPOSIT.SURECP_SLSTMT_NO.name] as? String ?: return@mapNotNull null
+                    val year = row[SBL_BANK_DEPOSIT.ACCOUNT_YEAR.name] as? String ?: return@mapNotNull null
+                    "$no|$year"
+                }
+                .collectList()
+                .awaitSingle()
+                .filterNotNull()
+                .toSet()
+        } else emptySet()
+
+        // 신규 건만 필터링
+        val newCommands = commands.filter { cmd ->
+            val key = "${cmd.surecpSlstmtNo}|${cmd.accountYear}"
+            cmd.surecpSlstmtNo == null || key !in existingKeys
+        }
+
+        if (newCommands.isEmpty()) return 0
+
+        val insertQuery = dslContext.insertInto(SBL_BANK_DEPOSIT)
+            .columns(
+                SBL_BANK_DEPOSIT.BANK_DEPOSIT_ID,
+                SBL_BANK_DEPOSIT.ACCOUNT_DIV_CD,
+                SBL_BANK_DEPOSIT.ACCOUNT_NO,
+                SBL_BANK_DEPOSIT.ACCOUNT_YEAR,
+                SBL_BANK_DEPOSIT.SURECP_SLSTMT_NO,
+                SBL_BANK_DEPOSIT.DEPOSIT_DT,
+                SBL_BANK_DEPOSIT.DEPOSIT_AMT,
+                SBL_BANK_DEPOSIT.OUTAMT,
+                SBL_BANK_DEPOSIT.CRCY_CD,
+                SBL_BANK_DEPOSIT.REMARK,
+                SBL_BANK_DEPOSIT.REG_YN,
+                SBL_BANK_DEPOSIT.CREATOR,
+                SBL_BANK_DEPOSIT.CREATE_DTIME,
+                SBL_BANK_DEPOSIT.UPDATER,
+                SBL_BANK_DEPOSIT.UPDATE_DTIME
+            )
+            .apply {
+                newCommands.forEach { cmd ->
+                    values(
+                        UUID.randomUUID().toString(),
+                        cmd.accountDivCd,
+                        cmd.accountNo,
+                        cmd.accountYear,
+                        cmd.surecpSlstmtNo,
+                        cmd.depositDt,
+                        cmd.depositAmt,
+                        cmd.outamt,
+                        cmd.crcyCd,
+                        cmd.remark,
+                        false,
+                        creator,
+                        now,
+                        creator,
+                        now
+                    )
+                }
+            }
+
+        var sql = databaseClient.sql(insertQuery.sql)
+        insertQuery.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.fetch().rowsUpdated().awaitSingle().toInt()
     }
 }
