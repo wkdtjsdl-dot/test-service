@@ -155,7 +155,8 @@ class TestReportRepositoryImpl(
                 report.RST_URL,
 
                 rerYnField,
-                tstItem.TST_REQ_STAT_CD
+                tstItem.TST_REQ_STAT_CD,
+                tstItem.CLOSING_CD
             )
             .from(report)
                 .join(patient)
@@ -214,6 +215,7 @@ class TestReportRepositoryImpl(
             rstUrl = row["rst_url"]?.toString(),
             tstReqStatCd = row["tst_req_stat_cd"]?.toString(),
             rerYn = row["rer_yn"]?.toString(),
+            closingCd = row["closing_cd"]?.toString(),
         )
     }
 

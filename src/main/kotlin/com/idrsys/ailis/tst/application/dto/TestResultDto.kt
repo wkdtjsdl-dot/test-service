@@ -42,7 +42,8 @@ data class TestResultResponse(
   val rstTxt: String?,
   val rstUrl: String?,
   val tstReqStatCd: String?,
-  var rerYn: String? = null
+  var rerYn: String? = null,
+  val closingCd: String? = null
 )
 
 /**
