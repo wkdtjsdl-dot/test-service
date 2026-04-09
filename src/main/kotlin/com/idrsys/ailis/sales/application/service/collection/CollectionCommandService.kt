@@ -832,7 +832,7 @@ class CollectionCommandService(
                             message = erpResult.zresult ?: erpResult.returnMessage ?: "ERP 전송 실패"
                         )
                     } else {
-                        bill.markAsSent(adminId)
+                        bill.markAsSent(adminId, erpResult.belnr1)
                         collectionBillRepository.save(bill)
                         SendCollectionResult(
                             colbillId = colbillId,

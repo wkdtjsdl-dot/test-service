@@ -178,8 +178,9 @@ class CollectionBill(
      * Business Rule:
      * - Once sent, the flag cannot be reverted (no rollback in domain)
      */
-    fun markAsSent(updater: String) {
+    fun markAsSent(updater: String, salesSlstmtNo: String? = null) {
         this.sendYn = true
+        this.salesSlstmtNo = salesSlstmtNo
         this.updater = updater
         this.updateDtime = LocalDateTime.now()
     }
