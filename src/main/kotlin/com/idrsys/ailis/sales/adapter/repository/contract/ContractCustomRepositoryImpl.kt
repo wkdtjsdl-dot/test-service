@@ -37,7 +37,7 @@ class ContractCustomRepositoryImpl(
             .from(SCS_CUST_CNTR)
             .leftJoin(SCS_CUST_MST).on(SCS_CUST_CNTR.CUST_MST_ID.eq(SCS_CUST_MST.CUST_MST_ID))
             .where(conditions)
-            .orderBy(SCS_CUST_CNTR.CREATE_DTIME.desc())
+            .orderBy(SCS_CUST_CNTR.USE_YN.desc(), SCS_CUST_CNTR.CREATE_DTIME.desc())
             .let { applyPaging(it, pageable ?: Pageable.unpaged()) }
 
         var sql = databaseClient.sql(query.sql)

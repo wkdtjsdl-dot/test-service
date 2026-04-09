@@ -19,7 +19,7 @@ Accept: application/json
 %}
 
 ### Exim 환율 OpenAPI 테스트
-GET https://oapi.koreaexim.go.kr/site/program/financial/exchangeJSON?authkey={{EXIM_KEY}}&data=AP01&searchdate=20251124
+GET https://oapi.koreaexim.go.kr/site/program/financial/exchangeJSON?authkey={{EXIM_KEY}}&data=AP01&searchdate=20260206
 Accept: application/json
 
 ### 환율 배치 등록 (내부 API)

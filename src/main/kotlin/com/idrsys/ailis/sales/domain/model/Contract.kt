@@ -114,6 +114,12 @@ class Contract(
 
     override fun isNew(): Boolean = _isNew
 
+    fun softDelete(updater: String) {
+        this.useYn = false
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
+
     fun update(command: ContractCommand, updater: String) {
         this.custCd = command.custCd
         this.cntrNo = command.cntrNo

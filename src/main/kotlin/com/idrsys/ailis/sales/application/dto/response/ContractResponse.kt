@@ -51,4 +51,5 @@ data class ContractListResponse(
     val updateDtime: LocalDateTime,
     val custCntrId: Long,
     val custMstId: String,
+    val useYn: Boolean,
 )
