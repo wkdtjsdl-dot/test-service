@@ -4,8 +4,14 @@ import com.idrsys.ailis.sales.application.dto.request.sap.CustomerIfLabsRequest
 import com.idrsys.ailis.sales.application.dto.request.sap.CustomerIfLabsRow
 import com.idrsys.ailis.sales.application.dto.response.sap.CustomerIfLabsResult
 import com.idrsys.ailis.sales.application.dto.request.bankdeposit.BankAccountParam
+import com.idrsys.ailis.sales.application.dto.request.billing.SapInvcPostingRow
+import com.idrsys.ailis.sales.application.dto.request.ifre010.SapIfRe010Row
 import com.idrsys.ailis.sales.application.dto.response.sap.SapBankDepositResult
 import com.idrsys.ailis.sales.application.dto.response.sap.SapCustomerIfLabsResponse
+import com.idrsys.ailis.sales.application.dto.response.sap.SapIfRe010Result
+import com.idrsys.ailis.sales.application.dto.response.sap.SapInvcPostingResult
+import com.idrsys.ailis.sales.application.required.sap.CollectionErpPort
+import com.idrsys.ailis.sales.application.required.sap.InvoiceErpPort
 import java.math.BigDecimal
 import com.idrsys.ailis.sales.infrastructure.config.SapConfig
 import com.sap.conn.jco.JCoDestination
@@ -21,7 +27,7 @@ import java.io.FileOutputStream
 import java.util.Properties
 
 @Component
-class SapRfcClient(private val sapConfig: SapConfig) {
+class SapRfcClient(private val sapConfig: SapConfig) : CollectionErpPort, InvoiceErpPort {
 
     private val logger = LoggerFactory.getLogger(SapRfcClient::class.java)
     private val destinationName = "SAP_SALES_SERVICE"
@@ -85,7 +91,96 @@ class SapRfcClient(private val sapConfig: SapConfig) {
     }
 
     @Throws(JCoException::class)
-    fun executeIfRe010(): Unit = TODO("ZFI_IF_RE_010 not yet implemented")
+    override fun sendCollection(rtype: String, row: SapIfRe010Row): SapIfRe010Result =
+        executeIfRe010(rtype, row)
+
+    @Throws(JCoException::class)
+    fun executeIfRe010(rtype: String, row: SapIfRe010Row): SapIfRe010Result {
+        logger.info("Executing RFC: {} | rtype={} | payload={}", IF_RE_010, rtype, row)
+        val destination: JCoDestination = JCoDestinationManager.getDestination(destinationName)
+        val function = destination.repository.getFunction(IF_RE_010)
+            ?: throw JCoException(JCoException.JCO_ERROR_FUNCTION_NOT_FOUND, "Function $IF_RE_010 not found in SAP.")
+
+        function.importParameterList?.setValue("I_RTYPE", rtype)
+
+        // IT_108 테이블 — 1건씩 처리 (리턴 순서 보장 불가)
+        val table = function.tableParameterList?.getTable("IT_108")
+            ?: throw JCoException(JCoException.JCO_ERROR_FUNCTION_NOT_FOUND, "Table IT_108 not found in SAP.")
+        table.appendRow()
+        // ── 공통 ────────────────────────────────────────────────
+        table.setValue("BUKRS",      BUKRS)
+        table.setValue("BUDAT",      row.budat ?: "")
+        table.setValue("KKBER",      row.kkber ?: "")
+        table.setValue("VKGRP",      row.vkgrp ?: "")
+        table.setValue("VKBUR",      row.vkbur ?: "")
+        table.setValue("SEQ",        row.seq ?: "")
+        table.setValue("GJAHR",      row.gjahr ?: "")
+        table.setValue("MONAT",      row.monat ?: "")
+        table.setValue("UZAWE",      row.uzawe ?: "")
+        row.wrbtr?.let { table.setValue("WRBTR", it.toPlainString()) }
+        table.setValue("IN_DATE",    row.inDate ?: "")
+        table.setValue("STCD2",      row.stcd2 ?: "")
+        table.setValue("SGTXT",      row.sgtxt ?: "")
+        table.setValue("VKORG",      row.vkorg ?: "")
+        table.setValue("GSBER",      row.gsber ?: "")
+        // ── 예금/카드 전용 ──────────────────────────────────────
+        when (row) {
+            is SapIfRe010Row.Bank -> {
+                table.setValue("BANKL",      row.bankl ?: "")
+                table.setValue("BANKN",      row.bankn ?: "")
+                table.setValue("BELNR_GASU", row.belnrGasu ?: "")
+                table.setValue("KUNNRZZ",    row.kunnrzz ?: "")
+            }
+            is SapIfRe010Row.Card -> {
+                table.setValue("KUNNRZZ",    row.kunnrzz ?: "")
+                table.setValue("ZFBDT",      row.zfbdt ?: "")
+                table.setValue("ZSTMEMB",    row.zstmemb ?: "")
+                table.setValue("ZCOMPCD",    row.zcompcd ?: "")
+                row.appramt?.let { table.setValue("APPRAMT", it.toPlainString()) }
+                table.setValue("INSOMONTH",  row.insomonth ?: "")
+                table.setValue("RUDAT",      row.rudat ?: "")
+            }
+        }
+        // ── SAP 리턴 필드 (입력 제외) ────────────────────────────
+        // BELNR1, BELNR2, CONFIRM_ID, ADATE, RESUL,
+        // STCD2, XBLNR, ZSTATUS, ZRESULT
+
+        function.execute(destination)
+
+        val returnCode    = function.exportParameterList?.getString("RTYPE")
+        val returnMessage = function.exportParameterList?.getString("RETURN")
+
+        return if (table.numRows > 0) {
+            table.setRow(0)
+            SapIfRe010Result(
+                belnr1        = table.getString("BELNR1").takeIf { it.isNotBlank() },
+                belnr2        = table.getString("BELNR2").takeIf { it.isNotBlank() },
+                confirmId     = table.getString("CONFIRM_ID").takeIf { it.isNotBlank() },
+                adate         = table.getString("ADATE").takeIf { it.isNotBlank() },
+                resul         = table.getString("RESUL").takeIf { it.isNotBlank() },
+                stcd1         = table.getString("STCD1").takeIf { it.isNotBlank() },
+                stcd2         = table.getString("STCD2").takeIf { it.isNotBlank() },
+                xblnr         = table.getString("XBLNR").takeIf { it.isNotBlank() },
+                sgtxt         = table.getString("SGTXT").takeIf { it.isNotBlank() },
+                vkorg         = table.getString("VKORG").takeIf { it.isNotBlank() },
+                gsber         = table.getString("GSBER").takeIf { it.isNotBlank() },
+                rudat         = table.getString("RUDAT").takeIf { it.isNotBlank() },
+                zstatus       = table.getString("ZSTATUS").takeIf { it.isNotBlank() },
+                zresult       = table.getString("ZRESULT").takeIf { it.isNotBlank() },
+                returnCode    = returnCode?.takeIf { it.isNotBlank() },
+                returnMessage = returnMessage?.takeIf { it.isNotBlank() },
+            )
+        } else {
+            SapIfRe010Result(
+                belnr1 = null, belnr2 = null, confirmId = null,
+                adate = null, resul = null, stcd1 = null, stcd2 = null,
+                xblnr = null, sgtxt = null, vkorg = null, gsber = null,
+                rudat = null, zstatus = null, zresult = null,
+                returnCode    = returnCode?.takeIf { it.isNotBlank() },
+                returnMessage = returnMessage?.takeIf { it.isNotBlank() },
+            )
+        }
+    }
 
     /**
      * SAP RFC ZFI_IF_RE_020 호출 — 은행 계좌 입금 내역 조회
@@ -128,7 +223,69 @@ class SapRfcClient(private val sapConfig: SapConfig) {
     }
 
     @Throws(JCoException::class)
-    fun executeInvcPosting(): Unit = TODO("ZFI_INVC_POSTING_LABS not yet implemented")
+    override fun postInvoices(rows: List<SapInvcPostingRow>): List<SapInvcPostingResult> =
+        executeInvcPosting(rows)
+
+    @Throws(JCoException::class)
+    fun executeInvcPosting(rows: List<SapInvcPostingRow>): List<SapInvcPostingResult> {
+        logger.info("Executing RFC: {} | count={}", INVC_POSTING, rows.size)
+        val destination: JCoDestination = JCoDestinationManager.getDestination(destinationName)
+        val function = destination.repository.getFunction(INVC_POSTING)
+            ?: throw JCoException(JCoException.JCO_ERROR_FUNCTION_NOT_FOUND, "Function $INVC_POSTING not found in SAP.")
+
+        val table = function.tableParameterList?.getTable("T_ZFIS704")
+            ?: throw JCoException(JCoException.JCO_ERROR_FUNCTION_NOT_FOUND, "Table T_ZFIS704 not found in SAP.")
+
+        // 배치 입력 — LISGC는 row.lisgc (1-based 5자리 index) 로 매칭
+        rows.forEach { row ->
+            table.appendRow()
+            table.setValue("LISGC",  row.lisgc)
+            table.setValue("XREF1",  row.xref1 ?: "")
+            table.setValue("DEBCL",  row.debcl ?: "")
+            table.setValue("BUDAT",  row.budat ?: "")
+            table.setValue("XNEGP",  row.xnegp ?: "")
+            table.setValue("XBLNR",  row.xblnr ?: "")
+            table.setValue("MWSKZ",  row.mwskz ?: "")
+            table.setValue("KOSTL",  row.kostl ?: "")
+            table.setValue("AUFNR",  row.aufnr ?: "")
+            table.setValue("WAERS",  row.waers ?: "")
+            row.wrbtr?.let { table.setValue("WRBTR", it) }
+            row.wmwst?.let { table.setValue("WMWST", it) }
+            table.setValue("BUPLA",  row.bupla ?: "")
+            table.setValue("ZUONR",  row.zuonr ?: "")
+            table.setValue("XREF2",  row.xref2 ?: "")
+            table.setValue("XREF3",  row.xref3 ?: "")
+            table.setValue("EMAIL",  row.email ?: "")
+            table.setValue("SGTXT",  row.sgtxt ?: "")
+            table.setValue("KIDNO",  row.kidno ?: "")
+        }
+
+        logger.info("[{}] Input rows: {}", INVC_POSTING,
+            rows.map { "LISGC=${it.lisgc} XREF1=${it.xref1} BUDAT=${it.budat} WRBTR=${it.wrbtr} WMWST=${it.wmwst}" })
+
+        function.execute(destination)
+
+        val ifrtc = function.exportParameterList?.getString("E_IFRTC")
+        val ifmsg = function.exportParameterList?.getString("E_IFMSG")
+        logger.info("[{}] Export: E_IFRTC={} E_IFMSG={} | response rows={}", INVC_POSTING, ifrtc, ifmsg, table.numRows)
+
+        return List(table.numRows) { i ->
+            table.setRow(i)
+            val lisgc = table.getString("LISGC")
+            val belnr = table.getString("BELNR")
+            val rtc   = table.getString("RTC")
+            val msg   = table.getString("MSG")
+            logger.info("[{}] Row[{}]: LISGC={} BELNR={} RTC={} MSG={}", INVC_POSTING, i, lisgc, belnr, rtc, msg)
+            SapInvcPostingResult(
+                lisgc = lisgc.takeIf { it.isNotBlank() },
+                belnr = belnr.takeIf { it.isNotBlank() },
+                rtc   = rtc.takeIf   { it.isNotBlank() },
+                msg   = msg.takeIf   { it.isNotBlank() },
+                ifrtc = ifrtc?.takeIf { it.isNotBlank() },
+                ifmsg = ifmsg?.takeIf { it.isNotBlank() },
+            )
+        }
+    }
 
     private fun mapBankDepositTableToResult(table: JCoTable): List<SapBankDepositResult> {
         return List(table.numRows) { i ->

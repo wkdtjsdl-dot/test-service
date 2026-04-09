@@ -95,7 +95,7 @@ Content-Type: application/json
     "depositDt": "2025-01-15",
     "depositAmt": 1000000,
     "outamt": 0,
-    "crcyCd": "KRW",
+    "crcyCd": "CRCY_KRW",
     "remark": "테스트 입금"
   },
   {
@@ -106,7 +106,7 @@ Content-Type: application/json
     "depositDt": "2025-01-16",
     "depositAmt": 500000,
     "outamt": 500000,
-    "crcyCd": "KRW",
+    "crcyCd": "CRCY_KRW",
     "remark": null
   }
 ]
@@ -125,8 +125,136 @@ Content-Type: application/json
     "depositDt": "2025-01-15",
     "depositAmt": 1000000,
     "outamt": 0,
-    "crcyCd": "KRW",
+    "crcyCd": "CRCY_KRW",
     "remark": "중복 테스트"
   }
 ]
+
+###
+### [ZFI_INVC_POSTING_LABS] 매출전표 배치 생성 — 단건
+# 확인 포인트:
+#   - sales-service 로그: "Executing RFC: ZFI_INVC_POSTING_LABS"
+#   - 응답 Row[0]: LISGC / BELNR / RTC / MSG
+#   - sent=true → sbl_demand.slstmt_no, bill_publ_yn=true 업데이트 확인
+# demandId: sbl_demand 테이블에서 slstmt_no IS NULL 인 건으로 교체
+POST {{api-service}}/api/sals/billing/demands/sales-statements/batch
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "demandIds": ["520f4cb5-4e6f-45c2-a8d7-e3ad13b9ea46"]
+}
+
+###
+### [ZFI_INVC_POSTING_LABS] 매출전표 배치 생성 — 다건
+POST {{api-service}}/api/sals/billing/demands/sales-statements/batch
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "demandIds": [
+    "여기에_demandId_1",
+    "여기에_demandId_2"
+  ]
+}
+
+###
+### [ZFI_INVC_POSTING_LABS] 이미 전송된 건 재전송 — 스킵 확인
+# 기대 응답: sent=false, message="이미 ERP 매출전표가 생성되었습니다: ..."
+POST {{api-service}}/api/sals/billing/demands/sales-statements/batch
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "demandIds": ["slstmt_no가_이미_있는_demandId"]
+}
+
+###
+### [ZFI_IF_RE_010] 수금 ERP 전송 — 은행 입금 단건 (rtype: 5N, 일반)
+# 확인 포인트:
+#   - sales-service 로그: "Executing RFC: ZFI_IF_RE_010 | rtype=5N"
+#   - 응답: sent=true, message 확인
+#   - sbl_colbill.send_yn = true 업데이트 확인
+# colbillId: sbl_colbill 테이블에서 pay_method_cd='PMMT_DP', advrece_yn=false, send_yn=false 인 건으로 교체
+POST {{api-service}}/api/sals/collections/send-to-erp
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "colbillIds": ["1DDD00D2-AC99-4120-892F-479E267E45AE"]
+}
+
+###
+### [ZFI_IF_RE_010] 수금 ERP 전송 — 은행 입금 단건 (rtype: 5D, 선수금)
+# 확인 포인트:
+#   - sales-service 로그: "Executing RFC: ZFI_IF_RE_010 | rtype=5D"
+# colbillId: pay_method_cd='PMMT_DP', advrece_yn=true, send_yn=false 인 건으로 교체
+POST {{api-service}}/api/sals/collections/send-to-erp
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "colbillIds": ["여기에_colbillId_은행_선수금"]
+}
+
+###
+### [ZFI_IF_RE_010] 수금 ERP 전송 — 카드 결제 단건 (rtype: 6N, 일반)
+# 확인 포인트:
+#   - sales-service 로그: "Executing RFC: ZFI_IF_RE_010 | rtype=6N"
+#   - 응답: sent=true
+# colbillId: pay_method_cd='PMMT_CD', advrece_yn=false, send_yn=false 인 건으로 교체
+POST {{api-service}}/api/sals/collections/send-to-erp
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "colbillIds": ["여기에_colbillId_카드_일반"]
+}
+
+###
+### [ZFI_IF_RE_010] 수금 ERP 전송 — 카드 결제 단건 (rtype: 6D, 선수금)
+# colbillId: pay_method_cd='PMMT_CD', advrece_yn=true, send_yn=false 인 건으로 교체
+POST {{api-service}}/api/sals/collections/send-to-erp
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "colbillIds": ["여기에_colbillId_카드_선수금"]
+}
+
+###
+### [ZFI_IF_RE_010] 수금 ERP 전송 — 다건 (은행+카드 혼합)
+# 확인 포인트:
+#   - 개별 실패가 다른 건에 영향 없음 (결과 배열 각각 확인)
+POST {{api-service}}/api/sals/collections/send-to-erp
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "colbillIds": [
+    "1DDD00D2-AC99-4120-892F-479E267E45AE",
+    "12EE51E1-B1C4-4D15-8B20-80A29767938D"
+  ]
+}
+
+###
+### [ZFI_IF_RE_010] 이미 전송된 건 재전송 — 스킵 확인
+# 기대 응답: sent=false, message="이미 전송된 수금 정보입니다"
+# colbillId: send_yn=true 인 건으로 교체
+POST {{api-service}}/api/sals/collections/send-to-erp
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+{
+  "colbillIds": ["send_yn이_true인_colbillId"]
+}
 

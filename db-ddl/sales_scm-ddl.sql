@@ -1651,6 +1651,55 @@ comment on column sbl_demand.colledger_id is '청구수금원장아이디';
 alter table sbl_demand
     owner to ailis_user;
 
+create table sbl_demand_hst
+(
+    demand_hst_id         varchar(50)           not null
+        constraint "PK_sbl_demand_hst"
+            primary key,
+    hst_cd                varchar(50)           not null,
+    hst_memo              varchar(500),
+    worker                varchar(50)           not null,
+    work_dtime            timestamp             not null,
+    demand_id             varchar(50)           not null,
+    demand_dt             date                  not null,
+    cust_cd               varchar(50)           not null,
+    demand_start_dt       date                  not null,
+    demand_end_dt         date                  not null,
+    stnd_price            numeric,
+    supval                numeric,
+    demand_charge         numeric,
+    addtax                numeric,
+    dscnt_rate            numeric,
+    demand_create_dtime   timestamp,
+    demand_creator_emp_no varchar(50),
+    insure_price          numeric,
+    invc_output_dtime     timestamp,
+    invc_output_empno     varchar(50),
+    slstmt_no             varchar(50),
+    slstmt_send_dt        date,
+    slstmt_send_emp_no    varchar(50),
+    demand_memo           varchar(4000),
+    sap_cust_cd           varchar(50),
+    bill_publ_yn          boolean default false not null,
+    invc_recp_email_addr  varchar(100),
+    creator               varchar(50)           not null,
+    create_dtime          timestamp             not null,
+    updater               varchar(50)           not null,
+    update_dtime          timestamp             not null,
+    colledger_id          varchar(50)
+);
+
+comment on table sbl_demand_hst is '청구 이력';
+comment on column sbl_demand_hst.demand_hst_id is '청구이력아이디 UUID';
+comment on column sbl_demand_hst.hst_cd is '이력코드';
+comment on column sbl_demand_hst.hst_memo is '이력메모';
+comment on column sbl_demand_hst.worker is '작업자';
+comment on column sbl_demand_hst.work_dtime is '작업일시';
+comment on column sbl_demand_hst.demand_id is '청구아이디';
+
+alter table sbl_demand_hst
+    owner to ailis_user;
+
 create table sbl_colledger
 (
     colledger_id     varchar(50)       not null

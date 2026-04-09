@@ -6,13 +6,13 @@ import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandComman
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandBaseSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.toDemandSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
-import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementCommand
+import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementBatchCommand
+import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResponse
 import java.time.LocalDate
 import com.idrsys.ailis.sales.application.dto.response.BillingRequestResponse
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
-import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementResponse
 import com.idrsys.ailis.sales.application.usecase.billing.BillingCommandUseCase
 import com.idrsys.ailis.sales.application.usecase.billing.BillingQueryUseCase
 import com.idrsys.web.annotation.JwtAuthorization
@@ -71,23 +71,13 @@ class BillingController(
         return billingCommandUseCase.cancelDemand(demandId, auth.adminId)
     }
 
-    /**
-     * Send sales statement to ERP (매출전표 생성)
-     *
-     * @param demandId Demand ID
-     * @param auth Authenticated admin from JWT token
-     * @return SendSalesStatementResponse with statement number
-     */
-    @Operation(summary = "매출전표 생성", description = "청구 데이터를 ERP로 전송하여 매출전표 생성")
-    @PostMapping("/demands/{demandId}/sales-statements")
-    suspend fun sendSalesStatement(
-        @PathVariable demandId: String,
+    @Operation(summary = "매출전표 배치 생성", description = "선택한 청구 건을 1회 RFC 호출로 일괄 ERP 전송")
+    @PostMapping("/demands/sales-statements/batch")
+    suspend fun sendSalesStatementBatch(
+        @RequestBody command: SendSalesStatementBatchCommand,
         @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
-    ): SendSalesStatementResponse {
-        return billingCommandUseCase.sendSalesStatement(
-            SendSalesStatementCommand(demandId),
-            auth.adminId
-        )
+    ): SendSalesStatementBatchResponse {
+        return billingCommandUseCase.sendSalesStatementBatch(command, auth.adminId)
     }
 
     /**

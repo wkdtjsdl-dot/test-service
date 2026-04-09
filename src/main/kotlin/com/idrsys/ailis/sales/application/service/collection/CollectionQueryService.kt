@@ -8,6 +8,7 @@ import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerResponse
 import com.idrsys.ailis.sales.application.required.repository.collection.BankDepositRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CardPaymentRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionLedgerRepository
+import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionQueryUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -26,6 +27,7 @@ class CollectionQueryService(
     private val collectionLedgerRepository: CollectionLedgerRepository,
     private val cardPaymentRepository: CardPaymentRepository,
     private val bankDepositRepository: BankDepositRepository,
+    private val custCustomRepository: CustCustomRepository,
 ) : CollectionQueryUseCase {
 
     /**
@@ -38,6 +40,7 @@ class CollectionQueryService(
      */
     override suspend fun getCollectionLedger(custCd: String): CollectionLedgerResponse {
         val transactions = collectionLedgerRepository.findLedgerTransactionsWithBalance(custCd).toList()
+        val cust = custCustomRepository.findByCustCd(custCd)
 
         // 각 트랜잭션의 colbillAmt를 구분에 따라 합산
         val totalDemandAmt = transactions
@@ -51,6 +54,7 @@ class CollectionQueryService(
         return CollectionLedgerResponse(
             custCd = custCd,
             custNm = null, // TODO: Fetch from customer service
+            bizrno = cust?.bizrno,
             transactions = transactions,
             totalDemandAmt = totalDemandAmt,
             totalCollectionAmt = totalCollectionAmt,

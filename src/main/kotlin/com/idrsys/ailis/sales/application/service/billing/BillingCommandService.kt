@@ -1,20 +1,27 @@
 package com.idrsys.ailis.sales.application.service.billing
 
 import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandCommand
-import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementCommand
+import com.idrsys.ailis.sales.application.dto.request.billing.SapInvcPostingRow
+import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementBatchCommand
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
-import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementResponse
+import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResponse
+import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResult
 import com.idrsys.ailis.sales.application.required.external.ReqServicePort
+import com.idrsys.ailis.sales.application.required.repository.billing.DemandHstRepository
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionLedgerRepository
+import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
+import com.idrsys.ailis.sales.application.required.sap.InvoiceErpPort
 import com.idrsys.ailis.sales.application.usecase.billing.BillingCommandUseCase
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
 import com.idrsys.ailis.sales.domain.model.Demand
+import com.idrsys.ailis.sales.domain.model.DemandHst
 import com.idrsys.web.exception.UserDefinedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Billing Command Service
@@ -25,8 +32,11 @@ import java.time.LocalDateTime
 @Transactional
 class BillingCommandService(
     private val demandRepository: DemandRepository,
+    private val demandHstRepository: DemandHstRepository,
     private val collectionLedgerRepository: CollectionLedgerRepository,
     private val reqServicePort: ReqServicePort,
+    private val custCustomRepository: CustCustomRepository,
+    private val invoiceErpPort: InvoiceErpPort,
 ) : BillingCommandUseCase {
 
     /**
@@ -85,7 +95,41 @@ class BillingCommandService(
         demand.assignColledgerId(savedLedger.colledgerId!!)
         val savedDemand = demandRepository.save(demand)
 
-        // 6. Update test requests with closing information
+        // 7. Save demand history snapshot
+        demandHstRepository.save(DemandHst(
+            hstCd = "HST_C",
+            worker = adminId,
+            workDtime = LocalDateTime.now(),
+            demandId = savedDemand.demandId!!,
+            demandDt = savedDemand.demandDt,
+            custCd = savedDemand.custCd,
+            demandStartDt = savedDemand.demandStartDt,
+            demandEndDt = savedDemand.demandEndDt,
+            stndPrice = savedDemand.stndPrice,
+            supval = savedDemand.supval,
+            demandCharge = savedDemand.demandCharge,
+            addtax = savedDemand.addtax,
+            dscntRate = savedDemand.dscntRate,
+            demandCreateDtime = savedDemand.demandCreateDtime,
+            demandCreatorEmpNo = savedDemand.demandCreatorEmpNo,
+            insurePrice = savedDemand.insurePrice,
+            invcOutputDtime = savedDemand.invcOutputDtime,
+            invcOutputEmpno = savedDemand.invcOutputEmpno,
+            slstmtNo = savedDemand.slstmtNo,
+            slstmtSendDt = savedDemand.slstmtSendDt,
+            slstmtSendEmpNo = savedDemand.slstmtSendEmpNo,
+            demandMemo = savedDemand.demandMemo,
+            sapCustCd = savedDemand.sapCustCd,
+            billPublYn = savedDemand.billPublYn,
+            invcRecpEmailAddr = savedDemand.invcRecpEmailAddr,
+            creator = savedDemand.creator,
+            createDtime = savedDemand.createDtime,
+            updater = savedDemand.updater,
+            updateDtime = savedDemand.updateDtime,
+            colledgerId = savedDemand.colledgerId,
+        ))
+
+        // 8. Update test requests with closing information
         val createdRequestCount = reqServicePort.updateTstItemClosingInfo(
             directAcctCd = command.custCd,
             startDt = command.demandStartDt,
@@ -96,7 +140,7 @@ class BillingCommandService(
             closingUser = adminId
         )
 
-        // 7. Return response
+        // 9. Return response
         return CreateDemandResponse(
             demandId = savedDemand.demandId.toString(),
             custCd = savedDemand.custCd,
@@ -157,45 +201,121 @@ class BillingCommandService(
     }
 
     /**
-     * Send sales statement to ERP (매출전표 생성)
+     * Send sales statements to ERP in batch (매출전표 배치 생성)
      *
      * Business Rules:
-     * 1. Statement can only be sent once
-     * 2. After sending, demand cannot be cancelled
-     * 3. ERP integration may use saga pattern for compensation
-     *
-     * Transaction boundary: Single transaction with ERP call
+     * 1. 이미 전송된 건(slstmtNo != null)은 스킵
+     * 2. 1 RFC 호출로 N건 배치 처리
+     * 3. LISGC (1-based 5자리 index)로 응답 row와 입력 demandId 매칭
+     * 4. 부분 성공 허용 — 성공한 건만 저장
      */
-    override suspend fun sendSalesStatement(
-        command: SendSalesStatementCommand,
+    override suspend fun sendSalesStatementBatch(
+        command: SendSalesStatementBatchCommand,
         adminId: String
-    ): SendSalesStatementResponse {
-        // 1. Find demand
-        val demand = demandRepository.findById(command.demandId)
-            ?: throw UserDefinedException("DEMAND_NOT_FOUND", "청구서를 찾을 수 없습니다: ${command.demandId}")
+    ): SendSalesStatementBatchResponse {
+        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+        // LISGC 포맷: yyyyMMdd(8) + HHmm(4) + index(3) = 15자리
+        // 분 단위로 prefix가 달라져 동시 배치 간 충돌 방지
+        val lisgcPrefix = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"))
 
-        // 2. Check if already sent
-        if (demand.slstmtNo != null) {
-            throw UserDefinedException(
-                "INVALID_OPERATION",
-                "이미 ERP 매출전표가 생성되었습니다: ${demand.slstmtNo}"
+        // 1. demand 조회 + 이미 전송된 건 필터
+        data class DemandWithIndex(val index: Int, val demand: Demand, val lisgc: String)
+
+        val validItems = mutableListOf<DemandWithIndex>()
+        val skippedResults = mutableListOf<SendSalesStatementBatchResult>()
+
+        command.demandIds.forEachIndexed { idx, demandId ->
+            val demand = demandRepository.findById(demandId)
+            when {
+                demand == null -> skippedResults += SendSalesStatementBatchResult(
+                    demandId = demandId, sent = false, message = "청구서를 찾을 수 없습니다."
+                )
+                demand.slstmtNo != null -> skippedResults += SendSalesStatementBatchResult(
+                    demandId = demandId, sent = false,
+                    message = "이미 ERP 매출전표가 생성되었습니다: ${demand.slstmtNo}"
+                )
+                else -> validItems += DemandWithIndex(
+                    index = idx,
+                    demand = demand,
+                    lisgc = lisgcPrefix + (validItems.size + 1).toString().padStart(3, '0')
+                )
+            }
+        }
+
+        if (validItems.isEmpty()) {
+            return SendSalesStatementBatchResponse(sentCount = 0, results = skippedResults)
+        }
+
+        // 2. 고객 정보 일괄 조회 (custCd 중복 제거)
+        val custCds = validItems.map { it.demand.custCd }.distinct()
+        val custMap = custCds.mapNotNull { custCustomRepository.findByCustCd(it) }
+            .associateBy { it.custCd }
+
+        // 3. T_ZFIS704 배치 row 구성 — LISGC = 1-based 5자리 인덱스
+        val rows = validItems.map { item ->
+            val demand = item.demand
+            val cust = custMap[demand.custCd]
+            SapInvcPostingRow(
+                lisgc = item.lisgc,
+                xref1 = demand.custCd.takeLast(6),      // 뒤에서 6글자
+                debcl = "10",                               // TODO demand db에서 가져오는걸로 추후 수정  LIS 10 :매출 / 30 : 선수금
+                budat = demand.demandDt.format(formatter),
+                xnegp = "",
+                xblnr = cust?.bizrno ?: "",
+                mwskz = "A1",
+                kostl = "0033020102",                       // GC지놈 TS팀 고정값
+                aufnr = "",
+                waers = if (cust?.frgnAcctYn == true) "USD" else "KRW",
+                wrbtr = demand.supval,
+                wmwst = demand.addtax,
+                bupla = "3300",                             // 고정값
+                zuonr = demand.custCd,
+                xref2 = "20",                               // 10 일발행, 20 월발행, 90 미발행
+                xref3 = "E",                                // E 전자계산서, SPACE 수기
+                email = demand.invcRecpEmailAddr ?: "",
+                sgtxt = "${cust?.custNm ?: demand.custCd} 검사비",
+                kidno = cust?.custNm ?: "",                 // 거래처명
             )
         }
 
-        // 3. Call ERP integration service
-        // TODO: Implement ERP integration service call
-        val slstmtNo = "SL-${java.time.LocalDate.now().year}-${demand.demandId.toString().substring(0, 8)}"
+        // 4. 배치 RFC 호출
+        val sapResults = invoiceErpPort.postInvoices(rows)
 
-        // 4. Update demand with statement number
-        demand.sendSalesStatement(slstmtNo, adminId)
-        val updatedDemand = demandRepository.save(demand)
+        // 5. LISGC로 응답 매칭 — 성공한 건 저장
+        val lisgcToItem = validItems.associateBy { it.lisgc }
+        val sentResults = mutableListOf<SendSalesStatementBatchResult>()
 
-        // 5. Return response
-        return SendSalesStatementResponse(
-            demandId = updatedDemand.demandId.toString(),
-            slstmtNo = updatedDemand.slstmtNo!!,
-            slstmtSendDt = updatedDemand.slstmtSendDt!!,
-            sentToErp = true
+        sapResults.forEach { sapResult ->
+            val item = lisgcToItem[sapResult.lisgc] ?: return@forEach
+            val demand = item.demand
+            if (!sapResult.rtc.isNullOrBlank()) {
+                sentResults += SendSalesStatementBatchResult(
+                    demandId = demand.demandId!!,
+                    sent = false,
+                    message = "SAP 전기 오류 [${sapResult.rtc}]: ${sapResult.msg ?: "알 수 없는 오류"}"
+                )
+            } else if (sapResult.belnr.isNullOrBlank()) {
+                sentResults += SendSalesStatementBatchResult(
+                    demandId = demand.demandId!!,
+                    sent = false,
+                    message = "SAP에서 전표번호가 반환되지 않았습니다."
+                )
+            } else {
+                demand.sendSalesStatement(sapResult.belnr, adminId)
+                demandRepository.save(demand)
+                sentResults += SendSalesStatementBatchResult(
+                    demandId = demand.demandId!!,
+                    sent = true,
+                    slstmtNo = sapResult.belnr,
+                    message = "전송 완료"
+                )
+            }
+        }
+
+        val allResults = skippedResults + sentResults
+        return SendSalesStatementBatchResponse(
+            sentCount = sentResults.count { it.sent },
+            results = allResults
         )
     }
 }
