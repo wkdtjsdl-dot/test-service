@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.application.service.collection
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import com.idrsys.ailis.sales.application.dto.request.collection.CollectionListSearchParam
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterCollectionCommand
 import com.idrsys.ailis.sales.application.dto.request.collection.RegisterSplitPaymentCommand
@@ -12,7 +13,10 @@ import com.idrsys.ailis.sales.application.dto.response.DeleteCollectionBillRespo
 import com.idrsys.ailis.sales.application.dto.response.SendCollectionResponse
 import com.idrsys.ailis.sales.application.dto.response.SendCollectionResult
 import com.idrsys.ailis.sales.application.dto.response.SplitCollectionResponse
+import com.idrsys.ailis.sales.application.dto.request.ifre010.SapIfRe010Row
 import com.idrsys.ailis.sales.application.required.repository.collection.*
+import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
+import com.idrsys.ailis.sales.application.required.sap.CollectionErpPort
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionCommandUseCase
 import com.idrsys.ailis.sales.domain.model.CollectionBill
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
@@ -23,6 +27,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.String
 
 /**
@@ -37,7 +42,11 @@ class CollectionCommandService(
     private val collectionLedgerRepository: CollectionLedgerRepository,
     private val cardPaymentRepository: CardPaymentRepository,
     private val bankDepositRepository: BankDepositRepository,
+    private val custCustomRepository: CustCustomRepository,
+    private val collectionErpPort: CollectionErpPort,
 ) : CollectionCommandUseCase {
+
+    private val logger = KotlinLogging.logger {}
 
     override suspend fun findCollectionBills(searchParam: CollectionListSearchParam): Flow<CollectionBillListResponse> {
         return collectionBillRepository.findCollectionBills(searchParam)
@@ -742,17 +751,95 @@ class CollectionCommandService(
                         message = "이미 전송된 수금 정보입니다"
                     )
                 } else {
-                    // TODO: Call ERP integration service
+                    // 수금유형(rtype) 결정: 은행=5N/5D, 카드=6N/6D (N=일반, D=선수금)
+                    val rtype = when {
+                        bill.payMethodCd == "PMMT_DP" && !bill.advreceYn -> "5N"
+                        bill.payMethodCd == "PMMT_DP" &&  bill.advreceYn -> "5D"
+                        bill.payMethodCd == "PMMT_CD" && !bill.advreceYn -> "6N"
+                        bill.payMethodCd == "PMMT_CD" &&  bill.advreceYn -> "6D"
+                        else -> throw UserDefinedException(
+                            "UNSUPPORTED_PAY_METHOD",
+                            "ERP 전송 미지원 결제수단: ${bill.payMethodCd}"
+                        )
+                    }
 
-                    // Mark as sent
-                    bill.markAsSent(adminId)
-                    collectionBillRepository.save(bill)
+                    val cust = custCustomRepository.findByCustCd(bill.custCd)
+                    val dateStr = bill.colbillDt.format(DateTimeFormatter.BASIC_ISO_DATE)
+                    val isBank = bill.payMethodCd == "PMMT_DP"
+                    val bankDeposit = if (isBank) bill.bankDepositId?.let { bankDepositRepository.findById(it) } else null
+                    logger.info("bill fields | colbillId={} surecpSlstmtNo={} bankDepositId={} bankDeposit.surecpSlstmtNo={}",
+                        colbillId, bill.surecpSlstmtNo, bill.bankDepositId, bankDeposit?.surecpSlstmtNo)
 
-                    SendCollectionResult(
-                        colbillId = colbillId,
-                        sent = true,
-                        message = "전송 완료"
+                    val row: SapIfRe010Row = if (isBank) {
+                        SapIfRe010Row.Bank(
+                            budat     = dateStr,
+                            kkber     = "3300",
+                            vkgrp     = "901",
+                            vkbur     = "3312",
+                            seq       = null,
+                            gjahr     = bill.colbillDt.year.toString(),
+                            monat     = bill.colbillDt.monthValue.toString().padStart(2, '0'),
+                            uzawe     = "02",
+                            wrbtr     = bill.payAmt,
+                            inDate    = dateStr,
+                            stcd2     = cust?.bizrno,
+                            sgtxt     = "현금",
+                            vkorg     = "3310",
+                            gsber     = "3300",
+                            bankl     = bankDeposit?.accountDivCd ?: command.bankl,
+                            bankn     = bankDeposit?.accountNo ?: command.bankn,
+                            belnrGasu = bill.surecpSlstmtNo,
+                            kunnrzz   = null,
+                        )
+                    } else {
+                        SapIfRe010Row.Card(
+                            budat     = dateStr,
+                            kkber     = "3300",
+                            vkgrp     = "901",
+                            vkbur     = "3312",
+                            seq       = null,
+                            gjahr     = bill.colbillDt.year.toString(),
+                            monat     = bill.colbillDt.monthValue.toString().padStart(2, '0'),
+                            uzawe     = "04",
+                            wrbtr     = bill.payAmt,
+                            inDate    = dateStr,
+                            stcd2     = cust?.bizrno,
+                            sgtxt     = "카드",
+                            vkorg     = "3310",
+                            gsber     = "3300",
+                            kunnrzz   = null,
+                            zfbdt     = dateStr,
+                            zstmemb   = null,
+                            zcompcd   = bill.cardCompCd,
+                            appramt   = bill.payAmt,
+                            insomonth = bill.instlMonth,
+                            rudat     = dateStr,
+                        )
+                    }
+
+                    val erpResult = collectionErpPort.sendCollection(rtype, row)
+                    logger.info("ZFI_IF_RE_010 result | colbillId={} rtype={} returnCode={} returnMessage={} zstatus={} zresult={} belnr1={} belnr2={}",
+                        colbillId, rtype,
+                        erpResult.returnCode, erpResult.returnMessage,
+                        erpResult.zstatus, erpResult.zresult,
+                        erpResult.belnr1, erpResult.belnr2
                     )
+
+                    if (erpResult.zstatus == "E" || erpResult.returnCode == "E") {
+                        SendCollectionResult(
+                            colbillId = colbillId,
+                            sent = false,
+                            message = erpResult.zresult ?: erpResult.returnMessage ?: "ERP 전송 실패"
+                        )
+                    } else {
+                        bill.markAsSent(adminId)
+                        collectionBillRepository.save(bill)
+                        SendCollectionResult(
+                            colbillId = colbillId,
+                            sent = true,
+                            message = erpResult.returnMessage ?: "전송 완료"
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 SendCollectionResult(

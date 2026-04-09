@@ -228,6 +228,7 @@ class Demand(
         this.slstmtNo = slstmtNo
         this.slstmtSendDt = LocalDate.now()
         this.slstmtSendEmpNo = sendEmpNo
+        this.billPublYn = true
         this.updater = sendEmpNo
         this.updateDtime = LocalDateTime.now()
     }

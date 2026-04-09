@@ -66,6 +66,7 @@ class CollectionBillRepositoryImpl(
                 cm.SAP_CUST_CD,
                 cm.BZOFFI_CD,
                 cm.CUST_NM,
+                cm.BIZRNO,
                 cp.PAY_DIV_CD,
                 cp.TRADE_NO
             )
@@ -122,6 +123,7 @@ class CollectionBillRepositoryImpl(
             sapCustCd = row["sap_cust_cd"] as? String,
             bzoffiCd = row["bzoffi_cd"] as? String,
             custNm = row["cust_nm"] as? String,
+            bizrno = row["bizrno"] as? String,
             accountNo = row["account_no"] as? String,
             remark = row["remark"] as? String,
             tradeNo = row["trade_no"] as? String,

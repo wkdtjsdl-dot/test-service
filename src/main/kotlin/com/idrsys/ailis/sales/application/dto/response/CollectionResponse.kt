@@ -33,6 +33,7 @@ data class CollectionBillListResponse(
    val sapCustCd: String? = null,
     val bzoffiCd: String? = null,
     val custNm: String? = null,
+    val bizrno: String? = null,
     val accountNo: String? = null,
     val remark: String? = null,
    val tradeNo: String? = null,
@@ -112,6 +113,7 @@ data class SplitCollectionResponse(
 data class CollectionLedgerResponse(
     val custCd: String,
     val custNm: String? = null,
+    val bizrno: String? = null,
     val transactions: List<CollectionLedgerTransaction>,
     val totalDemandAmt: BigDecimal,
     val totalCollectionAmt: BigDecimal,

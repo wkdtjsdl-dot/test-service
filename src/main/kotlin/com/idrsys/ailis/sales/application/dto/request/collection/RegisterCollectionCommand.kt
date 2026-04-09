@@ -73,5 +73,8 @@ data class SplitPaymentInfo(
  * Send Collection to ERP Command
  */
 data class SendCollectionToErpCommand(
-    val colbillIds: List<String>
+    val colbillIds: List<String>,
+    val stcd2: String? = null,    // 사업자등록번호
+    val bankl: String? = null,    // 은행번호 (bzval BANKINFO itemVal03)
+    val bankn: String? = null,    // 계좌번호 (BankDeposit.accountNo)
 )

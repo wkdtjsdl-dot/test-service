@@ -570,6 +570,16 @@ class CustCustomRepositoryImpl(
             conditions += SCS_CUST_MST.BZOFFI_CD.eq(it)
         }
 
+        // 계산서발행여부 필터링
+        searchParam.billPublYn?.let {
+            conditions += SCS_CUST_MST.BILL_PUBL_YN.eq(it)
+        }
+
+        // 고객상태코드 필터링
+        searchParam.custStatCds.takeIf { it.isNotEmpty() }?.let {
+            conditions += SCS_CUST_MST.CUST_STAT_CD.`in`(it)
+        }
+
         val selectFields = arrayOf(
             SCS_CUST_MST.CUST_MST_ID,
             SCS_CUST_MST.CUST_CD,

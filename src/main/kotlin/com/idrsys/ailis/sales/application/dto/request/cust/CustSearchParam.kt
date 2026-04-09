@@ -38,4 +38,6 @@ data class CustAutoCompleteSearchParam(
     val rprsCustCdNm: String? = null, // 대표고객코드/명 자동완성 검색어
     val directAcctCdNm: String? = null, // 직접거래처코드/명 자동완성 검색어
     val bzoffiCd: String? = null, // 영업소코드 (비admin용 영업소 기준 필터링)
+    val billPublYn: Boolean? = null, // 계산서발행여부 필터
+    val custStatCds: List<String> = emptyList(), // 고객상태코드 필터 (IN 조건)
 )

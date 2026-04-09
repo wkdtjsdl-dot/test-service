@@ -1,10 +1,10 @@
 package com.idrsys.ailis.sales.application.usecase.billing
 
 import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandCommand
-import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementCommand
+import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementBatchCommand
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
-import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementResponse
+import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResponse
 
 /**
  * Billing Command Use Case
@@ -23,7 +23,7 @@ interface BillingCommandUseCase {
     suspend fun cancelDemand(demandId: String, adminId: String): CancelDemandResponse
 
     /**
-     * Send sales statement to ERP (매출전표 생성)
+     * Send sales statements to ERP in batch (매출전표 배치 생성)
      */
-    suspend fun sendSalesStatement(command: SendSalesStatementCommand, adminId: String): SendSalesStatementResponse
+    suspend fun sendSalesStatementBatch(command: SendSalesStatementBatchCommand, adminId: String): SendSalesStatementBatchResponse
 }
