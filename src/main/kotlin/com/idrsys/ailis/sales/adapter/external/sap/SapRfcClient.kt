@@ -10,6 +10,7 @@ import com.idrsys.ailis.sales.application.dto.response.sap.SapBankDepositResult
 import com.idrsys.ailis.sales.application.dto.response.sap.SapCustomerIfLabsResponse
 import com.idrsys.ailis.sales.application.dto.response.sap.SapIfRe010Result
 import com.idrsys.ailis.sales.application.dto.response.sap.SapInvcPostingResult
+import com.idrsys.ailis.sales.application.required.sap.BankDepositErpPort
 import com.idrsys.ailis.sales.application.required.sap.CollectionErpPort
 import com.idrsys.ailis.sales.application.required.sap.InvoiceErpPort
 import java.math.BigDecimal
@@ -21,13 +22,15 @@ import com.sap.conn.jco.JCoTable
 import com.sap.conn.jco.ext.DestinationDataEventListener
 import com.sap.conn.jco.ext.DestinationDataProvider
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Properties
 
 @Component
-class SapRfcClient(private val sapConfig: SapConfig) : CollectionErpPort, InvoiceErpPort {
+@Profile("sap")
+class SapRfcClient(private val sapConfig: SapConfig) : CollectionErpPort, InvoiceErpPort, BankDepositErpPort {
 
     private val logger = LoggerFactory.getLogger(SapRfcClient::class.java)
     private val destinationName = "SAP_SALES_SERVICE"
@@ -191,6 +194,13 @@ class SapRfcClient(private val sapConfig: SapConfig) : CollectionErpPort, Invoic
      * Input Table IT_712: 조회할 은행 계좌 목록 (BANKL, BANKN)
      * Output Table IT_713: 입금 내역 (BANKL, BANKN, GJAHR, BELNR, BUDAT, WRBTR, AVLAMT, WAERS, SGTXT)
      */
+    @Throws(JCoException::class)
+    override fun fetchBankDeposits(
+        startDt: String,
+        endDt: String,
+        bankAccounts: List<BankAccountParam>
+    ): List<SapBankDepositResult> = executeIfRe020(startDt, endDt, bankAccounts)
+
     @Throws(JCoException::class)
     fun executeIfRe020(
         startDt: String,
