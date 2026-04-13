@@ -767,8 +767,11 @@ class CollectionCommandService(
                     val dateStr = bill.colbillDt.format(DateTimeFormatter.BASIC_ISO_DATE)
                     val isBank = bill.payMethodCd == "PMMT_DP"
                     val bankDeposit = if (isBank) bill.bankDepositId?.let { bankDepositRepository.findById(it) } else null
+                    val cardPayment = if (!isBank) bill.cardPayId?.let { cardPaymentRepository.findById(it) } else null
                     logger.info("bill fields | colbillId={} surecpSlstmtNo={} bankDepositId={} bankDeposit.surecpSlstmtNo={}",
                         colbillId, bill.surecpSlstmtNo, bill.bankDepositId, bankDeposit?.surecpSlstmtNo)
+
+                    val erpSeqNo = collectionBillRepository.nextErpSeqNo()
 
                     val row: SapIfRe010Row = if (isBank) {
                         SapIfRe010Row.Bank(
@@ -776,7 +779,7 @@ class CollectionCommandService(
                             kkber     = "3300",
                             vkgrp     = "901",
                             vkbur     = "3312",
-                            seq       = null,
+                            seq       = erpSeqNo,
                             gjahr     = bill.colbillDt.year.toString(),
                             monat     = bill.colbillDt.monthValue.toString().padStart(2, '0'),
                             uzawe     = "02",
@@ -792,28 +795,29 @@ class CollectionCommandService(
                             kunnrzz   = null,
                         )
                     } else {
+                        val cardPayDt = cardPayment?.payDt ?: dateStr
                         SapIfRe010Row.Card(
-                            budat     = dateStr,
+                            budat     = cardPayDt,
                             kkber     = "3300",
                             vkgrp     = "901",
                             vkbur     = "3312",
-                            seq       = null,
+                            seq       = erpSeqNo,
                             gjahr     = bill.colbillDt.year.toString(),
                             monat     = bill.colbillDt.monthValue.toString().padStart(2, '0'),
                             uzawe     = "04",
                             wrbtr     = bill.payAmt,
-                            inDate    = dateStr,
+                            inDate    = cardPayDt,
                             stcd2     = cust?.bizrno,
                             sgtxt     = "카드",
                             vkorg     = "3310",
                             gsber     = "3300",
                             kunnrzz   = null,
-                            zfbdt     = dateStr,
+                            zfbdt     = cardPayDt,
                             zstmemb   = null,
                             zcompcd   = bill.cardCompCd,
                             appramt   = bill.payAmt,
                             insomonth = bill.instlMonth,
-                            rudat     = dateStr,
+                            rudat     = cardPayDt,
                         )
                     }
 

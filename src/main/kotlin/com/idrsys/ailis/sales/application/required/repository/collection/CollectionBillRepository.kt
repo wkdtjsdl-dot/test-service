@@ -25,4 +25,9 @@ interface CollectionBillRepository {
      * Find collection bill by ID
      */
     suspend fun findCollectionBillById(colbillId: String): CollectionBill?
+
+    /**
+     * Get next ERP sequence number from DB sequence (4-digit padded)
+     */
+    suspend fun nextErpSeqNo(): String
 }

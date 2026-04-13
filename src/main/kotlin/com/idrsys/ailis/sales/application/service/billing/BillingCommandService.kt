@@ -50,8 +50,17 @@ class BillingCommandService(
      * Transaction boundary: All operations must succeed or rollback
      */
     override suspend fun createDemand(command: CreateDemandCommand, adminId: String): CreateDemandResponse {
-        // 1. Validate customer exists
-        // TODO: Add customer validation when customer repository is available
+        // 1. 고객 조회 및 SAP 거래처 코드 검증
+        val cust = custCustomRepository.findByCustCd(command.custCd)
+            ?: throw UserDefinedException("CUST_NOT_FOUND", "고객을 찾을 수 없습니다: ${command.custCd}")
+
+        val sapCustCd = cust.sapCustCd
+        if (sapCustCd.isNullOrBlank()) {
+            throw UserDefinedException(
+                "SAP_CUST_CD_NOT_FOUND",
+                "SAP 거래처 연동실패(고객관리-ERP 코드확인)"
+            )
+        }
 
         // 2. Check for duplicate demand in the same period
         // TODO: Implement duplicate check when custom repository is available
@@ -71,7 +80,7 @@ class BillingCommandService(
             demandCharge = command.demandCharge,
             dscntRate = command.dscntRate,
             insurePrice = command.insurePrice,
-            sapCustCd = command.sapCustCd,
+            sapCustCd = sapCustCd,
             invcRecpEmailAddr = command.invcRecpEmailAddr,
             demandMemo = command.demandMemo,
             creator = adminId,
@@ -95,9 +104,21 @@ class BillingCommandService(
         demand.assignColledgerId(savedLedger.colledgerId!!)
         val savedDemand = demandRepository.save(demand)
 
-        // 7. Save demand history snapshot
+        // 7. Update test requests with closing information
+        val createdRequestCount = reqServicePort.updateTstItemClosingInfo(
+            directAcctCd = command.custCd,
+            startDt = command.demandStartDt,
+            endDt = command.demandEndDt,
+            exrtId = command.exrtId,
+            stndExrt = command.stndExrt,
+            closingMemo = command.demandMemo,
+            closingUser = adminId
+        )
+
+        // 8. Save demand history snapshot (모든 생성 작업 완료 후)
         demandHstRepository.save(DemandHst(
             hstCd = "HST_C",
+            hstMemo = "청구 생성",
             worker = adminId,
             workDtime = LocalDateTime.now(),
             demandId = savedDemand.demandId!!,
@@ -128,17 +149,6 @@ class BillingCommandService(
             updateDtime = savedDemand.updateDtime,
             colledgerId = savedDemand.colledgerId,
         ))
-
-        // 8. Update test requests with closing information
-        val createdRequestCount = reqServicePort.updateTstItemClosingInfo(
-            directAcctCd = command.custCd,
-            startDt = command.demandStartDt,
-            endDt = command.demandEndDt,
-            exrtId = command.exrtId,
-            stndExrt = command.stndExrt,
-            closingMemo = command.demandMemo,
-            closingUser = adminId
-        )
 
         // 9. Return response
         return CreateDemandResponse(
@@ -181,7 +191,42 @@ class BillingCommandService(
             }
         }
 
-        // 4. Release test requests (reset closing information)
+        // 4. Save demand history snapshot (cancel)
+        demandHstRepository.save(DemandHst(
+            hstCd = "HST_D",
+            hstMemo = "청구 취소",
+            worker = adminId,
+            workDtime = LocalDateTime.now(),
+            demandId = demand.demandId!!,
+            demandDt = demand.demandDt,
+            custCd = demand.custCd,
+            demandStartDt = demand.demandStartDt,
+            demandEndDt = demand.demandEndDt,
+            stndPrice = demand.stndPrice,
+            supval = demand.supval,
+            demandCharge = demand.demandCharge,
+            addtax = demand.addtax,
+            dscntRate = demand.dscntRate,
+            demandCreateDtime = demand.demandCreateDtime,
+            demandCreatorEmpNo = demand.demandCreatorEmpNo,
+            insurePrice = demand.insurePrice,
+            invcOutputDtime = demand.invcOutputDtime,
+            invcOutputEmpno = demand.invcOutputEmpno,
+            slstmtNo = demand.slstmtNo,
+            slstmtSendDt = demand.slstmtSendDt,
+            slstmtSendEmpNo = demand.slstmtSendEmpNo,
+            demandMemo = demand.demandMemo,
+            sapCustCd = demand.sapCustCd,
+            billPublYn = demand.billPublYn,
+            invcRecpEmailAddr = demand.invcRecpEmailAddr,
+            creator = demand.creator,
+            createDtime = demand.createDtime,
+            updater = demand.updater,
+            updateDtime = demand.updateDtime,
+            colledgerId = demand.colledgerId,
+        ))
+
+        // 5. Release test requests (reset closing information)
         val releasedRequestCount = reqServicePort.releaseTstItemClosingInfo(
             directAcctCd = demand.custCd,
             startDt = demand.demandStartDt,
@@ -189,10 +234,10 @@ class BillingCommandService(
             updater = adminId
         )
 
-        // 5. Delete demand
+        // 6. Delete demand
         demandRepository.delete(demand)
 
-        // 6. Return response
+        // 7. Return response
         return CancelDemandResponse(
             demandId = demandId,
             cancelled = true,
@@ -260,7 +305,7 @@ class BillingCommandService(
                 xref1 = demand.custCd.takeLast(6),      // 뒤에서 6글자
                 debcl = "10",                               // TODO demand db에서 가져오는걸로 추후 수정  LIS 10 :매출 / 30 : 선수금
                 budat = demand.demandDt.format(formatter),
-                xnegp = "",
+                xnegp = "",                                // 취소/수정 전표지시자 (일반전표 SPACE , 취소 'X')
                 xblnr = cust?.bizrno ?: "",
                 mwskz = "A1",
                 kostl = "0033020102",                       // GC지놈 TS팀 고정값
@@ -288,7 +333,7 @@ class BillingCommandService(
         sapResults.forEach { sapResult ->
             val item = lisgcToItem[sapResult.lisgc] ?: return@forEach
             val demand = item.demand
-            if (!sapResult.rtc.isNullOrBlank()) {
+            if (sapResult.rtc == "E") {
                 sentResults += SendSalesStatementBatchResult(
                     demandId = demand.demandId!!,
                     sent = false,
@@ -302,9 +347,42 @@ class BillingCommandService(
                 )
             } else {
                 demand.sendSalesStatement(sapResult.belnr, adminId)
-                demandRepository.save(demand)
+                val savedDemand = demandRepository.save(demand)
+                demandHstRepository.save(DemandHst(
+                    hstCd = "HST_M",
+                    hstMemo = "매출전표 생성",
+                    worker = adminId,
+                    workDtime = LocalDateTime.now(),
+                    demandId = savedDemand.demandId!!,
+                    demandDt = savedDemand.demandDt,
+                    custCd = savedDemand.custCd,
+                    demandStartDt = savedDemand.demandStartDt,
+                    demandEndDt = savedDemand.demandEndDt,
+                    stndPrice = savedDemand.stndPrice,
+                    supval = savedDemand.supval,
+                    demandCharge = savedDemand.demandCharge,
+                    addtax = savedDemand.addtax,
+                    dscntRate = savedDemand.dscntRate,
+                    demandCreateDtime = savedDemand.demandCreateDtime,
+                    demandCreatorEmpNo = savedDemand.demandCreatorEmpNo,
+                    insurePrice = savedDemand.insurePrice,
+                    invcOutputDtime = savedDemand.invcOutputDtime,
+                    invcOutputEmpno = savedDemand.invcOutputEmpno,
+                    slstmtNo = savedDemand.slstmtNo,
+                    slstmtSendDt = savedDemand.slstmtSendDt,
+                    slstmtSendEmpNo = savedDemand.slstmtSendEmpNo,
+                    demandMemo = savedDemand.demandMemo,
+                    sapCustCd = savedDemand.sapCustCd,
+                    billPublYn = savedDemand.billPublYn,
+                    invcRecpEmailAddr = savedDemand.invcRecpEmailAddr,
+                    creator = savedDemand.creator,
+                    createDtime = savedDemand.createDtime,
+                    updater = savedDemand.updater,
+                    updateDtime = savedDemand.updateDtime,
+                    colledgerId = savedDemand.colledgerId,
+                ))
                 sentResults += SendSalesStatementBatchResult(
-                    demandId = demand.demandId!!,
+                    demandId = savedDemand.demandId!!,
                     sent = true,
                     slstmtNo = sapResult.belnr,
                     message = "전송 완료"

@@ -33,11 +33,11 @@ class SapRfcClient(private val sapConfig: SapConfig) : CollectionErpPort, Invoic
     private val destinationName = "SAP_SALES_SERVICE"
 
     companion object {
-        private const val BUKRS             = "3300"
+        private const val BUKRS             = "3300" // 회사코드 전체고정
         private const val CUSTOMER_IF_LABS = "ZFI_CUSTOMER_IF_LABS" // 고객관리 - 고객정보 등록/수정 -사업자정보관리 탭 - ERP 코드확인
-        private const val IF_RE_010        = "ZFI_IF_RE_010"
-        private const val IF_RE_020        = "ZFI_IF_RE_020"
-        private const val INVC_POSTING     = "ZFI_INVC_POSTING_LABS"
+        private const val IF_RE_010        = "ZFI_IF_RE_010" // 수금확정
+        private const val IF_RE_020        = "ZFI_IF_RE_020" // 입금내역
+        private const val INVC_POSTING     = "ZFI_INVC_POSTING_LABS" // 매출전표
     }
 
     init {
@@ -101,7 +101,9 @@ class SapRfcClient(private val sapConfig: SapConfig) : CollectionErpPort, Invoic
         val function = destination.repository.getFunction(IF_RE_010)
             ?: throw JCoException(JCoException.JCO_ERROR_FUNCTION_NOT_FOUND, "Function $IF_RE_010 not found in SAP.")
 
+        function.importParameterList?.setValue("I_BUKRS", BUKRS)   // 사회코드
         function.importParameterList?.setValue("I_RTYPE", rtype)
+        function.importParameterList?.setValue("I_GSBER", "3300")  // 사업영역 고정값
 
         // IT_108 테이블 — 1건씩 처리 (리턴 순서 보장 불가)
         val table = function.tableParameterList?.getTable("IT_108")
@@ -233,6 +235,9 @@ class SapRfcClient(private val sapConfig: SapConfig) : CollectionErpPort, Invoic
         val function = destination.repository.getFunction(INVC_POSTING)
             ?: throw JCoException(JCoException.JCO_ERROR_FUNCTION_NOT_FOUND, "Function $INVC_POSTING not found in SAP.")
 
+        function.importParameterList?.setValue("I_BUKRS", BUKRS)   // 사회코드
+        function.importParameterList?.setValue("I_GSBER", "1000")  // 사업영역
+
         val table = function.tableParameterList?.getTable("T_ZFIS704")
             ?: throw JCoException(JCoException.JCO_ERROR_FUNCTION_NOT_FOUND, "Table T_ZFIS704 not found in SAP.")
 
@@ -249,8 +254,8 @@ class SapRfcClient(private val sapConfig: SapConfig) : CollectionErpPort, Invoic
             table.setValue("KOSTL",  row.kostl ?: "")
             table.setValue("AUFNR",  row.aufnr ?: "")
             table.setValue("WAERS",  row.waers ?: "")
-            row.wrbtr?.let { table.setValue("WRBTR", it) }
-            row.wmwst?.let { table.setValue("WMWST", it) }
+            row.wrbtr?.let { table.setValue("WRBTR", it.toPlainString()) }
+            row.wmwst?.let { table.setValue("WMWST", it.toPlainString()) }
             table.setValue("BUPLA",  row.bupla ?: "")
             table.setValue("ZUONR",  row.zuonr ?: "")
             table.setValue("XREF2",  row.xref2 ?: "")
@@ -260,8 +265,14 @@ class SapRfcClient(private val sapConfig: SapConfig) : CollectionErpPort, Invoic
             table.setValue("KIDNO",  row.kidno ?: "")
         }
 
-        logger.info("[{}] Input rows: {}", INVC_POSTING,
-            rows.map { "LISGC=${it.lisgc} XREF1=${it.xref1} BUDAT=${it.budat} WRBTR=${it.wrbtr} WMWST=${it.wmwst}" })
+        rows.forEachIndexed { i, row ->
+            logger.info("[{}] Payload[{}]: LISGC={} XREF1={} DEBCL={} BUDAT={} XNEGP={} XBLNR={} MWSKZ={} KOSTL={} AUFNR={} WAERS={} WRBTR={} WMWST={} BUPLA={} ZUONR={} XREF2={} XREF3={} EMAIL={} SGTXT={} KIDNO={}",
+                INVC_POSTING, i,
+                row.lisgc, row.xref1, row.debcl, row.budat, row.xnegp, row.xblnr,
+                row.mwskz, row.kostl, row.aufnr, row.waers, row.wrbtr, row.wmwst,
+                row.bupla, row.zuonr, row.xref2, row.xref3, row.email, row.sgtxt, row.kidno
+            )
+        }
 
         function.execute(destination)
 

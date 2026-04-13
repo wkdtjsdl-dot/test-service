@@ -1657,7 +1657,7 @@ create table sbl_demand_hst
         constraint "PK_sbl_demand_hst"
             primary key,
     hst_cd                varchar(50)           not null,
-    hst_memo              varchar(500),
+    hst_memo              varchar(500)          not null,
     worker                varchar(50)           not null,
     work_dtime            timestamp             not null,
     demand_id             varchar(50)           not null,

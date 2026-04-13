@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 class DemandHst(
     demandHstId: String? = null,
     hstCd: String,
-    hstMemo: String? = null,
+    hstMemo: String,
     worker: String,
     workDtime: LocalDateTime,
     demandId: String,
@@ -52,7 +52,7 @@ class DemandHst(
     val hstCd: String = hstCd
 
     @Column("hst_memo")
-    val hstMemo: String? = hstMemo
+    val hstMemo: String = hstMemo
 
     @Column("worker")
     val worker: String = worker

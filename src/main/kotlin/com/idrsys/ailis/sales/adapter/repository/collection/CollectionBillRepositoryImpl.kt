@@ -7,6 +7,7 @@ import com.idrsys.ailis.sales.domain.model.CollectionBill
 import com.idrsys.ailis.sales.generated.jooq.SalesScm
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitSingle
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.r2dbc.core.DatabaseClient
@@ -68,13 +69,16 @@ class CollectionBillRepositoryImpl(
                 cm.CUST_NM,
                 cm.BIZRNO,
                 cp.PAY_DIV_CD,
-                cp.TRADE_NO
+                cp.TRADE_NO,
+                bd.ACCOUNT_NO
             )
             .from(cb)
             .join(cm)
             .on(cb.CUST_CD.eq(cm.CUST_CD))
             .leftJoin(cp)
             .on(cb.CARD_PAY_ID.eq(cp.CARD_PAY_ID))
+            .leftJoin(bd)
+            .on(cb.BANK_DEPOSIT_ID.eq(bd.BANK_DEPOSIT_ID))
             .where(
                 cb.COLBILL_DT.between(searchParam.startDt, searchParam.endDt)
                     .and(searchParam.custCd?.let { cm.CUST_CD.eq(it) } ?: DSL.noCondition())
@@ -134,5 +138,14 @@ class CollectionBillRepositoryImpl(
 
     override suspend fun findCollectionBillById(colbillId: String): CollectionBill? {
         return collectionBillDataRepository.findById(colbillId)
+    }
+
+    override suspend fun nextErpSeqNo(): String {
+        val next = databaseClient.sql("SELECT nextval('sales_scm.sbl_colbill_seq')")
+            .fetch()
+            .one()
+            .awaitSingle()
+            .values.first() as Long
+        return next.toString().padStart(4, '0')
     }
 }
