@@ -6,9 +6,11 @@ import com.idrsys.ailis.sales.application.dto.response.sap.SapCustomerIfLabsResp
 import com.idrsys.ailis.sales.application.usecase.sap.SapRfcUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
+@Profile("sap")
 class SapRfcService(
     private val sapRfcClient: SapRfcClient
 ) : SapRfcUseCase {

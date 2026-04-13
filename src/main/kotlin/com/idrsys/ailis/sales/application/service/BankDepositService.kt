@@ -1,10 +1,10 @@
 package com.idrsys.ailis.sales.application.service
 
-import com.idrsys.ailis.sales.adapter.external.sap.SapRfcClient
 import com.idrsys.ailis.sales.application.dto.request.bankdeposit.BankAccountParam
 import com.idrsys.ailis.sales.application.dto.request.bankdeposit.BankDepositBatchCommand
 import com.idrsys.ailis.sales.application.dto.response.sap.SapBankDepositResult
 import com.idrsys.ailis.sales.application.required.repository.collection.BankDepositRepository
+import com.idrsys.ailis.sales.application.required.sap.BankDepositErpPort
 import com.idrsys.ailis.sales.application.usecase.bankdeposit.BankDepositUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class BankDepositService(
-    private val sapRfcClient: SapRfcClient,
+    private val bankDepositErpPort: BankDepositErpPort,
     private val bankDepositRepository: BankDepositRepository
 ) : BankDepositUseCase {
 
@@ -23,7 +23,7 @@ class BankDepositService(
         endDt: String,
         bankAccounts: List<BankAccountParam>
     ): List<SapBankDepositResult> = withContext(Dispatchers.IO) {
-        sapRfcClient.executeIfRe020(startDt, endDt, bankAccounts)
+        bankDepositErpPort.fetchBankDeposits(startDt, endDt, bankAccounts)
     }
 
     override suspend fun batchSave(commands: List<BankDepositBatchCommand>): Int {

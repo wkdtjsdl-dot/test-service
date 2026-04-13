@@ -5,12 +5,14 @@ import com.idrsys.ailis.sales.application.dto.response.sap.SapCustomerIfLabsResp
 import com.idrsys.ailis.sales.application.usecase.sap.SapRfcUseCase
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.context.annotation.Profile
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@Profile("sap")
 @RequestMapping("/api/sap/rfc")
 @Tag(name = "SAP RFC", description = "Controller for calling SAP RFC functions")
 class SapRfcController(
