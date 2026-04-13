@@ -146,9 +146,10 @@ class CustController(
     @GetMapping("/simple")
     @Operation(summary = "getCustSimpleList", description = "고객 목록 조회 (SelectBox용)")
     fun getCustSimpleList(
+        @RequestParam(required = false, defaultValue = "false") filterBySalesPic: Boolean,
         @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
     ): Flow<CustCdNmAutoCompleteResponse> {
-        return custUseCase.getCustSimpleList(auth.adminId, auth.roleCodes)
+        return custUseCase.getCustSimpleList(auth.adminId, auth.roleCodes, filterBySalesPic)
     }
 
     @GetMapping("/autoComplete/custCdNm")

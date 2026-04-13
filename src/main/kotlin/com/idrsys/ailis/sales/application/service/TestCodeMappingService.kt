@@ -8,6 +8,7 @@ import com.idrsys.ailis.sales.application.dto.response.InnerTestCodeMappingRespo
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingExcelValidResponse
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingResponse
 import com.idrsys.ailis.sales.application.dto.response.ValidateTstMappingResponse
+import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.testCodeMapping.TestCodeMappingCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.testCodeMapping.TestCodeMappingRepository
@@ -28,6 +29,7 @@ class TestCodeMappingService(
     private val testCodeMappingRepository: TestCodeMappingRepository,
     private val custCustomRepository: CustCustomRepository,
     private val testCodeMappingMapper: TestCodeMappingMapper,
+    private val tstServicePort: TstServicePort,
 ) : TestCodeMappingUseCase {
     override suspend fun getTestCodeMappingPage(searchParam: TestCodeMappingSearchParam, pageable: Pageable
     ): Page<TestCodeMappingResponse> {
@@ -73,14 +75,19 @@ class TestCodeMappingService(
     }
 
     override suspend fun validTestCodeMappingByExcel(commands: List<TestCodeMappingCommand>): Flow<TestCodeMappingExcelValidResponse> {
+        val tstCds = commands.mapNotNull { it.tstCd }.distinct()
+        val validTstCds = tstServicePort.findTestItemByTestCode(tstCds)
+            ?.mapNotNull { it.tstCd }?.toSet() ?: emptySet()
+
         return flow {
             for (command in commands) {
                 val custExists = custCustomRepository.findCustMstIdByCustCd(command.custCd) != null
-                val tstCdExists = true   // 검사 코드 테이블 나오면 추가 예정
+                val tstCd = command.tstCd
+                val tstCdExists = tstCd != null && validTstCds.contains(tstCd)
                 emit(
                     TestCodeMappingExcelValidResponse(
                         custCd = command.custCd,
-                        tstCd = command.tstCd!!,
+                        tstCd = tstCd ?: "",
                         validCustCd = custExists,
                         validTstCd = tstCdExists
                     )
@@ -93,17 +100,23 @@ class TestCodeMappingService(
         val now = LocalDateTime.now()
         val newMappings = mutableListOf<CustTestCodeMapping>()
 
+        val tstCds = commands.mapNotNull { it.tstCd }.distinct()
+        val tstNmMap: Map<String, String?> = tstServicePort.findTestItemByTestCode(tstCds)
+            ?.mapNotNull { r -> r.tstCd?.let { it to r.tstNm } }
+            ?.toMap() ?: emptyMap()
+
         for (command in commands) {
             val custCd = command.custCd
             val custMstId = custCustomRepository.findCustMstIdByCustCd(custCd)
                 ?: throw NoSuchElementException("고객을 찾을 수 없습니다: $custCd")
 
-            command.apply {
-                custTstCdMpgId = UUID.randomUUID()
-                this.custMstId = custMstId
-            }
+            val enrichedCommand = command.copy(
+                custTstCdMpgId = UUID.randomUUID(),
+                custMstId = custMstId,
+                tstNm = command.tstCd?.let { tstNmMap[it] }
+            )
 
-            val newTestCodeMapping = testCodeMappingMapper.toDomain(command, adminId, now)
+            val newTestCodeMapping = testCodeMappingMapper.toDomain(enrichedCommand, adminId, now)
             newTestCodeMapping.setAsNew()
             newMappings.add(newTestCodeMapping)
         }

@@ -603,13 +603,23 @@ class CustCustomRepositoryImpl(
     }
 
     override fun findCustSimple(): Flow<CustCdNmAutoCompleteInfo> {
-        return findCustSimple(bzoffiCd = null)
+        return findCustSimple(bzoffiCd = null, empUserId = null)
     }
 
     override fun findCustSimple(bzoffiCd: String?): Flow<CustCdNmAutoCompleteInfo> {
+        return findCustSimple(bzoffiCd = bzoffiCd, empUserId = null)
+    }
+
+    override fun findCustSimple(bzoffiCd: String?, empUserId: String?): Flow<CustCdNmAutoCompleteInfo> {
         val conditions = mutableListOf<Condition>()
         bzoffiCd?.takeIf { it.isNotBlank() }?.let {
             conditions += SCS_CUST_MST.BZOFFI_CD.eq(it)
+        }
+        empUserId?.takeIf { it.isNotBlank() }?.let {
+            val myCustIds = dslContext.selectDistinct(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID)
+                .from(SCS_GCGN_SALS_PIC_INFO)
+                .where(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(it))
+            conditions += SCS_CUST_MST.CUST_MST_ID.`in`(myCustIds)
         }
 
         val query = dslContext.selectDistinct(

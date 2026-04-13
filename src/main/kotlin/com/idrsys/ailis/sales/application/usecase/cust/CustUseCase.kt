@@ -28,6 +28,7 @@ interface CustUseCase {
     suspend fun isCustCdExists(custCd: String): Boolean
     fun getCustSimpleList(): Flow<CustCdNmAutoCompleteResponse>
     fun getCustSimpleList(empUserId: String, roleCodes: List<String>): Flow<CustCdNmAutoCompleteResponse>
+    fun getCustSimpleList(empUserId: String, roleCodes: List<String>, filterBySalesPic: Boolean): Flow<CustCdNmAutoCompleteResponse>
     fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<CustCdNmAutoCompleteResponse>
     fun getCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam, empUserId: String, roles: List<String>): Flow<CustCdNmAutoCompleteResponse>
     fun getRprsCustCdNmAutoCompleteList(searchParam: CustAutoCompleteSearchParam): Flow<RprsCustCdNmAutoCompleteResponse>
