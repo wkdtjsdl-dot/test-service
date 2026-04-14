@@ -12,6 +12,7 @@ import java.time.LocalDateTime
 data class BillingRequestResponse(
     val tstReqDt: LocalDate,
     val tstReqNo: String,
+    val tstReqDivCd: String,
     val custCd: String?,
     val custNm: String? = null,
     val patNm: String?,

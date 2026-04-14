@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 data class ReqServiceBillingRequestDetail(
     val tstReqDt: LocalDate,
     val tstReqNo: Long,
+    val tstReqDivCd: String? = null,
     val custCd: String?,
     val patNm: String?,
     val hospChartNo: String?,

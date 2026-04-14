@@ -150,6 +150,7 @@ class BillingQueryService(
             emit(BillingRequestResponse(
                 tstReqDt = detail.tstReqDt,
                 tstReqNo = detail.tstReqNo.toString(),
+                tstReqDivCd = detail.tstReqDivCd ?: "",
                 custCd = detail.custCd,
                 custNm = custBillingInfo?.custNm ?: "",
                 patNm = detail.patNm,
