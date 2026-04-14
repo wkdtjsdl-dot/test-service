@@ -3,8 +3,10 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.WorkListItemDetailResponse
 import com.idrsys.ailis.tst.application.dto.WorkListItemRegisterRequest
 import com.idrsys.ailis.tst.application.dto.WorkListItemResponse
+import com.idrsys.ailis.tst.application.dto.WorkListItemUpdateRequest
 import com.idrsys.ailis.tst.application.dto.WorkListRegisterRequest
 import com.idrsys.ailis.tst.application.dto.WorkListResponse
+import com.idrsys.ailis.tst.application.dto.WorkListUpdateRequest
 import com.idrsys.ailis.tst.application.dto.request.WorkListSearchParam
 import com.idrsys.ailis.tst.application.mapper.WorkListCommandMapper
 import com.idrsys.ailis.tst.application.mapper.WorkListMapper
@@ -38,7 +40,7 @@ class WorkListService(
 
     override suspend fun registerWorkList(request: WorkListRegisterRequest, adminId: String): WorkListResponse {
         if (repository.findById(request.wrklistCd) != null) {
-            throw IllegalStateException("Work list already exists: ${request.wrklistCd}")
+            throw IllegalStateException("${request.wrklistCd}: 이미 존재하는 워크코드입니다.")
         }
 
         val command = commandMapper.toCreateCommand(request)
@@ -48,13 +50,27 @@ class WorkListService(
         return mapper.toResponse(saved)
     }
 
+    override suspend fun updateWorkList(
+        wrklistCd: String,
+        request: WorkListUpdateRequest,
+        adminId: String
+    ): WorkListResponse {
+        val workList = repository.findById(wrklistCd)
+            ?: throw RuntimeException("$wrklistCd: 워크를 찾을 수 없습니다.")
+
+        val command = commandMapper.toUpdateCommand(request)
+        val now = LocalDateTime.now()
+        val saved = repository.save(workList.update(command, adminId, now))
+        return mapper.toResponse(saved)
+    }
+
     override suspend fun registerWorkListItem(request: WorkListItemRegisterRequest, adminId: String): WorkListItemResponse {
         val workList = repository.findById(request.wrklistCd)
-            ?: throw RuntimeException("Work list not found with code: ${request.wrklistCd}")
+            ?: throw RuntimeException("${request.wrklistCd}: 워크를 찾을 수 없습니다.")
 
         val duplicated = repository.findItemByWrklistCdAndTstCd(workList.wrklistCd, request.tstCd)
         if (duplicated != null) {
-            throw IllegalStateException("Work list item already exists for wrklistCd=${request.wrklistCd}, tstCd=${request.tstCd}")
+            throw IllegalStateException("해당 검사항목은 워크 하위에 이미 존재하는 검사항목입니다.")
         }
 
         val command = commandMapper.toCreateItemCommand(request)
@@ -64,9 +80,29 @@ class WorkListService(
         return mapper.toResponse(saved)
     }
 
+    override suspend fun updateWorkListItem(
+        wrklistItmId: String,
+        wrklistCd: String,
+        request: WorkListItemUpdateRequest,
+        adminId: String
+    ): WorkListItemResponse {
+        val workListItem = repository.findItemByIdAndWrklistCd(wrklistItmId, wrklistCd)
+            ?: throw RuntimeException("해당 검사항목 정보를 찾을 수 없습니다.")
+
+        val duplicated = repository.findItemByWrklistCdAndTstCd(wrklistCd, request.tstCd)
+        if (duplicated != null && duplicated.wrklistItmId != wrklistItmId) {
+            throw IllegalStateException("해당 검사항목은 워크 하위에 이미 존재하는 검사항목입니다.")
+        }
+
+        val command = commandMapper.toUpdateItemCommand(request)
+        val now = LocalDateTime.now()
+        val saved = repository.saveItem(workListItem.update(command, adminId, now))
+        return mapper.toResponse(saved)
+    }
+
     override suspend fun deleteWorkListItem(wrklistItmId: String, wrklistCd: String, adminId: String) {
         val workListItem = repository.findItemByIdAndWrklistCd(wrklistItmId, wrklistCd)
-            ?: throw RuntimeException("Work list item not found with id: $wrklistItmId and wrklistCd: $wrklistCd")
+            ?: throw RuntimeException("해당 검사항목 정보를 찾을 수 없습니다.")
 
         repository.deleteItemById(workListItem.wrklistItmId!!)
     }

@@ -5,6 +5,7 @@ import com.idrsys.ailis.tst.application.dto.request.WorkListSearchParam
 import com.idrsys.ailis.tst.application.required.repository.WorkListRepository
 import com.idrsys.ailis.tst.domain.model.WorkList
 import com.idrsys.ailis.tst.domain.model.WorkListItem
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsSpcm
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsWrklist
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsWrklistItm
 import com.idrsys.ailis.tst.generated.jooq.tables.BtsItem
@@ -108,12 +109,19 @@ class WorkListRepositoryImpl(
     override fun findItemsByWrklistCd(wrklistCd: String): Flow<WorkListItemDetailResponse> {
         val table = BbsWrklistItm.BBS_WRKLIST_ITM
         val testTable = BtsItem.BTS_ITEM
+        val specimenTable = BbsSpcm.BBS_SPCM
 
         val query = dslContext
-            .select(table.fields().toList() + testTable.TST_NM.`as`("tst_nm"))
+            .select(
+                table.fields().toList() +
+                    testTable.TST_NM.`as`("tst_nm") +
+                    specimenTable.SPCM_NM.`as`("spcm_nm")
+            )
             .from(table)
             .leftJoin(testTable)
             .on(table.TST_CD.eq(testTable.TST_CD))
+            .leftJoin(specimenTable)
+            .on(table.SPCM_CD.eq(specimenTable.SPCM_CD))
             .where(table.WRKLIST_CD.eq(wrklistCd))
             .orderBy(table.TST_CD.asc())
 
@@ -171,6 +179,7 @@ class WorkListRepositoryImpl(
             tstCd = row["tst_cd"] as String,
             tstNm = row["tst_nm"] as? String,
             spcmCd = row["spcm_cd"] as? String,
+            spcmNm = row["spcm_nm"] as? String,
             tstOption = row["tst_option"] as? String,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,

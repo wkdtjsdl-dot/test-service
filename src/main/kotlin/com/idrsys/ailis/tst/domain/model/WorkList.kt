@@ -2,6 +2,8 @@ package com.idrsys.ailis.tst.domain.model
 
 import com.idrsys.ailis.tst.domain.command.WorkListCreateCommand
 import com.idrsys.ailis.tst.domain.command.WorkListItemCreateCommand
+import com.idrsys.ailis.tst.domain.command.WorkListItemUpdateCommand
+import com.idrsys.ailis.tst.domain.command.WorkListUpdateCommand
 import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
@@ -71,6 +73,16 @@ class WorkList(
 
     override fun isNew(): Boolean = isNewEntity
 
+    fun update(command: WorkListUpdateCommand, updater: String, now: LocalDateTime): WorkList {
+        useYn = command.useYn
+        startDt = command.startDt
+        endDt = command.endDt
+        wrklistNm = command.wrklistNm
+        this.updater = updater
+        updateDtime = now
+        return this
+    }
+
     companion object {
         private val WRKLIST_CODE_REGEX = Regex("^[A-Za-z0-9]+$")
 
@@ -116,7 +128,8 @@ class WorkListItem(
     val wrklistCd: String = wrklistCd
 
     @Column("tst_cd")
-    val tstCd: String = tstCd
+    var tstCd: String = tstCd
+        private set
 
     @Column("spcm_cd")
     var spcmCd: String? = spcmCd
@@ -152,6 +165,15 @@ class WorkListItem(
     override fun getId(): String? = wrklistItmId
 
     override fun isNew(): Boolean = isNewEntity
+
+    fun update(command: WorkListItemUpdateCommand, updater: String, now: LocalDateTime): WorkListItem {
+        tstCd = command.tstCd
+        spcmCd = command.spcmCd
+        tstOption = command.tstOption
+        this.updater = updater
+        updateDtime = now
+        return this
+    }
 
     companion object {
         fun create(command: WorkListItemCreateCommand, creator: String, now: LocalDateTime): WorkListItem {
