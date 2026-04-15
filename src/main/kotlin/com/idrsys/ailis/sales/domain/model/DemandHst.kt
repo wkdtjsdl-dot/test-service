@@ -42,6 +42,7 @@ class DemandHst(
     updater: String,
     updateDtime: LocalDateTime,
     colledgerId: String?,
+    demandType: String = "10",
 ) {
     @Id
     @UuidGeneratedId(idFieldName = "demandHstId")
@@ -140,4 +141,7 @@ class DemandHst(
 
     @Column("colledger_id")
     val colledgerId: String? = colledgerId
+
+    @Column("demand_type")
+    val demandType: String = demandType
 }

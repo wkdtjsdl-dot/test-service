@@ -86,7 +86,8 @@ class BillingCommandService(
             creator = adminId,
             createDtime = LocalDateTime.now(),
             updater = adminId,
-            updateDtime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now(),
+            demandType = command.demandType,
         )
         demand.setAsNew()
 
@@ -148,6 +149,7 @@ class BillingCommandService(
             updater = savedDemand.updater,
             updateDtime = savedDemand.updateDtime,
             colledgerId = savedDemand.colledgerId,
+            demandType = savedDemand.demandType,
         ))
 
         // 9. Return response
@@ -224,6 +226,7 @@ class BillingCommandService(
             updater = demand.updater,
             updateDtime = demand.updateDtime,
             colledgerId = demand.colledgerId,
+            demandType = demand.demandType,
         ))
 
         // 5. Release test requests (reset closing information)
@@ -303,7 +306,7 @@ class BillingCommandService(
             SapInvcPostingRow(
                 lisgc = item.lisgc,
                 xref1 = demand.custCd.takeLast(6),      // 뒤에서 6글자
-                debcl = "10",                               // TODO demand db에서 가져오는걸로 추후 수정  LIS 10 :매출 / 30 : 선수금
+                debcl = demand.demandType,                  // 10: 일반(매출), 30: 선수금
                 budat = demand.demandDt.format(formatter),
                 xnegp = "",                                // 취소/수정 전표지시자 (일반전표 SPACE , 취소 'X')
                 xblnr = cust?.bizrno ?: "",
@@ -380,6 +383,7 @@ class BillingCommandService(
                     updater = savedDemand.updater,
                     updateDtime = savedDemand.updateDtime,
                     colledgerId = savedDemand.colledgerId,
+                    demandType = savedDemand.demandType,
                 ))
                 sentResults += SendSalesStatementBatchResult(
                     demandId = savedDemand.demandId!!,

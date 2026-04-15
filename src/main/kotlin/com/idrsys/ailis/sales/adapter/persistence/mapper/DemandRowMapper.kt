@@ -32,7 +32,8 @@ internal fun Row.toDemand(): Demand {
         createDtime = this.get("create_dtime", LocalDateTime::class.java)!!,
         updater = this.get("updater", String::class.java)!!,
         updateDtime = this.get("update_dtime", LocalDateTime::class.java)!!,
-        colledgerId = this.get("colledger_id", String::class.java)
+        colledgerId = this.get("colledger_id", String::class.java),
+        demandType = this.get("demand_type", String::class.java) ?: "10",
     )
 
     // Handle persisted entity (not new)
@@ -68,6 +69,7 @@ internal fun Row.toDemandWithCustInfo(): DemandWithCustInfo {
         custNm = this.get("cust_nm", String::class.java),
         bzoffiCd = this.get("bzoffi_cd", String::class.java),
         sapCustCd = this.get("sap_cust_cd", String::class.java),
-        crcyCd = this.get("crcy_cd", String::class.java)
+        crcyCd = this.get("crcy_cd", String::class.java),
+        demandType = this.get("demand_type", String::class.java) ?: "10",
     )
 }

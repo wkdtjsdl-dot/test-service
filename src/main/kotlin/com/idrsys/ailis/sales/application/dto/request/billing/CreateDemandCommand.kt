@@ -37,5 +37,6 @@ data class CreateDemandCommand(
     val insurePrice: BigDecimal? = null,
     val sapCustCd: String? = null,
     val invcRecpEmailAddr: String? = null,
-    val demandMemo: String? = null
+    val demandMemo: String? = null,
+    val demandType: String = "10",
 )
