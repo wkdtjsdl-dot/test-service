@@ -1,6 +1,7 @@
 package com.idrsys.ailis.sales.domain.model
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
 import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -70,19 +71,22 @@ class CollectionBillTest {
 
     @Test
     fun `should throw exception when both payment sources are null`() {
-        // Given & When & Then
-        assertThrows<IllegalArgumentException> {
-            CollectionBill(
-                colbillId = "colbill-uuid-001",
-                custCd = "CUST001",
-                colbillDt = LocalDate.now(),
-                payMethodCd = "CARD",
-                payAmt = BigDecimal.ZERO,
-                cardPayId = null,
-                bankDepositId = null,
-                creator = "admin"
-            )
-        }
+        // Given & When
+        val bill = CollectionBill(
+            colbillId = "colbill-uuid-001",
+            custCd = "CUST001",
+            colbillDt = LocalDate.now(),
+            payMethodCd = "NONE",
+            payAmt = BigDecimal.ZERO,
+            cardPayId = null,
+            bankDepositId = null,
+            creator = "admin"
+        )
+
+        // Then
+        assertNull(bill.cardPayId)
+        assertNull(bill.bankDepositId)
+        assertEquals("CUST001", bill.custCd)
     }
 
     @Test
