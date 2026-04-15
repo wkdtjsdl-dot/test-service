@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.application.dto
 
+import com.idrsys.web.excel.ExcelColumn
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -15,13 +16,30 @@ data class WorklistItemSearchParam(
 )
 
 data class WorklistItemResponse(
-    val limsTransDtime: LocalDateTime?,
-    val subCustNm: String?,
-    val otherInstRegNo: String?,
-    val expectedDt: LocalDate?,
-    val agreeYn: Boolean?,
-    val reqDocYn: Boolean?,
-    val limsExpectedDt: LocalDate?
+    @ExcelColumn("등록일자") val reqDt: LocalDate?,
+    @ExcelColumn("등록번호") val tstReqNo: Long?,
+    @ExcelColumn("거래처코드") val custCd: String?,
+    @ExcelColumn("거래처명") val custNm: String?,
+    @ExcelColumn("수진자명") val patNm: String?,
+    @ExcelColumn("나이") val patAge: Int?,
+    @ExcelColumn("성별") val patGender: String?,
+    @ExcelColumn("생년월일") val patBday: LocalDate?,
+    @ExcelColumn("차트번호") val chartNo: String?,
+    @ExcelColumn("상태") val statNm: String?,
+    @ExcelColumn("검사코드") val tstCd: String?,
+    @ExcelColumn("검사항목명") val tstNm: String?,
+    @ExcelColumn("진료과명") val deptNm: String?,
+    @ExcelColumn("관리그룹") val mngGroup: String?,
+    @ExcelColumn("기타메모") val memo: String?,
+    @ExcelColumn("참고사항") val remark: String?,
+    @ExcelColumn("오더등록일시") val orderRegDtime: LocalDateTime?,
+    @ExcelColumn("림스전송일시") val limsApplyDtime: LocalDateTime?,
+    @ExcelColumn("부속거래처명") val subCustNm: String?,
+    @ExcelColumn("타기관등록번호") val otherInstRegNo: String?,
+    @ExcelColumn("결과보고예정일") val expectedDt: LocalDate?,
+    @ExcelColumn("동의서") val agreeYn: Boolean?,
+    @ExcelColumn("의뢰서") val reqDocYn: Boolean?,
+    @ExcelColumn("지놈예정일") val limsExpectedDt: LocalDate?
 )
 
 // --- 임상검사코드 전체항목 ---

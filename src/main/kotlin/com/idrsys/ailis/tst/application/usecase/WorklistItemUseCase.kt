@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface WorklistItemUseCase {
     suspend fun search(param: WorklistItemSearchParam): Flow<WorklistItemResponse>
+    suspend fun searchForExcel(param: WorklistItemSearchParam): List<WorklistItemResponse>
 }

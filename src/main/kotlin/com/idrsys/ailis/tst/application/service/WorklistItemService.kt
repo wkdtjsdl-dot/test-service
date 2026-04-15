@@ -5,6 +5,7 @@ import com.idrsys.ailis.tst.application.dto.WorklistItemSearchParam
 import com.idrsys.ailis.tst.application.required.repository.WorklistItemRepository
 import com.idrsys.ailis.tst.application.usecase.WorklistItemUseCase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -16,5 +17,10 @@ class WorklistItemService(
     @Transactional(readOnly = true)
     override suspend fun search(param: WorklistItemSearchParam): Flow<WorklistItemResponse> {
         return worklistItemRepository.search(param)
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun searchForExcel(param: WorklistItemSearchParam): List<WorklistItemResponse> {
+        return worklistItemRepository.searchForExcel(param).toList()
     }
 }
