@@ -43,8 +43,8 @@ class BillingCommandService(
      * Create demand (청구 마감)
      *
      * Business Rules:
-     * 1. Create demand entity with provided data
-     * 2. Create collection ledger entry (division code "0")
+     * 1. Create a demand entity with provided data
+     * 2. Create a collection ledger entry (division code "0")
      * 3. Update all test requests with closing information
      *
      * Transaction boundary: All operations must succeed or rollback
@@ -62,8 +62,19 @@ class BillingCommandService(
             )
         }
 
-        // 2. Check for duplicate demand in the same period
-        // TODO: Implement duplicate check when custom repository is available
+        // 2. 동일 거래처, 동일 기간, 동일 청구구분 중복 체크
+        val isDuplicate = demandRepository.existsByCustCdAndDemandStartDtAndDemandEndDtAndDemandType(
+            custCd = command.custCd,
+            demandStartDt = command.demandStartDt,
+            demandEndDt = command.demandEndDt,
+            demandType = command.demandType
+        )
+        if (isDuplicate) {
+            throw UserDefinedException(
+                "DEMAND_ALREADY_EXISTS",
+                "동일 기간에 같은 청구구분(${command.demandType})의 청구서가 이미 존재합니다."
+            )
+        }
 
         // 3. Calculate demand charge from command data
 
@@ -91,7 +102,7 @@ class BillingCommandService(
         )
         demand.setAsNew()
 
-        // 5. Create collection ledger entry for demand
+        // 5. Create a collection ledger entry for demand
         val ledger = CollectionLedger.createForDemand(
             custCd = command.custCd,
             demandDt = command.demandDt,
@@ -105,11 +116,12 @@ class BillingCommandService(
         demand.assignColledgerId(savedLedger.colledgerId!!)
         val savedDemand = demandRepository.save(demand)
 
-        // 7. Update test requests with closing information
+        // 7. Update test requests with closing information (demandType 기준으로 해당 의뢰 건만 마감)
         val createdRequestCount = reqServicePort.updateTstItemClosingInfo(
             directAcctCd = command.custCd,
             startDt = command.demandStartDt,
             endDt = command.demandEndDt,
+            demandType = command.demandType,
             exrtId = command.exrtId,
             stndExrt = command.stndExrt,
             closingMemo = command.demandMemo,
@@ -167,7 +179,7 @@ class BillingCommandService(
      * Cancel demand (청구 취소)
      *
      * Business Rules:
-     * 1. Demand can only be cancelled before ERP statement is sent
+     * 1. Demand can only be canceled before an ERP statement is sent
      * 2. Delete demand entity and associated ledger
      * 3. Release all test requests (reset closing information)
      *
@@ -193,7 +205,7 @@ class BillingCommandService(
             }
         }
 
-        // 4. Save demand history snapshot (cancel)
+        // 4. Save a demand history snapshot (cancel)
         demandHstRepository.save(DemandHst(
             hstCd = "HST_D",
             hstMemo = "청구 취소",
@@ -229,11 +241,12 @@ class BillingCommandService(
             demandType = demand.demandType,
         ))
 
-        // 5. Release test requests (reset closing information)
+        // 5. Release test requests (demandType 기준으로 해당 의뢰 건만 해제)
         val releasedRequestCount = reqServicePort.releaseTstItemClosingInfo(
             directAcctCd = demand.custCd,
             startDt = demand.demandStartDt,
             endDt = demand.demandEndDt,
+            demandType = demand.demandType,
             updater = adminId
         )
 

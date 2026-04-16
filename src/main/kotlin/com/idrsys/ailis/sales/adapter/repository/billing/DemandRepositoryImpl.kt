@@ -37,15 +37,17 @@ class DemandRepositoryImpl(
         demandDataRepository.delete(demand)
     }
 
-    override suspend fun existsByCustCdAndDemandStartDtAndDemandEndDt(
+    override suspend fun existsByCustCdAndDemandStartDtAndDemandEndDtAndDemandType(
         custCd: String,
         demandStartDt: LocalDate,
-        demandEndDt: LocalDate
+        demandEndDt: LocalDate,
+        demandType: String
     ): Boolean {
-        return demandDataRepository.existsByCustCdAndDemandStartDtAndDemandEndDt(
+        return demandDataRepository.existsByCustCdAndDemandStartDtAndDemandEndDtAndDemandType(
             custCd,
             demandStartDt,
-            demandEndDt
+            demandEndDt,
+            demandType
         )
     }
 

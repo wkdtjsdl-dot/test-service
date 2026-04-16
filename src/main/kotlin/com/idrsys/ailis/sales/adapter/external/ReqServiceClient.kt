@@ -54,6 +54,7 @@ class ReqServiceClient(
                     builder.build()
                 }
                 .retrieve()
+                // req-service는 (directAcctCd, demandType) 단위로 그룹핑하여 반환
                 .awaitBody<List<ReqServiceUnbilledDemandSummary>>()
         } catch (ex: Exception) {
             emptyList()
@@ -73,7 +74,8 @@ class ReqServiceClient(
         startDt: LocalDate,
         endDt: LocalDate,
         directAcctCd: String,
-        closingCd: String?
+        closingCd: String?,
+        demandType: String?
     ): Flow<ReqServiceBillingRequestDetail> = flow {
         try {
             val details = client.get()
@@ -83,6 +85,7 @@ class ReqServiceClient(
                     builder.queryParam("endDt", endDt.toString())
                     builder.queryParam("directAcctCd", directAcctCd)
                     closingCd?.let { builder.queryParam("closingCd", it) }
+                    demandType?.let { builder.queryParam("demandType", it) }
                     builder.build()
                 }
                 .retrieve()
@@ -101,6 +104,7 @@ class ReqServiceClient(
         directAcctCd: String,
         startDt: LocalDate,
         endDt: LocalDate,
+        demandType: String,
         exrtId: Long?,
         stndExrt: BigDecimal?,
         closingMemo: String?,
@@ -110,6 +114,7 @@ class ReqServiceClient(
             "directAcctCd" to directAcctCd,
             "startDt" to startDt.toString(),
             "endDt" to endDt.toString(),
+            "demandType" to demandType,
             "exrtId" to exrtId,
             "stndExrt" to stndExrt,
             "closingMemo" to closingMemo
@@ -140,12 +145,14 @@ class ReqServiceClient(
         directAcctCd: String,
         startDt: LocalDate,
         endDt: LocalDate,
+        demandType: String,
         updater: String
     ): Int {
         val requestBody = mapOf(
             "directAcctCd" to directAcctCd,
             "startDt" to startDt.toString(),
-            "endDt" to endDt.toString()
+            "endDt" to endDt.toString(),
+            "demandType" to demandType
         )
 
         return try {

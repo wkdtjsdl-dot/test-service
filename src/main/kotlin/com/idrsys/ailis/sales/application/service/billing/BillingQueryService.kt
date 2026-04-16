@@ -138,7 +138,8 @@ class BillingQueryService(
             startDt = searchParam.startDt,
             endDt = searchParam.endDt,
             directAcctCd = searchParam.custCd,  // custCd → directAcctCd 맵핑
-            closingCd = searchParam.closingCd
+            closingCd = searchParam.closingCd,
+            demandType = searchParam.demandType
         ).toList()
 
         // Batch query custNm from scs_cust_mst

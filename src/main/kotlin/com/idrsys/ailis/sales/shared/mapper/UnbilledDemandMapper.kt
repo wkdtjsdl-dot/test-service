@@ -60,6 +60,7 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
         createDtime = LocalDateTime.now(),      // Query time
         colledgerId = null,                     // Not set before closing
         createdRequestCount = this.requestCount,
-        crcyCd = crcyCd
+        crcyCd = crcyCd,
+        demandType = this.demandType,
     )
 }

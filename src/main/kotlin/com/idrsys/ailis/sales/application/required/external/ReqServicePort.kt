@@ -40,7 +40,8 @@ interface ReqServicePort {
         startDt: LocalDate,
         endDt: LocalDate,
         directAcctCd: String,
-        closingCd: String? = null
+        closingCd: String? = null,
+        demandType: String? = null
     ): Flow<ReqServiceBillingRequestDetail>
 
     /**
@@ -61,6 +62,7 @@ interface ReqServicePort {
         directAcctCd: String,
         startDt: LocalDate,
         endDt: LocalDate,
+        demandType: String,
         exrtId: Long? = null,
         stndExrt: BigDecimal? = null,
         closingMemo: String?,
@@ -73,6 +75,7 @@ interface ReqServicePort {
      * @param directAcctCd Direct account code (= custCd)
      * @param startDt Start date
      * @param endDt End date
+     * @param demandType 청구구분 (10: 일반, 30: 선수금)
      * @param updater Updater
      * @return Number of released test items
      */
@@ -80,6 +83,7 @@ interface ReqServicePort {
         directAcctCd: String,
         startDt: LocalDate,
         endDt: LocalDate,
+        demandType: String,
         updater: String
     ): Int
 

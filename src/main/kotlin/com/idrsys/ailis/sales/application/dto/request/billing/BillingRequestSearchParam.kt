@@ -22,5 +22,8 @@ data class BillingRequestSearchParam(
     val demandId: String? = null,
 
     @Parameter(description = "마감코드 (CLCD_Y: 마감, CLCD_N: 미마감)", required = false)
-    val closingCd: String? = null
+    val closingCd: String? = null,
+
+    @Parameter(description = "청구구분 (10: 일반, 30: 선수금)", required = false)
+    val demandType: String? = null
 )
