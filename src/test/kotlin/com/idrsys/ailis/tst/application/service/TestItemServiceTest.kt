@@ -107,6 +107,7 @@ class TestItemServiceTest {
             insuApplyCd = "APPLY01",
             insuCd = "INSU01",
             insuCateNo = "CATE01",
+            tstSubYn = false,
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
@@ -144,6 +145,7 @@ class TestItemServiceTest {
             insuApplyCd = "APPLY01",
             insuCd = "INSU01",
             insuCateNo = "CATE01",
+            tstSubYn = false,
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
@@ -181,7 +183,8 @@ class TestItemServiceTest {
             tstTatday = 1,
             insuApplyCd = "APPLY01",
             insuCd = "INSU01",
-            insuCateNo = "CATE01"
+            insuCateNo = "CATE01",
+            tstSubYn = false,
         )
 
         val hist = TestItemHst(
@@ -218,6 +221,7 @@ class TestItemServiceTest {
             insuApplyCd = "APPLY01",
             insuCd = "INSU01",
             insuCateNo = "CATE01",
+            tstSubYn = false,
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
@@ -306,6 +310,7 @@ class TestItemServiceTest {
             insuApplyCd = "APPLY01",
             insuCd = "INSU01",
             insuCateNo = "CATE01",
+            tstSubYn = false,
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
@@ -343,6 +348,7 @@ class TestItemServiceTest {
             insuApplyCd = "APPLY02",
             insuCd = "INSU02",
             insuCateNo = "CATE02",
+            tstSubYn = false,
             creator = "admin",
             createDtime = existing.createDtime,
             updater = "admin",
@@ -379,7 +385,8 @@ class TestItemServiceTest {
             tstTatday = 2,
             insuApplyCd = "APPLY02",
             insuCd = "INSU02",
-            insuCateNo = "CATE02"
+            insuCateNo = "CATE02",
+            tstSubYn = false,
         )
 
         val hist = TestItemHst(
@@ -416,6 +423,7 @@ class TestItemServiceTest {
             insuApplyCd = "APPLY02",
             insuCd = "INSU02",
             insuCateNo = "CATE02",
+            tstSubYn = false,
             creator = "admin",
             createDtime = existing.createDtime,
             updater = "admin",
@@ -472,6 +480,7 @@ class TestItemServiceTest {
             insuApplyCd = "APPLY01",
             insuCd = "INSU01",
             insuCateNo = "CATE01",
+            tstSubYn = false,
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",
@@ -509,6 +518,7 @@ class TestItemServiceTest {
             insuApplyCd = "APPLY01",
             insuCd = "INSU01",
             insuCateNo = "CATE01",
+            tstSubYn = false,
             creator = "admin",
             createDtime = LocalDateTime.now(),
             updater = "admin",

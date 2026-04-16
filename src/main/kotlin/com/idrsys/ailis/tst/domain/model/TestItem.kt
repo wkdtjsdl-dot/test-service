@@ -10,6 +10,8 @@ import com.idrsys.ailis.tst.domain.command.TestItemRefItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemSpecimenCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemSpecimenUpdateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemSubCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemSubUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemUpdateCommand
 import com.idrsys.common.kor2dbc.generator.UuidGeneratedId
 import org.springframework.data.annotation.Id
@@ -53,6 +55,7 @@ class TestItem(
     insuApplyCd: String?,
     insuCd: String?,
     insuCateNo: String?,
+    tstSubYn: Boolean,
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
@@ -183,6 +186,10 @@ class TestItem(
     var insuCateNo: String? = insuCateNo
         private set
 
+    @Column("tst_sub_yn")
+    var tstSubYn: Boolean = tstSubYn
+        private set
+
     @Column("creator")
     var creator: String = creator
         private set
@@ -241,6 +248,7 @@ class TestItem(
         this.insuApplyCd = command.insuApplyCd
         this.insuCd = command.insuCd
         this.insuCateNo = command.insuCateNo
+        this.tstSubYn = command.tstSubYn
         this.updater = updater
         this.updateDtime = updateDtime
     }
@@ -283,6 +291,7 @@ class TestItem(
                 insuApplyCd = command.insuApplyCd,
                 insuCd = command.insuCd,
                 insuCateNo = command.insuCateNo,
+                tstSubYn = command.tstSubYn,
                 creator = creator,
                 createDtime = now,
                 updater = creator,
@@ -938,6 +947,179 @@ class TestItemEssentialDoc(
                 docCd = command.docCd,
                 creator = creator,
                 createDtime = now
+            ).apply { setAsNew() }
+        }
+    }
+}
+
+@Table("tst_scm.bts_item_sub")
+class TestItemSub(
+    itemSubId: String? = null,
+    tstCd: String,
+    tstSubCd: String,
+    startDt: LocalDate,
+    endDt: LocalDate,
+    useYn: Boolean,
+    tstSubNm: String,
+    tstSubAbbrNm: String,
+    tstSubEngNm: String,
+    tstSubEngAbbrNm: String,
+    tstSubIntNm: String?,
+    rstTypeShortYn: Boolean,
+    rstTypeLongYn: Boolean,
+    rstTypeFileYn: Boolean,
+    rstTypeUrlYn: Boolean,
+    refVal: String?,
+    engRefVal: String?,
+    creator: String,
+    createDtime: LocalDateTime,
+    updater: String,
+    updateDtime: LocalDateTime
+) : Persistable<String> {
+
+    @Id
+    @UuidGeneratedId(idFieldName = "itemSubId")
+    @Column("item_sub_id")
+    val itemSubId: String? = itemSubId
+
+    @Column("tst_cd")
+    var tstCd: String = tstCd
+        private set
+
+    @Column("tst_sub_cd")
+    var tstSubCd: String = tstSubCd
+        private set
+
+    @Column("start_dt")
+    var startDt: LocalDate = startDt
+        private set
+
+    @Column("end_dt")
+    var endDt: LocalDate = endDt
+        private set
+
+    @Column("use_yn")
+    var useYn: Boolean = useYn
+        private set
+
+    @Column("tst_sub_nm")
+    var tstSubNm: String = tstSubNm
+        private set
+
+    @Column("tst_sub_abbr_nm")
+    var tstSubAbbrNm: String = tstSubAbbrNm
+        private set
+
+    @Column("tst_sub_eng_nm")
+    var tstSubEngNm: String = tstSubEngNm
+        private set
+
+    @Column("tst_sub_eng_abbr_nm")
+    var tstSubEngAbbrNm: String = tstSubEngAbbrNm
+        private set
+
+    @Column("tst_sub_int_nm")
+    var tstSubIntNm: String? = tstSubIntNm
+        private set
+
+    @Column("rst_type_short_yn")
+    var rstTypeShortYn: Boolean = rstTypeShortYn
+        private set
+
+    @Column("rst_type_long_yn")
+    var rstTypeLongYn: Boolean = rstTypeLongYn
+        private set
+
+    @Column("rst_type_file_yn")
+    var rstTypeFileYn: Boolean = rstTypeFileYn
+        private set
+
+    @Column("rst_type_url_yn")
+    var rstTypeUrlYn: Boolean = rstTypeUrlYn
+        private set
+
+    @Column("ref_val")
+    var refVal: String? = refVal
+        private set
+
+    @Column("eng_ref_val")
+    var engRefVal: String? = engRefVal
+        private set
+
+    @Column("creator")
+    var creator: String = creator
+        private set
+
+    @Column("create_dtime")
+    var createDtime: LocalDateTime = createDtime
+        private set
+
+    @Column("updater")
+    var updater: String = updater
+        private set
+
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime = updateDtime
+        private set
+
+    @Transient
+    private var _isNew: Boolean = false
+
+    fun setAsNew() {
+        this._isNew = true
+    }
+
+    override fun getId(): String? = itemSubId
+
+    override fun isNew(): Boolean = _isNew
+
+    fun update(command: TestItemSubUpdateCommand, updater: String, updateDtime: LocalDateTime) {
+        this.startDt = command.startDt
+        this.endDt = command.endDt
+        this.useYn = command.useYn
+        this.tstSubNm = command.tstSubNm
+        this.tstSubAbbrNm = command.tstSubAbbrNm
+        this.tstSubEngNm = command.tstSubEngNm
+        this.tstSubEngAbbrNm = command.tstSubEngAbbrNm
+        this.tstSubIntNm = command.tstSubIntNm
+        this.rstTypeShortYn = command.rstTypeShortYn
+        this.rstTypeLongYn = command.rstTypeLongYn
+        this.rstTypeFileYn = command.rstTypeFileYn
+        this.rstTypeUrlYn = command.rstTypeUrlYn
+        this.refVal = command.refVal
+        this.engRefVal = command.engRefVal
+        this.updater = updater
+        this.updateDtime = updateDtime
+    }
+
+    companion object {
+        fun create(
+            command: TestItemSubCreateCommand,
+            creator: String,
+            now: LocalDateTime
+        ): TestItemSub {
+            return TestItemSub(
+                itemSubId = null,
+                tstCd = command.tstCd,
+                tstSubCd = command.tstSubCd,
+                startDt = command.startDt,
+                endDt = command.endDt,
+                useYn = command.useYn,
+                tstSubNm = command.tstSubNm,
+                tstSubAbbrNm = command.tstSubAbbrNm,
+                tstSubEngNm = command.tstSubEngNm,
+                tstSubEngAbbrNm = command.tstSubEngAbbrNm,
+                tstSubIntNm = command.tstSubIntNm,
+                rstTypeShortYn = command.rstTypeShortYn,
+                rstTypeLongYn = command.rstTypeLongYn,
+                rstTypeFileYn = command.rstTypeFileYn,
+                rstTypeUrlYn = command.rstTypeUrlYn,
+                refVal = command.refVal,
+                engRefVal = command.engRefVal,
+                creator = creator,
+                createDtime = now,
+                updater = creator,
+                updateDtime = now
             ).apply { setAsNew() }
         }
     }

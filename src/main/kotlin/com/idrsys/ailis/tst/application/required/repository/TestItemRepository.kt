@@ -11,6 +11,8 @@ import com.idrsys.ailis.tst.domain.model.TestItemHst
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
+import com.idrsys.ailis.tst.domain.model.TestItemSub
+import com.idrsys.ailis.tst.domain.model.TestItemSubHst
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -64,6 +66,12 @@ interface TestItemRepository {
     suspend fun deleteEssentialDocById(itemEstlDocId: String)
     fun findEssentialDocsByTstCd(tstCd: String): Flow<TestItemEssentialDocListResponse>
     suspend fun getDetailEssentialDocById(itemEstlDocId: String): TestItemEssentialDocDetailResponse?
+
+    // --- TestItemSub ---
+    fun findItemSubsByTstCd(tstCd: String): Flow<TestItemSub>
+    suspend fun saveItemSub(entity: TestItemSub): TestItemSub
+    suspend fun findItemSubById(itemSubId: String): TestItemSub?
+    suspend fun saveItemSubHistory(entity: TestItemSubHst): TestItemSubHst
 
     // --- TestItemHst ---
     suspend fun saveTestItemHistory(entity: TestItemHst): TestItemHst

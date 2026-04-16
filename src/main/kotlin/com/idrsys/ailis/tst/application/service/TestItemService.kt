@@ -17,6 +17,8 @@ import com.idrsys.ailis.tst.domain.model.TestItemRefItem
 import com.idrsys.ailis.tst.domain.model.TestItemGene
 import com.idrsys.ailis.tst.domain.model.TestItemHst
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
+import com.idrsys.ailis.tst.domain.model.TestItemSub
+import com.idrsys.ailis.tst.domain.model.TestItemSubHst
 import kotlinx.coroutines.flow.toList
 import java.time.LocalDateTime
 import java.util.Objects
@@ -295,6 +297,32 @@ class TestItemService(
     @Transactional(readOnly = true)
     override fun getEssentialDocsByTest(tstCd: String): Flow<TestItemEssentialDocListResponse> {
         return repository.findEssentialDocsByTstCd(tstCd)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getItemSubByTest(tstCd: String): Flow<TestItemSubResponse> {
+        return repository.findItemSubsByTstCd(tstCd).map { mapper.toResponse(it) }
+    }
+
+    override suspend fun registerItemSub(request: TestItemSubRegisterRequest, adminId: String): TestItemSubResponse {
+        val command = commandMapper.toCreateCommand(request)
+        val now = LocalDateTime.now()
+        val domain = TestItemSub.create(command, adminId, now)
+        val saved = repository.saveItemSub(domain)
+        val hist = mapper.toDomain(saved, "신규 생성").apply { setAsNew() }
+        repository.saveItemSubHistory(hist)
+        return mapper.toResponse(saved)
+    }
+
+    override suspend fun updateItemSub(itemSubId: String, request: TestItemSubUpdateRequest, adminId: String): TestItemSubResponse {
+        val existing = repository.findItemSubById(itemSubId) ?: throw RuntimeException("TestItemSub not found with id: $itemSubId")
+        val command = commandMapper.toUpdateCommand(request)
+        val now = LocalDateTime.now()
+        existing.update(command, adminId, now)
+        val saved = repository.saveItemSub(existing)
+        val hist = mapper.toDomain(saved, "정보 수정").apply { setAsNew() }
+        repository.saveItemSubHistory(hist)
+        return mapper.toResponse(saved)
     }
 
     @Transactional(readOnly = true)

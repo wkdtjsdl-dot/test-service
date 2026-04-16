@@ -8,7 +8,9 @@ import com.idrsys.ailis.tst.domain.model.TestItemEssentialDoc
 import com.idrsys.ailis.tst.domain.model.TestItemGene
 import com.idrsys.ailis.tst.domain.model.TestItemHst
 import com.idrsys.ailis.tst.domain.model.TestItemRefItem
+import com.idrsys.ailis.tst.domain.model.TestItemSubHst
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimen
+import com.idrsys.ailis.tst.domain.model.TestItemSub
 import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
@@ -38,6 +40,16 @@ interface TestItemMapper {
     fun  toResponse(domain: TestGene): TestGeneResponse
     // --- TestItemGene ---
     fun toResponse(domain: TestItemGene): TestItemGeneResponse
+
+    // --- TestItemSub ---
+    fun toResponse(domain: TestItemSub): TestItemSubResponse
+
+    // --- TestItemSubHst ---
+    @Mappings(
+        Mapping(target = "itemSubHstId", ignore = true),
+        Mapping(target = "hstDesc", source = "updateReason")
+    )
+    fun toDomain(sub: TestItemSub, updateReason: String): TestItemSubHst
 
     // --- TestItemEssentialDoc ---
     fun toResponse(domain: TestItemEssentialDoc): TestItemEssentialDocResponse

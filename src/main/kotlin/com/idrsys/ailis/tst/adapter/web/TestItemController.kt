@@ -270,4 +270,29 @@ class TestItemController(
     @GetMapping("/api/bts/item-estl-doc")
     fun getEssentialDocsByTest(@RequestParam tstCd: String): Flow<TestItemEssentialDocListResponse> =
         useCase.getEssentialDocsByTest(tstCd)
+
+    @Operation(summary = "검사 검사종목 부속코드 조회")
+    @GetMapping("/api/bts/item-sub")
+    fun getItemSubByTest(@RequestParam tstCd: String): Flow<TestItemSubResponse> =
+        useCase.getItemSubByTest(tstCd)
+
+    @Operation(summary = "검사 검사종목 부속코드 등록")
+    @PostMapping("/api/bts/item-sub")
+    fun registerItemSub(
+        @RequestBody request: TestItemSubRegisterRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemSubResponse> = mono {
+        useCase.registerItemSub(request, auth.adminId)
+    }
+
+    @Operation(summary = "검사 검사종목 부속코드 수정")
+    @PutMapping("/api/bts/item-sub/{itemSubId}")
+    fun updateItemSub(
+        @PathVariable itemSubId: String,
+        @RequestBody request: TestItemSubUpdateRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<TestItemSubResponse> = mono {
+        useCase.updateItemSub(itemSubId, request, auth.adminId)
+    }
+
 }
