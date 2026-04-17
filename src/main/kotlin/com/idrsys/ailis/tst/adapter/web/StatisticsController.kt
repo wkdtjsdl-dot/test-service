@@ -45,7 +45,7 @@ class StatisticsController(
         @RequestParam(required = false) wrklistCd: String?,
         @RequestParam(required = false) tstCd: String?,
         @RequestParam(required = false) spcmCd: String?
-    ): Flux<WorklistItemResponse> {
+    ): Flux<WorklistItemStatResponse> {
         val param = WorklistItemSearchParam(startDt, endDt, wrklistCd, tstCd, spcmCd)
         return mono {
             worklistItemUseCase.search(param)
@@ -65,7 +65,7 @@ class StatisticsController(
         val data = worklistItemUseCase.searchForExcel(param)
         val filename = "워크리스트항목별조회_${now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))}.xlsx"
         val encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
-        val excelFlow = excelWriter.generateExcel(data, WorklistItemResponse::class, "워크리스트항목별조회")
+        val excelFlow = excelWriter.generateExcel(data, WorklistItemStatResponse::class, "워크리스트항목별조회")
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''${encodedFilename}")
             .header(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

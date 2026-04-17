@@ -1,6 +1,6 @@
 package com.idrsys.ailis.tst.application.service
 
-import com.idrsys.ailis.tst.application.dto.WorklistItemResponse
+import com.idrsys.ailis.tst.application.dto.WorklistItemStatResponse
 import com.idrsys.ailis.tst.application.dto.WorklistItemSearchParam
 import com.idrsys.ailis.tst.application.required.repository.WorklistItemRepository
 import com.idrsys.ailis.tst.application.usecase.WorklistItemUseCase
@@ -15,12 +15,12 @@ class WorklistItemService(
 ) : WorklistItemUseCase {
 
     @Transactional(readOnly = true)
-    override suspend fun search(param: WorklistItemSearchParam): Flow<WorklistItemResponse> {
+    override suspend fun search(param: WorklistItemSearchParam): Flow<WorklistItemStatResponse> {
         return worklistItemRepository.search(param)
     }
 
     @Transactional(readOnly = true)
-    override suspend fun searchForExcel(param: WorklistItemSearchParam): List<WorklistItemResponse> {
+    override suspend fun searchForExcel(param: WorklistItemSearchParam): List<WorklistItemStatResponse> {
         return worklistItemRepository.searchForExcel(param).toList()
     }
 }

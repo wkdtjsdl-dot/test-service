@@ -1,6 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
-import com.idrsys.ailis.tst.application.dto.WorklistItemResponse
+import com.idrsys.ailis.tst.application.dto.WorklistItemStatResponse
 import com.idrsys.ailis.tst.application.dto.WorklistItemSearchParam
 import com.idrsys.ailis.tst.application.required.repository.WorklistItemRepository
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsWrklistItm
@@ -23,12 +23,12 @@ class WorklistItemRepositoryImpl(
     private val databaseClient: DatabaseClient
 ) : WorklistItemRepository {
 
-    override fun search(param: WorklistItemSearchParam): Flow<WorklistItemResponse> {
+    override fun search(param: WorklistItemSearchParam): Flow<WorklistItemStatResponse> {
         val spec = buildSpec(param)
-        return spec.fetch().all().map { row -> row.toWorklistItemResponse() }.asFlow()
+        return spec.fetch().all().map { row -> row.toWorklistItemStatResponse() }.asFlow()
     }
 
-    override fun searchForExcel(param: WorklistItemSearchParam): Flow<WorklistItemResponse> = search(param)
+    override fun searchForExcel(param: WorklistItemSearchParam): Flow<WorklistItemStatResponse> = search(param)
 
     private fun buildSpec(param: WorklistItemSearchParam): DatabaseClient.GenericExecuteSpec {
         val ti = RbsTstItem.RBS_TST_ITEM
@@ -112,7 +112,7 @@ class WorklistItemRepositoryImpl(
         return spec
     }
 
-    private fun Map<String, Any>.toWorklistItemResponse() = WorklistItemResponse(
+    private fun Map<String, Any>.toWorklistItemStatResponse() = WorklistItemStatResponse(
         reqDt = this["tst_req_dt"] as? LocalDate,
         tstReqNo = (this["tst_req_no"] as? Number)?.toLong(),
         custCd = this["cust_cd"] as? String,
