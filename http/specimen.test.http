@@ -4,7 +4,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "adminId": "TEST003",
+  "adminId": "TEST001",
   "passwd": "test1234"
 }
 
@@ -146,6 +146,14 @@ Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 검사 기준정보 검체 삭제
 DELETE {{api-service}}/api/tst/bbs/spcm/TEST_SPCM01
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+
+
+### 검사 기준정보 검체 조회
+GET {{tst-service}}/api/inner/bts/spcm?tstCd=A003
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}

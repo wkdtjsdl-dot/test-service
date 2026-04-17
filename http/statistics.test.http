@@ -1,0 +1,44 @@
+### 관리자 Login 요청 (테스트용)
+POST {{api-service}}/api/auth/adminLogin
+Content-Type: application/json
+Accept: application/json
+
+{
+  "adminId": "TEST001",
+  "passwd": "test1234"
+}
+
+> {%
+  client.global.set("accessToken", response.headers.valuesOf("Set-Cookie")
+    .find(function(cookie) { return (cookie.split(";")[0].split("=")[0] === "accessToken"); } ).split(";")[0].split("=")[1]
+  );
+  client.global.set("refreshToken", response.headers.valuesOf("Set-Cookie")
+    .find(cookie => cookie.split(";")[0].split("=")[0] === "refreshToken").split(";")[0].split("=")[1]
+  );
+  client.log("global 쿠키: accessToken="+client.global.get("accessToken") + "\n          refreshToken="+ client.global.get("refreshToken"));
+%}
+
+### 워크리스트 항목별 이전자료 목록 조회
+GET {{api-service}}/api/tst/stat/wrklist-itm?startDt=2026-04-01&endDt=2026-04-10&wrklistCd=&tstCd=&spcmCd=
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+
+### 임상검사코드 전체항목 목록 조회
+GET {{api-service}}/api/tst/stat/clinical-test-code
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 수가변경 승인처리 목록 조회
+GET {{api-service}}/api/tst/stat/charge-change-approval
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
+
+### 수진자별 TAT분석표 목록 조회
+GET {{api-service}}/api/tst/stat/patient-tat
+Content-Type: application/json
+Accept: application/json
+Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
