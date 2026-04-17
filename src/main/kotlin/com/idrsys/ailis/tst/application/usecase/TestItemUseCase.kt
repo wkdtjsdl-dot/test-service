@@ -54,6 +54,11 @@ interface TestItemUseCase {
     fun getEssentialDocsByTest(tstCd: String): Flow<TestItemEssentialDocListResponse>
     suspend fun getDetailEssentialDocById(itemEstlDocId: String): TestItemEssentialDocDetailResponse?
 
+    // --- TestItemSub ---
+    fun getItemSubByTest(tstCd: String): Flow<TestItemSubResponse>
+    suspend fun registerItemSub(request: TestItemSubRegisterRequest, adminId: String): TestItemSubResponse
+    suspend fun updateItemSub(itemSubId: String, request: TestItemSubUpdateRequest, adminId: String): TestItemSubResponse
+
     // --- TestItemHst ---
     suspend fun getTestItemHistoryLogList(searchParam: TestItemLogsSearchParam): List<TestItemLogsResponse>
 

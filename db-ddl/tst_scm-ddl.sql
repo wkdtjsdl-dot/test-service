@@ -125,6 +125,162 @@ comment on column bts_ref_item.updater is '수정자';
 
 comment on column bts_ref_item.update_dtime is '수정일시';
 
+create table bts_item_sub
+(
+    item_sub_id         varchar(50)                        not null
+        primary key,
+    tst_cd              varchar(50)                        not null,
+    tst_sub_cd          varchar(50)                        not null,
+    start_dt            date                               not null,
+    end_dt              date    default '9999-12-31'::date not null,
+    use_yn              boolean default true               not null,
+    tst_sub_nm          varchar(200)                       not null,
+    tst_sub_abbr_nm     varchar(50)                        not null,
+    tst_sub_eng_nm      varchar(200)                       not null,
+    tst_sub_eng_abbr_nm varchar(50)                        not null,
+    tst_sub_int_nm      varchar(200),
+    rst_type_short_yn   boolean                            not null,
+    rst_type_long_yn    boolean                            not null,
+    rst_type_file_yn    boolean                            not null,
+    rst_type_url_yn     boolean                            not null,
+    ref_val             varchar(1000),
+    eng_ref_val         varchar(1000),
+    creator             varchar(50)                        not null,
+    create_dtime        timestamp                          not null,
+    updater             varchar(50)                        not null,
+    update_dtime        timestamp                          not null,
+    constraint bts_item_sub__unique
+        unique (tst_cd, tst_sub_cd)
+);
+
+comment on table bts_item_sub is '검사부속종목';
+
+comment on column bts_item_sub.item_sub_id is 'UUID';
+
+comment on column bts_item_sub.tst_cd is '부속코드';
+
+comment on column bts_item_sub.tst_sub_cd is '검사부속코드';
+
+comment on column bts_item_sub.start_dt is '시작일자';
+
+comment on column bts_item_sub.end_dt is '종료일자';
+
+comment on column bts_item_sub.use_yn is '사용여부';
+
+comment on column bts_item_sub.tst_sub_nm is '부속코드명';
+
+comment on column bts_item_sub.tst_sub_abbr_nm is '부속코드명_약어';
+
+comment on column bts_item_sub.tst_sub_eng_nm is '부속코드명_영문';
+
+comment on column bts_item_sub.tst_sub_eng_abbr_nm is '부속코드명_영문_약어';
+
+comment on column bts_item_sub.tst_sub_int_nm is '부속코드명_내부';
+
+comment on column bts_item_sub.rst_type_short_yn is '결과형태 단문 ';
+
+comment on column bts_item_sub.rst_type_long_yn is '결과형태 장문 ';
+
+comment on column bts_item_sub.rst_type_file_yn is '결과형태 파일';
+
+comment on column bts_item_sub.rst_type_url_yn is '결과형태 URL';
+
+comment on column bts_item_sub.ref_val is '참고치';
+
+comment on column bts_item_sub.eng_ref_val is '참고치(영문)';
+
+comment on column bts_item_sub.creator is '생성자';
+
+comment on column bts_item_sub.create_dtime is '생성일시';
+
+comment on column bts_item_sub.updater is '수정자';
+
+comment on column bts_item_sub.update_dtime is '수정일시';
+
+alter table bts_item_sub
+    owner to ailis_user;
+
+
+create table bts_item_sub_hst
+(
+    item_sub_hst_id     varchar(50)  not null
+        primary key,
+    hst_desc            varchar(200) not null,
+    item_sub_id         varchar(50),
+    tst_cd              varchar(50),
+    tst_sub_cd          varchar(50),
+    start_dt            date,
+    end_dt              date,
+    use_yn              boolean,
+    tst_sub_nm          varchar(200),
+    tst_sub_abbr_nm     varchar(50),
+    tst_sub_eng_nm      varchar(200),
+    tst_sub_eng_abbr_nm varchar(50),
+    tst_sub_int_nm      varchar(200),
+    rst_type_short_yn   boolean,
+    rst_type_long_yn    boolean,
+    rst_type_file_yn    boolean,
+    rst_type_url_yn     boolean,
+    ref_val             varchar(1000),
+    eng_ref_val         varchar(1000),
+    creator             varchar(50),
+    create_dtime        timestamp,
+    updater             varchar(50),
+    update_dtime        timestamp
+);
+
+comment on table bts_item_sub_hst is '검사부속종목 (히스토리)';
+
+comment on column bts_item_sub_hst.item_sub_hst_id is 'UUID';
+
+comment on column bts_item_sub_hst.hst_desc is '변경사유';
+
+comment on column bts_item_sub_hst.item_sub_id is 'UUID';
+
+comment on column bts_item_sub_hst.tst_cd is '부속코드';
+
+comment on column bts_item_sub_hst.tst_sub_cd is '검사부속코드';
+
+comment on column bts_item_sub_hst.start_dt is '시작일자';
+
+comment on column bts_item_sub_hst.end_dt is '종료일자';
+
+comment on column bts_item_sub_hst.use_yn is '사용여부';
+
+comment on column bts_item_sub_hst.tst_sub_nm is '부속코드명';
+
+comment on column bts_item_sub_hst.tst_sub_abbr_nm is '부속코드명_약어';
+
+comment on column bts_item_sub_hst.tst_sub_eng_nm is '부속코드명_영문';
+
+comment on column bts_item_sub_hst.tst_sub_eng_abbr_nm is '부속코드명_영문_약어';
+
+comment on column bts_item_sub_hst.tst_sub_int_nm is '부속코드명내부';
+
+comment on column bts_item_sub_hst.rst_type_short_yn is '결과형태 단문 ';
+
+comment on column bts_item_sub_hst.rst_type_long_yn is '결과형태 장문 ';
+
+comment on column bts_item_sub_hst.rst_type_file_yn is '결과형태 파일';
+
+comment on column bts_item_sub_hst.rst_type_url_yn is '결과형태 URL';
+
+comment on column bts_item_sub_hst.ref_val is '참고치';
+
+comment on column bts_item_sub_hst.eng_ref_val is '참고치(영문)';
+
+comment on column bts_item_sub_hst.creator is '생성자';
+
+comment on column bts_item_sub_hst.create_dtime is '생성일시';
+
+comment on column bts_item_sub_hst.updater is '수정자';
+
+comment on column bts_item_sub_hst.update_dtime is '수정일시';
+
+alter table bts_item_sub_hst
+    owner to ailis_user;
+
+
 alter table bts_ref_item
     owner to ailis_user;
 
@@ -1163,6 +1319,7 @@ create table bts_item
     insu_apply_cd      varchar(50),
     insu_cd            varchar(50),
     insu_cate_no       varchar(50),
+    tst_sub_yn         boolean default false              not null,
     creator            varchar(50)                        not null,
     create_dtime       timestamp                          not null,
     updater            varchar(50)                        not null,
@@ -1235,6 +1392,8 @@ comment on column bts_item.insu_cd is '보험코드';
 
 comment on column bts_item.insu_cate_no is '보험분류번호';
 
+comment on column bts_item.tst_sub_yn is '부속코드 여부';
+
 comment on column bts_item.creator is '생성자';
 
 comment on column bts_item.create_dtime is '생성일시';
@@ -1286,6 +1445,7 @@ create table bts_item_hst
     insu_apply_cd      varchar(50),
     insu_cd            varchar(50),
     insu_cate_no       varchar(50),
+    tst_sub_yn         boolean,
     creator            varchar(50)  not null,
     create_dtime       timestamp    not null,
     updater            varchar(50)  not null,
@@ -1361,6 +1521,8 @@ comment on column bts_item_hst.insu_apply_cd is '급여비급여구분';
 comment on column bts_item_hst.insu_cd is '보험코드';
 
 comment on column bts_item_hst.insu_cate_no is '보험분류번호';
+
+comment on column bts_item_hst.tst_sub_yn is '부속코드 여부';
 
 comment on column bts_item_hst.creator is '생성자';
 
