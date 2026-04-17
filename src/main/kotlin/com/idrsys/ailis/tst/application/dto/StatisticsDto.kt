@@ -15,7 +15,7 @@ data class WorklistItemSearchParam(
     val spcmCd: String?
 )
 
-data class WorklistItemResponse(
+data class WorklistItemStatResponse(
     @ExcelColumn("등록일자") val reqDt: LocalDate?,
     @ExcelColumn("등록번호") val tstReqNo: Long?,
     @ExcelColumn("거래처코드") val custCd: String?,
