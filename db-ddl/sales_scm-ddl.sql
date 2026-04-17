@@ -1587,7 +1587,10 @@ create table sbl_demand
     create_dtime          timestamp             not null,
     updater               varchar(50)           not null,
     update_dtime          timestamp             not null,
-    colledger_id          varchar(50)
+    colledger_id          varchar(50),
+    curr_cd               varchar(10),
+    fx_demand_charge      numeric,
+    demand_type           varchar(2)
 );
 
 comment on table sbl_demand is '청구';
@@ -1648,6 +1651,12 @@ comment on column sbl_demand.update_dtime is '수정일시';
 
 comment on column sbl_demand.colledger_id is '청구수금원장아이디';
 
+comment on column sbl_demand.curr_cd is '통화코드 (ISO 4217: KRW, USD, JPY 등)';
+
+comment on column sbl_demand.fx_demand_charge is '해외청구수가 (환율변환 전 외화금액)';
+
+comment on column sbl_demand.demand_type is '청구유형 (10: 일반, 30: 선수금)';
+
 alter table sbl_demand
     owner to ailis_user;
 
@@ -1686,10 +1695,18 @@ create table sbl_demand_hst
     create_dtime          timestamp             not null,
     updater               varchar(50)           not null,
     update_dtime          timestamp             not null,
-    colledger_id          varchar(50)
+    colledger_id          varchar(50),
+    curr_cd               varchar(10),
+    fx_demand_charge      numeric,
+    demand_type           varchar(2)
 );
 
 comment on table sbl_demand_hst is '청구 이력';
+
+comment on column sbl_demand_hst.curr_cd is '통화코드 (ISO 4217: KRW, USD, JPY 등)';
+
+comment on column sbl_demand_hst.fx_demand_charge is '해외청구수가 (환율변환 전 외화금액)';
+comment on column sbl_demand_hst.demand_type is '청구유형 (10: 일반, 30: 선수금)';
 comment on column sbl_demand_hst.demand_hst_id is '청구이력아이디 UUID';
 comment on column sbl_demand_hst.hst_cd is '이력코드';
 comment on column sbl_demand_hst.hst_memo is '이력메모';

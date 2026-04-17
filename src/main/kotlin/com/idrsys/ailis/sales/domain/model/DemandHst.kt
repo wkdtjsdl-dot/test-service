@@ -42,6 +42,9 @@ class DemandHst(
     updater: String,
     updateDtime: LocalDateTime,
     colledgerId: String?,
+    crcyCd: String? = null,
+    frgnCrcyAmt: BigDecimal? = null,
+    demandType: String? = null,
 ) {
     @Id
     @UuidGeneratedId(idFieldName = "demandHstId")
@@ -140,4 +143,13 @@ class DemandHst(
 
     @Column("colledger_id")
     val colledgerId: String? = colledgerId
+
+    @Column("curr_cd")
+    val crcyCd: String? = crcyCd
+
+    @Column("fx_demand_charge")
+    val frgnCrcyAmt: BigDecimal? = frgnCrcyAmt
+
+    @Column("demand_type")
+    val demandType: String? = demandType
 }

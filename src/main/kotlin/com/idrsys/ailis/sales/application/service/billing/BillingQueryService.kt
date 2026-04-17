@@ -115,8 +115,7 @@ class BillingQueryService(
                 invcRecpEmailYn = custBillingInfo?.invcRecpEmailYn ?: false,
                 invcRecpEmailAddr = custBillingInfo?.invcRecpEmailAddr ?: "",
                 bzoffiCd = custBillingInfo?.bzoffiCd,
-                sapCustCd = custBillingInfo?.sapCustCd,
-                crcyCd = custBillingInfo?.crcyCd
+                sapCustCd = custBillingInfo?.sapCustCd
             ))
         }
     }
@@ -133,12 +132,20 @@ class BillingQueryService(
     override fun getBillingRequests(
         searchParam: BillingRequestSearchParam
     ): Flow<BillingRequestResponse> = flow {
+        // demandId가 있으면 demand를 조회해서 colledgerId 추출 — 특정 청구서의 의뢰내역만 필터링
+        val colledgerId = searchParam.demandId?.let { demandId ->
+            demandRepository.findById(demandId)?.colledgerId
+        }
+
         // custCd를 directAcctCd로 맵핑하여 req-service 호출
         val details = reqServicePort.getBillingRequests(
             startDt = searchParam.startDt,
             endDt = searchParam.endDt,
             directAcctCd = searchParam.custCd,  // custCd → directAcctCd 맵핑
-            closingCd = searchParam.closingCd
+            closingCd = searchParam.closingCd,
+            tstReqDivCd = searchParam.tstReqDivCd,
+            crcyCd = searchParam.crcyCd,
+            colledgerId = colledgerId
         ).toList()
 
         // Batch query custNm from scs_cust_mst

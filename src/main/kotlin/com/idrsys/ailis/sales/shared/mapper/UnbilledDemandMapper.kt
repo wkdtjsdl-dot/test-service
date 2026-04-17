@@ -23,8 +23,7 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
     invcRecpEmailYn: Boolean = false,
     invcRecpEmailAddr: String? = null,
     bzoffiCd: String? = null,
-    sapCustCd: String? = null,
-    crcyCd: String? = null
+    sapCustCd: String? = null
 ): DemandResponse {
     val dscntRate = if (stndPrice > BigDecimal.ZERO) {
         stndPrice.subtract(demandCharge)
@@ -60,6 +59,7 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
         createDtime = LocalDateTime.now(),      // Query time
         colledgerId = null,                     // Not set before closing
         createdRequestCount = this.requestCount,
-        crcyCd = crcyCd
+        crcyCd = this.crcyCd,
+        tstReqDivCd = this.tstReqDivCd
     )
 }

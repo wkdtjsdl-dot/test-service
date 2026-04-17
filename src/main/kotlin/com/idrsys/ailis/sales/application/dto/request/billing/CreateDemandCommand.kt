@@ -37,5 +37,8 @@ data class CreateDemandCommand(
     val insurePrice: BigDecimal? = null,
     val sapCustCd: String? = null,
     val invcRecpEmailAddr: String? = null,
-    val demandMemo: String? = null
+    val demandMemo: String? = null,
+    val frgnCrcyAmt: BigDecimal? = null,
+    val demandType: String? = null,
+    val crcyCd: String? = null          // rbs_tst_item.crcy_cd full format (e.g. "CRCY_USD")
 )

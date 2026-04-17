@@ -68,6 +68,7 @@ class BillingCommandService(
         // 3. Calculate demand charge from command data
 
         // 4. Create demand entity
+        // crcyCd: command에서 전달된 값(예: 'CRCY_KRW') 그대로 저장 — 의뢰내역 필터와 일치시키기 위해
         val demand = Demand(
             demandId = null,
             demandDt = command.demandDt,
@@ -86,7 +87,10 @@ class BillingCommandService(
             creator = adminId,
             createDtime = LocalDateTime.now(),
             updater = adminId,
-            updateDtime = LocalDateTime.now()
+            updateDtime = LocalDateTime.now(),
+            crcyCd = command.crcyCd,
+            frgnCrcyAmt = command.frgnCrcyAmt,
+            demandType = command.demandType
         )
         demand.setAsNew()
 
@@ -105,6 +109,8 @@ class BillingCommandService(
         val savedDemand = demandRepository.save(demand)
 
         // 7. Update test requests with closing information
+        // demandType '30' → RQDV_PR, '10' → NON_PR (CASE WHEN 분기와 동일한 로직)
+        val tstReqDivCd = if (command.demandType == "30") "RQDV_PR" else "NON_PR"
         val createdRequestCount = reqServicePort.updateTstItemClosingInfo(
             directAcctCd = command.custCd,
             startDt = command.demandStartDt,
@@ -112,7 +118,10 @@ class BillingCommandService(
             exrtId = command.exrtId,
             stndExrt = command.stndExrt,
             closingMemo = command.demandMemo,
-            closingUser = adminId
+            closingUser = adminId,
+            tstReqDivCd = tstReqDivCd,
+            crcyCd = command.crcyCd,
+            colledgerId = savedLedger.colledgerId!!
         )
 
         // 8. Save demand history snapshot (모든 생성 작업 완료 후)
@@ -148,6 +157,9 @@ class BillingCommandService(
             updater = savedDemand.updater,
             updateDtime = savedDemand.updateDtime,
             colledgerId = savedDemand.colledgerId,
+            crcyCd = savedDemand.crcyCd,
+            frgnCrcyAmt = savedDemand.frgnCrcyAmt,
+            demandType = savedDemand.demandType,
         ))
 
         // 9. Return response
@@ -224,14 +236,22 @@ class BillingCommandService(
             updater = demand.updater,
             updateDtime = demand.updateDtime,
             colledgerId = demand.colledgerId,
+            crcyCd = demand.crcyCd,
+            frgnCrcyAmt = demand.frgnCrcyAmt,
+            demandType = demand.demandType,
         ))
 
         // 5. Release test requests (reset closing information)
+        // demandType '30' → RQDV_PR, '10' → NON_PR — 생성 시와 동일한 분기 로직
+        val tstReqDivCd = if (demand.demandType == "30") "RQDV_PR" else "NON_PR"
         val releasedRequestCount = reqServicePort.releaseTstItemClosingInfo(
             directAcctCd = demand.custCd,
             startDt = demand.demandStartDt,
             endDt = demand.demandEndDt,
-            updater = adminId
+            updater = adminId,
+            tstReqDivCd = tstReqDivCd,
+            crcyCd = demand.crcyCd,
+            colledgerId = demand.colledgerId
         )
 
         // 6. Delete demand
@@ -296,97 +316,98 @@ class BillingCommandService(
         val custMap = custCds.mapNotNull { custCustomRepository.findByCustCd(it) }
             .associateBy { it.custCd }
 
-        // 3. T_ZFIS704 배치 row 구성 — LISGC = 1-based 5자리 인덱스
-        val rows = validItems.map { item ->
-            val demand = item.demand
-            val cust = custMap[demand.custCd]
-            SapInvcPostingRow(
-                lisgc = item.lisgc,
-                xref1 = demand.custCd.takeLast(6),      // 뒤에서 6글자
-                debcl = "10",                               // TODO demand db에서 가져오는걸로 추후 수정  LIS 10 :매출 / 30 : 선수금
-                budat = demand.demandDt.format(formatter),
-                xnegp = "",                                // 취소/수정 전표지시자 (일반전표 SPACE , 취소 'X')
-                xblnr = cust?.bizrno ?: "",
-                mwskz = "A1",
-                kostl = "0033020102",                       // GC지놈 TS팀 고정값
-                aufnr = "",
-                waers = if (cust?.frgnAcctYn == true) "USD" else "KRW",
-                wrbtr = demand.supval,
-                wmwst = demand.addtax,
-                bupla = "3300",                             // 고정값
-                zuonr = demand.custCd,
-                xref2 = "20",                               // 10 일발행, 20 월발행, 90 미발행
-                xref3 = "E",                                // E 전자계산서, SPACE 수기
-                email = demand.invcRecpEmailAddr ?: "",
-                sgtxt = "${cust?.custNm ?: demand.custCd} 검사비",
-                kidno = cust?.custNm ?: "",                 // 거래처명
-            )
-        }
-
-        // 4. 배치 RFC 호출
-        val sapResults = invoiceErpPort.postInvoices(rows)
-
-        // 5. LISGC로 응답 매칭 — 성공한 건 저장
-        val lisgcToItem = validItems.associateBy { it.lisgc }
+        // 3. 건별 RFC 호출 — 1 demand = 1 RFC call (SAP가 배치 단일 전표 생성하므로 개별 호출)
         val sentResults = mutableListOf<SendSalesStatementBatchResult>()
 
-        sapResults.forEach { sapResult ->
-            val item = lisgcToItem[sapResult.lisgc] ?: return@forEach
+        for (item in validItems) {
             val demand = item.demand
-            if (sapResult.rtc == "E") {
-                sentResults += SendSalesStatementBatchResult(
+            val cust = custMap[demand.custCd]
+            val row = SapInvcPostingRow(
+                lisgc = item.lisgc,
+                xref1 = demand.custCd.takeLast(6),
+                debcl = "10",                               // TODO demand db에서 가져오는걸로 추후 수정  LIS 10 :매출 / 30 : 선수금
+                budat = demand.demandDt.format(formatter),
+                xnegp = "",
+                xblnr = cust?.bizrno ?: "",
+                mwskz = "A1",
+                kostl = "0033020102",
+                aufnr = "",
+                waers = demand.crcyCd?.takeLast(3) ?: "KRW",
+                wrbtr = demand.supval,
+                wmwst = demand.addtax,
+                bupla = "3300",
+                zuonr = demand.custCd,
+                xref2 = "20",
+                xref3 = "E",
+                email = demand.invcRecpEmailAddr ?: "",
+                sgtxt = "${cust?.custNm ?: demand.custCd} 검사비",
+                kidno = cust?.custNm ?: "",
+            )
+
+            val sapResult = invoiceErpPort.postInvoices(listOf(row)).firstOrNull()
+
+            when {
+                sapResult == null -> sentResults += SendSalesStatementBatchResult(
+                    demandId = demand.demandId!!,
+                    sent = false,
+                    message = "SAP 응답이 없습니다."
+                )
+                sapResult.rtc == "E" -> sentResults += SendSalesStatementBatchResult(
                     demandId = demand.demandId!!,
                     sent = false,
                     message = "SAP 전기 오류 [${sapResult.rtc}]: ${sapResult.msg ?: "알 수 없는 오류"}"
                 )
-            } else if (sapResult.belnr.isNullOrBlank()) {
-                sentResults += SendSalesStatementBatchResult(
+                sapResult.belnr.isNullOrBlank() -> sentResults += SendSalesStatementBatchResult(
                     demandId = demand.demandId!!,
                     sent = false,
                     message = "SAP에서 전표번호가 반환되지 않았습니다."
                 )
-            } else {
-                demand.sendSalesStatement(sapResult.belnr, adminId)
-                val savedDemand = demandRepository.save(demand)
-                demandHstRepository.save(DemandHst(
-                    hstCd = "HST_M",
-                    hstMemo = "매출전표 생성",
-                    worker = adminId,
-                    workDtime = LocalDateTime.now(),
-                    demandId = savedDemand.demandId!!,
-                    demandDt = savedDemand.demandDt,
-                    custCd = savedDemand.custCd,
-                    demandStartDt = savedDemand.demandStartDt,
-                    demandEndDt = savedDemand.demandEndDt,
-                    stndPrice = savedDemand.stndPrice,
-                    supval = savedDemand.supval,
-                    demandCharge = savedDemand.demandCharge,
-                    addtax = savedDemand.addtax,
-                    dscntRate = savedDemand.dscntRate,
-                    demandCreateDtime = savedDemand.demandCreateDtime,
-                    demandCreatorEmpNo = savedDemand.demandCreatorEmpNo,
-                    insurePrice = savedDemand.insurePrice,
-                    invcOutputDtime = savedDemand.invcOutputDtime,
-                    invcOutputEmpno = savedDemand.invcOutputEmpno,
-                    slstmtNo = savedDemand.slstmtNo,
-                    slstmtSendDt = savedDemand.slstmtSendDt,
-                    slstmtSendEmpNo = savedDemand.slstmtSendEmpNo,
-                    demandMemo = savedDemand.demandMemo,
-                    sapCustCd = savedDemand.sapCustCd,
-                    billPublYn = savedDemand.billPublYn,
-                    invcRecpEmailAddr = savedDemand.invcRecpEmailAddr,
-                    creator = savedDemand.creator,
-                    createDtime = savedDemand.createDtime,
-                    updater = savedDemand.updater,
-                    updateDtime = savedDemand.updateDtime,
-                    colledgerId = savedDemand.colledgerId,
-                ))
-                sentResults += SendSalesStatementBatchResult(
-                    demandId = savedDemand.demandId!!,
-                    sent = true,
-                    slstmtNo = sapResult.belnr,
-                    message = "전송 완료"
-                )
+                else -> {
+                    demand.sendSalesStatement(sapResult.belnr, adminId)
+                    val savedDemand = demandRepository.save(demand)
+                    demandHstRepository.save(DemandHst(
+                        hstCd = "HST_M",
+                        hstMemo = "매출전표 생성",
+                        worker = adminId,
+                        workDtime = LocalDateTime.now(),
+                        demandId = savedDemand.demandId!!,
+                        demandDt = savedDemand.demandDt,
+                        custCd = savedDemand.custCd,
+                        demandStartDt = savedDemand.demandStartDt,
+                        demandEndDt = savedDemand.demandEndDt,
+                        stndPrice = savedDemand.stndPrice,
+                        supval = savedDemand.supval,
+                        demandCharge = savedDemand.demandCharge,
+                        addtax = savedDemand.addtax,
+                        dscntRate = savedDemand.dscntRate,
+                        demandCreateDtime = savedDemand.demandCreateDtime,
+                        demandCreatorEmpNo = savedDemand.demandCreatorEmpNo,
+                        insurePrice = savedDemand.insurePrice,
+                        invcOutputDtime = savedDemand.invcOutputDtime,
+                        invcOutputEmpno = savedDemand.invcOutputEmpno,
+                        slstmtNo = savedDemand.slstmtNo,
+                        slstmtSendDt = savedDemand.slstmtSendDt,
+                        slstmtSendEmpNo = savedDemand.slstmtSendEmpNo,
+                        demandMemo = savedDemand.demandMemo,
+                        sapCustCd = savedDemand.sapCustCd,
+                        billPublYn = savedDemand.billPublYn,
+                        invcRecpEmailAddr = savedDemand.invcRecpEmailAddr,
+                        creator = savedDemand.creator,
+                        createDtime = savedDemand.createDtime,
+                        updater = savedDemand.updater,
+                        updateDtime = savedDemand.updateDtime,
+                        colledgerId = savedDemand.colledgerId,
+                        crcyCd = savedDemand.crcyCd,
+                        frgnCrcyAmt = savedDemand.frgnCrcyAmt,
+                        demandType = savedDemand.demandType,
+                    ))
+                    sentResults += SendSalesStatementBatchResult(
+                        demandId = savedDemand.demandId!!,
+                        sent = true,
+                        slstmtNo = sapResult.belnr,
+                        message = "전송 완료"
+                    )
+                }
             }
         }
 

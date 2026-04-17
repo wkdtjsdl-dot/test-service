@@ -40,7 +40,10 @@ interface ReqServicePort {
         startDt: LocalDate,
         endDt: LocalDate,
         directAcctCd: String,
-        closingCd: String? = null
+        closingCd: String? = null,
+        tstReqDivCd: String? = null,
+        crcyCd: String? = null,
+        colledgerId: String? = null
     ): Flow<ReqServiceBillingRequestDetail>
 
     /**
@@ -65,6 +68,9 @@ interface ReqServicePort {
         stndExrt: BigDecimal? = null,
         closingMemo: String?,
         closingUser: String,
+        tstReqDivCd: String? = null,
+        crcyCd: String? = null,
+        colledgerId: String? = null
     ): Int
 
     /**
@@ -80,7 +86,10 @@ interface ReqServicePort {
         directAcctCd: String,
         startDt: LocalDate,
         endDt: LocalDate,
-        updater: String
+        updater: String,
+        tstReqDivCd: String? = null,
+        crcyCd: String? = null,
+        colledgerId: String? = null
     ): Int
 
     /**

@@ -73,7 +73,10 @@ class ReqServiceClient(
         startDt: LocalDate,
         endDt: LocalDate,
         directAcctCd: String,
-        closingCd: String?
+        closingCd: String?,
+        tstReqDivCd: String?,
+        crcyCd: String?,
+        colledgerId: String?
     ): Flow<ReqServiceBillingRequestDetail> = flow {
         try {
             val details = client.get()
@@ -83,6 +86,9 @@ class ReqServiceClient(
                     builder.queryParam("endDt", endDt.toString())
                     builder.queryParam("directAcctCd", directAcctCd)
                     closingCd?.let { builder.queryParam("closingCd", it) }
+                    tstReqDivCd?.let { builder.queryParam("tstReqDivCd", it) }
+                    crcyCd?.let { builder.queryParam("crcyCd", it) }
+                    colledgerId?.let { builder.queryParam("colledgerId", it) }
                     builder.build()
                 }
                 .retrieve()
@@ -105,6 +111,9 @@ class ReqServiceClient(
         stndExrt: BigDecimal?,
         closingMemo: String?,
         closingUser: String,
+        tstReqDivCd: String?,
+        crcyCd: String?,
+        colledgerId: String?
     ): Int {
         val requestBody = mapOf(
             "directAcctCd" to directAcctCd,
@@ -112,7 +121,10 @@ class ReqServiceClient(
             "endDt" to endDt.toString(),
             "exrtId" to exrtId,
             "stndExrt" to stndExrt,
-            "closingMemo" to closingMemo
+            "closingMemo" to closingMemo,
+            "tstReqDivCd" to tstReqDivCd,
+            "crcyCd" to crcyCd,
+            "colledgerId" to colledgerId
         )
 
         return try {
@@ -140,12 +152,18 @@ class ReqServiceClient(
         directAcctCd: String,
         startDt: LocalDate,
         endDt: LocalDate,
-        updater: String
+        updater: String,
+        tstReqDivCd: String?,
+        crcyCd: String?,
+        colledgerId: String?
     ): Int {
         val requestBody = mapOf(
             "directAcctCd" to directAcctCd,
             "startDt" to startDt.toString(),
-            "endDt" to endDt.toString()
+            "endDt" to endDt.toString(),
+            "tstReqDivCd" to tstReqDivCd,
+            "crcyCd" to crcyCd,
+            "colledgerId" to colledgerId
         )
 
         return try {

@@ -13,5 +13,7 @@ data class ReqServiceUnbilledDemandSummary(
     val supval: BigDecimal,
     val addtax: BigDecimal,
     val demandCharge: BigDecimal,
-    val requestCount: Int
+    val requestCount: Int,
+    val tstReqDivCd: String? = null,
+    val crcyCd: String? = null
 )

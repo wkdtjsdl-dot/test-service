@@ -36,6 +36,9 @@ data class DemandResponse(
     val colledgerId: String? = null,
     val createdRequestCount: Int? = null,
     val crcyCd: String? = null,
+    val frgnCrcyAmt: BigDecimal? = null,
+    val tstReqDivCd: String? = null,
+    val demandType: String? = null,
 ) {
     companion object {
         fun from(demand: Demand, colledgerId: String? = null, createdRequestCount: Int? = null): DemandResponse {
@@ -63,11 +66,19 @@ data class DemandResponse(
                 createDtime = demand.createDtime,
                 colledgerId = colledgerId,
                 createdRequestCount = createdRequestCount,
-                crcyCd = null
+                crcyCd = demand.crcyCd,
+                frgnCrcyAmt = demand.frgnCrcyAmt,
+                demandType = demand.demandType
             )
         }
 
         fun from(demandWithCust: DemandWithCustInfo): DemandResponse {
+            // demandType '30' → RQDV_PR, other non-null → NON_PR (CASE WHEN 분기와 동일 로직)
+            val tstReqDivCd = when (demandWithCust.demandType) {
+                "30" -> "RQDV_PR"
+                null -> null
+                else -> "NON_PR"
+            }
             return DemandResponse(
                 demandId = demandWithCust.demandId,
                 custCd = demandWithCust.custCd,
@@ -92,7 +103,10 @@ data class DemandResponse(
                 creator = demandWithCust.creator,
                 createDtime = demandWithCust.createDtime,
                 colledgerId = demandWithCust.colledgerId,
-                crcyCd = demandWithCust.crcyCd
+                crcyCd = demandWithCust.crcyCd,
+                frgnCrcyAmt = demandWithCust.frgnCrcyAmt,
+                demandType = demandWithCust.demandType,
+                tstReqDivCd = tstReqDivCd
             )
         }
     }

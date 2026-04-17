@@ -51,6 +51,9 @@ class Demand(
     updater: String = creator,
     updateDtime: LocalDateTime = LocalDateTime.now(),
     colledgerId: String? = null,
+    crcyCd: String? = null,
+    frgnCrcyAmt: BigDecimal? = null,
+    demandType: String? = null,
 ) : Persistable<String> {
 
     init {
@@ -167,6 +170,18 @@ class Demand(
 
     @Column("colledger_id")
     var colledgerId: String? = colledgerId
+        private set
+
+    @Column("curr_cd")
+    var crcyCd: String? = crcyCd
+        private set
+
+    @Column("fx_demand_charge")
+    var frgnCrcyAmt: BigDecimal? = frgnCrcyAmt
+        private set
+
+    @Column("demand_type")
+    var demandType: String? = demandType
         private set
 
     @Transient
