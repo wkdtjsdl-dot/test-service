@@ -1,9 +1,11 @@
 package com.idrsys.ailis.sales.application.required.repository.testCodeMapping
 
 import com.idrsys.ailis.sales.application.dto.query.TestCodeMappingQuery
+import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.CustTstCdBulkSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.InnerTestCodeSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingSearchParam
 import com.idrsys.ailis.sales.application.dto.response.InnerTestCodeMappingResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.CustTstCdInnerResponse
 import com.idrsys.ailis.sales.domain.model.CustTestCodeMapping
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Pageable
@@ -33,4 +35,11 @@ interface TestCodeMappingCustomRepository {
      * @return DB에 존재하는 검사코드 목록
      */
     suspend fun findExistingTstCdsByCustCd(custCd: String, tstCds: List<String>): List<String?>
+
+    /**
+     * (custCd, tstCd) 쌍 리스트로 고객검사코드(custTstCd) 벌크 조회
+     * @param searchParam custCd + tstCd 쌍 목록
+     * @return 매핑 결과 리스트 (custCd, custTstCd, tstCd)
+     */
+    suspend fun findCustTstCdsByPairs(searchParam: CustTstCdBulkSearchParam): List<CustTstCdInnerResponse>
 }

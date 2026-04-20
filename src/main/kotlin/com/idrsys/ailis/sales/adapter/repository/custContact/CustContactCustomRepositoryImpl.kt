@@ -84,7 +84,7 @@ class CustContactCustomRepositoryImpl(
             .`as`("rn")
 
         val sub = dslContext
-            .select(SCS_CUST_CONTACT.CUST_CD, SCS_CUST_CONTACT.PHNO, rnField)
+            .select(SCS_CUST_CONTACT.CUST_CD, SCS_CUST_CONTACT.ACCT_CHARGE_NM, SCS_CUST_CONTACT.PHNO, SCS_CUST_CONTACT.TELNO, rnField)
             .from(SCS_CUST_CONTACT)
             .where(SCS_CUST_CONTACT.CUST_CD.`in`(custCdList))
             .and(SCS_CUST_CONTACT.USE_YN.isTrue)
@@ -93,7 +93,9 @@ class CustContactCustomRepositoryImpl(
         val query = dslContext
             .select(
                 DSL.field(DSL.name("t", "cust_cd"), String::class.java),
-                DSL.field(DSL.name("t", "phno"), String::class.java)
+                DSL.field(DSL.name("t", "acct_charge_nm"), String::class.java),
+                DSL.field(DSL.name("t", "phno"), String::class.java),
+                DSL.field(DSL.name("t", "telno"), String::class.java)
             )
             .from(sub)
             .where(DSL.field(DSL.name("t", "rn"), Int::class.java).eq(1))
@@ -104,7 +106,9 @@ class CustContactCustomRepositoryImpl(
         return sql.map { row, _ ->
             CustContactPhnoResponse(
                 custCd = row.get("cust_cd", String::class.java)!!,
-                phno = row.get("phno", String::class.java)
+                acctChargeNm = row.get("acct_charge_nm", String::class.java),
+                phno = row.get("phno", String::class.java),
+                telno = row.get("telno", String::class.java),
             )
         }.all().collectList().awaitSingle()
     }

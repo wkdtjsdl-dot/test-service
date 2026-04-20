@@ -488,6 +488,10 @@ class CustCustomRepositoryImpl(
                 SCS_CUST_MST.CUST_MST_ID,
                 SCS_CUST_MST.CUST_CD,
                 SCS_CUST_MST.CUST_NM,
+                SCS_CUST_MST.CUST_TYPE_CD,
+                SCS_CUST_MST.BIZRNO,
+                SCS_CUST_MST.BZOFFI_CD,
+                SCS_CUST_MST.BRANCH_CD,
             )
                 .from(SCS_CUST_MST)
                 .where(SCS_CUST_MST.CUST_CD.`in`(chunk))
@@ -501,9 +505,13 @@ class CustCustomRepositoryImpl(
                 .map { row, _ ->
                     row.get("cust_cd", String::class.java)!! to
                         CustCdNmResponse(
-                            custMstId = row.get("cust_mst_id", String::class.java)!!,
-                            custCd = row.get("cust_cd", String::class.java)!!,
-                            custNm = row.get("cust_nm", String::class.java)!!
+                            custMstId = row.get("cust_mst_id", String::class.java),
+                            custCd = row.get("cust_cd", String::class.java),
+                            custNm = row.get("cust_nm", String::class.java),
+                            custTypeCd = row.get("cust_type_cd", String::class.java),
+                            bizrno = row.get("bizrno", String::class.java),
+                            bzoffiCd = row.get("bzoffi_cd", String::class.java),
+                            branchCd = row.get("branch_cd", String::class.java),
                         )
                 }
                 .all()
