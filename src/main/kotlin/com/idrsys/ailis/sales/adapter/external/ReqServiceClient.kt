@@ -76,7 +76,6 @@ class ReqServiceClient(
         closingCd: String?,
         tstReqDivCd: String?,
         crcyCd: String?,
-        colledgerId: String?
     ): Flow<ReqServiceBillingRequestDetail> = flow {
         try {
             val details = client.get()
@@ -88,7 +87,6 @@ class ReqServiceClient(
                     closingCd?.let { builder.queryParam("closingCd", it) }
                     tstReqDivCd?.let { builder.queryParam("tstReqDivCd", it) }
                     crcyCd?.let { builder.queryParam("crcyCd", it) }
-                    colledgerId?.let { builder.queryParam("colledgerId", it) }
                     builder.build()
                 }
                 .retrieve()
@@ -113,7 +111,6 @@ class ReqServiceClient(
         closingUser: String,
         tstReqDivCd: String?,
         crcyCd: String?,
-        colledgerId: String?
     ): Int {
         val requestBody = mapOf(
             "directAcctCd" to directAcctCd,
@@ -124,7 +121,6 @@ class ReqServiceClient(
             "closingMemo" to closingMemo,
             "tstReqDivCd" to tstReqDivCd,
             "crcyCd" to crcyCd,
-            "colledgerId" to colledgerId
         )
 
         return try {
@@ -155,7 +151,6 @@ class ReqServiceClient(
         updater: String,
         tstReqDivCd: String?,
         crcyCd: String?,
-        colledgerId: String?
     ): Int {
         val requestBody = mapOf(
             "directAcctCd" to directAcctCd,
@@ -163,7 +158,6 @@ class ReqServiceClient(
             "endDt" to endDt.toString(),
             "tstReqDivCd" to tstReqDivCd,
             "crcyCd" to crcyCd,
-            "colledgerId" to colledgerId
         )
 
         return try {

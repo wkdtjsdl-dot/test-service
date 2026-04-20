@@ -121,7 +121,6 @@ class BillingCommandService(
             closingUser = adminId,
             tstReqDivCd = tstReqDivCd,
             crcyCd = command.crcyCd,
-            colledgerId = savedLedger.colledgerId!!
         )
 
         // 8. Save demand history snapshot (모든 생성 작업 완료 후)
@@ -251,7 +250,6 @@ class BillingCommandService(
             updater = adminId,
             tstReqDivCd = tstReqDivCd,
             crcyCd = demand.crcyCd,
-            colledgerId = demand.colledgerId
         )
 
         // 6. Delete demand

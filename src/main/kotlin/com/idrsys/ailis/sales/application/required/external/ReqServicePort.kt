@@ -43,7 +43,6 @@ interface ReqServicePort {
         closingCd: String? = null,
         tstReqDivCd: String? = null,
         crcyCd: String? = null,
-        colledgerId: String? = null
     ): Flow<ReqServiceBillingRequestDetail>
 
     /**
@@ -70,7 +69,6 @@ interface ReqServicePort {
         closingUser: String,
         tstReqDivCd: String? = null,
         crcyCd: String? = null,
-        colledgerId: String? = null
     ): Int
 
     /**
@@ -89,7 +87,6 @@ interface ReqServicePort {
         updater: String,
         tstReqDivCd: String? = null,
         crcyCd: String? = null,
-        colledgerId: String? = null
     ): Int
 
     /**
