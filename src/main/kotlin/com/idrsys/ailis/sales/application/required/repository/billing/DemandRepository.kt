@@ -16,10 +16,11 @@ interface DemandRepository {
     suspend fun save(demand: Demand): Demand
     suspend fun findById(id: String): Demand?
     suspend fun delete(demand: Demand)
-    suspend fun existsByCustCdAndDemandStartDtAndDemandEndDt(
+    suspend fun existsByCustCdAndDemandStartDtAndDemandEndDtAndDemandType(
         custCd: String,
         demandStartDt: LocalDate,
-        demandEndDt: LocalDate
+        demandEndDt: LocalDate,
+        demandType: String
     ): Boolean
 
     // Custom query operations

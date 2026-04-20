@@ -34,11 +34,12 @@ interface DemandDataRepository : CoroutineCrudRepository<Demand, String> {
     ): Flow<Demand>
 
     /**
-     * Check if demand exists by customer code, demand start date, and demand standard date
+     * Check if demand exists by customer code, demand start date, demand standard date, and demand type
      */
-    suspend fun existsByCustCdAndDemandStartDtAndDemandEndDt(
+    suspend fun existsByCustCdAndDemandStartDtAndDemandEndDtAndDemandType(
         custCd: String,
         demandStartDt: LocalDate,
-        demandEndDt: LocalDate
+        demandEndDt: LocalDate,
+        demandType: String
     ): Boolean
 }

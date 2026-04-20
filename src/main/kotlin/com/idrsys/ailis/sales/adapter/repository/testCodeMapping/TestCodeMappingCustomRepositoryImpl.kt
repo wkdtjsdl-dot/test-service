@@ -3,9 +3,11 @@ package com.idrsys.ailis.sales.adapter.repository.testCodeMapping
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toTestCodeMappingInnerTestCode
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toTestCodeMappingQuery
 import com.idrsys.ailis.sales.application.dto.query.TestCodeMappingQuery
+import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.CustTstCdBulkSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.InnerTestCodeSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingSearchParam
 import com.idrsys.ailis.sales.application.dto.response.InnerTestCodeMappingResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.CustTstCdInnerResponse
 import com.idrsys.ailis.sales.application.required.repository.testCodeMapping.TestCodeMappingCustomRepository
 import com.idrsys.ailis.sales.domain.model.CustTestCodeMapping
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
@@ -13,11 +15,13 @@ import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_TST_CD_MPG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Query
 import org.jooq.SelectLimitStep
+import org.jooq.impl.DSL
 import org.springframework.data.domain.Pageable
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -149,6 +153,46 @@ class TestCodeMappingCustomRepositoryImpl(
         return sql.map { row, _ -> row.get("tst_cd", String::class.java) }
             .one()
             .awaitSingleOrNull()
+    }
+
+    override suspend fun findCustTstCdsByPairs(searchParam: CustTstCdBulkSearchParam): List<CustTstCdInnerResponse> {
+        if (searchParam.pairs.isEmpty()) return emptyList()
+
+        val result = mutableListOf<CustTstCdInnerResponse>()
+
+        searchParam.pairs.chunked(500).forEach { chunk ->
+            val orConditions = chunk.map { pair ->
+                SCS_CUST_TST_CD_MPG.CUST_CD.eq(pair.custCd)
+                    .and(SCS_CUST_TST_CD_MPG.TST_CD.eq(pair.tstCd))
+            }.reduce { acc, cond -> acc.or(cond) }
+
+            val query = dslContext.select(
+                SCS_CUST_TST_CD_MPG.CUST_CD,
+                SCS_CUST_TST_CD_MPG.CUST_TST_CD,
+                SCS_CUST_TST_CD_MPG.TST_CD,
+            )
+                .from(SCS_CUST_TST_CD_MPG)
+                .where(orConditions)
+
+            var sql = databaseClient.sql(query.sql)
+            query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+            val chunkResult = sql
+                .map { row, _ ->
+                    CustTstCdInnerResponse(
+                        custCd = row.get("cust_cd", String::class.java) ?: "",
+                        custTstCd = row.get("cust_tst_cd", String::class.java) ?: "",
+                        tstCd = row.get("tst_cd", String::class.java),
+                    )
+                }
+                .all()
+                .collectList()
+                .awaitSingle()
+
+            result.addAll(chunkResult)
+        }
+
+        return result
     }
 
     override suspend fun findExistingTstCdsByCustCd(custCd: String, tstCds: List<String>): List<String?> {

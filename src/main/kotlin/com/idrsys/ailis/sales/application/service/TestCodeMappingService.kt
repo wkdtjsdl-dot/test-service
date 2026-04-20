@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.application.service
 
+import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.CustTstCdBulkSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.InnerTestCodeSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingCommand
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.TestCodeMappingSearchParam
@@ -8,6 +9,7 @@ import com.idrsys.ailis.sales.application.dto.response.InnerTestCodeMappingRespo
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingExcelValidResponse
 import com.idrsys.ailis.sales.application.dto.response.TestCodeMappingResponse
 import com.idrsys.ailis.sales.application.dto.response.ValidateTstMappingResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.CustTstCdInnerResponse
 import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.repository.testCodeMapping.TestCodeMappingCustomRepository
@@ -143,5 +145,9 @@ class TestCodeMappingService(
         val existingTstCds = testCodeMappingCustomRepository.findExistingTstCdsByCustCd(request.custCd, request.tstCds)
         val invalidCodes = request.tstCds.toSet() - existingTstCds.toSet()
         return ValidateTstMappingResponse(invalidCodes = invalidCodes.toList())
+    }
+
+    override suspend fun getCustTstCdBulk(searchParam: CustTstCdBulkSearchParam): List<CustTstCdInnerResponse> {
+        return testCodeMappingCustomRepository.findCustTstCdsByPairs(searchParam)
     }
 }

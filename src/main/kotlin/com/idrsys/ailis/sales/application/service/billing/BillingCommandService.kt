@@ -322,24 +322,24 @@ class BillingCommandService(
             val cust = custMap[demand.custCd]
             val row = SapInvcPostingRow(
                 lisgc = item.lisgc,
-                xref1 = demand.custCd.takeLast(6),
+                xref1 = demand.custCd.takeLast(6),      // 뒤에서 6글자
                 debcl = "10",                               // TODO demand db에서 가져오는걸로 추후 수정  LIS 10 :매출 / 30 : 선수금
                 budat = demand.demandDt.format(formatter),
-                xnegp = "",
+                xnegp = "",                                // 취소/수정 전표지시자 (일반전표 SPACE , 취소 'X')
                 xblnr = cust?.bizrno ?: "",
                 mwskz = "A1",
-                kostl = "0033020102",
+                kostl = "0033020102",                       // GC지놈 TS팀 고정값
                 aufnr = "",
                 waers = demand.crcyCd?.takeLast(3) ?: "KRW",
                 wrbtr = demand.supval,
                 wmwst = demand.addtax,
-                bupla = "3300",
+                bupla = "3300",                             // 고정값
                 zuonr = demand.custCd,
-                xref2 = "20",
-                xref3 = "E",
+                xref2 = "20",                               // 10 일발행, 20 월발행, 90 미발행
+                xref3 = "E",                                // E 전자계산서, SPACE 수기
                 email = demand.invcRecpEmailAddr ?: "",
                 sgtxt = "${cust?.custNm ?: demand.custCd} 검사비",
-                kidno = cust?.custNm ?: "",
+                kidno = cust?.custNm ?: "",                 // 거래처명
             )
 
             val sapResult = invoiceErpPort.postInvoices(listOf(row)).firstOrNull()

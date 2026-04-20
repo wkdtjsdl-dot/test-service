@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.adapter.web
 
+import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.CustTstCdBulkSearchParam
 import com.idrsys.ailis.sales.application.dto.request.testCodeMapping.ValidateTstMappingRequest
 import com.idrsys.ailis.sales.application.dto.response.ValidateTstMappingResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.CustTstCdInnerResponse
@@ -46,5 +47,16 @@ class CustTstCdInnerController(
         @RequestBody request: ValidateTstMappingRequest
     ): ValidateTstMappingResponse {
         return testCodeMappingUseCase.validateCustTstMappings(request)
+    }
+
+    @PostMapping("/bulk")
+    @Operation(
+        summary = "getCustTstCdBulk",
+        description = "(custCd, tstCd) 쌍 리스트로 고객검사코드(custTstCd) 벌크 조회 (req-service 매출조회용)"
+    )
+    suspend fun getCustTstCdBulk(
+        @RequestBody searchParam: CustTstCdBulkSearchParam
+    ): List<CustTstCdInnerResponse> {
+        return testCodeMappingUseCase.getCustTstCdBulk(searchParam)
     }
 }
