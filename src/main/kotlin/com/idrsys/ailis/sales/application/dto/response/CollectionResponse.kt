@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.domain.model.BankDeposit
 import com.idrsys.ailis.sales.domain.model.CardPayment
 import com.idrsys.ailis.sales.domain.model.CollectionBill
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
+import com.idrsys.web.excel.ExcelColumn
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -128,7 +129,18 @@ data class CollectionLedgerTransaction(
     val colbillAmt: BigDecimal,
     val demandAmt: BigDecimal,
     val collectAmt: BigDecimal,
-    val balance: BigDecimal
+    val balance: BigDecimal,
+    val advreceYn: Boolean = false
+)
+
+data class CollectionLedgerExcelRow(
+    @ExcelColumn("기준일자") val colbillDt: String,
+    @ExcelColumn("청구/수금") val division: String,
+    @ExcelColumn("구분") val divisionType: String,
+    @ExcelColumn("청구액") val colbillAmt: BigDecimal,
+    @ExcelColumn("입금액") val collectAmt: BigDecimal,
+    @ExcelColumn("잔고") val balance: BigDecimal?,
+    @ExcelColumn("카드/은행명") val colbillItemNm: String? = null,
 )
 
 /**

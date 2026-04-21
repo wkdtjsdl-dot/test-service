@@ -41,6 +41,7 @@ class CollectionLedgerRepositoryImpl(
 
     override fun findLedgerTransactionsWithBalance(custCd: String): Flow<CollectionLedgerTransaction> {
         val cl = SalesScm.SALES_SCM.SBL_COLLEDGER
+        val cb = SalesScm.SALES_SCM.SBL_COLBILL
 
         // 서브쿼리: 날짜 + 구분코드별 집계
         val summary = dslContext
@@ -71,7 +72,13 @@ class CollectionLedgerRepositoryImpl(
                             .otherwise(BigDecimal.ZERO)
                     )
                 ).`as`("rest"),
-                DSL.max(cl.COLBILL_ITEM_NM).`as`("colbill_item_nm")
+                DSL.max(cl.COLBILL_ITEM_NM).`as`("colbill_item_nm"),
+                DSL.field(
+                    DSL.select(cb.ADVRECE_YN)
+                        .from(cb)
+                        .where(cb.COLLEDGER_ID.eq(DSL.max(cl.COLLEDGER_ID)))
+                        .limit(1)
+                ).`as`("advrece_yn")
             )
             .from(cl)
             .where(cl.CUST_CD.eq(custCd))
@@ -102,7 +109,8 @@ class CollectionLedgerRepositoryImpl(
                         DSL.field("colbill_div_cd")
                     )
                     .`as`("balance"),
-                DSL.field("colbill_item_nm", String::class.java)
+                DSL.field("colbill_item_nm", String::class.java),
+                DSL.field("advrece_yn", Boolean::class.java)
             )
             .from(summary.asTable("sub"))
             .orderBy(
@@ -135,7 +143,8 @@ class CollectionLedgerRepositoryImpl(
             colbillAmt = row["colbill_amt"] as BigDecimal, // 금액 매핑
             demandAmt = row["demand"] as BigDecimal,
             collectAmt = row["collect"] as BigDecimal,
-            balance = row["balance"] as BigDecimal
+            balance = row["balance"] as BigDecimal,
+            advreceYn = row["advrece_yn"] as? Boolean ?: false
         )
     }
 

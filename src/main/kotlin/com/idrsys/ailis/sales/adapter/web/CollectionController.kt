@@ -14,14 +14,20 @@ import com.idrsys.ailis.sales.application.dto.response.*
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionCommandUseCase
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionQueryUseCase
 import com.idrsys.ailis.sales.domain.model.CollectionBill
+import com.idrsys.reactive.excel.ReactiveExcelWriter
 import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 
 /**
@@ -34,7 +40,8 @@ import java.time.LocalDate
 @RequestMapping("/api/collections")
 class CollectionController(
     private val collectionCommandUseCase: CollectionCommandUseCase,
-    private val collectionQueryUseCase: CollectionQueryUseCase
+    private val collectionQueryUseCase: CollectionQueryUseCase,
+    private val excelWriter: ReactiveExcelWriter
 ) {
 
 
@@ -214,6 +221,40 @@ class CollectionController(
         @PathVariable custCd: String,
     ): CollectionLedgerResponse {
         return collectionQueryUseCase.getCollectionLedger(custCd)
+    }
+
+    @Operation(summary = "거래내역 엑셀 다운로드")
+    @GetMapping("/ledger/{custCd}/excel")
+    suspend fun downloadCollectionLedgerExcel(
+        @PathVariable custCd: String,
+    ): ResponseEntity<Flow<DataBuffer>> {
+        val ledger = collectionQueryUseCase.getCollectionLedger(custCd)
+        val rows = ledger.transactions.map { t ->
+            CollectionLedgerExcelRow(
+                colbillDt = t.colbillDt.toString(),
+                division = t.division,
+                divisionType = if (t.advreceYn) "선수금" else "일반",
+                colbillAmt = t.demandAmt,
+                collectAmt = t.collectAmt,
+                balance = t.balance,
+                colbillItemNm = t.colbillItemNm,
+            )
+        } + CollectionLedgerExcelRow(
+            colbillDt = "",
+            division = "합계",
+            divisionType = "",
+            colbillAmt = ledger.totalDemandAmt,
+            collectAmt = ledger.totalCollectionAmt,
+            balance = null,
+            colbillItemNm = null,
+        )
+        val filename = URLEncoder.encode("거래내역_${LocalDate.now()}.xlsx", StandardCharsets.UTF_8.toString())
+        val excelFlow = excelWriter.generateExcel(rows, CollectionLedgerExcelRow::class, "거래내역")
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''$filename")
+            .header(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .header("Access-Control-Expose-Headers", "Content-Disposition")
+            .body(excelFlow)
     }
 
     /**
