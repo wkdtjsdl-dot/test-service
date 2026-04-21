@@ -211,7 +211,7 @@ class ApprInfoCustomRepositoryImpl(
 
     override suspend fun getNextApprInfoNo(): Long {
         val query = dslContext
-            .select(DSL.field("nextval('sales_scm.scs_appr_info_appr_info_no_seq')", Long::class.java))
+            .select(DSL.field("nextval('sales_scm.scs_appr_info_no_seq')", Long::class.java))
 
         return dbClient.sql(query.sql)
             .map { row -> row.get(0, java.lang.Long::class.java)!!.toLong() }
