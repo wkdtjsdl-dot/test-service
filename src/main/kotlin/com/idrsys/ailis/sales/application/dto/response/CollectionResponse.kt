@@ -13,6 +13,7 @@ import java.time.LocalDateTime
 data class CollectionBillListResponse(
    val colbillId: String?,
    val custCd: String,
+   val frgnAcctYn: Boolean = false,
    val colbillDt: LocalDate,
    val payMethodCd: String,
    val payAmt: BigDecimal,
@@ -39,7 +40,7 @@ data class CollectionBillListResponse(
     val remark: String? = null,
    val tradeNo: String? = null,
     val payDivCd: String? = null,
-
+    val crcyCd: String? = null,
 )
 /**
  * Collection Bill Response DTO

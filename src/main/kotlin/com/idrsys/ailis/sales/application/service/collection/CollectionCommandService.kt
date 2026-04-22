@@ -14,6 +14,7 @@ import com.idrsys.ailis.sales.application.dto.response.SendCollectionResponse
 import com.idrsys.ailis.sales.application.dto.response.SendCollectionResult
 import com.idrsys.ailis.sales.application.dto.response.SplitCollectionResponse
 import com.idrsys.ailis.sales.application.dto.request.ifre010.SapIfRe010Row
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.repository.collection.*
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.sap.CollectionErpPort
@@ -23,6 +24,7 @@ import com.idrsys.ailis.sales.domain.model.CollectionLedger
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.map
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -44,12 +46,16 @@ class CollectionCommandService(
     private val bankDepositRepository: BankDepositRepository,
     private val custCustomRepository: CustCustomRepository,
     private val collectionErpPort: CollectionErpPort,
+    private val baseServicePort: BaseServicePort,
 ) : CollectionCommandUseCase {
 
     private val logger = KotlinLogging.logger {}
 
     override suspend fun findCollectionBills(searchParam: CollectionListSearchParam): Flow<CollectionBillListResponse> {
+        val systemCodes = baseServicePort.getChildrenSystemCodes(listOf("CRCY")) ?: emptyMap()
+        val crcyNameByCd = systemCodes["CRCY"]?.associate { it.cd to it.cdNm } ?: emptyMap()
         return collectionBillRepository.findCollectionBills(searchParam)
+            .map { bill -> bill.copy(crcyCd = crcyNameByCd[bill.crcyCd] ?: bill.crcyCd) }
     }
     /**
      * Register card payment to customer

@@ -45,6 +45,7 @@ class CollectionBillRepositoryImpl(
             .select(
                 cb.COLBILL_ID,
                 cb.CUST_CD,
+                cm.FRGN_ACCT_YN,
                 cb.COLBILL_DT,
                 cb.PAY_METHOD_CD,
                 cb.PAY_AMT,
@@ -70,7 +71,8 @@ class CollectionBillRepositoryImpl(
                 cm.BIZRNO,
                 cp.PAY_DIV_CD,
                 cp.TRADE_NO,
-                bd.ACCOUNT_NO
+                bd.ACCOUNT_NO,
+                bd.CRCY_CD
             )
             .from(cb)
             .join(cm)
@@ -106,6 +108,7 @@ class CollectionBillRepositoryImpl(
         return CollectionBillListResponse(
             colbillId = row["colbill_id"] as? String,
             custCd = row["cust_cd"] as String,
+            frgnAcctYn = row["frgn_acct_yn"] as? Boolean ?: false,
             colbillDt = row["colbill_dt"] as LocalDate,
             payMethodCd = row["pay_method_cd"] as String,
             payAmt = row["pay_amt"] as BigDecimal,
@@ -132,6 +135,7 @@ class CollectionBillRepositoryImpl(
             remark = row["remark"] as? String,
             tradeNo = row["trade_no"] as? String,
             payDivCd = row["pay_div_cd"] as? String,
+            crcyCd = if (row["card_pay_id"] != null) "CRCY_KRW" else row["crcy_cd"] as? String,
         )
     }
 
