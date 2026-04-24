@@ -17,6 +17,9 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
@@ -69,7 +72,7 @@ class TestReportRepositoryImpl(
             .awaitSingleOrNull()
     }
 
-    override suspend fun searchTestResults(params: TestResultSearchParam, rerDeptCd: String?): List<TestResultResponse> {
+    override suspend fun searchTestResults(params: TestResultSearchParam, rerDeptCd: String?): Page<TestResultResponse> {
         val report = TBS_TST_REPORT
         val patient = RBS_PATIENT
         val tstItem = RBS_TST_ITEM
@@ -130,6 +133,26 @@ class TestReportRepositoryImpl(
                 DSL.inline("N").`as`("rer_yn")
             }
 
+        val countQuery = dslContext
+            .select(DSL.countDistinct(report.TST_REPORT_ID))
+            .from(report)
+                .join(patient)
+                    .on(report.TST_REQ_DT.eq(patient.TST_REQ_DT))
+                    .and(report.TST_REQ_NO.eq(patient.TST_REQ_NO))
+                .join(tstItem)
+                    .on(report.TST_REQ_DT.eq(tstItem.TST_REQ_DT))
+                    .and(report.TST_REQ_NO.eq(tstItem.TST_REQ_NO))
+                    .and(report.TST_CD.eq(tstItem.TST_CD))
+                .join(item)
+                    .on(report.TST_CD.eq(item.TST_CD))
+                .join(deptItem)
+                    .on(deptItem.TST_CD.eq(report.TST_CD))
+            .where(conditions)
+
+        var countSpec = databaseClient.sql(countQuery.sql)
+        countQuery.bindValues.forEachIndexed { i, v -> countSpec = countSpec.bind(i, v) }
+        val total = countSpec.fetch().one().map { (it.values.first() as Number).toLong() }.awaitSingle()
+
         val query = dslContext
             .selectDistinct(
                 report.TST_REPORT_ID,
@@ -156,7 +179,9 @@ class TestReportRepositoryImpl(
 
                 rerYnField,
                 tstItem.TST_REQ_STAT_CD,
-                tstItem.CLOSING_CD
+                tstItem.CLOSING_CD,
+                tstItem.TST_TAT_DT,
+                tstItem.LIMS_TAT_DT
             )
             .from(report)
                 .join(patient)
@@ -172,16 +197,20 @@ class TestReportRepositoryImpl(
                     .on(deptItem.TST_CD.eq(report.TST_CD))
             .where(conditions)
             .orderBy(report.TST_REQ_DT.desc(), report.TST_REQ_NO.desc())
+            .limit(params.size)
+            .offset(params.page.toLong() * params.size)
 
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> executeSpec = executeSpec.bind(i, v) }
 
-        return executeSpec
+        val results = executeSpec
             .fetch()
             .all()
             .map { toTestResultResponse(it) }
             .collectList()
             .awaitSingle()
+
+        return PageImpl(results, PageRequest.of(params.page, params.size), total)
     }
 
     override suspend fun deleteById(id: String) {
@@ -216,6 +245,8 @@ class TestReportRepositoryImpl(
             tstReqStatCd = row["tst_req_stat_cd"]?.toString(),
             rerYn = row["rer_yn"]?.toString(),
             closingCd = row["closing_cd"]?.toString(),
+            tstTatDt = row["tst_tat_dt"] as? LocalDate,
+            limsTatDt = row["lims_tat_dt"] as? LocalDate,
         )
     }
 

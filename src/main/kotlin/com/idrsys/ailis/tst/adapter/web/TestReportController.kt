@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.reactor.mono
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.core.io.Resource
+import org.springframework.data.domain.Page
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -30,7 +31,7 @@ class TestReportController(
     @GetMapping
     fun searchTestResults(
         @ParameterObject searchParam: TestResultSearchParam
-    ): Mono<ResponseEntity<List<TestResultResponse>>> {
+    ): Mono<ResponseEntity<Page<TestResultResponse>>> {
         return mono {
             val results = testReportUseCase.searchTestResults(searchParam)
             ResponseEntity.ok(results)

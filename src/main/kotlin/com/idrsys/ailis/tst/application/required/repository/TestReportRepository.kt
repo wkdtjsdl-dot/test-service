@@ -5,6 +5,7 @@ import com.idrsys.ailis.tst.application.dto.TestResultSearchParam
 import com.idrsys.ailis.tst.domain.model.TestReport
 import com.idrsys.ailis.tst.domain.model.TestReportHst
 import kotlinx.coroutines.flow.Flow
+import org.springframework.data.domain.Page
 import java.time.LocalDate
 
 /**
@@ -33,7 +34,7 @@ interface TestReportRepository {
     /**
      * 검사결과 목록 검색 (JOIN 포함)
      */
-    suspend fun searchTestResults(params: TestResultSearchParam, rerDeptCd: String?): List<TestResultResponse>
+    suspend fun searchTestResults(params: TestResultSearchParam, rerDeptCd: String?): Page<TestResultResponse>
 
     /**
      * 보고서 삭제

@@ -11,6 +11,7 @@ import com.idrsys.ailis.tst.application.usecase.TestReportUseCase
 import com.idrsys.ailis.tst.domain.model.TestReport
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.nio.file.Paths
@@ -30,15 +31,16 @@ class TestReportService(
 ) : TestReportUseCase {
 
     @Transactional(readOnly = true)
-    override suspend fun searchTestResults(params: TestResultSearchParam): List<TestResultResponse> {
+    override suspend fun searchTestResults(params: TestResultSearchParam): Page<TestResultResponse> {
         val rerDeptCd = baseServiceClient
             .getSysCodesByCateCd("RERDPT")
             .firstOrNull()
             ?.etc1
 
-        val results = testReportRepository.searchTestResults(params, rerDeptCd)
+        val page = testReportRepository.searchTestResults(params, rerDeptCd)
+        val results = page.content
 
-        if (results.isEmpty()) return results
+        if (results.isEmpty()) return page
 
         // custCd / directAcctCd 추출
         val custCds = results.map { it.custCd }
@@ -55,7 +57,7 @@ class TestReportService(
             row.directAcctNm = row.directAcctCd.let { custMap[it]?.custNm.toString() }
         }
 
-        return results
+        return page
     }
 
     @Transactional(readOnly = true)
