@@ -10,7 +10,15 @@ import com.idrsys.ailis.sales.application.dto.response.CustCdNmResponse
 import com.idrsys.ailis.sales.application.dto.response.IfFieldInfoResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.domain.model.Cust
-import com.idrsys.ailis.sales.generated.jooq.Tables.*
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustMst.SCS_CUST_MST
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsGcgnSalsPicInfo.SCS_GCGN_SALS_PIC_INFO
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustCntr.SCS_CUST_CNTR
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsHospMst.SCS_HOSP_MST
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsHospMediSbjt.SCS_HOSP_MEDI_SBJT
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustTstCdMpg.SCS_CUST_TST_CD_MPG
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsIfCustInfo.SCS_IF_CUST_INFO
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsIfFieldInfo.SCS_IF_FIELD_INFO
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsIfConfInfo.SCS_IF_CONF_INFO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
