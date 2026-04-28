@@ -28,6 +28,7 @@ import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * R2DBC Repository Interface
@@ -118,6 +119,14 @@ class TestReportRepositoryImpl(
             conditions.add(report.DELIVERY_YN.eq(booleanValue))
         }
 
+        params.patNm?.takeIf { it.isNotBlank() }?.let {
+            conditions.add(patient.PAT_NM.like("%$it%"))
+        }
+
+        params.hospChartNo?.takeIf { it.isNotBlank() }?.let {
+            conditions.add(patient.HOSP_CHART_NO.like("%$it%"))
+        }
+
         val rerYnField =
             if (rerDeptCd != null) {
                 DSL.`when`(
@@ -160,11 +169,13 @@ class TestReportRepositoryImpl(
                 report.TST_REQ_NO,
 
                 patient.PAT_NM.`as`("patient_nm"),
+                patient.HOSP_CHART_NO,
 
                 report.TST_CD,
                 item.TST_NM,
 
                 patient.DIRECT_ACCT_CD,
+                patient.DIRECT_ACCT_BAR,
                 patient.CUST_CD,
 
                 report.DELIVERY_YN,
@@ -181,7 +192,8 @@ class TestReportRepositoryImpl(
                 tstItem.TST_REQ_STAT_CD,
                 tstItem.CLOSING_CD,
                 tstItem.TST_TAT_DT,
-                tstItem.LIMS_TAT_DT
+                tstItem.LIMS_TAT_DT,
+                report.LIMS_RCV_DTIME
             )
             .from(report)
                 .join(patient)
@@ -224,6 +236,7 @@ class TestReportRepositoryImpl(
             tstReqNo = (row["tst_req_no"] as? Number)?.toLong() ?: 0L,
 
             patientNm = (row["patient_nm"] ?: "").toString(),
+            hospChartNo = row["hosp_chart_no"]?.toString(),
 
             tstCd = (row["tst_cd"] ?: "").toString(),
             tstNm = (row["tst_nm"] ?: "").toString(),
@@ -247,7 +260,36 @@ class TestReportRepositoryImpl(
             closingCd = row["closing_cd"]?.toString(),
             tstTatDt = row["tst_tat_dt"] as? LocalDate,
             limsTatDt = row["lims_tat_dt"] as? LocalDate,
+            limsRcvDtime = row["lims_rcv_dtime"] as? LocalDateTime,
+            genomeRegNo = run {
+                val directAcctCd = (row["direct_acct_cd"] ?: "").toString()
+                val tstReqDt = (row["tst_req_dt"] as? LocalDate) ?: LocalDate.now()
+                val tstReqNo = (row["tst_req_no"] as? Number)?.toLong() ?: 0L
+                if (directAcctCd == "G010000") {
+                    val bar = row["direct_acct_bar"]?.toString()?.takeIf { it.length == 15 }
+                    if (bar != null) {
+                        val datePart = bar.take(8)
+                        val numStr = bar.drop(8)
+                        val officeCd = numStr.take(3)
+                        val seq = numStr.drop(3).padStart(4, '0')
+                        "$datePart-$officeCd-$seq"
+                    } else {
+                        computeGenomeRegNo(tstReqDt, tstReqNo)
+                    }
+                } else {
+                    computeGenomeRegNo(tstReqDt, tstReqNo)
+                }
+            },
         )
+    }
+
+    private fun computeGenomeRegNo(tstReqDt: LocalDate, tstReqNo: Long): String {
+        val reqNoStr = tstReqNo.toString()
+        if (reqNoStr.length > 7) return ""
+        val datePart = tstReqDt.format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+        val officeCd = reqNoStr.take(3)
+        val seq = reqNoStr.drop(3).padStart(4, '0')
+        return "$datePart-$officeCd-$seq"
     }
 
 

@@ -52,9 +52,13 @@ class TestReportService(
 
         val custMap = salesServiceClient.findCustNmByCustCd(allCustCds)
 
+        val reqStatNameByCd = baseServiceClient.getSysCodesByCateCd("RQST")
+            .associate { it.cd to it.cdNm }
+
         results.forEach { row ->
             row.custNm = row.custCd.let { custMap[it]?.custNm.toString() }
             row.directAcctNm = row.directAcctCd.let { custMap[it]?.custNm.toString() }
+            row.tstReqStatNm = row.tstReqStatCd?.let { reqStatNameByCd[it] ?: it }
         }
 
         return page
