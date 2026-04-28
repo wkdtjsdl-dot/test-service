@@ -8,6 +8,8 @@ import com.idrsys.ailis.tst.application.dto.TestItemGeneRegisterRequest
 import com.idrsys.ailis.tst.application.dto.TestItemRefItemRegisterRequest
 import com.idrsys.ailis.tst.application.dto.TestItemRefItemUpdateRequest
 import com.idrsys.ailis.tst.application.dto.TestItemRegisterRequest
+import com.idrsys.ailis.tst.application.dto.TestItemSubRegisterRequest
+import com.idrsys.ailis.tst.application.dto.TestItemSubUpdateRequest
 import com.idrsys.ailis.tst.application.dto.TestItemSpecimenRegisterRequest
 import com.idrsys.ailis.tst.application.dto.TestItemSpecimenUpdateRequest
 import com.idrsys.ailis.tst.application.dto.TestItemUpdateRequest
@@ -20,6 +22,8 @@ import com.idrsys.ailis.tst.domain.command.TestItemGeneCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemCreateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemRefItemUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemSpecimenCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemSubCreateCommand
+import com.idrsys.ailis.tst.domain.command.TestItemSubUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemSpecimenUpdateCommand
 import com.idrsys.ailis.tst.domain.command.TestItemUpdateCommand
 import org.mapstruct.Mapper
@@ -48,4 +52,8 @@ interface TestItemCommandMapper {
     fun toCreateCommand(request: TestItemEssentialDocRegisterRequest): TestItemEssentialDocCreateCommand
 
     fun toUpdateCommand(request: TestItemEssentialDocUpdateRequest): TestItemEssentialDocUpdateCommand
+
+    fun toCreateCommand(request: TestItemSubRegisterRequest): TestItemSubCreateCommand
+
+    fun toUpdateCommand(request: TestItemSubUpdateRequest): TestItemSubUpdateCommand
 }

@@ -44,6 +44,7 @@ class TestItemHst(
     insuApplyCd: String?,
     insuCd: String?,
     insuCateNo: String?,
+    tstSubYn: Boolean?,
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
@@ -183,6 +184,10 @@ class TestItemHst(
     var insuCateNo: String? = insuCateNo
         private set
 
+    @Column("tst_sub_yn")
+    var tstSubYn: Boolean? = tstSubYn
+        private set
+
     @Column("creator")
     var creator: String = creator
         private set
@@ -207,6 +212,138 @@ class TestItemHst(
     }
 
     override fun getId(): String? = itemHstId
+
+    override fun isNew(): Boolean = _isNew
+}
+
+@Table("tst_scm.bts_item_sub_hst")
+class TestItemSubHst(
+    itemSubHstId: String? = null,
+    hstDesc: String,
+    itemSubId: String?,
+    tstCd: String?,
+    tstSubCd: String?,
+    startDt: LocalDate?,
+    endDt: LocalDate?,
+    useYn: Boolean?,
+    tstSubNm: String?,
+    tstSubAbbrNm: String?,
+    tstSubEngNm: String?,
+    tstSubEngAbbrNm: String?,
+    tstSubIntNm: String?,
+    rstTypeShortYn: Boolean?,
+    rstTypeLongYn: Boolean?,
+    rstTypeFileYn: Boolean?,
+    rstTypeUrlYn: Boolean?,
+    refVal: String?,
+    engRefVal: String?,
+    creator: String?,
+    createDtime: LocalDateTime?,
+    updater: String?,
+    updateDtime: LocalDateTime?
+) : Persistable<String> {
+
+    @Id
+    @UuidGeneratedId(idFieldName = "itemSubHstId")
+    @Column("item_sub_hst_id")
+    val itemSubHstId: String? = itemSubHstId
+
+    @Column("hst_desc")
+    var hstDesc: String = hstDesc
+        private set
+
+    @Column("item_sub_id")
+    var itemSubId: String? = itemSubId
+        private set
+
+    @Column("tst_cd")
+    var tstCd: String? = tstCd
+        private set
+
+    @Column("tst_sub_cd")
+    var tstSubCd: String? = tstSubCd
+        private set
+
+    @Column("start_dt")
+    var startDt: LocalDate? = startDt
+        private set
+
+    @Column("end_dt")
+    var endDt: LocalDate? = endDt
+        private set
+
+    @Column("use_yn")
+    var useYn: Boolean? = useYn
+        private set
+
+    @Column("tst_sub_nm")
+    var tstSubNm: String? = tstSubNm
+        private set
+
+    @Column("tst_sub_abbr_nm")
+    var tstSubAbbrNm: String? = tstSubAbbrNm
+        private set
+
+    @Column("tst_sub_eng_nm")
+    var tstSubEngNm: String? = tstSubEngNm
+        private set
+
+    @Column("tst_sub_eng_abbr_nm")
+    var tstSubEngAbbrNm: String? = tstSubEngAbbrNm
+        private set
+
+    @Column("tst_sub_int_nm")
+    var tstSubIntNm: String? = tstSubIntNm
+        private set
+
+    @Column("rst_type_short_yn")
+    var rstTypeShortYn: Boolean? = rstTypeShortYn
+        private set
+
+    @Column("rst_type_long_yn")
+    var rstTypeLongYn: Boolean? = rstTypeLongYn
+        private set
+
+    @Column("rst_type_file_yn")
+    var rstTypeFileYn: Boolean? = rstTypeFileYn
+        private set
+
+    @Column("rst_type_url_yn")
+    var rstTypeUrlYn: Boolean? = rstTypeUrlYn
+        private set
+
+    @Column("ref_val")
+    var refVal: String? = refVal
+        private set
+
+    @Column("eng_ref_val")
+    var engRefVal: String? = engRefVal
+        private set
+
+    @Column("creator")
+    var creator: String? = creator
+        private set
+
+    @Column("create_dtime")
+    var createDtime: LocalDateTime? = createDtime
+        private set
+
+    @Column("updater")
+    var updater: String? = updater
+        private set
+
+    @Column("update_dtime")
+    var updateDtime: LocalDateTime? = updateDtime
+        private set
+
+    @Transient
+    private var _isNew: Boolean = false
+
+    fun setAsNew() {
+        this._isNew = true
+    }
+
+    override fun getId(): String? = itemSubHstId
 
     override fun isNew(): Boolean = _isNew
 }

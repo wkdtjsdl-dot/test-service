@@ -33,7 +33,8 @@ data class TestItemCreateCommand(
     val tstTatday: Int?,
     val insuApplyCd: String?,
     val insuCd: String?,
-    val insuCateNo: String?
+    val insuCateNo: String?,
+    val tstSubYn: Boolean
 )
 
 data class TestItemUpdateCommand(
@@ -66,7 +67,8 @@ data class TestItemUpdateCommand(
     val tstTatday: Int?,
     val insuApplyCd: String?,
     val insuCd: String?,
-    val insuCateNo: String?
+    val insuCateNo: String?,
+    val tstSubYn: Boolean
 )
 
 data class TestItemSpecimenUpdateCommand(

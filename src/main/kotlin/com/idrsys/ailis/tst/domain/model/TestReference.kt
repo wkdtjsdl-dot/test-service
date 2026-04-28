@@ -30,8 +30,8 @@ class TestReference(
     refMinVal: Int,
     refMaxVal: Int,
     dataFormat: String,
-    dftData: String,
-    dftEngData: String,
+    dftData: String?,
+    dftEngData: String?,
     creator: String,
     createDtime: LocalDateTime,
     updater: String,
@@ -95,11 +95,11 @@ class TestReference(
         private set
 
     @Column("dft_data")
-    var dftData: String = dftData
+    var dftData: String? = dftData
         private set
 
     @Column("dft_eng_data")
-    var dftEngData: String = dftEngData
+    var dftEngData: String? = dftEngData
         private set
 
     @Column("creator")

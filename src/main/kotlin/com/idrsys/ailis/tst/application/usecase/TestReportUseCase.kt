@@ -2,6 +2,7 @@ package com.idrsys.ailis.tst.application.usecase
 
 import com.idrsys.ailis.tst.application.dto.*
 import org.springframework.core.io.Resource
+import org.springframework.data.domain.Page
 
 /**
  * 검사결과 보고서 UseCase Interface
@@ -10,7 +11,7 @@ interface TestReportUseCase {
     /**
      * 검사결과 목록 조회
      */
-    suspend fun searchTestResults(params: TestResultSearchParam): List<TestResultResponse>
+    suspend fun searchTestResults(params: TestResultSearchParam): Page<TestResultResponse>
 
     /**
      * 검사결과 상세 조회

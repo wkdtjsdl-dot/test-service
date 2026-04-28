@@ -47,6 +47,12 @@ interface TestItemHstDataRepository : CoroutineCrudRepository<TestItemHst, Strin
 interface TestItemSpecimenHstDataRepository : CoroutineCrudRepository<TestItemSpecimenHst, String>
 
 @Repository
+interface TestItemSubDataRepository : CoroutineCrudRepository<TestItemSub, String>
+
+@Repository
+interface TestItemSubHstDataRepository : CoroutineCrudRepository<TestItemSubHst, String>
+
+@Repository
 class TestItemRepositoryImpl(
     private val itemDataRepo: TestItemDataRepository,
     private val chargeDataRepo: StandardChargeDataRepository,
@@ -56,6 +62,8 @@ class TestItemRepositoryImpl(
     private val essentialDocDataRepo: TestItemEssentialDocDataRepository,
     private val testItemHstDataRepo: TestItemHstDataRepository,
     private val testItemSpecimenHstDataRepo: TestItemSpecimenHstDataRepository,
+    private val subDataRepo: TestItemSubDataRepository,
+    private val subHstDataRepo: TestItemSubHstDataRepository,
     private val dslContext: DSLContext,
     private val databaseClient: DatabaseClient
 ) : TestItemRepository {
@@ -673,6 +681,7 @@ class TestItemRepositoryImpl(
             insuApplyCd = row["insu_apply_cd"] as String?,
             insuCd = row["insu_cd"] as String?,
             insuCateNo = row["insu_cate_no"] as String?,
+            tstSubYn = row["tst_sub_yn"] as Boolean,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String,
@@ -1164,6 +1173,81 @@ class TestItemRepositoryImpl(
         )
     }
 
+    // --- TestItemSub ---
+    override fun findItemSubsByTstCd(tstCd: String): Flow<TestItemSub> {
+        val t = BtsItemSub.BTS_ITEM_SUB
+
+        val query = dslContext
+            .select(
+                t.ITEM_SUB_ID,
+                t.TST_CD,
+                t.TST_SUB_CD,
+                t.START_DT,
+                t.END_DT,
+                t.USE_YN,
+                t.TST_SUB_NM,
+                t.TST_SUB_ABBR_NM,
+                t.TST_SUB_ENG_NM,
+                t.TST_SUB_ENG_ABBR_NM,
+                t.TST_SUB_INT_NM,
+                t.RST_TYPE_SHORT_YN,
+                t.RST_TYPE_LONG_YN,
+                t.RST_TYPE_FILE_YN,
+                t.RST_TYPE_URL_YN,
+                t.REF_VAL,
+                t.ENG_REF_VAL,
+                t.CREATOR,
+                t.CREATE_DTIME,
+                t.UPDATER,
+                t.UPDATE_DTIME
+            )
+            .from(t)
+            .where(t.TST_CD.eq(tstCd))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { index, value: Any? ->
+            executeSpec = if (value != null) {
+                executeSpec.bind(index, value)
+            } else {
+                executeSpec.bindNull(index, String::class.java)
+            }
+        }
+
+        return executeSpec
+            .fetch()
+            .all()
+            .map { row ->
+                TestItemSub(
+                    itemSubId = row[t.ITEM_SUB_ID.name] as String,
+                    tstCd = row[t.TST_CD.name] as String,
+                    tstSubCd = row[t.TST_SUB_CD.name] as String,
+                    startDt = row[t.START_DT.name] as LocalDate,
+                    endDt = row[t.END_DT.name] as LocalDate,
+                    useYn = row[t.USE_YN.name] as Boolean,
+                    tstSubNm = row[t.TST_SUB_NM.name] as String,
+                    tstSubAbbrNm = row[t.TST_SUB_ABBR_NM.name] as String,
+                    tstSubEngNm = row[t.TST_SUB_ENG_NM.name] as String,
+                    tstSubEngAbbrNm = row[t.TST_SUB_ENG_ABBR_NM.name] as String,
+                    tstSubIntNm = row[t.TST_SUB_INT_NM.name] as String?,
+                    rstTypeShortYn = row[t.RST_TYPE_SHORT_YN.name] as Boolean,
+                    rstTypeLongYn = row[t.RST_TYPE_LONG_YN.name] as Boolean,
+                    rstTypeFileYn = row[t.RST_TYPE_FILE_YN.name] as Boolean,
+                    rstTypeUrlYn = row[t.RST_TYPE_URL_YN.name] as Boolean,
+                    refVal = row[t.REF_VAL.name] as String?,
+                    engRefVal = row[t.ENG_REF_VAL.name] as String?,
+                    creator = row[t.CREATOR.name] as String,
+                    createDtime = row[t.CREATE_DTIME.name] as LocalDateTime,
+                    updater = row[t.UPDATER.name] as String,
+                    updateDtime = row[t.UPDATE_DTIME.name] as LocalDateTime
+                )
+            }
+            .asFlow()
+    }
+
+    override suspend fun saveItemSub(entity: TestItemSub): TestItemSub = subDataRepo.save(entity)
+    override suspend fun findItemSubById(itemSubId: String): TestItemSub? = subDataRepo.findById(itemSubId)
+    override suspend fun saveItemSubHistory(entity: TestItemSubHst): TestItemSubHst = subHstDataRepo.save(entity)
+
     // --- TestItemHst ---
     override suspend fun saveTestItemHistory(entity: TestItemHst): TestItemHst = testItemHstDataRepo.save(entity)
     override suspend fun findTestItemHistoryByTstCd(tstCd: String): Flow<TestItemHst> {
@@ -1225,6 +1309,7 @@ class TestItemRepositoryImpl(
             insuApplyCd = row["insu_apply_cd"] as String?,
             insuCd = row["insu_cd"] as String?,
             insuCateNo = row["insu_cate_no"] as String?,
+            tstSubYn = row["tst_sub_yn"] as Boolean,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
             updater = row["updater"] as String,

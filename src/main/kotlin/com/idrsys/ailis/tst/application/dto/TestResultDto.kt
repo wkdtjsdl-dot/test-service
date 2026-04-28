@@ -17,6 +17,10 @@ data class TestResultSearchParam(
   val tstCd: String? = null,
   val deptCd: String? = null,
   val deliveryYn: String? = null,
+  val patNm: String? = null,
+  val hospChartNo: String? = null,
+  val page: Int = 0,
+  val size: Int = 40,
 )
 
 /**
@@ -41,9 +45,15 @@ data class TestResultResponse(
   val rstShort: String?,
   val rstTxt: String?,
   val rstUrl: String?,
+  val hospChartNo: String? = null,
   val tstReqStatCd: String?,
+  var tstReqStatNm: String? = null,
   var rerYn: String? = null,
-  val closingCd: String? = null
+  val closingCd: String? = null,
+  val tstTatDt: LocalDate? = null,
+  val limsTatDt: LocalDate? = null,
+  val limsRcvDtime: LocalDateTime? = null,
+  val genomeRegNo: String? = null,
 )
 
 /**

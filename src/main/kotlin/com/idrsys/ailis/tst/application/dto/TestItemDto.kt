@@ -52,7 +52,8 @@ data class TestItemRegisterRequest(
     val tstTatday: Int?,
     val insuApplyCd: String?,
     val insuCd: String?,
-    val insuCateNo: String?
+    val insuCateNo: String?,
+    val tstSubYn: Boolean = false
 )
 
 data class TestItemUpdateRequest(
@@ -86,6 +87,7 @@ data class TestItemUpdateRequest(
     val insuApplyCd: String?,
     val insuCd: String?,
     val insuCateNo: String?,
+    val tstSubYn: Boolean = false,
     val updateReason: String?
 )
 
@@ -121,6 +123,7 @@ data class TestItemResponse(
     val insuApplyCd: String?,
     val insuCd: String?,
     val insuCateNo: String?,
+    val tstSubYn: Boolean,
     val creator: String,
     val createDtime: LocalDateTime,
     val updater: String,
@@ -480,6 +483,68 @@ data class TestItemRefItemsResponse(
 data class TestItemRefDetailItemsResponse(
     val tstCd: String,
     val refItems: List<RefItemDetail>
+)
+
+// --- Test Item Sub ---
+
+data class TestItemSubRegisterRequest(
+    val tstCd: String,
+    val tstSubCd: String,
+    val startDt: LocalDate,
+    val endDt: LocalDate = LocalDate.of(9999, 12, 31),
+    val useYn: Boolean = true,
+    val tstSubNm: String,
+    val tstSubAbbrNm: String,
+    val tstSubEngNm: String,
+    val tstSubEngAbbrNm: String,
+    val tstSubIntNm: String? = null,
+    val rstTypeShortYn: Boolean,
+    val rstTypeLongYn: Boolean,
+    val rstTypeFileYn: Boolean,
+    val rstTypeUrlYn: Boolean,
+    val refVal: String? = null,
+    val engRefVal: String? = null
+)
+
+data class TestItemSubUpdateRequest(
+    val startDt: LocalDate,
+    val endDt: LocalDate,
+    val useYn: Boolean,
+    val tstSubNm: String,
+    val tstSubAbbrNm: String,
+    val tstSubEngNm: String,
+    val tstSubEngAbbrNm: String,
+    val tstSubIntNm: String? = null,
+    val rstTypeShortYn: Boolean,
+    val rstTypeLongYn: Boolean,
+    val rstTypeFileYn: Boolean,
+    val rstTypeUrlYn: Boolean,
+    val refVal: String? = null,
+    val engRefVal: String? = null
+)
+
+data class TestItemSubResponse(
+    val itemSubId: String,
+    val tstCd: String,
+    val tstSubCd: String,
+    val startDt: LocalDate,
+    val endDt: LocalDate,
+    val useYn: Boolean,
+    val tstSubNm: String,
+    val tstSubAbbrNm: String,
+    val tstSubEngNm: String,
+    val tstSubEngAbbrNm: String,
+    val tstSubIntNm: String?,
+    val rstTypeShortYn: Boolean,
+    val rstTypeLongYn: Boolean,
+    val rstTypeFileYn: Boolean,
+    val rstTypeUrlYn: Boolean,
+    val refVal: String?,
+    val engRefVal: String?,
+    val creator: String,
+    val createDtime: LocalDateTime,
+    val updater: String,
+    val updateDtime: LocalDateTime
 )
 
 // --- Test Item AutoComplete ---
