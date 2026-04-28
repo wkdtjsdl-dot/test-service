@@ -1,6 +1,6 @@
 package com.idrsys.ailis.tst.application.required.repository
 
-import com.idrsys.ailis.tst.application.dto.TestResultResponse
+import com.idrsys.ailis.tst.application.dto.TestResultListResponse
 import com.idrsys.ailis.tst.application.dto.TestResultSearchParam
 import com.idrsys.ailis.tst.domain.model.TestReport
 import com.idrsys.ailis.tst.domain.model.TestReportHst
@@ -34,7 +34,12 @@ interface TestReportRepository {
     /**
      * 검사결과 목록 검색 (JOIN 포함)
      */
-    suspend fun searchTestResults(params: TestResultSearchParam, rerDeptCd: String?): Page<TestResultResponse>
+    suspend fun searchTestResults(params: TestResultSearchParam, rerDeptCd: String?): Page<TestResultListResponse>
+
+    /**
+     * 검사결과 엑셀 다운로드용 전체 목록 조회
+     */
+    suspend fun findTestResultsForExcel(params: TestResultSearchParam, rerDeptCd: String?): List<TestResultListResponse>
 
     /**
      * 보고서 삭제

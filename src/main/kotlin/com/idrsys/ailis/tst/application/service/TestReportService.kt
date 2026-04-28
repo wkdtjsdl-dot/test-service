@@ -31,7 +31,7 @@ class TestReportService(
 ) : TestReportUseCase {
 
     @Transactional(readOnly = true)
-    override suspend fun searchTestResults(params: TestResultSearchParam): Page<TestResultResponse> {
+    override suspend fun searchTestResults(params: TestResultSearchParam): Page<TestResultListResponse> {
         val rerDeptCd = baseServiceClient
             .getSysCodesByCateCd("RERDPT")
             .firstOrNull()
@@ -42,11 +42,7 @@ class TestReportService(
 
         if (results.isEmpty()) return page
 
-        // custCd / directAcctCd 추출
-        val custCds = results.map { it.custCd }
-        val directAcctCds = results.map { it.directAcctCd }
-
-        val allCustCds = (custCds + directAcctCds)
+        val allCustCds = (results.map { it.custCd } + results.map { it.directAcctCd })
             .filterNotNull()
             .distinct()
 
@@ -56,8 +52,8 @@ class TestReportService(
             .associate { it.cd to it.cdNm }
 
         results.forEach { row ->
-            row.custNm = row.custCd.let { custMap[it]?.custNm.toString() }
-            row.directAcctNm = row.directAcctCd.let { custMap[it]?.custNm.toString() }
+            row.custNm = row.custCd?.let { custMap[it]?.custNm }
+            row.directAcctNm = row.directAcctCd?.let { custMap[it]?.custNm }
             row.tstReqStatNm = row.tstReqStatCd?.let { reqStatNameByCd[it] ?: it }
         }
 
@@ -65,10 +61,10 @@ class TestReportService(
     }
 
     @Transactional(readOnly = true)
-    override suspend fun getTestReport(reportId: String): TestResultResponse {
+    override suspend fun getTestReport(reportId: String): TestResultDetailResponse {
         val report = testReportRepository.findById(reportId)
             ?: throw NoSuchElementException("Test report not found: $reportId")
-        return testReportMapper.toResponse(report)
+        return testReportMapper.toDetailResponse(report)
     }
 
     @Transactional
@@ -101,7 +97,7 @@ class TestReportService(
         reportId: String,
         request: TestReportUpdateRequest,
         adminId: String
-    ): TestResultResponse {
+    ): TestResultDetailResponse {
         // 1. reportId로 기존 report 정보 가져오기
         val report = testReportRepository.findById(reportId)
             ?: throw NoSuchElementException("Test report not found: $reportId")
@@ -124,7 +120,7 @@ class TestReportService(
         val hist = testReportMapper.toDomain(report, request.memo ?: "").apply { setAsNew() }
         testReportRepository.saveTestReportHistory(hist)
 
-        return testReportMapper.toResponse(saved)
+        return testReportMapper.toDetailResponse(saved)
     }
 
     @Transactional
@@ -177,7 +173,46 @@ class TestReportService(
         val report = testReportRepository.findById(reportId)
             ?: throw NoSuchElementException("Test report not found: $reportId")
 
-        // 실제로는 soft delete를 구현하거나 이력 테이블로 이동해야 할 수 있음
         testReportRepository.deleteById(reportId)
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getTestResultExcel(params: TestResultSearchParam): List<TestResultExcelResponse> {
+        val rerDeptCd = baseServiceClient
+            .getSysCodesByCateCd("RERDPT")
+            .firstOrNull()
+            ?.etc1
+
+        val results = testReportRepository.findTestResultsForExcel(params, rerDeptCd)
+
+        if (results.isEmpty()) return emptyList()
+
+        val allCustCds = (results.map { it.custCd } + results.map { it.directAcctCd })
+            .filterNotNull()
+            .distinct()
+
+        val custMap = salesServiceClient.findCustNmByCustCd(allCustCds)
+
+        val reqStatNameByCd = baseServiceClient.getSysCodesByCateCd("RQST")
+            .associate { it.cd to it.cdNm }
+
+        return results.map { row ->
+            TestResultExcelResponse(
+                reqStatNm = row.tstReqStatCd?.let { reqStatNameByCd[it] ?: it },
+                tstReqDt = row.tstReqDt,
+                tstReqNo = row.tstReqNo.toString(),
+                patientNm = row.patientNm,
+                hospChartNo = row.hospChartNo,
+                tstCd = row.tstCd,
+                tstNm = row.tstNm,
+                directAcctNm = row.directAcctCd?.let { custMap[it]?.custNm },
+                custNm = row.custCd?.let { custMap[it]?.custNm },
+                genomeRegNo = row.genomeRegNo,
+                deliveryYn = if (row.deliveryYn) "Y" else "N",
+                tstTatDt = row.tstTatDt,
+                limsTatDt = row.limsTatDt,
+                limsRcvDtime = row.limsRcvDtime,
+            )
+        }
     }
 }

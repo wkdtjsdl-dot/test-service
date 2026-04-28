@@ -1,6 +1,12 @@
 package com.idrsys.ailis.tst.application.usecase
 
-import com.idrsys.ailis.tst.application.dto.*
+import com.idrsys.ailis.tst.application.dto.DeliveryResult
+import com.idrsys.ailis.tst.application.dto.TestReportRegisterRequest
+import com.idrsys.ailis.tst.application.dto.TestReportUpdateRequest
+import com.idrsys.ailis.tst.application.dto.TestResultDetailResponse
+import com.idrsys.ailis.tst.application.dto.TestResultExcelResponse
+import com.idrsys.ailis.tst.application.dto.TestResultListResponse
+import com.idrsys.ailis.tst.application.dto.TestResultSearchParam
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.Page
 
@@ -11,12 +17,12 @@ interface TestReportUseCase {
     /**
      * 검사결과 목록 조회
      */
-    suspend fun searchTestResults(params: TestResultSearchParam): Page<TestResultResponse>
+    suspend fun searchTestResults(params: TestResultSearchParam): Page<TestResultListResponse>
 
     /**
      * 검사결과 상세 조회
      */
-    suspend fun getTestReport(reportId: String): TestResultResponse
+    suspend fun getTestReport(reportId: String): TestResultDetailResponse
 
     /**
      * 보고서 등록
@@ -30,7 +36,7 @@ interface TestReportUseCase {
         reportId: String,
         request: TestReportUpdateRequest,
         adminId: String
-    ): TestResultResponse
+    ): TestResultDetailResponse
 
     /**
      * 보고서 배포
@@ -50,4 +56,9 @@ interface TestReportUseCase {
      * 보고서 삭제
      */
     suspend fun deleteTestReport(reportId: String, adminId: String)
+
+    /**
+     * 검사결과 엑셀 다운로드용 전체 목록 조회
+     */
+    suspend fun getTestResultExcel(params: TestResultSearchParam): List<TestResultExcelResponse>
 }
