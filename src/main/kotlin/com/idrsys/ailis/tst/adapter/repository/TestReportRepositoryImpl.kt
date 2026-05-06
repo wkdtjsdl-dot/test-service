@@ -1,6 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
-import com.idrsys.ailis.tst.application.dto.TestResultResponse
+import com.idrsys.ailis.tst.application.dto.TestResultListResponse
 import com.idrsys.ailis.tst.application.dto.TestResultSearchParam
 import com.idrsys.ailis.tst.application.required.repository.TestReportRepository
 import com.idrsys.ailis.tst.domain.model.TestReport
@@ -15,7 +15,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.impl.DSL
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -73,14 +75,12 @@ class TestReportRepositoryImpl(
             .awaitSingleOrNull()
     }
 
-    override suspend fun searchTestResults(params: TestResultSearchParam, rerDeptCd: String?): Page<TestResultResponse> {
+    private fun buildConditions(params: TestResultSearchParam): MutableList<Condition> {
         val report = TBS_TST_REPORT
         val patient = RBS_PATIENT
-        val tstItem = RBS_TST_ITEM
-        val item = BTS_ITEM
         val deptItem = BBS_DEPT_TST_ITEM
 
-        val conditions = mutableListOf(
+        val conditions = mutableListOf<Condition>(
             report.TST_REQ_DT.between(params.reqStartDt, params.reqEndDt)
         )
 
@@ -89,73 +89,68 @@ class TestReportRepositoryImpl(
             val endOfDay = it.plusDays(1).atStartOfDay()
             conditions.add(report.DELIVERY_DTIME.between(startOfDay, endOfDay))
         }
-
         params.directAcctCd?.takeIf { it.isNotBlank() }?.let {
             conditions.add(patient.DIRECT_ACCT_CD.eq(it))
         }
-
         params.custCd?.takeIf { it.isNotBlank() }?.let {
             conditions.add(patient.CUST_CD.eq(it))
         }
-
-        params.reqNoFrom?.let {
-            conditions.add(report.TST_REQ_NO.ge(it))
-        }
-
-        params.reqNoTo?.let {
-            conditions.add(report.TST_REQ_NO.le(it))
-        }
-
+        params.reqNoFrom?.let { conditions.add(report.TST_REQ_NO.ge(it)) }
+        params.reqNoTo?.let { conditions.add(report.TST_REQ_NO.le(it)) }
         params.tstCd?.takeIf { it.isNotBlank() }?.let {
             conditions.add(report.TST_CD.eq(it))
         }
-
         params.deptCd?.takeIf { it.isNotBlank() }?.let {
             conditions.add(deptItem.DEPT_CD.eq(it))
         }
-
         params.deliveryYn?.takeIf { it.isNotBlank() }?.let { strValue ->
-            val booleanValue = (strValue == "Y")
-            conditions.add(report.DELIVERY_YN.eq(booleanValue))
+            conditions.add(report.DELIVERY_YN.eq(strValue == "Y"))
         }
-
         params.patNm?.takeIf { it.isNotBlank() }?.let {
             conditions.add(patient.PAT_NM.like("%$it%"))
         }
-
         params.hospChartNo?.takeIf { it.isNotBlank() }?.let {
             conditions.add(patient.HOSP_CHART_NO.like("%$it%"))
         }
 
-        val rerYnField =
-            if (rerDeptCd != null) {
-                DSL.`when`(
-                    DSL.exists(
-                        DSL.selectOne()
-                            .from(deptItem)
-                            .where(deptItem.TST_CD.eq(report.TST_CD))
-                            .and(deptItem.DEPT_CD.eq(rerDeptCd))
-                    ),
-                    "Y"
-                ).otherwise("N").`as`("rer_yn")
-            } else {
-                DSL.inline("N").`as`("rer_yn")
-            }
+        return conditions
+    }
+
+    private fun buildRerYnField(rerDeptCd: String?): Field<String> {
+        val report = TBS_TST_REPORT
+        val deptItem = BBS_DEPT_TST_ITEM
+        return if (rerDeptCd != null) {
+            DSL.`when`(
+                DSL.exists(
+                    DSL.selectOne()
+                        .from(deptItem)
+                        .where(deptItem.TST_CD.eq(report.TST_CD))
+                        .and(deptItem.DEPT_CD.eq(rerDeptCd))
+                ),
+                "Y"
+            ).otherwise("N").`as`("rer_yn")
+        } else {
+            DSL.inline("N").`as`("rer_yn")
+        }
+    }
+
+    override suspend fun searchTestResults(params: TestResultSearchParam, rerDeptCd: String?): Page<TestResultListResponse> {
+        val report = TBS_TST_REPORT
+        val patient = RBS_PATIENT
+        val tstItem = RBS_TST_ITEM
+        val item = BTS_ITEM
+        val deptItem = BBS_DEPT_TST_ITEM
+
+        val conditions = buildConditions(params)
+        val rerYnField = buildRerYnField(rerDeptCd)
 
         val countQuery = dslContext
             .select(DSL.countDistinct(report.TST_REPORT_ID))
             .from(report)
-                .join(patient)
-                    .on(report.TST_REQ_DT.eq(patient.TST_REQ_DT))
-                    .and(report.TST_REQ_NO.eq(patient.TST_REQ_NO))
-                .join(tstItem)
-                    .on(report.TST_REQ_DT.eq(tstItem.TST_REQ_DT))
-                    .and(report.TST_REQ_NO.eq(tstItem.TST_REQ_NO))
-                    .and(report.TST_CD.eq(tstItem.TST_CD))
-                .join(item)
-                    .on(report.TST_CD.eq(item.TST_CD))
-                .join(deptItem)
-                    .on(deptItem.TST_CD.eq(report.TST_CD))
+                .join(patient).on(report.TST_REQ_DT.eq(patient.TST_REQ_DT)).and(report.TST_REQ_NO.eq(patient.TST_REQ_NO))
+                .join(tstItem).on(report.TST_REQ_DT.eq(tstItem.TST_REQ_DT)).and(report.TST_REQ_NO.eq(tstItem.TST_REQ_NO)).and(report.TST_CD.eq(tstItem.TST_CD))
+                .join(item).on(report.TST_CD.eq(item.TST_CD))
+                .join(deptItem).on(deptItem.TST_CD.eq(report.TST_CD))
             .where(conditions)
 
         var countSpec = databaseClient.sql(countQuery.sql)
@@ -164,49 +159,18 @@ class TestReportRepositoryImpl(
 
         val query = dslContext
             .selectDistinct(
-                report.TST_REPORT_ID,
-                report.TST_REQ_DT,
-                report.TST_REQ_NO,
-
-                patient.PAT_NM.`as`("patient_nm"),
-                patient.HOSP_CHART_NO,
-
-                report.TST_CD,
-                item.TST_NM,
-
-                patient.DIRECT_ACCT_CD,
-                patient.DIRECT_ACCT_BAR,
-                patient.CUST_CD,
-
-                report.DELIVERY_YN,
-                report.DELIVERY_CD,
-                report.DELIVERY_DTIME,
-                report.DELIVERER,
-                report.ATCH_GRUP_ID,
-
-                report.RST_SHORT,
-                report.RST_TXT,
-                report.RST_URL,
-
-                rerYnField,
-                tstItem.TST_REQ_STAT_CD,
-                tstItem.CLOSING_CD,
-                tstItem.TST_TAT_DT,
-                tstItem.LIMS_TAT_DT,
-                report.LIMS_RCV_DTIME
+                report.TST_REPORT_ID, report.TST_REQ_DT, report.TST_REQ_NO,
+                patient.PAT_NM.`as`("patient_nm"), patient.HOSP_CHART_NO,
+                report.TST_CD, item.TST_NM,
+                patient.DIRECT_ACCT_CD, patient.DIRECT_ACCT_BAR, patient.CUST_CD,
+                report.DELIVERY_YN, report.ATCH_GRUP_ID,
+                rerYnField, tstItem.TST_REQ_STAT_CD, tstItem.CLOSING_CD, tstItem.TST_TAT_DT, tstItem.LIMS_TAT_DT, report.LIMS_RCV_DTIME
             )
             .from(report)
-                .join(patient)
-                    .on(report.TST_REQ_DT.eq(patient.TST_REQ_DT))
-                    .and(report.TST_REQ_NO.eq(patient.TST_REQ_NO))
-                .join(tstItem)
-                    .on(report.TST_REQ_DT.eq(tstItem.TST_REQ_DT))
-                    .and(report.TST_REQ_NO.eq(tstItem.TST_REQ_NO))
-                    .and(report.TST_CD.eq(tstItem.TST_CD))
-                .join(item)
-                    .on(report.TST_CD.eq(item.TST_CD))
-                .join(deptItem)
-                    .on(deptItem.TST_CD.eq(report.TST_CD))
+                .join(patient).on(report.TST_REQ_DT.eq(patient.TST_REQ_DT)).and(report.TST_REQ_NO.eq(patient.TST_REQ_NO))
+                .join(tstItem).on(report.TST_REQ_DT.eq(tstItem.TST_REQ_DT)).and(report.TST_REQ_NO.eq(tstItem.TST_REQ_NO)).and(report.TST_CD.eq(tstItem.TST_CD))
+                .join(item).on(report.TST_CD.eq(item.TST_CD))
+                .join(deptItem).on(deptItem.TST_CD.eq(report.TST_CD))
             .where(conditions)
             .orderBy(report.TST_REQ_DT.desc(), report.TST_REQ_NO.desc())
             .limit(params.size)
@@ -215,46 +179,72 @@ class TestReportRepositoryImpl(
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> executeSpec = executeSpec.bind(i, v) }
 
-        val results = executeSpec
-            .fetch()
-            .all()
-            .map { toTestResultResponse(it) }
+        val results = executeSpec.fetch().all()
+            .map { toTestResultListResponse(it) }
             .collectList()
             .awaitSingle()
 
         return PageImpl(results, PageRequest.of(params.page, params.size), total)
     }
 
+    override suspend fun findTestResultsForExcel(params: TestResultSearchParam, rerDeptCd: String?): List<TestResultListResponse> {
+        val report = TBS_TST_REPORT
+        val patient = RBS_PATIENT
+        val tstItem = RBS_TST_ITEM
+        val item = BTS_ITEM
+        val deptItem = BBS_DEPT_TST_ITEM
+
+        val conditions = buildConditions(params)
+        val rerYnField = buildRerYnField(rerDeptCd)
+
+        val query = dslContext
+            .selectDistinct(
+                report.TST_REPORT_ID, report.TST_REQ_DT, report.TST_REQ_NO,
+                patient.PAT_NM.`as`("patient_nm"), patient.HOSP_CHART_NO,
+                report.TST_CD, item.TST_NM,
+                patient.DIRECT_ACCT_CD, patient.DIRECT_ACCT_BAR, patient.CUST_CD,
+                report.DELIVERY_YN, report.ATCH_GRUP_ID,
+                rerYnField, tstItem.TST_REQ_STAT_CD, tstItem.CLOSING_CD, tstItem.TST_TAT_DT, tstItem.LIMS_TAT_DT, report.LIMS_RCV_DTIME
+            )
+            .from(report)
+                .join(patient).on(report.TST_REQ_DT.eq(patient.TST_REQ_DT)).and(report.TST_REQ_NO.eq(patient.TST_REQ_NO))
+                .join(tstItem).on(report.TST_REQ_DT.eq(tstItem.TST_REQ_DT)).and(report.TST_REQ_NO.eq(tstItem.TST_REQ_NO)).and(report.TST_CD.eq(tstItem.TST_CD))
+                .join(item).on(report.TST_CD.eq(item.TST_CD))
+                .join(deptItem).on(deptItem.TST_CD.eq(report.TST_CD))
+            .where(conditions)
+            .orderBy(report.TST_REQ_DT.desc(), report.TST_REQ_NO.desc())
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> executeSpec = executeSpec.bind(i, v) }
+
+        return executeSpec.fetch().all()
+            .map { toTestResultListResponse(it) }
+            .collectList()
+            .awaitSingle()
+    }
+
     override suspend fun deleteById(id: String) {
         testReportDataRepository.deleteById(id)
     }
 
-    private fun toTestResultResponse(row: Map<String, Any>): TestResultResponse {
-        return TestResultResponse(
+    private fun toTestResultListResponse(row: Map<String, Any>): TestResultListResponse {
+        val directAcctCd = (row["direct_acct_cd"] ?: "").toString()
+        val tstReqDt = (row["tst_req_dt"] as? LocalDate) ?: LocalDate.now()
+        val tstReqNo = (row["tst_req_no"] as? Number)?.toLong() ?: 0L
+        return TestResultListResponse(
             tstReportId = (row["tst_report_id"] ?: "").toString(),
-            tstReqDt = (row["tst_req_dt"] as? LocalDate) ?: LocalDate.now(),
-            tstReqNo = (row["tst_req_no"] as? Number)?.toLong() ?: 0L,
-
-            patientNm = (row["patient_nm"] ?: "").toString(),
+            tstReqDt = tstReqDt,
+            tstReqNo = tstReqNo,
+            patientNm = row["patient_nm"]?.toString(),
             hospChartNo = row["hosp_chart_no"]?.toString(),
-
             tstCd = (row["tst_cd"] ?: "").toString(),
-            tstNm = (row["tst_nm"] ?: "").toString(),
-
-            directAcctCd = (row["direct_acct_cd"] ?: "").toString(),
-            custCd = (row["cust_cd"] ?: "").toString(),
-
+            tstNm = row["tst_nm"]?.toString(),
+            directAcctCd = directAcctCd,
+            custCd = row["cust_cd"]?.toString(),
             directAcctNm = "",
             custNm = "",
-
             deliveryYn = (row["delivery_yn"] as Boolean),
-            deliveryCd = row["delivery_cd"]?.toString(),
-            deliveryDtime = (row["delivery_dtime"] as? LocalDateTime)?.toLocalDate(),
-            deliverer = row["deliverer"]?.toString(),
             atchGrupId = row["atch_grup_id"]?.toString(),
-            rstShort = row["rst_short"]?.toString(),
-            rstTxt = row["rst_txt"]?.toString(),
-            rstUrl = row["rst_url"]?.toString(),
             tstReqStatCd = row["tst_req_stat_cd"]?.toString(),
             rerYn = row["rer_yn"]?.toString(),
             closingCd = row["closing_cd"]?.toString(),
@@ -262,9 +252,6 @@ class TestReportRepositoryImpl(
             limsTatDt = row["lims_tat_dt"] as? LocalDate,
             limsRcvDtime = row["lims_rcv_dtime"] as? LocalDateTime,
             genomeRegNo = run {
-                val directAcctCd = (row["direct_acct_cd"] ?: "").toString()
-                val tstReqDt = (row["tst_req_dt"] as? LocalDate) ?: LocalDate.now()
-                val tstReqNo = (row["tst_req_no"] as? Number)?.toLong() ?: 0L
                 if (directAcctCd == "G010000") {
                     val bar = row["direct_acct_bar"]?.toString()?.takeIf { it.length == 15 }
                     if (bar != null) {
@@ -342,7 +329,7 @@ class TestReportRepositoryImpl(
             deliveryYn = row["delivery_yn"] as Boolean?,
             deliveryCd = row["delivery_cd"] as String?,
             deliveryDtime = row["delivery_dtime"] as LocalDateTime?,
-            deliverer = row["deliverer"] as String,
+            deliverer = row["deliverer"] as String?,
 
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,

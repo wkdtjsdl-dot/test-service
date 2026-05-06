@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.application.dto
 
+import com.idrsys.web.excel.ExcelColumn
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -24,13 +25,14 @@ data class TestResultSearchParam(
 )
 
 /**
- * 검사결과 목록 응답 DTO
+ * 검사결과 목록 응답 DTO (리스트 표시용 lean 타입)
  */
-data class TestResultResponse(
+data class TestResultListResponse(
   val tstReportId: String,
   val tstReqDt: LocalDate,
   val tstReqNo: Long,
   val patientNm: String?,
+  val hospChartNo: String?,
   val tstCd: String,
   val tstNm: String?,
   val directAcctCd: String?,
@@ -38,14 +40,8 @@ data class TestResultResponse(
   var directAcctNm: String?,
   var custNm: String?,
   val deliveryYn: Boolean,
-  val deliveryCd: String?,
-  val deliveryDtime: LocalDate?,
-  val deliverer: String?,
   val atchGrupId: String?,
-  val rstShort: String?,
-  val rstTxt: String?,
-  val rstUrl: String?,
-  val hospChartNo: String? = null,
+  val genomeRegNo: String?,
   val tstReqStatCd: String?,
   var tstReqStatNm: String? = null,
   var rerYn: String? = null,
@@ -53,7 +49,56 @@ data class TestResultResponse(
   val tstTatDt: LocalDate? = null,
   val limsTatDt: LocalDate? = null,
   val limsRcvDtime: LocalDateTime? = null,
-  val genomeRegNo: String? = null,
+)
+
+/**
+ * 검사결과 상세 응답 DTO (row 클릭 시 detail API 전용)
+ */
+data class TestResultDetailResponse(
+  val tstReportId: String,
+  val tstReqDt: LocalDate,
+  val tstReqNo: Long,
+  val tstCd: String,
+  val rstShort: String?,
+  val rstTxt: String?,
+  val rstUrl: String?,
+  val atchGrupId: String?,
+  val deliveryYn: Boolean,
+  val memo: String?,
+)
+
+/**
+ * 검사결과 엑셀 다운로드 응답 DTO
+ */
+data class TestResultExcelResponse(
+    @ExcelColumn("상태")
+    val reqStatNm: String?,
+    @ExcelColumn("의뢰일자")
+    val tstReqDt: LocalDate,
+    @ExcelColumn("의뢰번호")
+    val tstReqNo: String,
+    @ExcelColumn("수진자명")
+    val patientNm: String?,
+    @ExcelColumn("차트번호")
+    val hospChartNo: String?,
+    @ExcelColumn("검사코드")
+    val tstCd: String,
+    @ExcelColumn("검사명")
+    val tstNm: String?,
+    @ExcelColumn("거래처명")
+    val directAcctNm: String?,
+    @ExcelColumn("재수탁거래처")
+    val custNm: String?,
+    @ExcelColumn("타기관등록번호")
+    val genomeRegNo: String?,
+    @ExcelColumn("배포여부")
+    val deliveryYn: String?,
+    @ExcelColumn("결과보고예정일")
+    val tstTatDt: LocalDate?,
+    @ExcelColumn("지놈예정일")
+    val limsTatDt: LocalDate?,
+    @ExcelColumn("검사종료일")
+    val limsRcvDtime: LocalDateTime?,
 )
 
 /**
