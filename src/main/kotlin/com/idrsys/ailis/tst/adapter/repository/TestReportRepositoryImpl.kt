@@ -329,7 +329,7 @@ class TestReportRepositoryImpl(
             deliveryYn = row["delivery_yn"] as Boolean?,
             deliveryCd = row["delivery_cd"] as String?,
             deliveryDtime = row["delivery_dtime"] as LocalDateTime?,
-            deliverer = row["deliverer"] as String,
+            deliverer = row["deliverer"] as String?,
 
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
