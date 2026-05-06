@@ -36,7 +36,7 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
 
     return DemandResponse(
         demandId = null,                        // No ID before closing
-        custCd = this.directAcctCd,
+        custCd = this.custCd,
         custNm = custNm,                        // From sales-service DB (scs_cust_mst)
         branchNm = this.branchNm,
         demandDt = searchEndDt,             // Query date

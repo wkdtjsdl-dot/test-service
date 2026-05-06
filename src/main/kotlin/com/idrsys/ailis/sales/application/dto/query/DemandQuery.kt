@@ -5,6 +5,22 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
+ * Modifiable demand info for monthly billing recalculation
+ * slstmt_no IS NULL demands for a given period
+ */
+data class DemandMonthlyInfo(
+    val demandId: String,
+    val custCd: String,
+    val demandType: String,
+    val crcyCd: String?,
+    val stndPrice: BigDecimal,
+    val supval: BigDecimal,
+    val addtax: BigDecimal,
+    val demandCharge: BigDecimal,
+    val colledgerId: String?
+)
+
+/**
  * Demand with Customer Info Query DTO
  * Used for JOIN query result between sbl_demand and scs_cust_mst
  */

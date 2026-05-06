@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.application.required.repository.billing
 
+import com.idrsys.ailis.sales.application.dto.query.DemandMonthlyInfo
 import com.idrsys.ailis.sales.application.dto.query.DemandWithCustInfo
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.domain.model.Demand
@@ -38,4 +39,10 @@ interface DemandRepository {
      * Find demand by ID
      */
     suspend fun findDemandById(demandId: String): Demand?
+
+    /**
+     * Find modifiable demands for a billing period (slstmt_no IS NULL)
+     * Used for billing recalculation delta computation
+     */
+    suspend fun findModifiableByMonth(startDt: LocalDate, endDt: LocalDate): List<DemandMonthlyInfo>
 }

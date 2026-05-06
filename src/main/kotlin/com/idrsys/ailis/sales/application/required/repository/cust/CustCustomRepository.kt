@@ -48,11 +48,12 @@ interface CustCustomRepository {
     suspend fun findCustNmMapByCustCds(custCds: List<String>): Map<String, CustBillingInfo>
 
     /**
-     * Find direct account codes by foreign account flag
+     * Find customer codes by foreign account flag
      * @param frgnAcctYn true for foreign accounts, false for domestic accounts
-     * @return list of direct account codes (cust_cd where cust_div_cd = 'CSDV_DA')
+     * @param bzoffiCd optional business office code filter
+     * @return list of cust_cds
      */
-    suspend fun findDirectAcctCdsByFrgnAcctYn(frgnAcctYn: Boolean, bzoffiCd: String? = null): List<String>
+    suspend fun findCustCdsByFrgnAcctYn(frgnAcctYn: Boolean, bzoffiCd: String? = null): List<String>
 
     /**
      * Find customer by external authentication key
@@ -60,4 +61,28 @@ interface CustCustomRepository {
      * @return Cust entity or null if not found
      */
     suspend fun findByExtnAuthKey(extnAuthKey: String): Cust?
+
+    /**
+     * Find rprs billing info (rprsCustCd + rprsAcctBillCombPublYn) by customer codes
+     * @param custCds list of customer codes
+     * @return map of custCd to RprsBillingInfo
+     */
+    suspend fun findRprsBillingInfoByCustCds(custCds: List<String>): Map<String, RprsBillingInfo>
+
+    /**
+     * Find cust_cds whose bzoffi_cd is in the given list (excluded from billing closing)
+     * @param bzoffiCds list of dept_cds to match against bzoffi_cd
+     * @return set of cust_cds belonging to those departments
+     */
+    suspend fun findCustCdsByBzoffiCds(bzoffiCds: List<String>): Set<String>
+
+    suspend fun findNoBillPublCustCds(): Set<String>
+
+    /**
+     * Find all custCds belonging to the given billing key.
+     * Returns the billingKey itself plus all custCds where
+     * rprs_cust_cd = billingKey AND rprs_acct_bill_comb_publ_yn = true.
+     * Always returns at least [billingKey].
+     */
+    suspend fun findConstituentCustCds(billingKey: String): List<String>
 }

@@ -6,7 +6,9 @@ import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandComman
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandBaseSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.toDemandSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
+import com.idrsys.ailis.sales.application.dto.request.billing.RecalculateBillingCommand
 import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementBatchCommand
+import com.idrsys.ailis.sales.application.dto.response.RecalculateBillingResponse
 import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResponse
 import java.time.LocalDate
 import com.idrsys.ailis.sales.application.dto.response.BillingRequestResponse
@@ -135,6 +137,15 @@ class BillingController(
      * @param searchParam BillingRequestSearchParam
      * @return Flow of BillingRequestResponse
      */
+    @Operation(summary = "청구수가 재마감", description = "해당 월 CLCD_Y 의뢰 기준으로 sbl_demand 재산출 (tst-item 미변경)")
+    @PostMapping("/demands/recalculate")
+    suspend fun recalculateBillingDemands(
+        @RequestBody command: RecalculateBillingCommand,
+        @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
+    ): RecalculateBillingResponse {
+        return billingCommandUseCase.recalculateBillingDemands(command, auth.adminId)
+    }
+
     @Operation(summary = "의뢰내역 조회", description = "청구 대상 의뢰내역 조회 (미청구 건의 원본 데이터)")
     @GetMapping("/requests")
     fun getBillingRequests(

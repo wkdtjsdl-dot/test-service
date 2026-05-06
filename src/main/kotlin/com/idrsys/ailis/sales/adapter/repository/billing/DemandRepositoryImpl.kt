@@ -1,7 +1,9 @@
 package com.idrsys.ailis.sales.adapter.repository.billing
 
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toDemand
+import com.idrsys.ailis.sales.adapter.persistence.mapper.toDemandMonthlyInfo
 import com.idrsys.ailis.sales.adapter.persistence.mapper.toDemandWithCustInfo
+import com.idrsys.ailis.sales.application.dto.query.DemandMonthlyInfo
 import com.idrsys.ailis.sales.application.dto.query.DemandWithCustInfo
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
@@ -9,6 +11,7 @@ import com.idrsys.ailis.sales.domain.model.Demand
 import com.idrsys.ailis.sales.generated.jooq.Tables.SBL_DEMAND
 import com.idrsys.ailis.sales.generated.jooq.Tables.SCS_CUST_MST
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
@@ -93,6 +96,34 @@ class DemandRepositoryImpl(
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
 
         return sql.map { row, _ -> row.toDemand() }.one().awaitSingleOrNull()
+    }
+
+    override suspend fun findModifiableByMonth(startDt: LocalDate, endDt: LocalDate): List<DemandMonthlyInfo> {
+        val query = dslContext.select(
+            SBL_DEMAND.DEMAND_ID,
+            SBL_DEMAND.CUST_CD,
+            SBL_DEMAND.DEMAND_TYPE,
+            SBL_DEMAND.CURR_CD,
+            SBL_DEMAND.STND_PRICE,
+            SBL_DEMAND.SUPVAL,
+            SBL_DEMAND.ADDTAX,
+            SBL_DEMAND.DEMAND_CHARGE,
+            SBL_DEMAND.COLLEDGER_ID
+        )
+            .from(SBL_DEMAND)
+            .where(
+                SBL_DEMAND.DEMAND_START_DT.eq(startDt),
+                SBL_DEMAND.DEMAND_END_DT.eq(endDt),
+                SBL_DEMAND.SLSTMT_NO.isNull
+            )
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.toDemandMonthlyInfo() }
+            .all()
+            .asFlow()
+            .toList()
     }
 
     private fun buildConditions(searchParam: DemandSearchParam): List<Condition> {

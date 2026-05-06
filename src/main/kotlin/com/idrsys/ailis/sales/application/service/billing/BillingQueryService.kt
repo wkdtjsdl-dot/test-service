@@ -5,6 +5,8 @@ import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
 import com.idrsys.ailis.sales.application.dto.response.BillingRequestResponse
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
+import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.external.ReqServicePort
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
@@ -28,7 +30,8 @@ import org.springframework.transaction.annotation.Transactional
 class BillingQueryService(
     private val demandRepository: DemandRepository,
     private val reqServicePort: ReqServicePort,
-    private val custCustomRepository: CustCustomRepository
+    private val custCustomRepository: CustCustomRepository,
+    private val baseServicePort: BaseServicePort
 ) : BillingQueryUseCase {
 
     /**
@@ -72,42 +75,88 @@ class BillingQueryService(
     ): Flow<DemandResponse> = flow {
         val branchCd = searchParam.branchCd?.takeIf { it.isNotBlank() }
 
-        // Determine directAcctCds based on frgnAcctYn, custCd, and branchCd
-        val directAcctCds: List<String>? = when {
+        // Determine custCds based on frgnAcctYn, custCd, and branchCd
+        val custCds: List<String>? = when {
             !searchParam.custCd.isNullOrBlank() -> listOf(searchParam.custCd)
-            searchParam.frgnAcctYn == true -> custCustomRepository.findDirectAcctCdsByFrgnAcctYn(true, branchCd)
+            searchParam.frgnAcctYn == true -> custCustomRepository.findCustCdsByFrgnAcctYn(true, branchCd)
             branchCd != null -> {
                 // frgnAcctYn이 null(전체) 또는 false(국내)이고 branchCd만 있는 경우
                 // 해당 영업소의 국내+해외 계정 모두 조회 (frgnAcctYn 필터는 이후 in-memory에서 처리)
-                custCustomRepository.findDirectAcctCdsByFrgnAcctYn(false, branchCd) +
-                    custCustomRepository.findDirectAcctCdsByFrgnAcctYn(true, branchCd)
+                custCustomRepository.findCustCdsByFrgnAcctYn(false, branchCd) +
+                    custCustomRepository.findCustCdsByFrgnAcctYn(true, branchCd)
             }
             else -> null
         }
 
         // 영업소 필터링 결과 매칭 계정이 없으면 빈 결과 반환
-        if (directAcctCds != null && directAcctCds.isEmpty()) return@flow
+        if (custCds != null && custCds.isEmpty()) return@flow
 
         val summaries = reqServicePort.getUnbilledDemandSummary(
             startDt = searchParam.startDt,
             endDt = searchParam.endDt,
-            directAcctCds = directAcctCds
+            custCds = custCds,
         )
 
         // For domestic only (frgnAcctYn=false): filter out foreign accounts
         val filteredSummaries = if (searchParam.frgnAcctYn == false) {
-            val foreignAcctCds = custCustomRepository.findDirectAcctCdsByFrgnAcctYn(true).toSet()
-            summaries.filter { it.directAcctCd !in foreignAcctCds }
+            val foreignAcctCds = custCustomRepository.findCustCdsByFrgnAcctYn(true).toSet()
+            summaries.filter { it.custCd !in foreignAcctCds }
         } else {
             summaries
         }
 
-        // Batch query custNm from scs_cust_mst
-        val custCds = filteredSummaries.map { it.directAcctCd }.distinct()
-        val custNmMap = custCustomRepository.findCustNmMapByCustCds(custCds)
+        // Exclude customers belonging to branch_bcd='100' departments from billing closing
+        val branch100DeptCds = baseServicePort.getDeptCdsByBranchBcd("100")
+        val branch100CustCds = if (branch100DeptCds.isNotEmpty()) {
+            custCustomRepository.findCustCdsByBzoffiCds(branch100DeptCds)
+        } else {
+            emptySet()
+        }
+        val finalSummaries = if (branch100CustCds.isNotEmpty()) {
+            filteredSummaries.filter { it.custCd !in branch100CustCds }
+        } else {
+            filteredSummaries
+        }
 
-        filteredSummaries.forEach { summary ->
-            val custBillingInfo = custNmMap[summary.directAcctCd]
+        // Exclude bill_publ_yn=false accounts
+        val noBillPublCustCds = custCustomRepository.findNoBillPublCustCds()
+        val preBillSummaries = if (noBillPublCustCds.isNotEmpty()) {
+            finalSummaries.filter { it.custCd !in noBillPublCustCds }
+        } else {
+            finalSummaries
+        }
+
+        // Post-aggregate by rprs_cust_cd billing key
+        val custCdList = preBillSummaries.map { it.custCd }.distinct()
+        val rprsBillingInfoMap = custCustomRepository.findRprsBillingInfoByCustCds(custCdList)
+
+        val billPublSummaries = preBillSummaries
+            .groupBy { summary ->
+                val info = rprsBillingInfoMap[summary.custCd]
+                val billingKey = if (info?.rprsAcctBillCombPublYn == true) info.rprsCustCd else summary.custCd
+                Triple(billingKey, summary.tstReqDivCd, summary.crcyCd)
+            }
+            .map { (key, summaries) ->
+                ReqServiceUnbilledDemandSummary(
+                    custCd = key.first,
+                    custNm = null,
+                    branchNm = null,
+                    stndPrice = summaries.sumOf { it.stndPrice },
+                    supval = summaries.sumOf { it.supval },
+                    addtax = summaries.sumOf { it.addtax },
+                    demandCharge = summaries.sumOf { it.demandCharge },
+                    requestCount = summaries.sumOf { it.requestCount },
+                    tstReqDivCd = key.second,
+                    crcyCd = key.third
+                )
+            }
+
+        // Batch query custNm from scs_cust_mst by billing keys
+        val billingKeys = billPublSummaries.map { it.custCd }.distinct()
+        val custNmMap = custCustomRepository.findCustNmMapByCustCds(billingKeys)
+
+        billPublSummaries.forEach { summary ->
+            val custBillingInfo = custNmMap[summary.custCd]
             emit(summary.toDemandResponse(
                 searchStartDt = searchParam.startDt,
                 searchEndDt = searchParam.endDt,
@@ -132,6 +181,10 @@ class BillingQueryService(
     override fun getBillingRequests(
         searchParam: BillingRequestSearchParam
     ): Flow<BillingRequestResponse> = flow {
+        // bill_publ_yn=false인 거래처는 전체 제외
+        val noBillPublCustCds = custCustomRepository.findNoBillPublCustCds()
+        if (searchParam.custCd in noBillPublCustCds) return@flow
+
         // custCd를 directAcctCd로 맵핑하여 req-service 호출
         val details = reqServicePort.getBillingRequests(
             startDt = searchParam.startDt,
@@ -142,11 +195,18 @@ class BillingQueryService(
             crcyCd = searchParam.crcyCd,
         ).toList()
 
+        // Filter out individual details for bill_publ_yn=false customers
+        val filteredDetails = if (noBillPublCustCds.isNotEmpty()) {
+            details.filter { it.custCd !in noBillPublCustCds }
+        } else {
+            details
+        }
+
         // Batch query custNm from scs_cust_mst
-        val custCds = details.mapNotNull { it.custCd }.distinct()
+        val custCds = filteredDetails.mapNotNull { it.custCd }.distinct()
         val custNmMap = custCustomRepository.findCustNmMapByCustCds(custCds)
 
-        details.forEach { detail ->
+        filteredDetails.forEach { detail ->
             val custBillingInfo = custNmMap[detail.custCd]
             emit(BillingRequestResponse(
                 tstReqDt = detail.tstReqDt,

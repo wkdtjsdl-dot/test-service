@@ -6,6 +6,7 @@ import com.idrsys.ailis.sales.application.dto.cust.CustSearchCommand
 import com.idrsys.ailis.sales.application.dto.cust.CustSearchParam
 import com.idrsys.ailis.sales.application.dto.query.*
 import com.idrsys.ailis.sales.application.dto.query.CustBillingInfo
+import com.idrsys.ailis.sales.application.dto.query.RprsBillingInfo
 import com.idrsys.ailis.sales.application.dto.response.CustCdNmResponse
 import com.idrsys.ailis.sales.application.dto.response.IfFieldInfoResponse
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
@@ -920,9 +921,8 @@ class CustCustomRepositoryImpl(
         return result
     }
 
-    override suspend fun findDirectAcctCdsByFrgnAcctYn(frgnAcctYn: Boolean, bzoffiCd: String?): List<String> {
+    override suspend fun findCustCdsByFrgnAcctYn(frgnAcctYn: Boolean, bzoffiCd: String?): List<String> {
         val conditions = mutableListOf(
-            SCS_CUST_MST.CUST_DIV_CD.eq("CSDV_DA"),
             SCS_CUST_MST.FRGN_ACCT_YN.eq(frgnAcctYn)
         )
         bzoffiCd?.let { conditions.add(SCS_CUST_MST.BZOFFI_CD.eq(it)) }
@@ -942,6 +942,84 @@ class CustCustomRepositoryImpl(
 
     override suspend fun findByExtnAuthKey(extnAuthKey: String): Cust? {
         return custDataRepository.findByExtnAuthKey(extnAuthKey)
+    }
+
+    override suspend fun findRprsBillingInfoByCustCds(custCds: List<String>): Map<String, RprsBillingInfo> {
+        if (custCds.isEmpty()) return emptyMap()
+
+        val query = dslContext.select(
+            SCS_CUST_MST.CUST_CD,
+            SCS_CUST_MST.RPRS_CUST_CD,
+            SCS_CUST_MST.RPRS_ACCT_BILL_COMB_PUBL_YN
+        )
+            .from(SCS_CUST_MST)
+            .where(SCS_CUST_MST.CUST_CD.`in`(custCds.map { inline(it) }))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ ->
+            val custCd = row.get("cust_cd", String::class.java)!!
+            val rprsCustCd = row.get("rprs_cust_cd", String::class.java) ?: custCd
+            val rprsAcctBillCombPublYn = row.get("rprs_acct_bill_comb_publ_yn", Boolean::class.java) ?: false
+            custCd to RprsBillingInfo(rprsCustCd, rprsAcctBillCombPublYn)
+        }
+            .all()
+            .asFlow()
+            .toList()
+            .toMap()
+    }
+
+    override suspend fun findCustCdsByBzoffiCds(bzoffiCds: List<String>): Set<String> {
+        if (bzoffiCds.isEmpty()) return emptySet()
+
+        val query = dslContext.selectDistinct(SCS_CUST_MST.CUST_CD)
+            .from(SCS_CUST_MST)
+            .where(SCS_CUST_MST.BZOFFI_CD.`in`(bzoffiCds))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.get("cust_cd", String::class.java)!! }
+            .all()
+            .asFlow()
+            .toList()
+            .toSet()
+    }
+
+    override suspend fun findNoBillPublCustCds(): Set<String> {
+        val query = dslContext.select(SCS_CUST_MST.CUST_CD)
+            .from(SCS_CUST_MST)
+            .where(SCS_CUST_MST.BILL_PUBL_YN.eq(false))
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.get("cust_cd", String::class.java)!! }
+            .all()
+            .asFlow()
+            .toList()
+            .toSet()
+    }
+
+    override suspend fun findConstituentCustCds(billingKey: String): List<String> {
+        val query = dslContext.select(SCS_CUST_MST.CUST_CD)
+            .from(SCS_CUST_MST)
+            .where(
+                SCS_CUST_MST.CUST_CD.eq(billingKey)
+                    .or(
+                        SCS_CUST_MST.RPRS_CUST_CD.eq(billingKey)
+                            .and(SCS_CUST_MST.RPRS_ACCT_BILL_COMB_PUBL_YN.eq(true))
+                    )
+            )
+
+        var sql = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
+
+        return sql.map { row, _ -> row.get("cust_cd", String::class.java)!! }
+            .all()
+            .asFlow()
+            .toList()
     }
 
     companion object {

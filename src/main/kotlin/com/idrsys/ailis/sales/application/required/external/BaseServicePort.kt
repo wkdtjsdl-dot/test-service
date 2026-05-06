@@ -77,6 +77,8 @@ interface BaseServicePort {
     ): BaseAttachedFileGroupResponse?
 
     suspend fun getDepartmentsByIds(deptCds: List<String>): List<BaseDepartmentResponse>?
+
+    suspend fun getDeptCdsByBranchBcd(branchBcd: String): List<String>
 }
 
 /**

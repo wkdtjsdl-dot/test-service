@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.adapter.persistence.mapper
 
+import com.idrsys.ailis.sales.application.dto.query.DemandMonthlyInfo
 import com.idrsys.ailis.sales.application.dto.query.DemandWithCustInfo
 import com.idrsys.ailis.sales.domain.model.Demand
 import io.r2dbc.spi.Row
@@ -38,12 +39,25 @@ internal fun Row.toDemand(): Demand {
         demandType = this.get("demand_type", String::class.java)
     )
 
-    // Handle persisted entity (not new)
     if (demand.demandId != null) {
-        demand.setAsNew()
+        demand.setAsExisting()
     }
 
     return demand
+}
+
+internal fun Row.toDemandMonthlyInfo(): DemandMonthlyInfo {
+    return DemandMonthlyInfo(
+        demandId = this.get("demand_id", String::class.java)!!,
+        custCd = this.get("cust_cd", String::class.java)!!,
+        demandType = this.get("demand_type", String::class.java) ?: "10",
+        crcyCd = this.get("curr_cd", String::class.java),
+        stndPrice = this.get("stnd_price", BigDecimal::class.java)!!,
+        supval = this.get("supval", BigDecimal::class.java)!!,
+        addtax = this.get("addtax", BigDecimal::class.java)!!,
+        demandCharge = this.get("demand_charge", BigDecimal::class.java)!!,
+        colledgerId = this.get("colledger_id", String::class.java)
+    )
 }
 
 internal fun Row.toDemandWithCustInfo(): DemandWithCustInfo {

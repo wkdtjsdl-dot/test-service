@@ -18,13 +18,27 @@ interface ReqServicePort {
      *
      * @param startDt Start date
      * @param endDt End date
-     * @param directAcctCds Direct account codes (optional, null means all)
+     * @param custCds Customer codes to filter by (optional, null means all)
      * @return List of unbilled demand summaries
      */
     suspend fun getUnbilledDemandSummary(
         startDt: LocalDate,
         endDt: LocalDate,
-        directAcctCds: List<String>? = null
+        custCds: List<String>? = null,
+    ): List<ReqServiceUnbilledDemandSummary>
+
+    /**
+     * Get closed (CLCD_Y) demand summary from req-service for billing recalculation
+     *
+     * @param startDt Start date
+     * @param endDt End date
+     * @param custCds Customer codes to filter by (optional, null means all)
+     * @return List of closed demand summaries per custCd
+     */
+    suspend fun getClosedDemandSummary(
+        startDt: LocalDate,
+        endDt: LocalDate,
+        custCds: List<String>? = null,
     ): List<ReqServiceUnbilledDemandSummary>
 
     /**
@@ -60,7 +74,7 @@ interface ReqServicePort {
      * @return Number of updated test items
      */
     suspend fun updateTstItemClosingInfo(
-        directAcctCd: String,
+        custCds: List<String>,
         startDt: LocalDate,
         endDt: LocalDate,
         exrtId: Long? = null,
@@ -81,7 +95,7 @@ interface ReqServicePort {
      * @return Number of released test items
      */
     suspend fun releaseTstItemClosingInfo(
-        directAcctCd: String,
+        custCds: List<String>,
         startDt: LocalDate,
         endDt: LocalDate,
         updater: String,

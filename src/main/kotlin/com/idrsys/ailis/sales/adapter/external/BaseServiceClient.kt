@@ -167,6 +167,22 @@ class BaseServiceClient(
         }
     }
 
+    override suspend fun getDeptCdsByBranchBcd(branchBcd: String): List<String> {
+        return try {
+            client.get()
+                .uri { uriBuilder ->
+                    uriBuilder
+                        .path("/api/inner/departments/byBranchBcd")
+                        .queryParam("branchBcd", branchBcd)
+                        .build()
+                }
+                .retrieve()
+                .awaitBody<List<String>>()
+        } catch (ex: Exception) {
+            emptyList()
+        }
+    }
+
     // ========== 결재라인 관련 메서드 ==========
 
     override suspend fun getApprovalLines(

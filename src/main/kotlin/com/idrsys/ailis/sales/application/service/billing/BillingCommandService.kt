@@ -1,12 +1,15 @@
 package com.idrsys.ailis.sales.application.service.billing
 
 import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandCommand
+import com.idrsys.ailis.sales.application.dto.request.billing.RecalculateBillingCommand
 import com.idrsys.ailis.sales.application.dto.request.billing.SapInvcPostingRow
 import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementBatchCommand
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
+import com.idrsys.ailis.sales.application.dto.response.RecalculateBillingResponse
 import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResponse
 import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResult
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.external.ReqServicePort
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandHstRepository
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
@@ -20,6 +23,9 @@ import com.idrsys.ailis.sales.domain.model.DemandHst
 import com.idrsys.web.exception.UserDefinedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -37,6 +43,7 @@ class BillingCommandService(
     private val reqServicePort: ReqServicePort,
     private val custCustomRepository: CustCustomRepository,
     private val invoiceErpPort: InvoiceErpPort,
+    private val baseServicePort: BaseServicePort,
 ) : BillingCommandUseCase {
 
     /**
@@ -84,6 +91,7 @@ class BillingCommandService(
             sapCustCd = sapCustCd,
             invcRecpEmailAddr = command.invcRecpEmailAddr,
             demandMemo = command.demandMemo,
+            demandCreatorEmpNo = adminId,
             creator = adminId,
             createDtime = LocalDateTime.now(),
             updater = adminId,
@@ -111,8 +119,9 @@ class BillingCommandService(
         // 7. Update test requests with closing information
         // demandType '30' → RQDV_PR, '10' → NON_PR (CASE WHEN 분기와 동일한 로직)
         val tstReqDivCd = if (command.demandType == "30") "RQDV_PR" else "NON_PR"
+        val constituentCustCds = custCustomRepository.findConstituentCustCds(command.custCd)
         val createdRequestCount = reqServicePort.updateTstItemClosingInfo(
-            directAcctCd = command.custCd,
+            custCds = constituentCustCds,
             startDt = command.demandStartDt,
             endDt = command.demandEndDt,
             exrtId = command.exrtId,
@@ -243,8 +252,9 @@ class BillingCommandService(
         // 5. Release test requests (reset closing information)
         // demandType '30' → RQDV_PR, '10' → NON_PR — 생성 시와 동일한 분기 로직
         val tstReqDivCd = if (demand.demandType == "30") "RQDV_PR" else "NON_PR"
+        val constituentCustCds = custCustomRepository.findConstituentCustCds(demand.custCd)
         val releasedRequestCount = reqServicePort.releaseTstItemClosingInfo(
-            directAcctCd = demand.custCd,
+            custCds = constituentCustCds,
             startDt = demand.demandStartDt,
             endDt = demand.demandEndDt,
             updater = adminId,
@@ -323,7 +333,7 @@ class BillingCommandService(
             val row = SapInvcPostingRow(
                 lisgc = item.lisgc,
                 xref1 = demand.custCd.takeLast(6),      // 뒤에서 6글자
-                debcl = "10",                               // TODO demand db에서 가져오는걸로 추후 수정  LIS 10 :매출 / 30 : 선수금
+                debcl = demand.demandType ?: "10",
                 budat = demand.demandDt.format(formatter),
                 xnegp = "",                                // 취소/수정 전표지시자 (일반전표 SPACE , 취소 'X')
                 xblnr = cust?.bizrno ?: "",
@@ -413,6 +423,224 @@ class BillingCommandService(
         return SendSalesStatementBatchResponse(
             sentCount = sentResults.count { it.sent },
             results = allResults
+        )
+    }
+
+    override suspend fun recalculateBillingDemands(
+        command: RecalculateBillingCommand,
+        adminId: String
+    ): RecalculateBillingResponse {
+        val startDt = command.yearMonth.atDay(1)
+        val endDt = command.yearMonth.atEndOfMonth()
+        val now = LocalDateTime.now()
+
+        // 1. Scope by bzoffiCd if provided
+        val scopeCustCds: List<String>? = command.bzoffiCd?.let { bzoffiCd ->
+            custCustomRepository.findCustCdsByFrgnAcctYn(false, bzoffiCd) +
+                custCustomRepository.findCustCdsByFrgnAcctYn(true, bzoffiCd)
+        }
+        if (scopeCustCds != null && scopeCustCds.isEmpty()) {
+            return RecalculateBillingResponse(0, 0, 0)
+        }
+
+        // 2. Get CLCD_Y summaries from req-service
+        val rawSummaries = reqServicePort.getClosedDemandSummary(startDt, endDt, scopeCustCds)
+
+        // 3. Apply same exclusion filters as unbilled flow
+        val noBillPublCustCds = custCustomRepository.findNoBillPublCustCds()
+        val afterBillPublFilter = rawSummaries.filter { it.custCd !in noBillPublCustCds }
+
+        val branch100DeptCds = baseServicePort.getDeptCdsByBranchBcd("100")
+        val branch100CustCds = if (branch100DeptCds.isNotEmpty()) {
+            custCustomRepository.findCustCdsByBzoffiCds(branch100DeptCds)
+        } else emptySet()
+        val filteredSummaries = if (branch100CustCds.isNotEmpty()) {
+            afterBillPublFilter.filter { it.custCd !in branch100CustCds }
+        } else afterBillPublFilter
+
+        // 4. Apply rprsAcctBillCombPublYn mapping → target map
+        data class TargetAmounts(
+            val stndPrice: BigDecimal,
+            val supval: BigDecimal,
+            val addtax: BigDecimal,
+            val demandCharge: BigDecimal
+        )
+
+        val custCdList = filteredSummaries.map { it.custCd }.distinct()
+        val rprsBillingInfoMap = custCustomRepository.findRprsBillingInfoByCustCds(custCdList)
+
+        val targetMap: Map<Triple<String, String, String?>, TargetAmounts> = filteredSummaries
+            .groupBy { summary ->
+                val info = rprsBillingInfoMap[summary.custCd]
+                val billingKey = if (info?.rprsAcctBillCombPublYn == true) info.rprsCustCd else summary.custCd
+                val demandType = if (summary.tstReqDivCd == "RQDV_PR") "30" else "10"
+                Triple(billingKey, demandType, summary.crcyCd)
+            }
+            .mapValues { (_, summaries) ->
+                TargetAmounts(
+                    stndPrice = summaries.sumOf { it.stndPrice },
+                    supval = summaries.sumOf { it.supval },
+                    addtax = summaries.sumOf { it.addtax },
+                    demandCharge = summaries.sumOf { it.demandCharge }
+                )
+            }
+
+        // 5. Get current modifiable demands (slstmtNo IS NULL)
+        val allCurrentDemands = demandRepository.findModifiableByMonth(startDt, endDt)
+        val scopedCurrentDemands = if (scopeCustCds != null) {
+            val scopeSet = scopeCustCds.toSet()
+            allCurrentDemands.filter { it.custCd in scopeSet }
+        } else allCurrentDemands
+
+        val currentMap = scopedCurrentDemands.associateBy {
+            Triple(it.custCd, it.demandType, it.crcyCd)
+        }
+
+        // 6. Delta
+        val allKeys = (targetMap.keys + currentMap.keys).distinct()
+        var insertedCount = 0
+        var updatedCount = 0
+        var deletedCount = 0
+
+        for (key in allKeys) {
+            val target = targetMap[key]
+            val current = currentMap[key]
+
+            when {
+                target != null && current == null -> {
+                    // INSERT: new demand + ledger + history
+                    val billingKey = key.first
+                    val demandType = key.second
+                    val crcyCd = key.third
+
+                    val sapCustCd = custCustomRepository.findByCustCd(billingKey)?.sapCustCd
+                    val dscntRate = if (target.stndPrice > BigDecimal.ZERO) {
+                        (target.stndPrice - target.demandCharge)
+                            .divide(target.stndPrice, 4, RoundingMode.HALF_UP)
+                            .multiply(BigDecimal("100"))
+                            .setScale(2, RoundingMode.HALF_UP)
+                    } else BigDecimal.ZERO
+
+                    val demand = Demand(
+                        demandId = null,
+                        demandDt = LocalDate.now(),
+                        demandStartDt = startDt,
+                        demandEndDt = endDt,
+                        custCd = billingKey,
+                        stndPrice = target.stndPrice,
+                        supval = target.supval,
+                        addtax = target.addtax,
+                        demandCharge = target.demandCharge,
+                        dscntRate = dscntRate,
+                        sapCustCd = sapCustCd,
+                        demandCreatorEmpNo = adminId,
+                        creator = adminId,
+                        createDtime = now,
+                        updater = adminId,
+                        updateDtime = now,
+                        crcyCd = crcyCd,
+                        demandType = demandType
+                    )
+                    demand.setAsNew()
+
+                    val ledger = CollectionLedger.createForDemand(
+                        custCd = billingKey,
+                        demandDt = LocalDate.now(),
+                        demandCharge = target.demandCharge,
+                        creator = adminId
+                    )
+                    val savedLedger = collectionLedgerRepository.save(ledger)
+                    demand.assignColledgerId(savedLedger.colledgerId!!)
+                    val savedDemand = demandRepository.save(demand)
+
+                    demandHstRepository.save(buildDemandHst(savedDemand, "HST_C", "청구수가 재마감", adminId, now))
+                    insertedCount++
+                }
+
+                target == null && current != null -> {
+                    // DELETE: history + ledger + demand
+                    val demand = demandRepository.findById(current.demandId) ?: continue
+
+                    demandHstRepository.save(buildDemandHst(demand, "HST_D", "청구수가 재마감", adminId, now))
+
+                    current.colledgerId?.let { colledgerId ->
+                        collectionLedgerRepository.findById(colledgerId)?.let {
+                            collectionLedgerRepository.delete(it)
+                        }
+                    }
+
+                    demandRepository.delete(demand)
+                    deletedCount++
+                }
+
+                target != null && current != null -> {
+                    // UPDATE if amounts differ
+                    val amountsUnchanged = target.supval.compareTo(current.supval) == 0 &&
+                        target.addtax.compareTo(current.addtax) == 0
+                    if (amountsUnchanged) continue
+
+                    val demand = demandRepository.findById(current.demandId) ?: continue
+                    demand.recalculateCharges(target.supval, target.addtax, adminId)
+                    val savedDemand = demandRepository.save(demand)
+
+                    current.colledgerId?.let { colledgerId ->
+                        collectionLedgerRepository.findById(colledgerId)?.let { ledger ->
+                            ledger.updateCollection(
+                                colbillDt = ledger.colbillDt,
+                                colbillAmt = target.demandCharge,
+                                colbillItemNm = ledger.colbillItemNm,
+                                colbillItemDtl = ledger.colbillItemDtl,
+                                updater = adminId
+                            )
+                            collectionLedgerRepository.save(ledger)
+                        }
+                    }
+
+                    demandHstRepository.save(buildDemandHst(savedDemand, "HST_C", "청구수가 재마감", adminId, now))
+                    updatedCount++
+                }
+            }
+        }
+
+        return RecalculateBillingResponse(insertedCount, updatedCount, deletedCount)
+    }
+
+    private fun buildDemandHst(demand: Demand, hstCd: String, hstMemo: String, worker: String, workDtime: LocalDateTime): DemandHst {
+        return DemandHst(
+            hstCd = hstCd,
+            hstMemo = hstMemo,
+            worker = worker,
+            workDtime = workDtime,
+            demandId = demand.demandId!!,
+            demandDt = demand.demandDt,
+            custCd = demand.custCd,
+            demandStartDt = demand.demandStartDt,
+            demandEndDt = demand.demandEndDt,
+            stndPrice = demand.stndPrice,
+            supval = demand.supval,
+            demandCharge = demand.demandCharge,
+            addtax = demand.addtax,
+            dscntRate = demand.dscntRate,
+            demandCreateDtime = demand.demandCreateDtime,
+            demandCreatorEmpNo = demand.demandCreatorEmpNo,
+            insurePrice = demand.insurePrice,
+            invcOutputDtime = demand.invcOutputDtime,
+            invcOutputEmpno = demand.invcOutputEmpno,
+            slstmtNo = demand.slstmtNo,
+            slstmtSendDt = demand.slstmtSendDt,
+            slstmtSendEmpNo = demand.slstmtSendEmpNo,
+            demandMemo = demand.demandMemo,
+            sapCustCd = demand.sapCustCd,
+            billPublYn = demand.billPublYn,
+            invcRecpEmailAddr = demand.invcRecpEmailAddr,
+            creator = demand.creator,
+            createDtime = demand.createDtime,
+            updater = demand.updater,
+            updateDtime = demand.updateDtime,
+            colledgerId = demand.colledgerId,
+            crcyCd = demand.crcyCd,
+            frgnCrcyAmt = demand.frgnCrcyAmt,
+            demandType = demand.demandType,
         )
     }
 }

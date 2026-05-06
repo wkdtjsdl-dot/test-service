@@ -12,3 +12,8 @@ data class CustBillingInfo(
     val sapCustCd: String?,
     val crcyCd: String?
 )
+
+data class RprsBillingInfo(
+    val rprsCustCd: String,
+    val rprsAcctBillCombPublYn: Boolean
+)

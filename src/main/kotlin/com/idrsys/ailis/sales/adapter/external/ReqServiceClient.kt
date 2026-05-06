@@ -9,6 +9,7 @@ import com.idrsys.ailis.sales.infrastructure.config.AppConfig
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -21,6 +22,10 @@ class ReqServiceClient(
     webClientBuilder: WebClient.Builder,
     appConfig: AppConfig
 ) : ReqServicePort {
+    companion object {
+        private val logger = LoggerFactory.getLogger(ReqServiceClient::class.java)
+    }
+
     final private val client: WebClient
 
     init {
@@ -34,28 +39,51 @@ class ReqServiceClient(
      *
      * @param startDt Start date
      * @param endDt End date
-     * @param directAcctCds Direct account codes (optional, null means all)
+     * @param custCds Customer codes to filter by (optional, null means all)
      * @return List of unbilled demand summaries
      */
     override suspend fun getUnbilledDemandSummary(
         startDt: LocalDate,
         endDt: LocalDate,
-        directAcctCds: List<String>?
+        custCds: List<String>?,
     ): List<ReqServiceUnbilledDemandSummary> {
+        val body = mapOf(
+            "startDt" to startDt.toString(),
+            "endDt" to endDt.toString(),
+            "custCds" to custCds
+        )
         return try {
-            client.get()
-                .uri { uriBuilder ->
-                    val builder = uriBuilder.path("/api/inner/rbs/tst-items/unbilled-demands")
-                    builder.queryParam("startDt", startDt.toString())
-                    builder.queryParam("endDt", endDt.toString())
-                    directAcctCds?.takeIf { it.isNotEmpty() }?.let {
-                        builder.queryParam("directAcctCds", it.joinToString(","))
-                    }
-                    builder.build()
-                }
+            client.post()
+                .uri("/api/inner/rbs/tst-items/unbilled-demands")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
                 .retrieve()
                 .awaitBody<List<ReqServiceUnbilledDemandSummary>>()
         } catch (ex: Exception) {
+            logger.error("req-service unbilled-demands 호출 실패: ${ex.message}", ex)
+            emptyList()
+        }
+    }
+
+    override suspend fun getClosedDemandSummary(
+        startDt: LocalDate,
+        endDt: LocalDate,
+        custCds: List<String>?,
+    ): List<ReqServiceUnbilledDemandSummary> {
+        val body = mapOf(
+            "startDt" to startDt.toString(),
+            "endDt" to endDt.toString(),
+            "custCds" to custCds
+        )
+        return try {
+            client.post()
+                .uri("/api/inner/rbs/tst-items/closed-demands")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
+                .retrieve()
+                .awaitBody<List<ReqServiceUnbilledDemandSummary>>()
+        } catch (ex: Exception) {
+            logger.error("req-service closed-demands 호출 실패: ${ex.message}", ex)
             emptyList()
         }
     }
@@ -94,7 +122,7 @@ class ReqServiceClient(
 
             details.forEach { emit(it) }
         } catch (ex: Exception) {
-            // Error handling: emit nothing on failure
+            logger.error("req-service billing-requests 호출 실패: directAcctCd=$directAcctCd, ${ex.message}", ex)
         }
     }
 
@@ -102,7 +130,7 @@ class ReqServiceClient(
      * Update test item closing information
      */
     override suspend fun updateTstItemClosingInfo(
-        directAcctCd: String,
+        custCds: List<String>,
         startDt: LocalDate,
         endDt: LocalDate,
         exrtId: Long?,
@@ -113,7 +141,7 @@ class ReqServiceClient(
         crcyCd: String?,
     ): Int {
         val requestBody = mapOf(
-            "directAcctCd" to directAcctCd,
+            "custCds" to custCds,
             "startDt" to startDt.toString(),
             "endDt" to endDt.toString(),
             "exrtId" to exrtId,
@@ -145,7 +173,7 @@ class ReqServiceClient(
      * Release test item closing information
      */
     override suspend fun releaseTstItemClosingInfo(
-        directAcctCd: String,
+        custCds: List<String>,
         startDt: LocalDate,
         endDt: LocalDate,
         updater: String,
@@ -153,7 +181,7 @@ class ReqServiceClient(
         crcyCd: String?,
     ): Int {
         val requestBody = mapOf(
-            "directAcctCd" to directAcctCd,
+            "custCds" to custCds,
             "startDt" to startDt.toString(),
             "endDt" to endDt.toString(),
             "tstReqDivCd" to tstReqDivCd,
