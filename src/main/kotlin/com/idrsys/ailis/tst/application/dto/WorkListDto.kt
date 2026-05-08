@@ -68,3 +68,8 @@ data class WorkListItemDetailResponse(
     val updater: String,
     val updateDtime: LocalDateTime
 )
+
+data class WorkListAutoCompleteResponse(
+    val wrklistCd: String,
+    val wrklistNm: String?
+)
