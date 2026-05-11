@@ -26,7 +26,7 @@ Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
 
 ### 고객 목록 inner simple
-GET http://localhost:8300/sals/api/inner/custs?custCds=G004156
+GET {{sales-service}}/api/inner/custs?custCds=G004156
 Content-Type: application/json
 Accept: application/json
 Cookie: accessToken={{accessToken}}; refreshToken={{refreshToken}}
