@@ -48,9 +48,8 @@ class TestItemController(
 
     @Operation(summary = "검사 검사종목 목록")
     @GetMapping("/api/bts/item")
-    fun getItems(@ParameterObject searchParam: TestItemSearchParam): Flow<TestItemResponse> {
-        return useCase.getItems(searchParam)
-    }
+    fun getItems(@ParameterObject searchParam: TestItemSearchParam): Flow<TestItemListResponse> =
+        useCase.getItems(searchParam)
 
     @Operation(summary = "검사 코드 간략 목록 조회 (SelectBox용)")
     @GetMapping("/api/bts/item/simple")

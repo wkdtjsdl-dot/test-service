@@ -3,10 +3,13 @@ package com.idrsys.ailis.tst.application.service
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.mapper.TestItemCommandMapper
 import com.idrsys.ailis.tst.application.mapper.TestItemMapper
+import com.idrsys.ailis.tst.application.required.external.BaseServicePort
 import com.idrsys.ailis.tst.application.required.repository.TestItemRepository
 import com.idrsys.ailis.tst.application.usecase.TestItemUseCase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import com.idrsys.ailis.tst.domain.model.StandardCharge
@@ -30,7 +33,8 @@ import kotlin.reflect.jvm.isAccessible
 class TestItemService(
     private val repository: TestItemRepository,
     private val mapper: TestItemMapper,
-    private val commandMapper: TestItemCommandMapper
+    private val commandMapper: TestItemCommandMapper,
+    private val baseServicePort: BaseServicePort
 ) : TestItemUseCase {
 
     // --- TestItem ---
@@ -68,8 +72,30 @@ class TestItemService(
     }
 
     @Transactional(readOnly = true)
-    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItemResponse> {
-        return repository.getItems(searchParam).map { mapper.toResponse(it) }
+    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItemListResponse> = flow {
+        val items = repository.getItemList(searchParam).toList()
+
+        val largeCateNameMap = baseServicePort.getSysCodesByCateCd("TC")
+            .associate { it.cd to it.cdNm }
+
+        val deptCds = items.mapNotNull { it.deptCd }.distinct()
+        val deptNameMap = if (deptCds.isNotEmpty()) {
+            baseServicePort.getDepartmentsByDeptCds(deptCds)
+        } else {
+            emptyMap()
+        }
+
+        items.forEach { row ->
+            emit(TestItemListResponse(
+                tstCd = row.tstCd,
+                tstNm = row.tstNm,
+                tstLargeCateCd = row.tstLargeCateCd,
+                tstLargeCateNm = largeCateNameMap[row.tstLargeCateCd] ?: row.tstLargeCateCd,
+                useYn = row.useYn,
+                tstSubYn = row.tstSubYn,
+                deptNm = row.deptCd?.let { deptNameMap[it] }
+            ))
+        }
     }
 
     @Transactional(readOnly = true)

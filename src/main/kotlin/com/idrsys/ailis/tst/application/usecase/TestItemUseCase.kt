@@ -8,7 +8,7 @@ interface TestItemUseCase {
     suspend fun registerItem(request: TestItemRegisterRequest, adminId: String): TestItemResponse
     suspend fun getItem(tstCd: String): TestItemResponse
     suspend fun updateItem(tstCd: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse
-    fun getItems(searchParam: TestItemSearchParam): Flow<TestItemResponse>
+    fun getItems(searchParam: TestItemSearchParam): Flow<TestItemListResponse>
     fun getItemsSimple(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse>
     fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse>
     suspend fun findSimpleItemByTstCd(tstCds: List<String>): Flow<TestItemSimpleResponse>

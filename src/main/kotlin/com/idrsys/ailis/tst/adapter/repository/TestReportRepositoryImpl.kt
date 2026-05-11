@@ -10,6 +10,7 @@ import com.idrsys.ailis.tst.generated.jooq.tables.RbsPatient.RBS_PATIENT
 import com.idrsys.ailis.tst.generated.jooq.tables.RbsTstItem.RBS_TST_ITEM
 import com.idrsys.ailis.tst.generated.jooq.tables.TbsTstReport.TBS_TST_REPORT
 import com.idrsys.ailis.tst.generated.jooq.tables.BbsDeptTstItem.BBS_DEPT_TST_ITEM
+import com.idrsys.ailis.tst.generated.jooq.tables.BbsWrklistItm.BBS_WRKLIST_ITM
 import com.idrsys.ailis.tst.generated.jooq.tables.TbsTstReportHst.TBS_TST_REPORT_HST
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
@@ -111,6 +112,17 @@ class TestReportRepositoryImpl(
         }
         params.hospChartNo?.takeIf { it.isNotBlank() }?.let {
             conditions.add(patient.HOSP_CHART_NO.like("%$it%"))
+        }
+        params.wrklstCds?.takeIf { it.isNotEmpty() }?.let { cds ->
+            val wrklistItm = BBS_WRKLIST_ITM
+            conditions.add(
+                DSL.exists(
+                    DSL.selectOne()
+                        .from(wrklistItm)
+                        .where(wrklistItm.TST_CD.eq(report.TST_CD))
+                        .and(wrklistItm.WRKLIST_CD.`in`(cds))
+                )
+            )
         }
 
         return conditions

@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
+import com.idrsys.ailis.tst.adapter.persistence.mapper.toTestItemListRow
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
 import com.idrsys.ailis.tst.application.required.repository.TestItemRepository
@@ -99,9 +100,9 @@ class TestItemRepositoryImpl(
             .asFlow()
     }
 
-    override fun getItems(searchParam: TestItemSearchParam): Flow<TestItem> {
-        val deptTestItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
+    override fun getItemList(searchParam: TestItemSearchParam): Flow<TestItemListRow> {
         val tstItem = BtsItem.BTS_ITEM
+        val deptTstItem = BbsDeptTstItem.BBS_DEPT_TST_ITEM
 
         var condition: Condition = DSL.trueCondition()
 
@@ -114,23 +115,31 @@ class TestItemRepositoryImpl(
         searchParam.useYn?.let {
             condition = condition.and(tstItem.USE_YN.eq(it))
         }
-
-        var selectFrom = dslContext
-            .select(tstItem.fields().toList())
-            .from(tstItem)
-
-        // deptCd가 존재하면 LEFT OUTER JOIN 추가
         searchParam.deptCd?.takeIf { it.isNotBlank() }?.let { deptCd ->
-            selectFrom = selectFrom.innerJoin(deptTestItem)
-                .on(
-                    tstItem.TST_CD.eq(deptTestItem.TST_CD)
-                        .and(deptTestItem.DEPT_CD.eq(deptCd))
-                )
+            condition = condition.and(deptTstItem.DEPT_CD.eq(deptCd))
         }
 
-        val query = selectFrom.where(condition).orderBy(tstItem.TST_CD.asc())
+        val query = dslContext
+            .select(
+                tstItem.TST_CD,
+                tstItem.TST_NM,
+                tstItem.TST_LARGE_CATE_CD,
+                tstItem.USE_YN,
+                tstItem.TST_SUB_YN,
+                DSL.min(deptTstItem.DEPT_CD).`as`("dept_cd")
+            )
+            .from(tstItem)
+            .leftJoin(deptTstItem).on(deptTstItem.TST_CD.eq(tstItem.TST_CD))
+            .where(condition)
+            .groupBy(
+                tstItem.TST_CD,
+                tstItem.TST_NM,
+                tstItem.TST_LARGE_CATE_CD,
+                tstItem.USE_YN,
+                tstItem.TST_SUB_YN
+            )
+            .orderBy(tstItem.TST_CD.asc())
 
-        // SQL과 바인딩 값 준비
         var executeSpec = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { index, value ->
             executeSpec = if (value != null) {
@@ -141,9 +150,8 @@ class TestItemRepositoryImpl(
         }
 
         return executeSpec
-            .fetch()
+            .map { row, _ -> row.toTestItemListRow() }
             .all()
-            .map { row -> toTestItem(row) }
             .asFlow()
     }
 

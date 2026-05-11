@@ -135,6 +135,25 @@ data class TestItemSimpleResponse(
     val tstNm: String
 )
 
+data class TestItemListRow(
+    val tstCd: String,
+    val tstNm: String,
+    val tstLargeCateCd: String,
+    val useYn: Boolean,
+    val tstSubYn: Boolean,
+    val deptCd: String?
+)
+
+data class TestItemListResponse(
+    val tstCd: String,
+    val tstNm: String,
+    val tstLargeCateCd: String,
+    val tstLargeCateNm: String,
+    val useYn: Boolean,
+    val tstSubYn: Boolean,
+    val deptNm: String? = null
+)
+
 // --- Standard Charge ---
 
 data class StandardChargeRegisterRequest(
