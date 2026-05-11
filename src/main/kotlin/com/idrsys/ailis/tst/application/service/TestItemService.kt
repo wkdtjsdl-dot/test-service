@@ -23,6 +23,9 @@ import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
 import com.idrsys.ailis.tst.domain.model.TestItemSub
 import com.idrsys.ailis.tst.domain.model.TestItemSubHst
 import kotlinx.coroutines.flow.toList
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import java.time.LocalDateTime
 import java.util.Objects
 import kotlin.reflect.full.memberProperties
@@ -266,8 +269,11 @@ class TestItemService(
     }
 
     // --- TestGene ---
-    override fun getGenes(request: TestGeneRequest): Flow<TestGeneResponse> {
-        return repository.getGenes(request).map { mapper.toResponse(it) }
+    @Transactional(readOnly = true)
+    override suspend fun getGenesPaged(request: TestGeneRequest, pageable: Pageable): Page<TestGeneResponse> {
+        val total = repository.countGenes(request.keyword, request.tstCd)
+        val content = repository.findGenesPaged(request.keyword, request.tstCd, pageable)
+        return PageImpl(content, pageable, total)
     }
 
     // --- TestItemGene ---
@@ -285,8 +291,75 @@ class TestItemService(
     }
 
     @Transactional(readOnly = true)
-    override fun getGenesByTest(tstCd: String): Flow<TestItemGeneResponse> {
-        return repository.findGenesByTestCd(tstCd)
+    override suspend fun validateExcelGenes(request: ExcelGeneRegisterBulkRequest): ExcelGeneValidationResponse {
+        val errors = mutableListOf<ExcelGeneValidationError>()
+
+        val nonBlankWithIndex = request.commands.mapIndexedNotNull { index, cmd ->
+            if (cmd.geneCd.isBlank()) {
+                errors.add(ExcelGeneValidationError(index + 2, cmd.geneCd, "유전자코드는 필수 입력값입니다."))
+                null
+            } else Pair(index, cmd.geneCd)
+        }
+
+        val duplicateCheck = mutableMapOf<String, Int>()
+        nonBlankWithIndex.forEach { (index, geneCd) ->
+            val firstIndex = duplicateCheck[geneCd]
+            if (firstIndex == null) {
+                duplicateCheck[geneCd] = index
+            } else {
+                errors.add(ExcelGeneValidationError(index + 2, geneCd, "파일 내 중복된 유전자코드입니다."))
+            }
+        }
+
+        val uniqueGeneCds = duplicateCheck.keys.toList()
+        val validGeneCds = if (uniqueGeneCds.isNotEmpty()) repository.findValidGeneCds(uniqueGeneCds).toSet() else emptySet()
+
+        val errorRowNumbers = errors.map { it.rowNumber }.toSet()
+        nonBlankWithIndex.forEach { (index, geneCd) ->
+            if ((index + 2) !in errorRowNumbers && geneCd !in validGeneCds) {
+                errors.add(ExcelGeneValidationError(index + 2, geneCd, "존재하지 않는 유전자코드입니다."))
+            }
+        }
+
+        val errorRowNumbersUpdated = errors.map { it.rowNumber }.toSet()
+        val toCheckRegistered = nonBlankWithIndex
+            .filter { (index, geneCd) -> (index + 2) !in errorRowNumbersUpdated && geneCd in validGeneCds }
+            .map { it.second }.distinct()
+        val alreadyRegistered = if (toCheckRegistered.isNotEmpty()) {
+            repository.findExistingItemGeneCds(request.tstCd, toCheckRegistered).toSet()
+        } else emptySet()
+
+        nonBlankWithIndex.forEach { (index, geneCd) ->
+            if ((index + 2) !in errorRowNumbersUpdated && geneCd in alreadyRegistered) {
+                errors.add(ExcelGeneValidationError(index + 2, geneCd, "이미 등록된 유전자코드입니다."))
+            }
+        }
+
+        val sortedErrors = errors.sortedBy { it.rowNumber }
+        val invalidCount = sortedErrors.map { it.rowNumber }.distinct().size
+        return ExcelGeneValidationResponse(
+            isValid = errors.isEmpty(),
+            totalCount = request.commands.size,
+            validCount = request.commands.size - invalidCount,
+            invalidCount = invalidCount,
+            errors = sortedErrors
+        )
+    }
+
+    override suspend fun excelRegisterGenes(request: ExcelGeneRegisterBulkRequest, adminId: String): Int {
+        var count = 0
+        request.commands.forEach { cmd ->
+            registerGene(TestItemGeneRegisterRequest(tstCd = request.tstCd, geneCd = cmd.geneCd), adminId)
+            count++
+        }
+        return count
+    }
+
+    @Transactional(readOnly = true)
+    override suspend fun getGenesByTestPaged(request: TestItemGeneListRequest, pageable: Pageable): Page<TestItemGeneResponse> {
+        val total = repository.countGenesByTest(request.tstCd, request.keyword)
+        val content = repository.findGenesByTestPaged(request.tstCd, request.keyword, pageable)
+        return PageImpl(content, pageable, total)
     }
 
     // --- TestItemEssentialDoc ---

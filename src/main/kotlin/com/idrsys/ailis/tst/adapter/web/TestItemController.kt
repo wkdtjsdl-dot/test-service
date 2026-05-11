@@ -10,6 +10,10 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactor.mono
 import org.springdoc.core.annotations.ParameterObject
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
@@ -200,7 +204,12 @@ class TestItemController(
     // --- Gene ---
     @Operation(summary = "검사 검사종목 미지정 유전자 목록")
     @GetMapping("/api/bbs/gene")
-    fun getGene(@ParameterObject request: TestGeneRequest): Flow<TestGeneResponse> = useCase.getGenes(request)
+    fun getGene(
+        @ParameterObject request: TestGeneRequest,
+        @ParameterObject @PageableDefault(size = 20) pageable: Pageable
+    ): Mono<Page<TestGeneResponse>> = mono {
+        useCase.getGenesPaged(request, pageable)
+    }
 
     // --- TestItemGene ---
 
@@ -225,8 +234,29 @@ class TestItemController(
 
     @Operation(summary = "검사 검사종목 유전자 목록")
     @GetMapping("/api/bts/item-gene")
-    fun getGenesByTest(@RequestParam tstCd: String): Flow<TestItemGeneResponse> =
-        useCase.getGenesByTest(tstCd)
+    fun getGenesByTest(
+        @ParameterObject request: TestItemGeneListRequest,
+        @ParameterObject @PageableDefault(size = 20) pageable: Pageable
+    ): Mono<Page<TestItemGeneResponse>> = mono {
+        useCase.getGenesByTestPaged(request, pageable)
+    }
+
+    @Operation(summary = "검사 검사종목 유전자 엑셀 일괄등록 사전 검증")
+    @PostMapping("/api/bts/item-gene/excel-valid")
+    fun validateExcelGenes(
+        @Valid @RequestBody request: ExcelGeneRegisterBulkRequest
+    ): Mono<ExcelGeneValidationResponse> = mono {
+        useCase.validateExcelGenes(request)
+    }
+
+    @Operation(summary = "검사 검사종목 유전자 엑셀 일괄등록")
+    @PostMapping("/api/bts/item-gene/excel-save")
+    fun excelRegisterGenes(
+        @Valid @RequestBody request: ExcelGeneRegisterBulkRequest,
+        @JwtAuthorization @Parameter(hidden = true) auth: AuthenticationAdmin
+    ): Mono<Int> = mono {
+        useCase.excelRegisterGenes(request, auth.adminId)
+    }
 
     // --- TestItemEssentialDoc ---
 

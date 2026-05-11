@@ -11,12 +11,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.notExists
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
@@ -987,97 +992,186 @@ class TestItemRepositoryImpl(
     }
 
     // --- TestGene ---
-    override fun getGenes(request: TestGeneRequest): Flow<TestGene> {
+    override suspend fun countGenes(keyword: String?, tstCd: String): Long {
         val table = BbsGene.BBS_GENE
         val itemTable = BtsItemGene.BTS_ITEM_GENE
-        if (request.geneCd.isBlank() || request.geneCd.length < 3) {
-            return emptyFlow()
-        }
 
-        val keyword = request.geneCd.uppercase()
-
-        val query = dslContext
-            .select(table.fields().toList())
+        val countQuery = dslContext
+            .select(DSL.count())
             .from(table)
-            .leftJoin(itemTable).on(table.GENE_CD.eq(itemTable.GENE_CD))
-            .and(itemTable.TST_CD.eq(request.tstCd))
-            .where(table.GENE_CD.like("$keyword%"))
-            .and(itemTable.GENE_CD.isNull)
+            .leftJoin(itemTable).on(table.GENE_CD.eq(itemTable.GENE_CD).and(itemTable.TST_CD.eq(tstCd)))
+            .where(itemTable.GENE_CD.isNull)
+            .let { q ->
+                if (!keyword.isNullOrBlank()) q.and(
+                    table.GENE_CD.likeIgnoreCase("%$keyword%").or(table.GENE_NM.likeIgnoreCase("%$keyword%"))
+                ) else q
+            }
 
-        val sql = query.getSQL(ParamType.INLINED)
-
-        return databaseClient.sql(sql)
-            .fetch()
-            .all()
-            .map { row -> toTestGene(row) }
-            .asFlow()
+        var countSpec = databaseClient.sql(countQuery.sql)
+        countQuery.bindValues.forEachIndexed { i, v ->
+            countSpec = if (v != null) countSpec.bind(i, v) else countSpec.bindNull(i, String::class.java)
+        }
+        return countSpec.fetch().one().map { (it.values.first() as Number).toLong() }.awaitSingle()
     }
 
+    override suspend fun findGenesPaged(keyword: String?, tstCd: String, pageable: Pageable): List<TestGeneResponse> {
+        val table = BbsGene.BBS_GENE
+        val itemTable = BtsItemGene.BTS_ITEM_GENE
 
+        val orderFields = if (!keyword.isNullOrBlank()) {
+            listOf(
+                DSL.case_()
+                    .`when`(table.GENE_CD.equalIgnoreCase(keyword), DSL.inline(1))
+                    .`when`(table.GENE_CD.likeIgnoreCase("$keyword%"), DSL.inline(2))
+                    .`when`(table.GENE_CD.likeIgnoreCase("%$keyword%"), DSL.inline(3))
+                    .otherwise(DSL.inline(4)).asc(),
+                table.SORT_ORDER.asc().nullsLast(),
+                table.GENE_CD.asc()
+            )
+        } else {
+            listOf(table.SORT_ORDER.asc().nullsLast(), table.GENE_CD.asc())
+        }
 
-    private fun toTestGene(row: Map<String, Any>): TestGene {
-        return TestGene(
+        val query = dslContext
+            .select(
+                table.GENE_CD, table.GENE_NM, table.SORT_ORDER,
+                table.CREATOR, table.CREATE_DTIME, table.UPDATER, table.UPDATE_DTIME
+            )
+            .from(table)
+            .leftJoin(itemTable).on(table.GENE_CD.eq(itemTable.GENE_CD).and(itemTable.TST_CD.eq(tstCd)))
+            .where(itemTable.GENE_CD.isNull)
+            .let { q ->
+                if (!keyword.isNullOrBlank()) q.and(
+                    table.GENE_CD.likeIgnoreCase("%$keyword%").or(table.GENE_NM.likeIgnoreCase("%$keyword%"))
+                ) else q
+            }
+            .orderBy(orderFields)
+            .limit(pageable.pageSize)
+            .offset(pageable.offset)
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v ->
+            executeSpec = if (v != null) executeSpec.bind(i, v) else executeSpec.bindNull(i, String::class.java)
+        }
+        return executeSpec.fetch().all()
+            .map { row -> toTestGeneResponse(row) }
+            .collectList()
+            .awaitSingle()
+    }
+
+    private fun toTestGeneResponse(row: Map<String, Any>): TestGeneResponse {
+        return TestGeneResponse(
             geneCd = row["gene_cd"] as String,
-            geneNm = row["gene_nm"] as String?,
-            sortOrder = row["sort_order"] as Int?,
+            geneNm = row["gene_nm"] as? String ?: "",
+            sortOrder = (row["sort_order"] as? Number)?.toInt() ?: 0,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
-            updater = row["updater"] as String,
-            updateDtime = row["update_dtime"] as LocalDateTime
-
+            updater = row["updater"] as? String,
+            updateDtime = row["update_dtime"] as? LocalDateTime,
         )
+    }
+
+    override suspend fun findValidGeneCds(geneCds: List<String>): List<String> {
+        if (geneCds.isEmpty()) return emptyList()
+        val table = BbsGene.BBS_GENE
+        val query = dslContext
+            .select(table.GENE_CD)
+            .from(table)
+            .where(table.GENE_CD.`in`(geneCds))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v ->
+            executeSpec = if (v != null) executeSpec.bind(i, v) else executeSpec.bindNull(i, String::class.java)
+        }
+        return executeSpec.fetch().all()
+            .map { row -> row["gene_cd"] as String }
+            .collectList()
+            .awaitSingleOrNull() ?: emptyList()
     }
 
     // --- TestItemGene ---
     override suspend fun saveGene(entity: TestItemGene): TestItemGene = geneDataRepo.save(entity)
     override suspend fun deleteGeneById(itemGeneId: String) = geneDataRepo.deleteById(itemGeneId)
 
-    override fun findGenesByTestCd(tstCd: String): Flow<TestItemGeneResponse> {
+    override suspend fun countGenesByTest(tstCd: String, keyword: String?): Long {
         val ig = BtsItemGene.BTS_ITEM_GENE
         val g = BbsGene.BBS_GENE
 
-        // JOIN QUERY 생성
+        val countQuery = dslContext
+            .select(DSL.count())
+            .from(ig)
+            .join(g).on(ig.GENE_CD.eq(g.GENE_CD))
+            .where(ig.TST_CD.eq(tstCd))
+            .let { q ->
+                if (!keyword.isNullOrBlank()) q.and(
+                    g.GENE_CD.likeIgnoreCase("%$keyword%").or(g.GENE_NM.likeIgnoreCase("%$keyword%"))
+                ) else q
+            }
+
+        var countSpec = databaseClient.sql(countQuery.sql)
+        countQuery.bindValues.forEachIndexed { i, v ->
+            countSpec = if (v != null) countSpec.bind(i, v) else countSpec.bindNull(i, String::class.java)
+        }
+        return countSpec.fetch().one().map { (it.values.first() as Number).toLong() }.awaitSingle()
+    }
+
+    override suspend fun findGenesByTestPaged(tstCd: String, keyword: String?, pageable: Pageable): List<TestItemGeneResponse> {
+        val ig = BtsItemGene.BTS_ITEM_GENE
+        val g = BbsGene.BBS_GENE
+
         val query = dslContext
             .select(
-                ig.ITEM_GENE_ID,
-                ig.TST_CD,
-                ig.GENE_CD,
-                ig.CREATOR,
-                ig.CREATE_DTIME,
-                // bbs_gene 컬럼 추가
-                g.GENE_NM,
-                g.SORT_ORDER
+                ig.ITEM_GENE_ID, ig.TST_CD, ig.GENE_CD, ig.CREATOR, ig.CREATE_DTIME,
+                g.GENE_NM, g.SORT_ORDER
             )
             .from(ig)
             .join(g).on(ig.GENE_CD.eq(g.GENE_CD))
             .where(ig.TST_CD.eq(tstCd))
+            .let { q ->
+                if (!keyword.isNullOrBlank()) q.and(
+                    g.GENE_CD.likeIgnoreCase("%$keyword%").or(g.GENE_NM.likeIgnoreCase("%$keyword%"))
+                ) else q
+            }
+            .orderBy(g.SORT_ORDER.asc().nullsLast(), ig.GENE_CD.asc())
+            .limit(pageable.pageSize)
+            .offset(pageable.offset)
 
-        // SQL 생성
         var executeSpec = databaseClient.sql(query.sql)
-
-        // 바인딩 처리
-        query.bindValues.forEachIndexed { index, value ->
-            executeSpec =
-                if (value != null) executeSpec.bind(index, value)
-                else executeSpec.bindNull(index, String::class.java)
+        query.bindValues.forEachIndexed { i, v ->
+            executeSpec = if (v != null) executeSpec.bind(i, v) else executeSpec.bindNull(i, String::class.java)
         }
-
-        // flow 변환
-        return executeSpec
-            .fetch()
-            .all()
-            .map { row -> toTestItemGene(row) }
-            .asFlow()
+        return executeSpec.fetch().all()
+            .map { row -> toTestItemGeneResponse(row) }
+            .collectList()
+            .awaitSingle()
     }
 
-    private fun toTestItemGene(row: Map<String, Any>): TestItemGeneResponse {
+    override suspend fun findExistingItemGeneCds(tstCd: String, geneCds: List<String>): List<String> {
+        if (geneCds.isEmpty()) return emptyList()
+        val ig = BtsItemGene.BTS_ITEM_GENE
+        val query = dslContext
+            .select(ig.GENE_CD)
+            .from(ig)
+            .where(ig.TST_CD.eq(tstCd).and(ig.GENE_CD.`in`(geneCds)))
+
+        var executeSpec = databaseClient.sql(query.sql)
+        query.bindValues.forEachIndexed { i, v ->
+            executeSpec = if (v != null) executeSpec.bind(i, v) else executeSpec.bindNull(i, String::class.java)
+        }
+        return executeSpec.fetch().all()
+            .map { row -> row["gene_cd"] as String }
+            .collectList()
+            .awaitSingleOrNull() ?: emptyList()
+    }
+
+    private fun toTestItemGeneResponse(row: Map<String, Any>): TestItemGeneResponse {
         return TestItemGeneResponse(
             itemGeneId = row["item_gene_id"] as String,
             tstCd = row["tst_cd"] as String,
             geneCd = row["gene_cd"] as String,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime,
-            geneNm = row["gene_nm"] as String?,
+            geneNm = row["gene_nm"] as? String,
         )
     }
 
