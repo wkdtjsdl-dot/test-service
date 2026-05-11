@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.application.service
 
+import com.idrsys.ailis.tst.application.dto.WorkListAutoCompleteResponse
 import com.idrsys.ailis.tst.application.dto.WorkListItemDetailResponse
 import com.idrsys.ailis.tst.application.dto.WorkListItemRegisterRequest
 import com.idrsys.ailis.tst.application.dto.WorkListItemResponse
@@ -7,6 +8,7 @@ import com.idrsys.ailis.tst.application.dto.WorkListItemUpdateRequest
 import com.idrsys.ailis.tst.application.dto.WorkListRegisterRequest
 import com.idrsys.ailis.tst.application.dto.WorkListResponse
 import com.idrsys.ailis.tst.application.dto.WorkListUpdateRequest
+import com.idrsys.ailis.tst.application.dto.request.WorkListAutoCompleteSearchParam
 import com.idrsys.ailis.tst.application.dto.request.WorkListSearchParam
 import com.idrsys.ailis.tst.application.mapper.WorkListCommandMapper
 import com.idrsys.ailis.tst.application.mapper.WorkListMapper
@@ -36,6 +38,21 @@ class WorkListService(
     @Transactional(readOnly = true)
     override fun getWorkListItems(wrklistCd: String): Flow<WorkListItemDetailResponse> {
         return repository.findItemsByWrklistCd(wrklistCd)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getWorkListItemsByCds(wrklistCds: List<String>): Flow<WorkListItemDetailResponse> {
+        return repository.findItemsByWrklistCds(wrklistCds)
+    }
+
+    @Transactional(readOnly = true)
+    override fun autoCompleteWorkLists(searchParam: WorkListAutoCompleteSearchParam): Flow<WorkListAutoCompleteResponse> {
+        return repository.autoCompleteWorkLists(searchParam)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getSimpleList(useYn: Boolean?): Flow<WorkListAutoCompleteResponse> {
+        return repository.getSimpleList(useYn)
     }
 
     override suspend fun registerWorkList(request: WorkListRegisterRequest, adminId: String): WorkListResponse {

@@ -1,6 +1,8 @@
 package com.idrsys.ailis.tst.adapter.repository
 
+import com.idrsys.ailis.tst.application.dto.WorkListAutoCompleteResponse
 import com.idrsys.ailis.tst.application.dto.WorkListItemDetailResponse
+import com.idrsys.ailis.tst.application.dto.request.WorkListAutoCompleteSearchParam
 import com.idrsys.ailis.tst.application.dto.request.WorkListSearchParam
 import com.idrsys.ailis.tst.application.required.repository.WorkListRepository
 import com.idrsys.ailis.tst.domain.model.WorkList
@@ -106,7 +108,66 @@ class WorkListRepositoryImpl(
         workListItemDataRepository.deleteById(wrklistItmId)
     }
 
+    override fun autoCompleteWorkLists(searchParam: WorkListAutoCompleteSearchParam): Flow<WorkListAutoCompleteResponse> {
+        val table = BbsWrklist.BBS_WRKLIST
+        var condition: Condition = DSL.noCondition()
+
+        searchParam.wrklstCd?.takeIf { it.isNotBlank() }?.let {
+            condition = condition.and(table.WRKLIST_CD.eq(it))
+        }
+        searchParam.wrklstCdNm?.takeIf { it.isNotBlank() }?.let {
+            condition = condition.and(
+                table.WRKLIST_CD.containsIgnoreCase(it).or(table.WRKLIST_NM.containsIgnoreCase(it))
+            )
+        }
+
+        val query = dslContext
+            .select(table.WRKLIST_CD, table.WRKLIST_NM)
+            .from(table)
+            .where(condition)
+            .orderBy(table.WRKLIST_CD.asc())
+
+        return bind(query)
+            .fetch()
+            .all()
+            .map { row ->
+                WorkListAutoCompleteResponse(
+                    wrklistCd = row["wrklist_cd"] as String,
+                    wrklistNm = row["wrklist_nm"] as? String
+                )
+            }
+            .asFlow()
+    }
+
+    override fun getSimpleList(useYn: Boolean?): Flow<WorkListAutoCompleteResponse> {
+        val table = BbsWrklist.BBS_WRKLIST
+        var condition: Condition = DSL.noCondition()
+
+        useYn?.let { condition = condition.and(table.USE_YN.eq(it)) }
+
+        val query = dslContext
+            .select(table.WRKLIST_CD, table.WRKLIST_NM)
+            .from(table)
+            .where(condition)
+            .orderBy(table.WRKLIST_CD.asc())
+
+        return bind(query)
+            .fetch()
+            .all()
+            .map { row ->
+                WorkListAutoCompleteResponse(
+                    wrklistCd = row["wrklist_cd"] as String,
+                    wrklistNm = row["wrklist_nm"] as? String
+                )
+            }
+            .asFlow()
+    }
+
     override fun findItemsByWrklistCd(wrklistCd: String): Flow<WorkListItemDetailResponse> {
+        return findItemsByWrklistCds(listOf(wrklistCd))
+    }
+
+    override fun findItemsByWrklistCds(wrklistCds: List<String>): Flow<WorkListItemDetailResponse> {
         val table = BbsWrklistItm.BBS_WRKLIST_ITM
         val testTable = BtsItem.BTS_ITEM
         val specimenTable = BbsSpcm.BBS_SPCM
@@ -122,7 +183,7 @@ class WorkListRepositoryImpl(
             .on(table.TST_CD.eq(testTable.TST_CD))
             .leftJoin(specimenTable)
             .on(table.SPCM_CD.eq(specimenTable.SPCM_CD))
-            .where(table.WRKLIST_CD.eq(wrklistCd))
+            .where(table.WRKLIST_CD.`in`(wrklistCds))
             .orderBy(table.TST_CD.asc())
 
         return bind(query)

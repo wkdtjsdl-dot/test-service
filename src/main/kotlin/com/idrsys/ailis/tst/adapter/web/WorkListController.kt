@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.adapter.web
 
+import com.idrsys.ailis.tst.application.dto.WorkListAutoCompleteResponse
 import com.idrsys.ailis.tst.application.dto.WorkListItemDetailResponse
 import com.idrsys.ailis.tst.application.dto.WorkListItemRegisterRequest
 import com.idrsys.ailis.tst.application.dto.WorkListItemResponse
@@ -7,6 +8,7 @@ import com.idrsys.ailis.tst.application.dto.WorkListItemUpdateRequest
 import com.idrsys.ailis.tst.application.dto.WorkListRegisterRequest
 import com.idrsys.ailis.tst.application.dto.WorkListResponse
 import com.idrsys.ailis.tst.application.dto.WorkListUpdateRequest
+import com.idrsys.ailis.tst.application.dto.request.WorkListAutoCompleteSearchParam
 import com.idrsys.ailis.tst.application.dto.request.WorkListSearchParam
 import com.idrsys.ailis.tst.application.usecase.WorkListUseCase
 import com.idrsys.ailis.tst.shared.vo.AuthenticationAdmin
@@ -39,10 +41,30 @@ class WorkListController(
         return workListUseCase.getWorkLists(searchParam)
     }
 
+    @Operation(summary = "워크리스트 자동완성 조회")
+    @GetMapping("/autoComplete")
+    fun autoCompleteWorkLists(@ParameterObject searchParam: WorkListAutoCompleteSearchParam): Flow<WorkListAutoCompleteResponse> {
+        return workListUseCase.autoCompleteWorkLists(searchParam)
+    }
+
+    @Operation(summary = "워크리스트 심플 목록 조회")
+    @GetMapping("/simple")
+    fun getSimpleList(
+        @RequestParam(required = false) useYn: Boolean?
+    ): Flow<WorkListAutoCompleteResponse> {
+        return workListUseCase.getSimpleList(useYn)
+    }
+
     @Operation(summary = "워크 하위 검사항목 리스트 조회")
     @GetMapping("/{wrklistCd}/items")
     fun getWorkListItems(@PathVariable wrklistCd: String): Flow<WorkListItemDetailResponse> {
         return workListUseCase.getWorkListItems(wrklistCd)
+    }
+
+    @Operation(summary = "워크 하위 검사항목 다중 조회")
+    @GetMapping("/items")
+    fun getWorkListItemsByCds(@RequestParam wrklistCds: List<String>): Flow<WorkListItemDetailResponse> {
+        return workListUseCase.getWorkListItemsByCds(wrklistCds)
     }
 
     @Operation(summary = "워크 신규 생성")
