@@ -20,6 +20,7 @@ data class TestResultSearchParam(
   val deliveryYn: String? = null,
   val patNm: String? = null,
   val hospChartNo: String? = null,
+  val wrklstCds: List<String>? = null,
   val page: Int = 0,
   val size: Int = 40,
 )

@@ -135,6 +135,25 @@ data class TestItemSimpleResponse(
     val tstNm: String
 )
 
+data class TestItemListRow(
+    val tstCd: String,
+    val tstNm: String,
+    val tstLargeCateCd: String,
+    val useYn: Boolean,
+    val tstSubYn: Boolean,
+    val deptCd: String?
+)
+
+data class TestItemListResponse(
+    val tstCd: String,
+    val tstNm: String,
+    val tstLargeCateCd: String,
+    val tstLargeCateNm: String,
+    val useYn: Boolean,
+    val tstSubYn: Boolean,
+    val deptNm: String? = null
+)
+
 // --- Standard Charge ---
 
 data class StandardChargeRegisterRequest(
@@ -345,11 +364,44 @@ data class TestItemRefDetailResponse(
     val refMaxVal: Int?,
 )
 
+// --- Excel Gene Bulk Register ---
+
+data class ExcelGeneRegisterCommand(
+    @field:jakarta.validation.constraints.NotBlank
+    val geneCd: String
+)
+
+data class ExcelGeneValidationError(
+    val rowNumber: Int,
+    val geneCd: String,
+    val errorMessage: String
+)
+
+data class ExcelGeneValidationResponse(
+    val isValid: Boolean,
+    val totalCount: Int,
+    val validCount: Int,
+    val invalidCount: Int,
+    val errors: List<ExcelGeneValidationError>
+)
+
+data class ExcelGeneRegisterBulkRequest(
+    @field:jakarta.validation.constraints.NotBlank
+    val tstCd: String,
+    @field:jakarta.validation.constraints.NotEmpty
+    val commands: List<ExcelGeneRegisterCommand>
+)
+
 // --- Gene ---
 
-data class TestGeneRequest (
-    val geneCd: String,
+data class TestGeneRequest(
+    val keyword: String?,
     val tstCd: String,
+)
+
+data class TestItemGeneListRequest(
+    val tstCd: String,
+    val keyword: String?,
 )
 data class TestGeneResponse (
    val geneCd: String,

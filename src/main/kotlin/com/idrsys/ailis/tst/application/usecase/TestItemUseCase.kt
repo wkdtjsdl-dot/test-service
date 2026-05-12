@@ -2,13 +2,15 @@ package com.idrsys.ailis.tst.application.usecase
 
 import com.idrsys.ailis.tst.application.dto.*
 import kotlinx.coroutines.flow.Flow
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 interface TestItemUseCase {
     // --- TestItem ---
     suspend fun registerItem(request: TestItemRegisterRequest, adminId: String): TestItemResponse
     suspend fun getItem(tstCd: String): TestItemResponse
     suspend fun updateItem(tstCd: String, request: TestItemUpdateRequest, adminId: String): TestItemResponse
-    fun getItems(searchParam: TestItemSearchParam): Flow<TestItemResponse>
+    fun getItems(searchParam: TestItemSearchParam): Flow<TestItemListResponse>
     fun getItemsSimple(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse>
     fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse>
     suspend fun findSimpleItemByTstCd(tstCds: List<String>): Flow<TestItemSimpleResponse>
@@ -40,11 +42,13 @@ interface TestItemUseCase {
     suspend fun getRefItemsDetailByTstCds(tstCds: List<String>): Flow<TestItemRefDetailItemsResponse>
 
     // --- TestGene ---
-     fun getGenes(request: TestGeneRequest): Flow<TestGeneResponse>
+    suspend fun getGenesPaged(request: TestGeneRequest, pageable: Pageable): Page<TestGeneResponse>
     // --- TestItemGene ---
     suspend fun registerGene(request: TestItemGeneRegisterRequest, adminId: String): TestItemGeneResponse
     suspend fun deleteGene(itemGeneId: String, adminId: String)
-    fun getGenesByTest(tstCd: String): Flow<TestItemGeneResponse>
+    suspend fun getGenesByTestPaged(request: TestItemGeneListRequest, pageable: Pageable): Page<TestItemGeneResponse>
+    suspend fun validateExcelGenes(request: ExcelGeneRegisterBulkRequest): ExcelGeneValidationResponse
+    suspend fun excelRegisterGenes(request: ExcelGeneRegisterBulkRequest, adminId: String): Int
 
     // --- TestItemEssentialDoc ---
     suspend fun registerEssentialDoc(request: TestItemEssentialDocRegisterRequest, adminId: String): TestItemEssentialDocResponse

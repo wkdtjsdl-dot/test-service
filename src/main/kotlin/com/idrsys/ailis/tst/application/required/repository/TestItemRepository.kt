@@ -14,6 +14,8 @@ import com.idrsys.ailis.tst.domain.model.TestItemSpecimenHst
 import com.idrsys.ailis.tst.domain.model.TestItemSub
 import com.idrsys.ailis.tst.domain.model.TestItemSubHst
 import kotlinx.coroutines.flow.Flow
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import java.time.LocalDate
 
 interface TestItemRepository {
@@ -21,7 +23,7 @@ interface TestItemRepository {
     suspend fun save(entity: TestItem): TestItem
     suspend fun findById(tstCd: String): TestItem?
     suspend fun findAll(searchParam: TestItemAllSearchParam): Flow<TestItem>
-    fun getItems(searchParam: TestItemSearchParam): Flow<TestItem>
+    fun getItemList(searchParam: TestItemSearchParam): Flow<TestItemListRow>
     fun findUnspecifiedDeptItems(searchParam: UnspecifiedDepartmentTestItemSearchParam): Flow<TestItem>
     fun findSimpleItems(searchParam: TestItemSearchParam): Flow<TestItemSimpleResponse>
     fun autoCompleteItems(searchParam: TestItemAutoCompleteParam): Flow<TestItemSimpleResponse>
@@ -54,11 +56,15 @@ interface TestItemRepository {
     suspend fun findRefItemsDetailByTstCds(tstCds: List<String>): Flow<TestItemRefDetailItemsResponse>
 
     // --- TestGene ---
-     fun getGenes(request: TestGeneRequest): Flow<TestGene>
+    suspend fun countGenes(keyword: String?, tstCd: String): Long
+    suspend fun findGenesPaged(keyword: String?, tstCd: String, pageable: Pageable): List<TestGeneResponse>
+    suspend fun findValidGeneCds(geneCds: List<String>): List<String>
     // --- TestItemGene ---
     suspend fun saveGene(entity: TestItemGene): TestItemGene
     suspend fun deleteGeneById(itemGeneId: String)
-    fun findGenesByTestCd(tstCd: String): Flow<TestItemGeneResponse>
+    suspend fun countGenesByTest(tstCd: String, keyword: String?): Long
+    suspend fun findGenesByTestPaged(tstCd: String, keyword: String?, pageable: Pageable): List<TestItemGeneResponse>
+    suspend fun findExistingItemGeneCds(tstCd: String, geneCds: List<String>): List<String>
 
     // --- TestItemEssentialDoc ---
     suspend fun saveEssentialDoc(entity: TestItemEssentialDoc): TestItemEssentialDoc
