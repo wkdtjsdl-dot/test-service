@@ -4,11 +4,13 @@ import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandComman
 import com.idrsys.ailis.sales.application.dto.request.billing.RecalculateBillingCommand
 import com.idrsys.ailis.sales.application.dto.request.billing.SapInvcPostingRow
 import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementBatchCommand
+import com.idrsys.ailis.sales.application.dto.request.billing.UpdateDemandMemoCommand
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.RecalculateBillingResponse
 import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResponse
 import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResult
+import com.idrsys.ailis.sales.application.dto.response.UpdateDemandMemoResponse
 import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.external.ReqServicePort
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandHstRepository
@@ -126,7 +128,7 @@ class BillingCommandService(
             endDt = command.demandEndDt,
             exrtId = command.exrtId,
             stndExrt = command.stndExrt,
-            closingMemo = command.demandMemo,
+            closingMemo = null,
             closingUser = adminId,
             tstReqDivCd = tstReqDivCd,
             crcyCd = command.crcyCd,
@@ -641,6 +643,60 @@ class BillingCommandService(
             crcyCd = demand.crcyCd,
             frgnCrcyAmt = demand.frgnCrcyAmt,
             demandType = demand.demandType,
+        )
+    }
+
+    override suspend fun updateDemandMemo(
+        demandId: String,
+        command: UpdateDemandMemoCommand,
+        adminId: String
+    ): UpdateDemandMemoResponse {
+        val demand = demandRepository.findById(demandId)
+            ?: throw UserDefinedException("DEMAND_NOT_FOUND", "청구 건을 찾을 수 없습니다.")
+
+        demand.updateMemo(command.demandMemo, adminId)
+        val savedDemand = demandRepository.save(demand)
+
+        demandHstRepository.save(DemandHst(
+            hstCd = "HST_M",
+            hstMemo = "청구 메모 수정",
+            worker = adminId,
+            workDtime = LocalDateTime.now(),
+            demandId = savedDemand.demandId!!,
+            demandDt = savedDemand.demandDt,
+            custCd = savedDemand.custCd,
+            demandStartDt = savedDemand.demandStartDt,
+            demandEndDt = savedDemand.demandEndDt,
+            stndPrice = savedDemand.stndPrice,
+            supval = savedDemand.supval,
+            demandCharge = savedDemand.demandCharge,
+            addtax = savedDemand.addtax,
+            dscntRate = savedDemand.dscntRate,
+            demandCreateDtime = savedDemand.demandCreateDtime,
+            demandCreatorEmpNo = savedDemand.demandCreatorEmpNo,
+            insurePrice = savedDemand.insurePrice,
+            invcOutputDtime = savedDemand.invcOutputDtime,
+            invcOutputEmpno = savedDemand.invcOutputEmpno,
+            slstmtNo = savedDemand.slstmtNo,
+            slstmtSendDt = savedDemand.slstmtSendDt,
+            slstmtSendEmpNo = savedDemand.slstmtSendEmpNo,
+            demandMemo = savedDemand.demandMemo,
+            sapCustCd = savedDemand.sapCustCd,
+            billPublYn = savedDemand.billPublYn,
+            invcRecpEmailAddr = savedDemand.invcRecpEmailAddr,
+            creator = savedDemand.creator,
+            createDtime = savedDemand.createDtime,
+            updater = savedDemand.updater,
+            updateDtime = savedDemand.updateDtime,
+            colledgerId = savedDemand.colledgerId,
+            crcyCd = savedDemand.crcyCd,
+            frgnCrcyAmt = savedDemand.frgnCrcyAmt,
+            demandType = savedDemand.demandType,
+        ))
+
+        return UpdateDemandMemoResponse(
+            demandId = savedDemand.demandId!!,
+            demandMemo = savedDemand.demandMemo
         )
     }
 }

@@ -3,10 +3,12 @@ package com.idrsys.ailis.sales.application.usecase.billing
 import com.idrsys.ailis.sales.application.dto.request.billing.CreateDemandCommand
 import com.idrsys.ailis.sales.application.dto.request.billing.RecalculateBillingCommand
 import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementBatchCommand
+import com.idrsys.ailis.sales.application.dto.request.billing.UpdateDemandMemoCommand
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.RecalculateBillingResponse
 import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResponse
+import com.idrsys.ailis.sales.application.dto.response.UpdateDemandMemoResponse
 
 /**
  * Billing Command Use Case
@@ -35,4 +37,9 @@ interface BillingCommandUseCase {
      * Does not touch tst-item closing state.
      */
     suspend fun recalculateBillingDemands(command: RecalculateBillingCommand, adminId: String): RecalculateBillingResponse
+
+    /**
+     * Update demand memo (청구 메모 수정)
+     */
+    suspend fun updateDemandMemo(demandId: String, command: UpdateDemandMemoCommand, adminId: String): UpdateDemandMemoResponse
 }

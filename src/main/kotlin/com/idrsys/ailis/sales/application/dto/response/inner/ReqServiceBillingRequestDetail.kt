@@ -8,6 +8,7 @@ import java.time.LocalDateTime
  * Billing request detail from req-service (Inner API)
  */
 data class ReqServiceBillingRequestDetail(
+    val tstItemId: String? = null,
     val tstReqDt: LocalDate,
     val tstReqNo: Long,
     val tstReqDivCd: String? = null,

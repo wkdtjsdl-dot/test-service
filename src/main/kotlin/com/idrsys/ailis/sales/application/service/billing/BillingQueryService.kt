@@ -209,6 +209,7 @@ class BillingQueryService(
         filteredDetails.forEach { detail ->
             val custBillingInfo = custNmMap[detail.custCd]
             emit(BillingRequestResponse(
+                tstItemId = detail.tstItemId,
                 tstReqDt = detail.tstReqDt,
                 tstReqNo = detail.tstReqNo.toString(),
                 tstReqDivCd = detail.tstReqDivCd ?: "",

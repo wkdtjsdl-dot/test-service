@@ -8,8 +8,10 @@ import com.idrsys.ailis.sales.application.dto.request.billing.toDemandSearchPara
 import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
 import com.idrsys.ailis.sales.application.dto.request.billing.RecalculateBillingCommand
 import com.idrsys.ailis.sales.application.dto.request.billing.SendSalesStatementBatchCommand
+import com.idrsys.ailis.sales.application.dto.request.billing.UpdateDemandMemoCommand
 import com.idrsys.ailis.sales.application.dto.response.RecalculateBillingResponse
 import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResponse
+import com.idrsys.ailis.sales.application.dto.response.UpdateDemandMemoResponse
 import java.time.LocalDate
 import com.idrsys.ailis.sales.application.dto.response.BillingRequestResponse
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
@@ -152,5 +154,15 @@ class BillingController(
         @ParameterObject searchParam: BillingRequestSearchParam
     ): Flow<BillingRequestResponse> {
         return billingQueryUseCase.getBillingRequests(searchParam)
+    }
+
+    @Operation(summary = "청구 메모 수정", description = "마감된 청구 건의 메모를 수정")
+    @PatchMapping("/demands/{demandId}/memo")
+    suspend fun updateDemandMemo(
+        @PathVariable demandId: String,
+        @RequestBody command: UpdateDemandMemoCommand,
+        @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
+    ): UpdateDemandMemoResponse {
+        return billingCommandUseCase.updateDemandMemo(demandId, command, auth.adminId)
     }
 }

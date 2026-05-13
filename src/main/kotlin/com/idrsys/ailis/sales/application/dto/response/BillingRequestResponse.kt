@@ -10,6 +10,7 @@ import java.time.LocalDateTime
  * Individual test item record for billing
  */
 data class BillingRequestResponse(
+    val tstItemId: String?,
     val tstReqDt: LocalDate,
     val tstReqNo: String,
     val tstReqDivCd: String,

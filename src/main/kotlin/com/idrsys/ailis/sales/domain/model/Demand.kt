@@ -248,6 +248,12 @@ class Demand(
         this.updateDtime = LocalDateTime.now()
     }
 
+    fun updateMemo(newMemo: String?, updater: String) {
+        this.demandMemo = newMemo
+        this.updater = updater
+        this.updateDtime = LocalDateTime.now()
+    }
+
     /**
      * Check if demand can be cancelled
      *
