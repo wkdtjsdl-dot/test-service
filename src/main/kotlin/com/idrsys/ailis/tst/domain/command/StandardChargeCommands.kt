@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.domain.command
 
+import java.math.BigDecimal
 import java.time.LocalDate
 
 data class StandardChargeCreateCommand(
@@ -8,17 +9,17 @@ data class StandardChargeCreateCommand(
     val applyEndDt: LocalDate,
     val insuCd: String?,
     val insuCateNo: String?,
-    val relatValuePoint: Double?,
-    val insurePrice: Double,
-    val qladCharge: Double,
-    val stndPrice: Double,
-    val lowestCharge: Double,
+    val relatValuePoint: BigDecimal?,
+    val insurePrice: BigDecimal,
+    val qladCharge: BigDecimal,
+    val stndPrice: BigDecimal,
+    val lowestCharge: BigDecimal,
     val qladCd: String?,
-    val relatValueQladPoint: Double,
+    val relatValueQladPoint: BigDecimal,
     val outputInsuCd: String?,
-    val totalQladCharge: Double,
-    val supval: Double,
-    val addtax: Double
+    val totalQladCharge: BigDecimal,
+    val supval: BigDecimal,
+    val addtax: BigDecimal
 )
 
 data class StandardChargeUpdateCommand(
@@ -27,17 +28,17 @@ data class StandardChargeUpdateCommand(
     val applyEndDt: LocalDate,
     val insuCd: String?,
     val insuCateNo: String?,
-    val relatValuePoint: Double?,
-    val insurePrice: Double,
-    val qladCharge: Double,
-    val stndPrice: Double,
-    val lowestCharge: Double,
+    val relatValuePoint: BigDecimal?,
+    val insurePrice: BigDecimal,
+    val qladCharge: BigDecimal,
+    val stndPrice: BigDecimal,
+    val lowestCharge: BigDecimal,
     val qladCd: String?,
-    val relatValueQladPoint: Double,
+    val relatValueQladPoint: BigDecimal,
     val outputInsuCd: String?,
-    val totalQladCharge: Double,
-    val supval: Double,
-    val addtax: Double
+    val totalQladCharge: BigDecimal,
+    val supval: BigDecimal,
+    val addtax: BigDecimal
 )
 
 data class TestItemSpecimenCreateCommand(

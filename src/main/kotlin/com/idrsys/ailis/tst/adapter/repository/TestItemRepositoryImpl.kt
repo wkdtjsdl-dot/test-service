@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.adapter.repository
 
+import java.math.BigDecimal
 import com.idrsys.ailis.tst.adapter.persistence.mapper.toTestItemListRow
 import com.idrsys.ailis.tst.application.dto.*
 import com.idrsys.ailis.tst.application.dto.request.UnspecifiedDepartmentTestItemSearchParam
@@ -710,17 +711,17 @@ class TestItemRepositoryImpl(
             applyEndDt = row["apply_end_dt"] as LocalDate,
             insuCd = row["insu_cd"] as String?,
             insuCateNo = row["insu_cate_no"] as String?,
-            relatValuePoint = (row["relat_value_point"] as Number?)?.toDouble(),
-            insurePrice = (row["insure_price"] as Number).toDouble(),
-            qladCharge = (row["qlad_charge"] as Number).toDouble(),
-            stndPrice = (row["stnd_price"] as Number).toDouble(),
-            lowestCharge = (row["lowest_charge"] as Number).toDouble(),
+            relatValuePoint = row["relat_value_point"] as BigDecimal?,
+            insurePrice = row["insure_price"] as BigDecimal,
+            qladCharge = row["qlad_charge"] as BigDecimal,
+            stndPrice = row["stnd_price"] as BigDecimal,
+            lowestCharge = row["lowest_charge"] as BigDecimal,
             qladCd = row["qlad_cd"] as String?,
-            relatValueQladPoint = (row["relat_value_qlad_point"] as Number).toDouble(),
+            relatValueQladPoint = row["relat_value_qlad_point"] as BigDecimal,
             outputInsuCd = row["output_insu_cd"] as String?,
-            totalQladCharge = (row["total_qlad_charge"] as Number).toDouble(),
-            supval = (row["supval"] as Number).toDouble(),
-            addtax = (row["addtax"] as Number).toDouble(),
+            totalQladCharge = row["total_qlad_charge"] as BigDecimal,
+            supval = row["supval"] as BigDecimal,
+            addtax = row["addtax"] as BigDecimal,
             creator = row["creator"] as String,
             createDtime = row["create_dtime"] as LocalDateTime
         )
