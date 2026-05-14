@@ -19,6 +19,7 @@ import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -309,17 +310,17 @@ class StandardCharge(
     applyEndDt: LocalDate,
     insuCd: String?,
     insuCateNo: String?,
-    relatValuePoint: Double?,
-    insurePrice: Double,
-    qladCharge: Double,
-    stndPrice: Double,
-    lowestCharge: Double,
+    relatValuePoint: BigDecimal?,
+    insurePrice: BigDecimal,
+    qladCharge: BigDecimal,
+    stndPrice: BigDecimal,
+    lowestCharge: BigDecimal,
     qladCd: String?,
-    relatValueQladPoint: Double,
+    relatValueQladPoint: BigDecimal,
     outputInsuCd: String?,
-    totalQladCharge: Double,
-    supval: Double,
-    addtax: Double,
+    totalQladCharge: BigDecimal,
+    supval: BigDecimal,
+    addtax: BigDecimal,
     creator: String,
     createDtime: LocalDateTime
 ) : Persistable<String> {
@@ -350,23 +351,23 @@ class StandardCharge(
         private set
 
     @Column("relat_value_point")
-    var relatValuePoint: Double? = relatValuePoint
+    var relatValuePoint: BigDecimal? = relatValuePoint
         private set
 
     @Column("insure_price")
-    var insurePrice: Double = insurePrice
+    var insurePrice: BigDecimal = insurePrice
         private set
 
     @Column("qlad_charge")
-    var qladCharge: Double = qladCharge
+    var qladCharge: BigDecimal = qladCharge
         private set
 
     @Column("stnd_price")
-    var stndPrice: Double = stndPrice
+    var stndPrice: BigDecimal = stndPrice
         private set
 
     @Column("lowest_charge")
-    var lowestCharge: Double = lowestCharge
+    var lowestCharge: BigDecimal = lowestCharge
         private set
 
     @Column("qlad_cd")
@@ -374,7 +375,7 @@ class StandardCharge(
         private set
 
     @Column("relat_value_qlad_point")
-    var relatValueQladPoint: Double = relatValueQladPoint
+    var relatValueQladPoint: BigDecimal = relatValueQladPoint
         private set
 
     @Column("output_insu_cd")
@@ -382,15 +383,15 @@ class StandardCharge(
         private set
 
     @Column("total_qlad_charge")
-    var totalQladCharge: Double = totalQladCharge
+    var totalQladCharge: BigDecimal = totalQladCharge
         private set
 
     @Column("supval")
-    var supval: Double = supval
+    var supval: BigDecimal = supval
         private set
 
     @Column("addtax")
-    var addtax: Double = addtax
+    var addtax: BigDecimal = addtax
         private set
 
     @Column("creator")

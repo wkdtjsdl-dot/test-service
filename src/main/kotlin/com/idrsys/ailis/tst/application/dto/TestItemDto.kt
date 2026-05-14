@@ -1,5 +1,6 @@
 package com.idrsys.ailis.tst.application.dto
 
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -162,17 +163,17 @@ data class StandardChargeRegisterRequest(
     val applyEndDt: LocalDate,
     val insuCd: String?,
     val insuCateNo: String?,
-    val relatValuePoint: Double?,
-    val insurePrice: Double,
-    val qladCharge: Double,
-    val stndPrice: Double,
-    val lowestCharge: Double,
+    val relatValuePoint: BigDecimal?,
+    val insurePrice: BigDecimal,
+    val qladCharge: BigDecimal,
+    val stndPrice: BigDecimal,
+    val lowestCharge: BigDecimal,
     val qladCd: String?,
-    val relatValueQladPoint: Double,
+    val relatValueQladPoint: BigDecimal,
     val outputInsuCd: String?,
-    val totalQladCharge: Double,
-    val supval: Double,
-    val addtax: Double
+    val totalQladCharge: BigDecimal,
+    val supval: BigDecimal,
+    val addtax: BigDecimal
 )
 
 data class StandardChargeUpdateRequest(
@@ -181,17 +182,17 @@ data class StandardChargeUpdateRequest(
     val applyEndDt: LocalDate,
     val insuCd: String?,
     val insuCateNo: String?,
-    val relatValuePoint: Double?,
-    val insurePrice: Double,
-    val qladCharge: Double,
-    val stndPrice: Double,
-    val lowestCharge: Double,
+    val relatValuePoint: BigDecimal?,
+    val insurePrice: BigDecimal,
+    val qladCharge: BigDecimal,
+    val stndPrice: BigDecimal,
+    val lowestCharge: BigDecimal,
     val qladCd: String?,
-    val relatValueQladPoint: Double,
+    val relatValueQladPoint: BigDecimal,
     val outputInsuCd: String?,
-    val totalQladCharge: Double,
-    val supval: Double,
-    val addtax: Double
+    val totalQladCharge: BigDecimal,
+    val supval: BigDecimal,
+    val addtax: BigDecimal
 )
 
 data class StandardChargeResponse(
@@ -201,17 +202,17 @@ data class StandardChargeResponse(
     val applyEndDt: LocalDate,
     val insuCd: String?,
     val insuCateNo: String?,
-    val relatValuePoint: Double?,
-    val insurePrice: Double,
-    val qladCharge: Double,
-    val stndPrice: Double,
-    val lowestCharge: Double,
+    val relatValuePoint: BigDecimal?,
+    val insurePrice: BigDecimal,
+    val qladCharge: BigDecimal,
+    val stndPrice: BigDecimal,
+    val lowestCharge: BigDecimal,
     val qladCd: String?,
-    val relatValueQladPoint: Double,
+    val relatValueQladPoint: BigDecimal,
     val outputInsuCd: String?,
-    val totalQladCharge: Double,
-    val supval: Double,
-    val addtax: Double,
+    val totalQladCharge: BigDecimal,
+    val supval: BigDecimal,
+    val addtax: BigDecimal,
     val creator: String,
     val createDtime: LocalDateTime
 )
