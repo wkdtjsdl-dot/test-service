@@ -182,9 +182,9 @@ class BillingQueryService(
      * Get billing request details (의뢰내역 조회)
      *
      * Business Rules:
-     * 1. Call req-service API to get individual test item records
-     * 2. Batch query custNm from scs_cust_mst by distinct custCd list
-     * 3. Map custCd to directAcctCd for req-service API call
+     * 1. Resolve constituent custCds (representative + sub-accounts) from custCd
+     * 2. Call req-service API to get individual test item records filtered by custCds
+     * 3. Batch query custNm from scs_cust_mst by distinct custCd list
      * 4. Return individual rows (non-aggregated) with custNm
      */
     override fun getBillingRequests(
@@ -194,11 +194,11 @@ class BillingQueryService(
         val noBillPublCustCds = custCustomRepository.findNoBillPublCustCds()
         if (searchParam.custCd in noBillPublCustCds) return@flow
 
-        // custCd를 directAcctCd로 맵핑하여 req-service 호출
+        val constituentCustCds = custCustomRepository.findConstituentCustCds(searchParam.custCd)
         val details = reqServicePort.getBillingRequests(
             startDt = searchParam.startDt,
             endDt = searchParam.endDt,
-            directAcctCd = searchParam.custCd,  // custCd → directAcctCd 맵핑
+            custCds = constituentCustCds,
             closingCd = searchParam.closingCd,
             tstReqDivCd = searchParam.tstReqDivCd,
             crcyCd = searchParam.crcyCd,

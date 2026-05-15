@@ -93,14 +93,14 @@ class ReqServiceClient(
      *
      * @param startDt Start date
      * @param endDt End date
-     * @param directAcctCd Direct account code (= custCd)
+     * @param custCds Customer codes (representative + constituent accounts)
      * @param closingCd Closing code (optional)
      * @return Flow of billing request details
      */
     override fun getBillingRequests(
         startDt: LocalDate,
         endDt: LocalDate,
-        directAcctCd: String,
+        custCds: List<String>,
         closingCd: String?,
         tstReqDivCd: String?,
         crcyCd: String?,
@@ -111,7 +111,7 @@ class ReqServiceClient(
                     val builder = uriBuilder.path("/api/inner/rbs/tst-items/billing-requests")
                     builder.queryParam("startDt", startDt.toString())
                     builder.queryParam("endDt", endDt.toString())
-                    builder.queryParam("directAcctCd", directAcctCd)
+                    custCds.forEach { builder.queryParam("custCds", it) }
                     closingCd?.let { builder.queryParam("closingCd", it) }
                     tstReqDivCd?.let { builder.queryParam("tstReqDivCd", it) }
                     crcyCd?.let { builder.queryParam("crcyCd", it) }
@@ -122,7 +122,7 @@ class ReqServiceClient(
 
             details.forEach { emit(it) }
         } catch (ex: Exception) {
-            logger.error("req-service billing-requests 호출 실패: directAcctCd=$directAcctCd, ${ex.message}", ex)
+            logger.error("req-service billing-requests 호출 실패: custCds=$custCds, ${ex.message}", ex)
         }
     }
 

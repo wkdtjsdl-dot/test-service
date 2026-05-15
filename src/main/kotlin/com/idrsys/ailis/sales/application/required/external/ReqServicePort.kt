@@ -46,14 +46,14 @@ interface ReqServicePort {
      *
      * @param startDt Start date
      * @param endDt End date
-     * @param directAcctCd Direct account code (= custCd)
+     * @param custCds Customer codes (representative + constituent accounts)
      * @param closingCd Closing code (optional)
      * @return Flow of billing request details
      */
     fun getBillingRequests(
         startDt: LocalDate,
         endDt: LocalDate,
-        directAcctCd: String,
+        custCds: List<String>,
         closingCd: String? = null,
         tstReqDivCd: String? = null,
         crcyCd: String? = null,
