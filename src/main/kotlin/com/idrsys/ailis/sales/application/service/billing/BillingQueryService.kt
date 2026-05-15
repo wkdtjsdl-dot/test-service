@@ -43,16 +43,23 @@ class BillingQueryService(
      */
     override fun getDemandList(searchParam: DemandSearchParam): Flow<DemandResponse> {
         return when (searchParam.clcdYn) {
-            CLCD.CLCD_Y -> {
-                // Get created demands from sales-service DB with custNm (JOIN query)
-                demandRepository.findDemandsWithCustInfo(searchParam)
-                    .map { DemandResponse.from(it) }
+            CLCD.CLCD_Y -> flow {
+                val crcyCdNmMap = getCrcyCdNmMap()
+                demandRepository.findDemandsWithCustInfo(searchParam).collect { row ->
+                    val response = DemandResponse.from(row)
+                    emit(response.copy(crcyCdNm = crcyCdNmMap[response.crcyCd]))
+                }
             }
             CLCD.CLCD_N -> {
                 // Get unbilled demand summary from req-service API with custNm from batch query
                 getUnbilledDemandSummaryFromReqService(searchParam)
             }
         }
+    }
+
+    private suspend fun getCrcyCdNmMap(): Map<String, String> {
+        val sysCodes = baseServicePort.getChildrenSystemCodes(listOf("CRCY")) ?: return emptyMap()
+        return sysCodes["CRCY"]?.associate { it.cd to it.cdNm } ?: emptyMap()
     }
 
     /**
@@ -73,6 +80,7 @@ class BillingQueryService(
     private fun getUnbilledDemandSummaryFromReqService(
         searchParam: DemandSearchParam
     ): Flow<DemandResponse> = flow {
+        val crcyCdNmMap = getCrcyCdNmMap()
         val branchCd = searchParam.branchCd?.takeIf { it.isNotBlank() }
 
         // Determine custCds based on frgnAcctYn, custCd, and branchCd
@@ -164,7 +172,8 @@ class BillingQueryService(
                 invcRecpEmailYn = custBillingInfo?.invcRecpEmailYn ?: false,
                 invcRecpEmailAddr = custBillingInfo?.invcRecpEmailAddr ?: "",
                 bzoffiCd = custBillingInfo?.bzoffiCd,
-                sapCustCd = custBillingInfo?.sapCustCd
+                sapCustCd = custBillingInfo?.sapCustCd,
+                crcyCdNm = crcyCdNmMap[summary.crcyCd],
             ))
         }
     }

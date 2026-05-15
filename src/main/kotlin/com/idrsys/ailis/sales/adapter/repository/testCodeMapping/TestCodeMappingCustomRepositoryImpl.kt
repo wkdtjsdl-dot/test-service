@@ -131,6 +131,12 @@ class TestCodeMappingCustomRepositoryImpl(
         if (custOrConditions.isNotEmpty()) {
             conds.add(custOrConditions.reduce { acc, condition -> acc.or(condition) })
         }
+
+        searchParam.custTstCd?.takeIf { it.isNotBlank() }?.let { conds.add(SCS_CUST_TST_CD_MPG.CUST_TST_CD.likeIgnoreCase("%$it%")) }
+        searchParam.custTstNm?.takeIf { it.isNotBlank() }?.let { conds.add(SCS_CUST_TST_CD_MPG.CUST_TST_NM.likeIgnoreCase("%$it%")) }
+        searchParam.tstCd?.takeIf { it.isNotBlank() }?.let { conds.add(SCS_CUST_TST_CD_MPG.TST_CD.likeIgnoreCase("%$it%")) }
+        searchParam.tstNm?.takeIf { it.isNotBlank() }?.let { conds.add(SCS_CUST_TST_CD_MPG.TST_NM.likeIgnoreCase("%$it%")) }
+
         return conds
     }
 

@@ -36,6 +36,7 @@ data class DemandResponse(
     val colledgerId: String? = null,
     val createdRequestCount: Int? = null,
     val crcyCd: String? = null,
+    val crcyCdNm: String? = null,
     val frgnCrcyAmt: BigDecimal? = null,
     val tstReqDivCd: String? = null,
     val demandType: String? = null,
