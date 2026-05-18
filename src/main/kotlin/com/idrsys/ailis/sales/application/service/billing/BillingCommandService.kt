@@ -525,7 +525,7 @@ class BillingCommandService(
 
                     val demand = Demand(
                         demandId = null,
-                        demandDt = LocalDate.now(),
+                        demandDt = endDt,
                         demandStartDt = startDt,
                         demandEndDt = endDt,
                         custCd = billingKey,
@@ -547,7 +547,7 @@ class BillingCommandService(
 
                     val ledger = CollectionLedger.createForDemand(
                         custCd = billingKey,
-                        demandDt = LocalDate.now(),
+                        demandDt = endDt,
                         demandCharge = target.demandCharge,
                         creator = adminId
                     )
