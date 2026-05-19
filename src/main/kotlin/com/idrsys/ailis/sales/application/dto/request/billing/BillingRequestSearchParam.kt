@@ -28,5 +28,8 @@ data class BillingRequestSearchParam(
     val tstReqDivCd: String? = null,
 
     @Parameter(description = "통화코드 (CRCY_KRW, CRCY_USD 등)", required = false)
-    val crcyCd: String? = null
+    val crcyCd: String? = null,
+
+    @Parameter(description = "해외거래처 여부 (true: 해외, false: 국내)", required = false)
+    val frgnAcctYn: Boolean = false
 )

@@ -2,6 +2,7 @@ package com.idrsys.ailis.sales.application.dto.response
 
 import com.idrsys.ailis.sales.application.dto.query.DemandWithCustInfo
 import com.idrsys.ailis.sales.domain.model.Demand
+import com.idrsys.web.excel.ExcelColumn
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -142,4 +143,82 @@ data class SendSalesStatementResponse(
     val slstmtNo: String,
     val slstmtSendDt: LocalDate,
     val sentToErp: Boolean
+)
+
+data class DemandDomesticExcelRow(
+    @ExcelColumn("거래처코드") val custCd: String?,
+    @ExcelColumn("거래처명") val custNm: String?,
+    @ExcelColumn("영업소코드") val bzoffiCd: String?,
+    @ExcelColumn("청구기준일") val demandDt: String?,
+    @ExcelColumn("청구시작일") val demandStartDt: String?,
+    @ExcelColumn("청구종료일") val demandEndDt: String?,
+    @ExcelColumn("기준수가") val stndPrice: BigDecimal?,
+    @ExcelColumn("공급가액") val supval: BigDecimal?,
+    @ExcelColumn("부가세액") val addtax: BigDecimal?,
+    @ExcelColumn("청구수가") val demandCharge: BigDecimal?,
+    @ExcelColumn("할인율") val dscntRate: BigDecimal?,
+    @ExcelColumn("전표번호") val slstmtNo: String?,
+    @ExcelColumn("전표전송일") val slstmtSendDt: String?,
+    @ExcelColumn("계산서발행") val billPublYn: String?,
+    @ExcelColumn("SAP고객코드") val sapCustCd: String?,
+    @ExcelColumn("청구메모") val demandMemo: String?,
+)
+
+internal fun DemandResponse.toDomesticExcelRow() = DemandDomesticExcelRow(
+    custCd = custCd,
+    custNm = custNm,
+    bzoffiCd = bzoffiCd,
+    demandDt = demandDt?.toString(),
+    demandStartDt = demandStartDt?.toString(),
+    demandEndDt = demandEndDt?.toString(),
+    stndPrice = stndPrice,
+    supval = supval,
+    addtax = addtax,
+    demandCharge = demandCharge,
+    dscntRate = dscntRate,
+    slstmtNo = slstmtNo,
+    slstmtSendDt = slstmtSendDt?.toString(),
+    billPublYn = if (billPublYn) "Y" else "N",
+    sapCustCd = sapCustCd,
+    demandMemo = demandMemo,
+)
+
+data class DemandForeignExcelRow(
+    @ExcelColumn("거래처코드") val custCd: String?,
+    @ExcelColumn("거래처명") val custNm: String?,
+    @ExcelColumn("영업소코드") val bzoffiCd: String?,
+    @ExcelColumn("청구기준일") val demandDt: String?,
+    @ExcelColumn("청구시작일") val demandStartDt: String?,
+    @ExcelColumn("청구종료일") val demandEndDt: String?,
+    @ExcelColumn("통화코드") val crcyCd: String?,
+    @ExcelColumn("공급가액") val supval: BigDecimal?,
+    @ExcelColumn("부가세액") val addtax: BigDecimal?,
+    @ExcelColumn("청구수가") val demandCharge: BigDecimal?,
+    @ExcelColumn("해외청구수가") val frgnCrcyAmt: BigDecimal?,
+    @ExcelColumn("할인율") val dscntRate: BigDecimal?,
+    @ExcelColumn("전표번호") val slstmtNo: String?,
+    @ExcelColumn("전표전송일") val slstmtSendDt: String?,
+    @ExcelColumn("계산서발행") val billPublYn: String?,
+    @ExcelColumn("SAP고객코드") val sapCustCd: String?,
+    @ExcelColumn("청구메모") val demandMemo: String?,
+)
+
+internal fun DemandResponse.toForeignExcelRow() = DemandForeignExcelRow(
+    custCd = custCd,
+    custNm = custNm,
+    bzoffiCd = bzoffiCd,
+    demandDt = demandDt?.toString(),
+    demandStartDt = demandStartDt?.toString(),
+    demandEndDt = demandEndDt?.toString(),
+    crcyCd = crcyCd,
+    supval = supval,
+    addtax = addtax,
+    demandCharge = demandCharge,
+    frgnCrcyAmt = frgnCrcyAmt,
+    dscntRate = dscntRate,
+    slstmtNo = slstmtNo,
+    slstmtSendDt = slstmtSendDt?.toString(),
+    billPublYn = if (billPublYn) "Y" else "N",
+    sapCustCd = sapCustCd,
+    demandMemo = demandMemo,
 )

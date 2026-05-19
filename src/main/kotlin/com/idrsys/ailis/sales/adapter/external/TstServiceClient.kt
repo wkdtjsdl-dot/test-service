@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.adapter.external
 
+import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceMediumCateResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceRefItemsResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceStndChargeResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
@@ -75,6 +76,17 @@ class TstServiceClient(
                 }
                 .retrieve()
                 .awaitBody<List<TstServiceTstItemsResponse>>()
+        } catch (ex: Exception) {
+            null
+        }
+    }
+
+    override suspend fun getMediumCategories(): List<TstServiceMediumCateResponse>? {
+        return try {
+            client.get()
+                .uri("/api/inner/bbs/tst-cate")
+                .retrieve()
+                .awaitBody<List<TstServiceMediumCateResponse>>()
         } catch (ex: Exception) {
             null
         }

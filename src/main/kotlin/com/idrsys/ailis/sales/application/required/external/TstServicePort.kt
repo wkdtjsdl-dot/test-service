@@ -1,5 +1,6 @@
 package com.idrsys.ailis.sales.application.required.external
 
+import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceMediumCateResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceRefItemsResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceStndChargeResponse
 import com.idrsys.ailis.sales.application.dto.response.inner.TstServiceTstItemsResponse
@@ -36,4 +37,6 @@ interface TstServicePort {
      * @return 검사항목 목록
      */
     suspend fun findAllTstItems(useYn: Boolean? = null, reqPossYn: Boolean? = null): List<TstServiceTstItemsResponse>?
+
+    suspend fun getMediumCategories(): List<TstServiceMediumCateResponse>?
 }

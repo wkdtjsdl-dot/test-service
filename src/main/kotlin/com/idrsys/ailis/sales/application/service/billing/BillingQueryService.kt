@@ -3,11 +3,18 @@ package com.idrsys.ailis.sales.application.service.billing
 import com.idrsys.ailis.sales.application.dto.request.billing.BillingRequestSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.DemandSearchParam
 import com.idrsys.ailis.sales.application.dto.request.billing.CLCD
+import com.idrsys.ailis.sales.application.dto.response.BillingRequestDomesticExcelRow
+import com.idrsys.ailis.sales.application.dto.response.BillingRequestForeignExcelRow
 import com.idrsys.ailis.sales.application.dto.response.BillingRequestResponse
+import com.idrsys.ailis.sales.application.dto.response.DemandDomesticExcelRow
+import com.idrsys.ailis.sales.application.dto.response.DemandForeignExcelRow
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
+import com.idrsys.ailis.sales.application.dto.response.toDomesticExcelRow
+import com.idrsys.ailis.sales.application.dto.response.toForeignExcelRow
 import com.idrsys.ailis.sales.application.dto.response.inner.ReqServiceUnbilledDemandSummary
 import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.external.ReqServicePort
+import com.idrsys.ailis.sales.application.required.external.TstServicePort
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.usecase.billing.BillingQueryUseCase
@@ -31,7 +38,8 @@ class BillingQueryService(
     private val demandRepository: DemandRepository,
     private val reqServicePort: ReqServicePort,
     private val custCustomRepository: CustCustomRepository,
-    private val baseServicePort: BaseServicePort
+    private val baseServicePort: BaseServicePort,
+    private val tstServicePort: TstServicePort,
 ) : BillingQueryUseCase {
 
     /**
@@ -60,6 +68,18 @@ class BillingQueryService(
     private suspend fun getCrcyCdNmMap(): Map<String, String> {
         val sysCodes = baseServicePort.getChildrenSystemCodes(listOf("CRCY")) ?: return emptyMap()
         return sysCodes["CRCY"]?.associate { it.cd to it.cdNm } ?: emptyMap()
+    }
+
+    private suspend fun getTstReqDivCdNmMap(): Map<String, String> {
+        val sysCodes = baseServicePort.getChildrenSystemCodes(listOf("RQDV")) ?: return emptyMap()
+        return sysCodes["RQDV"]?.associate { it.cd to it.cdNm } ?: emptyMap()
+    }
+
+    private suspend fun getMediumCateNmMap(): Map<String, String> {
+        return tstServicePort.getMediumCategories()
+            ?.filter { it.tstMediumCateCd != null }
+            ?.associate { it.tstMediumCateCd!! to (it.cateNm ?: it.tstMediumCateCd!!) }
+            ?: emptyMap()
     }
 
     /**
@@ -244,6 +264,28 @@ class BillingQueryService(
                 createDtime = detail.createDtime,
                 closingMemo = detail.closingMemo
             ))
+        }
+    }
+
+    override suspend fun getDomesticDemandsForExcel(searchParam: DemandSearchParam): List<DemandDomesticExcelRow> =
+        getDemandList(searchParam).toList().map { it.toDomesticExcelRow() }
+
+    override suspend fun getForeignDemandsForExcel(searchParam: DemandSearchParam): List<DemandForeignExcelRow> =
+        getDemandList(searchParam).toList().map { it.toForeignExcelRow() }
+
+    override suspend fun getBillingRequestsDomesticForExcel(searchParam: BillingRequestSearchParam): List<BillingRequestDomesticExcelRow> {
+        val tstReqDivCdNmMap = getTstReqDivCdNmMap()
+        val mediumCateNmMap = getMediumCateNmMap()
+        return getBillingRequests(searchParam).toList().map {
+            it.toDomesticExcelRow(tstReqDivCdNmMap[it.tstReqDivCd], mediumCateNmMap[it.tstMediumCateCd])
+        }
+    }
+
+    override suspend fun getBillingRequestsForeignForExcel(searchParam: BillingRequestSearchParam): List<BillingRequestForeignExcelRow> {
+        val crcyCdNmMap = getCrcyCdNmMap()
+        val mediumCateNmMap = getMediumCateNmMap()
+        return getBillingRequests(searchParam).toList().map {
+            it.toForeignExcelRow(crcyCdNmMap[it.crcyCd], mediumCateNmMap[it.tstMediumCateCd])
         }
     }
 }

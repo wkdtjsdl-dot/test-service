@@ -257,15 +257,18 @@ class ApprInfoCustomRepositoryImpl(
         // 팀원/파트장 직책 목록
         val teamMemberRoles = listOf("JP_TM", "JP_PM")
 
-        // 팀원/파트장: 본인 고객만 조회
+        // 팀원/파트장: 본인 고객 또는 본인이 작성한 건 조회
         if (userRole in teamMemberRoles) {
-            conditions += DSL.exists(
-                dslContext.selectOne()
-                    .from(SCS_GCGN_SALS_PIC_INFO)
-                    .where(
-                        SCS_GCGN_SALS_PIC_INFO.CUST_CD.eq(SCS_CUST_CHARGE.CUST_CD)
-                            .and(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(userId))
-                    )
+            conditions += DSL.or(
+                DSL.exists(
+                    dslContext.selectOne()
+                        .from(SCS_GCGN_SALS_PIC_INFO)
+                        .where(
+                            SCS_GCGN_SALS_PIC_INFO.CUST_CD.eq(SCS_CUST_CHARGE.CUST_CD)
+                                .and(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(userId))
+                        )
+                ),
+                SCS_CUST_CHARGE.CREATOR.eq(userId)
             )
         }
 

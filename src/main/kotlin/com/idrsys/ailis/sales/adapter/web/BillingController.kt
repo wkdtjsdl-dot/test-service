@@ -13,18 +13,26 @@ import com.idrsys.ailis.sales.application.dto.response.RecalculateBillingRespons
 import com.idrsys.ailis.sales.application.dto.response.SendSalesStatementBatchResponse
 import com.idrsys.ailis.sales.application.dto.response.UpdateDemandMemoResponse
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import com.idrsys.ailis.sales.application.dto.response.BillingRequestDomesticExcelRow
+import com.idrsys.ailis.sales.application.dto.response.BillingRequestForeignExcelRow
 import com.idrsys.ailis.sales.application.dto.response.BillingRequestResponse
 import com.idrsys.ailis.sales.application.dto.response.CancelDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.CreateDemandResponse
 import com.idrsys.ailis.sales.application.dto.response.DemandResponse
 import com.idrsys.ailis.sales.application.usecase.billing.BillingCommandUseCase
 import com.idrsys.ailis.sales.application.usecase.billing.BillingQueryUseCase
+import com.idrsys.reactive.excel.ReactiveExcelWriter
 import com.idrsys.web.annotation.JwtAuthorization
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import org.springdoc.core.annotations.ParameterObject
+import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -39,7 +47,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/billing")
 class BillingController(
     private val billingCommandUseCase: BillingCommandUseCase,
-    private val billingQueryUseCase: BillingQueryUseCase
+    private val billingQueryUseCase: BillingQueryUseCase,
+    private val excelWriter: ReactiveExcelWriter,
 ) {
 
     /**
@@ -164,5 +173,60 @@ class BillingController(
         @Parameter(hidden = true) @JwtAuthorization auth: AuthenticationAdmin
     ): UpdateDemandMemoResponse {
         return billingCommandUseCase.updateDemandMemo(demandId, command, auth.adminId)
+    }
+
+    @Operation(summary = "국내 청구리스트 Excel 다운로드")
+    @GetMapping("/demands/domestic/excel")
+    suspend fun downloadDomesticDemandExcel(
+        @ParameterObject @Parameter(hidden = true) searchParam: DemandBaseSearchParam
+    ): ResponseEntity<Flow<DataBuffer>> {
+        val rows = billingQueryUseCase.getDomesticDemandsForExcel(searchParam.toDemandSearchParam(frgnAcctYn = false))
+        val filename = URLEncoder.encode("청구리스트_${LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))}.xlsx", StandardCharsets.UTF_8.toString())
+        val excelFlow = excelWriter.generateExcel(rows, com.idrsys.ailis.sales.application.dto.response.DemandDomesticExcelRow::class, "청구리스트")
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''$filename")
+            .header(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .header("Access-Control-Expose-Headers", "Content-Disposition")
+            .body(excelFlow)
+    }
+
+    @Operation(summary = "해외 청구리스트 Excel 다운로드")
+    @GetMapping("/demands/foreign/excel")
+    suspend fun downloadForeignDemandExcel(
+        @ParameterObject @Parameter(hidden = true) searchParam: DemandBaseSearchParam
+    ): ResponseEntity<Flow<DataBuffer>> {
+        val rows = billingQueryUseCase.getForeignDemandsForExcel(searchParam.toDemandSearchParam(frgnAcctYn = true))
+        val filename = URLEncoder.encode("청구리스트_${LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))}.xlsx", StandardCharsets.UTF_8.toString())
+        val excelFlow = excelWriter.generateExcel(rows, com.idrsys.ailis.sales.application.dto.response.DemandForeignExcelRow::class, "청구리스트")
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''$filename")
+            .header(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .header("Access-Control-Expose-Headers", "Content-Disposition")
+            .body(excelFlow)
+    }
+
+    @Operation(summary = "의뢰내역 Excel 다운로드")
+    @GetMapping("/requests/excel")
+    suspend fun downloadBillingRequestExcel(
+        @ParameterObject @Parameter(hidden = true) searchParam: BillingRequestSearchParam
+    ): ResponseEntity<Flow<DataBuffer>> {
+        val filename = URLEncoder.encode("의뢰내역_${LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))}.xlsx", StandardCharsets.UTF_8.toString())
+        return if (searchParam.frgnAcctYn) {
+            val rows = billingQueryUseCase.getBillingRequestsForeignForExcel(searchParam)
+            val excelFlow = excelWriter.generateExcel(rows, BillingRequestForeignExcelRow::class, "의뢰내역")
+            ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''$filename")
+                .header(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .header("Access-Control-Expose-Headers", "Content-Disposition")
+                .body(excelFlow)
+        } else {
+            val rows = billingQueryUseCase.getBillingRequestsDomesticForExcel(searchParam)
+            val excelFlow = excelWriter.generateExcel(rows, BillingRequestDomesticExcelRow::class, "의뢰내역")
+            ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''$filename")
+                .header(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .header("Access-Control-Expose-Headers", "Content-Disposition")
+                .body(excelFlow)
+        }
     }
 }
