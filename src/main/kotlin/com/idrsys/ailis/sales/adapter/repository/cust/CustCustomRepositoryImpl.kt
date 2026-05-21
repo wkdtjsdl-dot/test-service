@@ -20,6 +20,7 @@ import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustTstCdMpg.SCS_CUST_TST
 import com.idrsys.ailis.sales.generated.jooq.tables.ScsIfCustInfo.SCS_IF_CUST_INFO
 import com.idrsys.ailis.sales.generated.jooq.tables.ScsIfFieldInfo.SCS_IF_FIELD_INFO
 import com.idrsys.ailis.sales.generated.jooq.tables.ScsIfConfInfo.SCS_IF_CONF_INFO
+import com.idrsys.ailis.sales.generated.jooq.tables.ScsCustMst
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -91,8 +92,8 @@ class CustCustomRepositoryImpl(
     }
 
     override fun findCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable): Flow<CustWithSalsPicInfo> {
-        val conditions = buildConditions(searchParam)
         val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+        val conditions = buildConditions(searchParam, rprsCustMst)
 
         // 계약종료일 들어올 경우 계약테이블 leftjoin
         val needsContractJoin = !searchParam.cntrStartDt.isNullOrBlank() ||
@@ -148,8 +149,8 @@ class CustCustomRepositoryImpl(
     }
 
     override fun findMyCustsWithSalsPicInfo(searchParam: CustSearchParam, pageable: Pageable, empUserId: String): Flow<CustWithSalsPicInfo> {
-        val conditions = buildConditions(searchParam).toMutableList()
         val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+        val conditions = buildConditions(searchParam, rprsCustMst).toMutableList()
 
         // 계약종료일 들어올 경우 계약테이블 leftjoin
         val needsContractJoin = !searchParam.cntrStartDt.isNullOrBlank() ||
@@ -240,7 +241,8 @@ class CustCustomRepositoryImpl(
     }
 
     override suspend fun countCusts(searchParam: CustSearchParam): Long {
-        val conditions = buildConditions(searchParam)
+        val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+        val conditions = buildConditions(searchParam, rprsCustMst)
 
         val needsContractJoin = !searchParam.cntrStartDt.isNullOrBlank() ||
                 !searchParam.cntrEndDt.isNullOrBlank() ||
@@ -259,7 +261,10 @@ class CustCustomRepositoryImpl(
         }.from(SCS_CUST_MST)
 
         if (needsContractJoin) {
-            queryPart = queryPart.join(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
+            queryPart = queryPart.join(SCS_CUST_CNTR).on(
+                SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID)
+                    .and(SCS_CUST_CNTR.USE_YN.isTrue)
+            )
         }
         if (needsSalsPicInfoJoin) {
             queryPart = queryPart.join(SCS_GCGN_SALS_PIC_INFO).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_GCGN_SALS_PIC_INFO.CUST_MST_ID))
@@ -272,7 +277,7 @@ class CustCustomRepositoryImpl(
         }
         // Note: findCustsWithSalsPicInfo 에서는 display용으로 LEFT JOIN
         if (needsRprsCustJoin) {
-            queryPart = queryPart.join(SCS_CUST_MST.`as`("RPRS_CUST_MST")).on(SCS_CUST_MST.RPRS_CUST_CD.eq(SCS_CUST_MST.`as`("RPRS_CUST_MST").CUST_CD))
+            queryPart = queryPart.leftJoin(rprsCustMst).on(SCS_CUST_MST.RPRS_CUST_CD.eq(rprsCustMst.CUST_CD))
         }
 
         val query = queryPart.where(conditions)
@@ -287,7 +292,8 @@ class CustCustomRepositoryImpl(
     }
 
     override suspend fun countMyCusts(searchParam: CustSearchParam, empUserId: String): Long {
-        val conditions = buildConditions(searchParam).toMutableList()
+        val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
+        val conditions = buildConditions(searchParam, rprsCustMst).toMutableList()
 
         val needsContractJoin = !searchParam.cntrStartDt.isNullOrBlank() ||
                 !searchParam.cntrEndDt.isNullOrBlank() ||
@@ -309,7 +315,10 @@ class CustCustomRepositoryImpl(
             .from(SCS_CUST_MST)
 
         if (needsContractJoin) {
-            queryPart = queryPart.join(SCS_CUST_CNTR).on(SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID))
+            queryPart = queryPart.join(SCS_CUST_CNTR).on(
+                SCS_CUST_MST.CUST_MST_ID.eq(SCS_CUST_CNTR.CUST_MST_ID)
+                    .and(SCS_CUST_CNTR.USE_YN.isTrue)
+            )
         }
         if (needsHospitalJoin) {
             queryPart = queryPart
@@ -318,7 +327,7 @@ class CustCustomRepositoryImpl(
                 .join(SCS_HOSP_MEDI_SBJT).on(SCS_HOSP_MST.CARE_INST_ID.eq(SCS_HOSP_MEDI_SBJT.CARE_INST_ID))
         }
         if (needsRprsCustJoin) {
-            queryPart = queryPart.join(SCS_CUST_MST.`as`("RPRS_CUST_MST")).on(SCS_CUST_MST.RPRS_CUST_CD.eq(SCS_CUST_MST.`as`("RPRS_CUST_MST").CUST_CD))
+            queryPart = queryPart.leftJoin(rprsCustMst).on(SCS_CUST_MST.RPRS_CUST_CD.eq(rprsCustMst.CUST_CD))
         }
 
         val query = queryPart.where(conditions)
@@ -337,9 +346,8 @@ class CustCustomRepositoryImpl(
         else return q.limit(pageable.pageSize).offset(pageable.offset)
     }
 
-    private fun buildConditions(searchParam: CustSearchParam): List<Condition> {
+    private fun buildConditions(searchParam: CustSearchParam, rprsCustMst: ScsCustMst): List<Condition> {
         val conds = mutableListOf<Condition>()
-        val rprsCustMst = SCS_CUST_MST.`as`("RPRS_CUST_MST")
 
         searchParam.bzoffiCd?.takeIf { it.isNotBlank() }?.let { conds += SCS_CUST_MST.BZOFFI_CD.eq(it) }
         searchParam.custCdNm?.takeIf { it.isNotBlank() }?.let { keyword -> conds += SCS_CUST_MST.CUST_CD.likeIgnoreCase("%$keyword%").or(SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$keyword%")) }

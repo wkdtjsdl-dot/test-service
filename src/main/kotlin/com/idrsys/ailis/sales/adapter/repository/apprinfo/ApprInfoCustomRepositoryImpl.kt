@@ -305,17 +305,35 @@ class ApprInfoCustomRepositoryImpl(
         }
 
         // Search parameter conditions
-        searchParam.custCd?.takeIf { it.isNotBlank() }?.let {
-            conditions += SCS_CUST_CHARGE.CUST_CD.likeIgnoreCase("%$it%")
+        if (!searchParam.custCdNm.isNullOrBlank()) {
+            conditions += SCS_CUST_CHARGE.CUST_CD.likeIgnoreCase("%${searchParam.custCdNm}%")
+                .or(SCS_CUST_MST.CUST_NM.likeIgnoreCase("%${searchParam.custCdNm}%"))
+        } else {
+            searchParam.custCd?.takeIf { it.isNotBlank() }?.let {
+                conditions += SCS_CUST_CHARGE.CUST_CD.likeIgnoreCase("%$it%")
+            }
+            searchParam.custNm?.takeIf { it.isNotBlank() }?.let {
+                conditions += SCS_CUST_MST.CUST_NM.likeIgnoreCase("%$it%")
+            }
         }
         searchParam.tstCd?.takeIf { it.isNotBlank() }?.let {
             conditions += SCS_CUST_CHARGE.TST_CD.likeIgnoreCase("%$it%")
         }
-        searchParam.applyStartDt?.let {
-            conditions += SCS_CUST_CHARGE.APPLY_START_DT.ge(it)
-        }
-        searchParam.applyEndDt?.let {
-            conditions += SCS_CUST_CHARGE.APPLY_END_DT.le(it)
+
+        if (searchParam.startDt != null || searchParam.endDt != null) {
+            val dateField = when (searchParam.dateSearchType) {
+                "end" -> SCS_CUST_CHARGE.APPLY_END_DT
+                else -> SCS_CUST_CHARGE.APPLY_START_DT
+            }
+            searchParam.startDt?.let { conditions += dateField.ge(it) }
+            searchParam.endDt?.let { conditions += dateField.le(it) }
+        } else {
+            searchParam.applyStartDt?.let {
+                conditions += SCS_CUST_CHARGE.APPLY_START_DT.ge(it)
+            }
+            searchParam.applyEndDt?.let {
+                conditions += SCS_CUST_CHARGE.APPLY_END_DT.le(it)
+            }
         }
         searchParam.lastApprStatCd?.takeIf { it.isNotBlank() }?.let {
             conditions += SCS_CUST_CHARGE.LAST_APPR_STAT_CD.eq(it)

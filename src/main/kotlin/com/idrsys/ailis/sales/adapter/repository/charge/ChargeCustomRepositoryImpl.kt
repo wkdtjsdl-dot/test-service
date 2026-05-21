@@ -137,12 +137,12 @@ class ChargeCustomRepositoryImpl(
             }
         }
 
-        if (searchParam.startDt != null && searchParam.endDt != null) {
-            when (searchParam.dateSearchType) {
-                "start" -> conds += SCS_CUST_CHARGE.APPLY_START_DT.between(searchParam.startDt, searchParam.endDt)
-                "end" -> conds += SCS_CUST_CHARGE.APPLY_END_DT.between(searchParam.startDt, searchParam.endDt)
-            }
+        val dateField = when (searchParam.dateSearchType) {
+            "end" -> SCS_CUST_CHARGE.APPLY_END_DT
+            else -> SCS_CUST_CHARGE.APPLY_START_DT
         }
+        searchParam.startDt?.let { conds += dateField.ge(it) }
+        searchParam.endDt?.let { conds += dateField.le(it) }
 
         val picConds = mutableListOf<Condition>()
         searchParam.empUserId?.takeIf { it.isNotBlank() }?.let { picConds.add(SCS_GCGN_SALS_PIC_INFO.EMP_USER_ID.eq(it)) }
