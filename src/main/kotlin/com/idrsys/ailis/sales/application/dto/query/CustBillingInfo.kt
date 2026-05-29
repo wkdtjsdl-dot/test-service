@@ -6,6 +6,7 @@ package com.idrsys.ailis.sales.application.dto.query
  */
 data class CustBillingInfo(
     val custNm: String,
+    val billPublYn: Boolean,
     val invcRecpEmailYn: Boolean,
     val invcRecpEmailAddr: String,
     val bzoffiCd: String?,

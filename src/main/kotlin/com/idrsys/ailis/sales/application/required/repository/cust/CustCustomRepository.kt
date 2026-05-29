@@ -76,8 +76,6 @@ interface CustCustomRepository {
      */
     suspend fun findCustCdsByBzoffiCds(bzoffiCds: List<String>): Set<String>
 
-    suspend fun findNoBillPublCustCds(): Set<String>
-
     /**
      * Find all custCds belonging to the given billing key.
      * Returns the billingKey itself plus all custCds where

@@ -899,6 +899,7 @@ class CustCustomRepositoryImpl(
             val query = dslContext.select(
                 SCS_CUST_MST.CUST_CD,
                 SCS_CUST_MST.CUST_NM,
+                SCS_CUST_MST.BILL_PUBL_YN,
                 SCS_CUST_MST.INVC_EMAIL_RECP_YN,
                 SCS_CUST_MST.INVC_RECP_EMAIL_ADDR,
                 SCS_CUST_MST.BZOFFI_CD,
@@ -915,6 +916,7 @@ class CustCustomRepositoryImpl(
                 row.get("cust_cd", String::class.java)!! to
                         CustBillingInfo(
                             custNm = row.get("cust_nm", String::class.java)!!,
+                            billPublYn = row.get("bill_publ_yn") as? Boolean ?: false,
                             invcRecpEmailYn = row.get("invc_email_recp_yn") as? Boolean ?: false,
                             invcRecpEmailAddr = row.get("invc_recp_email_addr", String::class.java) ?: "",
                             bzoffiCd = row.get("bzoffi_cd", String::class.java),
@@ -984,21 +986,6 @@ class CustCustomRepositoryImpl(
         val query = dslContext.selectDistinct(SCS_CUST_MST.CUST_CD)
             .from(SCS_CUST_MST)
             .where(SCS_CUST_MST.BZOFFI_CD.`in`(bzoffiCds))
-
-        var sql = databaseClient.sql(query.sql)
-        query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }
-
-        return sql.map { row, _ -> row.get("cust_cd", String::class.java)!! }
-            .all()
-            .asFlow()
-            .toList()
-            .toSet()
-    }
-
-    override suspend fun findNoBillPublCustCds(): Set<String> {
-        val query = dslContext.select(SCS_CUST_MST.CUST_CD)
-            .from(SCS_CUST_MST)
-            .where(SCS_CUST_MST.BILL_PUBL_YN.eq(false))
 
         var sql = databaseClient.sql(query.sql)
         query.bindValues.forEachIndexed { i, v -> sql = sql.bind(i, v) }

@@ -146,19 +146,11 @@ class BillingQueryService(
             filteredSummaries
         }
 
-        // Exclude bill_publ_yn=false accounts
-        val noBillPublCustCds = custCustomRepository.findNoBillPublCustCds()
-        val preBillSummaries = if (noBillPublCustCds.isNotEmpty()) {
-            finalSummaries.filter { it.custCd !in noBillPublCustCds }
-        } else {
-            finalSummaries
-        }
-
         // Post-aggregate by rprs_cust_cd billing key
-        val custCdList = preBillSummaries.map { it.custCd }.distinct()
+        val custCdList = finalSummaries.map { it.custCd }.distinct()
         val rprsBillingInfoMap = custCustomRepository.findRprsBillingInfoByCustCds(custCdList)
 
-        val billPublSummaries = preBillSummaries
+        val billPublSummaries = finalSummaries
             .groupBy { summary ->
                 val info = rprsBillingInfoMap[summary.custCd]
                 val billingKey = if (info?.rprsAcctBillCombPublYn == true) info.rprsCustCd else summary.custCd
@@ -189,6 +181,7 @@ class BillingQueryService(
                 searchStartDt = searchParam.startDt,
                 searchEndDt = searchParam.endDt,
                 custNm = custBillingInfo?.custNm ?: "",
+                billPublYn = custBillingInfo?.billPublYn ?: false,
                 invcRecpEmailYn = custBillingInfo?.invcRecpEmailYn ?: false,
                 invcRecpEmailAddr = custBillingInfo?.invcRecpEmailAddr ?: "",
                 bzoffiCd = custBillingInfo?.bzoffiCd,
@@ -210,10 +203,6 @@ class BillingQueryService(
     override fun getBillingRequests(
         searchParam: BillingRequestSearchParam
     ): Flow<BillingRequestResponse> = flow {
-        // bill_publ_yn=false인 거래처는 전체 제외
-        val noBillPublCustCds = custCustomRepository.findNoBillPublCustCds()
-        if (searchParam.custCd in noBillPublCustCds) return@flow
-
         val constituentCustCds = custCustomRepository.findConstituentCustCds(searchParam.custCd)
         val details = reqServicePort.getBillingRequests(
             startDt = searchParam.startDt,
@@ -224,18 +213,11 @@ class BillingQueryService(
             crcyCd = searchParam.crcyCd,
         ).toList()
 
-        // Filter out individual details for bill_publ_yn=false customers
-        val filteredDetails = if (noBillPublCustCds.isNotEmpty()) {
-            details.filter { it.custCd !in noBillPublCustCds }
-        } else {
-            details
-        }
-
         // Batch query custNm from scs_cust_mst
-        val custCds = filteredDetails.mapNotNull { it.custCd }.distinct()
+        val custCds = details.mapNotNull { it.custCd }.distinct()
         val custNmMap = custCustomRepository.findCustNmMapByCustCds(custCds)
 
-        filteredDetails.forEach { detail ->
+        details.forEach { detail ->
             val custBillingInfo = custNmMap[detail.custCd]
             emit(BillingRequestResponse(
                 tstItemId = detail.tstItemId,

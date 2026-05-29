@@ -145,6 +145,32 @@ class DemandTest {
     }
 
     @Test
+    fun `should keep bill publication flag when sending sales statement`() {
+        // Given
+        val demand = Demand(
+            demandId = "demand-uuid-001",
+            demandDt = LocalDate.now(),
+            custCd = "CUST001",
+            demandStartDt = LocalDate.now(),
+            demandEndDt = LocalDate.now(),
+            stndPrice = BigDecimal.ZERO,
+            supval = BigDecimal.ZERO,
+            demandCharge = BigDecimal.ZERO,
+            addtax = BigDecimal.ZERO,
+            dscntRate = BigDecimal.ZERO,
+            billPublYn = false,
+            creator = "admin"
+        )
+
+        // When
+        demand.sendSalesStatement("SL-2025-001", "admin")
+
+        // Then
+        assertEquals("SL-2025-001", demand.slstmtNo)
+        assertFalse(demand.billPublYn)
+    }
+
+    @Test
     fun `should throw exception when sales statement already sent`() {
         // Given
         val demand = Demand(

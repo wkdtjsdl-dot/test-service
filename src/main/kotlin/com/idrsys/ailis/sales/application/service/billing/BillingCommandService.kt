@@ -98,6 +98,7 @@ class BillingCommandService(
             createDtime = LocalDateTime.now(),
             updater = adminId,
             updateDtime = LocalDateTime.now(),
+            billPublYn = cust.billPublYn,
             crcyCd = command.crcyCd,
             frgnCrcyAmt = command.frgnCrcyAmt,
             demandType = command.demandType
@@ -348,7 +349,7 @@ class BillingCommandService(
                 bupla = "3300",                             // 고정값
                 zuonr = demand.custCd,
                 xref2 = "20",                               // 10 일발행, 20 월발행, 90 미발행
-                xref3 = "E",                                // E 전자계산서, SPACE 수기
+                xref3 = if (demand.billPublYn) "E" else " ", // E 전자계산서, SPACE 수기
                 email = demand.invcRecpEmailAddr ?: "",
                 sgtxt = "${cust?.custNm ?: demand.custCd} 검사비",
                 kidno = cust?.custNm ?: "",                 // 거래처명
@@ -448,17 +449,14 @@ class BillingCommandService(
         // 2. Get CLCD_Y summaries from req-service
         val rawSummaries = reqServicePort.getClosedDemandSummary(startDt, endDt, scopeCustCds)
 
-        // 3. Apply same exclusion filters as unbilled flow
-        val noBillPublCustCds = custCustomRepository.findNoBillPublCustCds()
-        val afterBillPublFilter = rawSummaries.filter { it.custCd !in noBillPublCustCds }
-
+        // 3. Exclude customers belonging to branch_bcd='100' departments
         val branch100DeptCds = baseServicePort.getDeptCdsByBranchBcd("100")
         val branch100CustCds = if (branch100DeptCds.isNotEmpty()) {
             custCustomRepository.findCustCdsByBzoffiCds(branch100DeptCds)
         } else emptySet()
         val filteredSummaries = if (branch100CustCds.isNotEmpty()) {
-            afterBillPublFilter.filter { it.custCd !in branch100CustCds }
-        } else afterBillPublFilter
+            rawSummaries.filter { it.custCd !in branch100CustCds }
+        } else rawSummaries
 
         // 4. Apply rprsAcctBillCombPublYn mapping → target map
         data class TargetAmounts(
@@ -515,7 +513,8 @@ class BillingCommandService(
                     val demandType = key.second
                     val crcyCd = key.third
 
-                    val sapCustCd = custCustomRepository.findByCustCd(billingKey)?.sapCustCd
+                    val cust = custCustomRepository.findByCustCd(billingKey)
+                    val sapCustCd = cust?.sapCustCd
                     val dscntRate = if (target.stndPrice > BigDecimal.ZERO) {
                         (target.stndPrice - target.demandCharge)
                             .divide(target.stndPrice, 4, RoundingMode.HALF_UP)
@@ -540,6 +539,7 @@ class BillingCommandService(
                         createDtime = now,
                         updater = adminId,
                         updateDtime = now,
+                        billPublYn = cust?.billPublYn ?: false,
                         crcyCd = crcyCd,
                         demandType = demandType
                     )

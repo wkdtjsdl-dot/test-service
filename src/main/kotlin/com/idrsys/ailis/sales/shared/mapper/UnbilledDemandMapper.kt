@@ -20,6 +20,7 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
     searchStartDt: LocalDate,
     searchEndDt: LocalDate,
     custNm: String? = null,
+    billPublYn: Boolean = false,
     invcRecpEmailYn: Boolean = false,
     invcRecpEmailAddr: String? = null,
     bzoffiCd: String? = null,
@@ -52,7 +53,7 @@ fun ReqServiceUnbilledDemandSummary.toDemandResponse(
         dscntRate = dscntRate,            // Calculated after closing
         slstmtNo = null,                        // No statement number before closing
         slstmtSendDt = null,                    // No send date before closing
-        billPublYn = invcRecpEmailYn,
+        billPublYn = billPublYn,
         invcRecpEmailAddr = invcRecpEmailAddr,
         bzoffiCd = bzoffiCd,                    // From sales-service DB (scs_cust_mst)
         sapCustCd = sapCustCd,                  // From sales-service DB (scs_cust_mst)
