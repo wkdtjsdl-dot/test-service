@@ -148,7 +148,7 @@ class BillingController(
      * @param searchParam BillingRequestSearchParam
      * @return Flow of BillingRequestResponse
      */
-    @Operation(summary = "청구수가 재마감", description = "해당 월 CLCD_Y 의뢰 기준으로 sbl_demand 재산출 (tst-item 미변경)")
+    @Operation(summary = "청구수가 재마감", description = "검색 기간 CLCD_Y 의뢰 기준으로 sbl_demand 재산출 (tst-item 미변경)")
     @PostMapping("/demands/recalculate")
     suspend fun recalculateBillingDemands(
         @RequestBody command: RecalculateBillingCommand,

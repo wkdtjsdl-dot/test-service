@@ -433,8 +433,8 @@ class BillingCommandService(
         command: RecalculateBillingCommand,
         adminId: String
     ): RecalculateBillingResponse {
-        val startDt = command.yearMonth.atDay(1)
-        val endDt = command.yearMonth.atEndOfMonth()
+        val startDt = command.startDt
+        val endDt = command.endDt
         val now = LocalDateTime.now()
 
         // 1. Scope by bzoffiCd if provided

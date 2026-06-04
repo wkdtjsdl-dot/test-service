@@ -79,9 +79,9 @@ class TestConfig {
                 creatorId: String
             ): BaseAttachedFileGroupResponse? = null
 
-            override suspend fun getDepartmentsByIds(deptCds: List<String>): List<BaseDepartmentResponse>? {
-                TODO("Not yet implemented")
-            }
+            override suspend fun getDepartmentsByIds(deptCds: List<String>): List<BaseDepartmentResponse>? = emptyList()
+
+            override suspend fun getDeptCdsByBranchBcd(branchBcd: String): List<String> = emptyList()
         }
     }
 
@@ -98,36 +98,46 @@ class TestConfig {
             override suspend fun getUnbilledDemandSummary(
                 startDt: LocalDate,
                 endDt: LocalDate,
-                directAcctCds: List<String>?
+                custCds: List<String>?
+            ): List<ReqServiceUnbilledDemandSummary> = emptyList()
+
+            override suspend fun getClosedDemandSummary(
+                startDt: LocalDate,
+                endDt: LocalDate,
+                custCds: List<String>?
             ): List<ReqServiceUnbilledDemandSummary> = emptyList()
 
             override fun getBillingRequests(
                 startDt: LocalDate,
                 endDt: LocalDate,
-                directAcctCd: String,
-                closingCd: String?
+                custCds: List<String>,
+                closingCd: String?,
+                tstReqDivCd: String?,
+                crcyCd: String?
             ): Flow<ReqServiceBillingRequestDetail> = emptyFlow()
 
             override suspend fun updateTstItemClosingInfo(
-                directAcctCd: String,
+                custCds: List<String>,
                 startDt: LocalDate,
                 endDt: LocalDate,
                 exrtId: Long?,
                 stndExrt: BigDecimal?,
                 closingMemo: String?,
-                closingUser: String
+                closingUser: String,
+                tstReqDivCd: String?,
+                crcyCd: String?
             ): Int = 0
 
             override suspend fun releaseTstItemClosingInfo(
-                directAcctCd: String,
+                custCds: List<String>,
                 startDt: LocalDate,
                 endDt: LocalDate,
-                updater: String
+                updater: String,
+                tstReqDivCd: String?,
+                crcyCd: String?
             ): Int = 0
 
-            override suspend fun checkRequestsByCustCd(custCd: String): Int {
-                TODO("Not yet implemented")
-            }
+            override suspend fun checkRequestsByCustCd(custCd: String): Int = 0
         }
     }
 }
