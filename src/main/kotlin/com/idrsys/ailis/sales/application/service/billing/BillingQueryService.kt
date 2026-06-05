@@ -105,7 +105,23 @@ class BillingQueryService(
 
         // Determine custCds based on frgnAcctYn, custCd, and branchCd
         val custCds: List<String>? = when {
-            !searchParam.custCd.isNullOrBlank() -> listOf(searchParam.custCd)
+            !searchParam.custCd.isNullOrBlank() -> {
+                // 입력 custCd를 빌링 그룹(대표 + 통합발행 부속) 전체로 확장
+                // 대표거래처로 조회하면 부속거래처까지, 부속거래처로 조회하면 대표를 찾아
+                // 그룹 전체가 집계되도록 한다.
+                val inputCustCd = searchParam.custCd
+                val billingInfo = custCustomRepository
+                    .findRprsBillingInfoByCustCds(listOf(inputCustCd))[inputCustCd]
+                val billingKey = if (
+                    billingInfo?.rprsAcctBillCombPublYn == true &&
+                    billingInfo.rprsCustCd != inputCustCd
+                ) {
+                    billingInfo.rprsCustCd          // 통합발행 부속 → 대표 코드로 해소
+                } else {
+                    inputCustCd                     // 대표 또는 독립 거래처(rprs_cust_cd=null 또는 자기코드) → 자기 코드
+                }
+                custCustomRepository.findConstituentCustCds(billingKey)  // 대표 + 통합발행 부속 전체
+            }
             searchParam.frgnAcctYn == true -> custCustomRepository.findCustCdsByFrgnAcctYn(true, branchCd)
             branchCd != null -> {
                 // frgnAcctYn이 null(전체) 또는 false(국내)이고 branchCd만 있는 경우
