@@ -1766,6 +1766,185 @@ comment on column sbl_colledger.update_dtime is '수정일시';
 alter table sbl_colledger
     owner to ailis_user;
 
+create table sbl_colledger_hst
+(
+    colledger_hst_id character varying(50) not null
+        constraint "PK_sbl_colledger_hst"
+            primary key,
+    hst_cd           character varying(50) not null,
+    hst_memo         character varying(500) not null,
+    worker           character varying(50) not null,
+    work_dtime       timestamp             not null,
+    colledger_id     character varying(50) not null,
+    colbill_div_cd   character varying(50) not null,
+    colbill_dt       date                  not null,
+    cust_cd          character varying(50) not null,
+    colbill_item_nm  character varying(50),
+    colbill_item_dtl character varying(200),
+    colbill_amt      numeric default 0     not null,
+    colbill_memo     character varying(4000),
+    update_reason    character varying(1000),
+    creator          character varying(50) not null,
+    create_dtime     timestamp             not null,
+    updater          character varying(50) not null,
+    update_dtime     timestamp             not null
+);
+
+comment on table sbl_colledger_hst is '청구수금원장 이력';
+
+comment on constraint "PK_sbl_colledger_hst" on sbl_colledger_hst is '청구수금원장 이력 기본키';
+
+comment on column sbl_colledger_hst.colledger_hst_id is '수금원장이력아이디 UUID';
+
+comment on column sbl_colledger_hst.hst_cd is '이력생성유형코드 HST';
+
+comment on column sbl_colledger_hst.hst_memo is '이력메모';
+
+comment on column sbl_colledger_hst.worker is '작업자';
+
+comment on column sbl_colledger_hst.work_dtime is '작업일시';
+
+comment on column sbl_colledger_hst.colledger_id is '수금원장아이디';
+
+comment on column sbl_colledger_hst.colbill_div_cd is '수금구분코드';
+
+comment on column sbl_colledger_hst.colbill_dt is '수금일자';
+
+comment on column sbl_colledger_hst.cust_cd is '고객코드';
+
+comment on column sbl_colledger_hst.colbill_item_nm is '수금항목명';
+
+comment on column sbl_colledger_hst.colbill_item_dtl is '수금항목상세';
+
+comment on column sbl_colledger_hst.colbill_amt is '수금금액';
+
+comment on column sbl_colledger_hst.colbill_memo is '수금메모';
+
+comment on column sbl_colledger_hst.update_reason is '수정사유';
+
+comment on column sbl_colledger_hst.creator is '생성자';
+
+comment on column sbl_colledger_hst.create_dtime is '생성일시';
+
+comment on column sbl_colledger_hst.updater is '수정자';
+
+comment on column sbl_colledger_hst.update_dtime is '수정일시';
+
+create index idx_sbl_colledger_hst_01
+    on sbl_colledger_hst (colledger_id, work_dtime);
+
+alter table sbl_colledger_hst
+    owner to ailis_user;
+
+create table sbl_colbill_hst
+(
+    colbill_hst_id   character varying(50)          not null
+        constraint "PK_sbl_colbill_hst"
+            primary key,
+    hst_cd           character varying(50)          not null,
+    hst_memo         character varying(500)         not null,
+    worker           character varying(50)          not null,
+    work_dtime       timestamp                      not null,
+    colbill_id       character varying(50)          not null,
+    cust_cd          character varying(50)          not null,
+    colbill_dt       date                           not null,
+    pay_method_cd    character varying(50)          not null,
+    card_comp_cd     character varying(50),
+    card_comp_nm     character varying(50),
+    pay_amt          numeric,
+    card_appr_no     character varying(50),
+    card_no          character varying(50),
+    card_pay_id      character varying(50),
+    card_bill_no     character varying(50),
+    instl_month      character varying(2),
+    bank_deposit_id  character varying(50),
+    account_year     character varying(4),
+    surecp_slstmt_no character varying(20),
+    sales_slstmt_no  character varying(20),
+    advrece_yn       boolean default false,
+    closing_cd       character varying(50),
+    send_yn          boolean default false          not null,
+    colledger_id     character varying(50),
+    remark           character varying(200),
+    update_reason    character varying(1000),
+    creator          character varying(50)          not null,
+    create_dtime     timestamp                      not null,
+    updater          character varying(50)          not null,
+    update_dtime     timestamp                      not null
+);
+
+comment on table sbl_colbill_hst is '수금 이력';
+
+comment on constraint "PK_sbl_colbill_hst" on sbl_colbill_hst is '수금 이력 기본키';
+
+comment on column sbl_colbill_hst.colbill_hst_id is '수금이력아이디 UUID';
+
+comment on column sbl_colbill_hst.hst_cd is '이력생성유형코드 HST';
+
+comment on column sbl_colbill_hst.hst_memo is '이력메모';
+
+comment on column sbl_colbill_hst.worker is '작업자';
+
+comment on column sbl_colbill_hst.work_dtime is '작업일시';
+
+comment on column sbl_colbill_hst.colbill_id is '수금아이디';
+
+comment on column sbl_colbill_hst.cust_cd is '고객코드';
+
+comment on column sbl_colbill_hst.colbill_dt is '수금일자';
+
+comment on column sbl_colbill_hst.pay_method_cd is '결제수단코드(PMMT)';
+
+comment on column sbl_colbill_hst.card_comp_cd is '카드회사코드';
+
+comment on column sbl_colbill_hst.card_comp_nm is '카드(은행)회사명';
+
+comment on column sbl_colbill_hst.pay_amt is '결제금액';
+
+comment on column sbl_colbill_hst.card_appr_no is '카드결재(승인)번호';
+
+comment on column sbl_colbill_hst.card_no is '카드번호';
+
+comment on column sbl_colbill_hst.card_pay_id is '카드결제아이디';
+
+comment on column sbl_colbill_hst.card_bill_no is '카드계산서번호';
+
+comment on column sbl_colbill_hst.instl_month is '할부(개)월';
+
+comment on column sbl_colbill_hst.bank_deposit_id is '은행입금아이디';
+
+comment on column sbl_colbill_hst.account_year is '회계년도';
+
+comment on column sbl_colbill_hst.surecp_slstmt_no is '가수금전표번호';
+
+comment on column sbl_colbill_hst.sales_slstmt_no is '매출전표번호(회계번호)';
+
+comment on column sbl_colbill_hst.advrece_yn is '선수금여부';
+
+comment on column sbl_colbill_hst.closing_cd is '마감코드';
+
+comment on column sbl_colbill_hst.send_yn is '발송(전송)여부';
+
+comment on column sbl_colbill_hst.colledger_id is '청구수금원장아이디';
+
+comment on column sbl_colbill_hst.remark is '비고';
+
+comment on column sbl_colbill_hst.update_reason is '수정사유';
+
+comment on column sbl_colbill_hst.creator is '생성자';
+
+comment on column sbl_colbill_hst.create_dtime is '생성일시';
+
+comment on column sbl_colbill_hst.updater is '수정자';
+
+comment on column sbl_colbill_hst.update_dtime is '수정일시';
+
+create index idx_sbl_colbill_hst_01
+    on sbl_colbill_hst (colbill_id, work_dtime);
+
+alter table sbl_colbill_hst
+    owner to ailis_user;
+
 create table sbl_bank_deposit
 (
     bank_deposit_id  varchar(50) not null

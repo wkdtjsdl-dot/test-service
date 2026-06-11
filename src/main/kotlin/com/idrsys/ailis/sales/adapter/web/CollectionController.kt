@@ -305,4 +305,32 @@ class CollectionController(
         )
         return collectionQueryUseCase.getBankDepositList(searchParam)
     }
+
+    /**
+     * Get collection bills generated from a card payment (카드결제로 생성된 수금 목록 조회)
+     *
+     * @param cardPayId Card payment ID
+     * @return Flow of CollectionBillListResponse
+     */
+    @Operation(summary = "카드결제 수금 목록 조회", description = "카드결제 ID로 생성된 수금(colbill) 목록 조회")
+    @GetMapping("/card-payments/{cardPayId}/colbills")
+    suspend fun getColbillsByCardPay(
+        @PathVariable cardPayId: String
+    ): Flow<CollectionBillListResponse> {
+        return collectionQueryUseCase.getColbillsByCardPayId(cardPayId)
+    }
+
+    /**
+     * Get collection bills generated from a bank deposit (은행입금으로 생성된 수금 목록 조회)
+     *
+     * @param bankDepositId Bank deposit ID
+     * @return Flow of CollectionBillListResponse
+     */
+    @Operation(summary = "은행입금 수금 목록 조회", description = "은행입금 ID로 생성된 수금(colbill) 목록 조회")
+    @GetMapping("/bank-deposits/{bankDepositId}/colbills")
+    suspend fun getColbillsByBankDeposit(
+        @PathVariable bankDepositId: String
+    ): Flow<CollectionBillListResponse> {
+        return collectionQueryUseCase.getColbillsByBankDepositId(bankDepositId)
+    }
 }

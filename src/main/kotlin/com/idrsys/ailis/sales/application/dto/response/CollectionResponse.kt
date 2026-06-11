@@ -16,6 +16,7 @@ data class CollectionBillListResponse(
    val frgnAcctYn: Boolean = false,
    val colbillDt: LocalDate,
    val payMethodCd: String,
+   val payMethodNm: String? = null,
    val payAmt: BigDecimal,
    val cardPayId: String? = null,
    val bankDepositId: String? = null,
@@ -200,6 +201,7 @@ data class BankDepositResponse(
     val depositAmt: BigDecimal,
     val outamt: BigDecimal? = null,
     val crcyCd: String? = null,
+    val crcyNm: String? = null,
     val remark: String? = null
 ) {
     companion object {

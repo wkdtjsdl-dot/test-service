@@ -4,6 +4,7 @@ import com.idrsys.ailis.sales.application.dto.request.collection.BankDepositSear
 import com.idrsys.ailis.sales.application.dto.request.collection.CardPaymentSearchParam
 import com.idrsys.ailis.sales.application.dto.response.BankDepositResponse
 import com.idrsys.ailis.sales.application.dto.response.CardPaymentResponse
+import com.idrsys.ailis.sales.application.dto.response.CollectionBillListResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerResponse
 import kotlinx.coroutines.flow.Flow
 
@@ -26,5 +27,15 @@ interface CollectionQueryUseCase {
     /**
      * Get bank deposit list (unregistered or all)
      */
-    fun getBankDepositList(searchParam: BankDepositSearchParam): Flow<BankDepositResponse>
+    suspend fun getBankDepositList(searchParam: BankDepositSearchParam): Flow<BankDepositResponse>
+
+    /**
+     * Get collection bills generated from a card payment
+     */
+    suspend fun getColbillsByCardPayId(cardPayId: String): Flow<CollectionBillListResponse>
+
+    /**
+     * Get collection bills generated from a bank deposit
+     */
+    suspend fun getColbillsByBankDepositId(bankDepositId: String): Flow<CollectionBillListResponse>
 }

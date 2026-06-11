@@ -144,6 +144,74 @@ class CollectionBillRepositoryImpl(
         return collectionBillDataRepository.findById(colbillId)
     }
 
+    override fun findByCardPayId(cardPayId: String): Flow<CollectionBillListResponse> {
+        val cb = SalesScm.SALES_SCM.SBL_COLBILL
+        val cm = SalesScm.SALES_SCM.SCS_CUST_MST
+        val bd = SalesScm.SALES_SCM.SBL_BANK_DEPOSIT
+        val cp = SalesScm.SALES_SCM.SBL_CARD_PAY
+
+        val query = dslContext
+            .select(
+                cb.COLBILL_ID, cb.CUST_CD, cm.FRGN_ACCT_YN, cb.COLBILL_DT, cb.PAY_METHOD_CD,
+                cb.PAY_AMT, cb.CARD_PAY_ID, cb.BANK_DEPOSIT_ID, cb.CARD_COMP_CD, cb.CARD_COMP_NM,
+                cb.CARD_APPR_NO, cb.CARD_NO, cb.CARD_BILL_NO, cb.INSTL_MONTH, cb.ACCOUNT_YEAR,
+                cb.SURECP_SLSTMT_NO, cb.SALES_SLSTMT_NO, cb.ADVRECE_YN, cb.CLOSING_CD,
+                cb.COLLEDGER_ID, cb.SEND_YN, cb.REMARK, cm.SAP_CUST_CD, cm.BZOFFI_CD,
+                cm.CUST_NM, cm.BIZRNO, cp.PAY_DIV_CD, cp.TRADE_NO, bd.ACCOUNT_NO, bd.CRCY_CD
+            )
+            .from(cb)
+            .join(cm).on(cb.CUST_CD.eq(cm.CUST_CD))
+            .leftJoin(cp).on(cb.CARD_PAY_ID.eq(cp.CARD_PAY_ID))
+            .leftJoin(bd).on(cb.BANK_DEPOSIT_ID.eq(bd.BANK_DEPOSIT_ID))
+            .where(cb.CARD_PAY_ID.eq(cardPayId))
+
+        var executeSpec = databaseClient.sql { query.sql }
+        query.bindValues.forEachIndexed { index, value ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+        return executeSpec.fetch().all()
+            .map { row -> toCollectionBillListResponse(row) }
+            .asFlow()
+    }
+
+    override fun findByBankDepositId(bankDepositId: String): Flow<CollectionBillListResponse> {
+        val cb = SalesScm.SALES_SCM.SBL_COLBILL
+        val cm = SalesScm.SALES_SCM.SCS_CUST_MST
+        val bd = SalesScm.SALES_SCM.SBL_BANK_DEPOSIT
+        val cp = SalesScm.SALES_SCM.SBL_CARD_PAY
+
+        val query = dslContext
+            .select(
+                cb.COLBILL_ID, cb.CUST_CD, cm.FRGN_ACCT_YN, cb.COLBILL_DT, cb.PAY_METHOD_CD,
+                cb.PAY_AMT, cb.CARD_PAY_ID, cb.BANK_DEPOSIT_ID, cb.CARD_COMP_CD, cb.CARD_COMP_NM,
+                cb.CARD_APPR_NO, cb.CARD_NO, cb.CARD_BILL_NO, cb.INSTL_MONTH, cb.ACCOUNT_YEAR,
+                cb.SURECP_SLSTMT_NO, cb.SALES_SLSTMT_NO, cb.ADVRECE_YN, cb.CLOSING_CD,
+                cb.COLLEDGER_ID, cb.SEND_YN, cb.REMARK, cm.SAP_CUST_CD, cm.BZOFFI_CD,
+                cm.CUST_NM, cm.BIZRNO, cp.PAY_DIV_CD, cp.TRADE_NO, bd.ACCOUNT_NO, bd.CRCY_CD
+            )
+            .from(cb)
+            .join(cm).on(cb.CUST_CD.eq(cm.CUST_CD))
+            .leftJoin(cp).on(cb.CARD_PAY_ID.eq(cp.CARD_PAY_ID))
+            .leftJoin(bd).on(cb.BANK_DEPOSIT_ID.eq(bd.BANK_DEPOSIT_ID))
+            .where(cb.BANK_DEPOSIT_ID.eq(bankDepositId))
+
+        var executeSpec = databaseClient.sql { query.sql }
+        query.bindValues.forEachIndexed { index, value ->
+            if (value != null) {
+                executeSpec = executeSpec.bind(index, value)
+            } else {
+                executeSpec = executeSpec.bindNull(index, String::class.java)
+            }
+        }
+        return executeSpec.fetch().all()
+            .map { row -> toCollectionBillListResponse(row) }
+            .asFlow()
+    }
+
     override suspend fun nextErpSeqNo(): String {
         val next = databaseClient.sql("SELECT nextval('sales_scm.sbl_colbill_seq')")
             .fetch()

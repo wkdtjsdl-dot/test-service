@@ -30,4 +30,14 @@ interface CollectionBillRepository {
      * Get next ERP sequence number from DB sequence (4-digit padded)
      */
     suspend fun nextErpSeqNo(): String
+
+    /**
+     * Find collection bills generated from a card payment
+     */
+    fun findByCardPayId(cardPayId: String): Flow<CollectionBillListResponse>
+
+    /**
+     * Find collection bills generated from a bank deposit
+     */
+    fun findByBankDepositId(bankDepositId: String): Flow<CollectionBillListResponse>
 }

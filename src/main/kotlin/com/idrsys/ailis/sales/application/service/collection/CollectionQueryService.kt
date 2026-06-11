@@ -4,9 +4,12 @@ import com.idrsys.ailis.sales.application.dto.request.collection.BankDepositSear
 import com.idrsys.ailis.sales.application.dto.request.collection.CardPaymentSearchParam
 import com.idrsys.ailis.sales.application.dto.response.BankDepositResponse
 import com.idrsys.ailis.sales.application.dto.response.CardPaymentResponse
+import com.idrsys.ailis.sales.application.dto.response.CollectionBillListResponse
 import com.idrsys.ailis.sales.application.dto.response.CollectionLedgerResponse
+import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.repository.collection.BankDepositRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CardPaymentRepository
+import com.idrsys.ailis.sales.application.required.repository.collection.CollectionBillRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionLedgerRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionQueryUseCase
@@ -25,9 +28,11 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class CollectionQueryService(
     private val collectionLedgerRepository: CollectionLedgerRepository,
+    private val collectionBillRepository: CollectionBillRepository,
     private val cardPaymentRepository: CardPaymentRepository,
     private val bankDepositRepository: BankDepositRepository,
     private val custCustomRepository: CustCustomRepository,
+    private val baseServicePort: BaseServicePort,
 ) : CollectionQueryUseCase {
 
     /**
@@ -75,10 +80,35 @@ class CollectionQueryService(
     /**
      * Get bank deposit list (unregistered or all)
      */
-    override fun getBankDepositList(
+    override suspend fun getBankDepositList(
         searchParam: BankDepositSearchParam
     ): Flow<BankDepositResponse> {
+        val systemCodes = baseServicePort.getChildrenSystemCodes(listOf("CRCY")) ?: emptyMap()
+        val crcyNmByCd = systemCodes["CRCY"]?.associate { it.cd to it.cdNm } ?: emptyMap()
         return bankDepositRepository.findBankDeposits(searchParam)
-            .map { BankDepositResponse.from(it) }
+            .map { BankDepositResponse.from(it).copy(crcyNm = crcyNmByCd[it.crcyCd]) }
+    }
+
+    /**
+     * Get collection bills generated from a card payment
+     */
+    override suspend fun getColbillsByCardPayId(cardPayId: String): Flow<CollectionBillListResponse> {
+        val payMethodNmByCd = resolvePayMethodNames()
+        return collectionBillRepository.findByCardPayId(cardPayId)
+            .map { bill -> bill.copy(payMethodNm = payMethodNmByCd[bill.payMethodCd]) }
+    }
+
+    /**
+     * Get collection bills generated from a bank deposit
+     */
+    override suspend fun getColbillsByBankDepositId(bankDepositId: String): Flow<CollectionBillListResponse> {
+        val payMethodNmByCd = resolvePayMethodNames()
+        return collectionBillRepository.findByBankDepositId(bankDepositId)
+            .map { bill -> bill.copy(payMethodNm = payMethodNmByCd[bill.payMethodCd]) }
+    }
+
+    private suspend fun resolvePayMethodNames(): Map<String, String> {
+        val systemCodes = baseServicePort.getChildrenSystemCodes(listOf("PMMT")) ?: emptyMap()
+        return systemCodes["PMMT"]?.associate { it.cd to it.cdNm } ?: emptyMap()
     }
 }

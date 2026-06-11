@@ -15,11 +15,13 @@ import com.idrsys.ailis.sales.application.required.external.BaseServicePort
 import com.idrsys.ailis.sales.application.required.external.ReqServicePort
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandHstRepository
 import com.idrsys.ailis.sales.application.required.repository.billing.DemandRepository
+import com.idrsys.ailis.sales.application.required.repository.collection.CollectionLedgerHstRepository
 import com.idrsys.ailis.sales.application.required.repository.collection.CollectionLedgerRepository
 import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRepository
 import com.idrsys.ailis.sales.application.required.sap.InvoiceErpPort
 import com.idrsys.ailis.sales.application.usecase.billing.BillingCommandUseCase
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
+import com.idrsys.ailis.sales.domain.model.CollectionLedgerHst
 import com.idrsys.ailis.sales.domain.model.Demand
 import com.idrsys.ailis.sales.domain.model.DemandHst
 import com.idrsys.web.exception.UserDefinedException
@@ -42,6 +44,7 @@ class BillingCommandService(
     private val demandRepository: DemandRepository,
     private val demandHstRepository: DemandHstRepository,
     private val collectionLedgerRepository: CollectionLedgerRepository,
+    private val collectionLedgerHstRepository: CollectionLedgerHstRepository,
     private val reqServicePort: ReqServicePort,
     private val custCustomRepository: CustCustomRepository,
     private val invoiceErpPort: InvoiceErpPort,
@@ -114,6 +117,7 @@ class BillingCommandService(
         )
 
         val savedLedger = collectionLedgerRepository.save(ledger)
+        collectionLedgerHstRepository.save(CollectionLedgerHst.of(savedLedger, "HST_C", "청구 생성", adminId, LocalDateTime.now()))
 
         // 6. Assign colledgerId to demand and save
         demand.assignColledgerId(savedLedger.colledgerId!!)
@@ -206,10 +210,13 @@ class BillingCommandService(
             )
         }
 
-        // 3. Delete associated collection ledger using colledgerId
+        val now = LocalDateTime.now()
+
+        // 3. Delete associated collection ledger using colledgerId (save history first)
         demand.colledgerId?.let { colledgerId ->
             val ledger = collectionLedgerRepository.findById(colledgerId)
             if (ledger != null) {
+                collectionLedgerHstRepository.save(CollectionLedgerHst.of(ledger, "HST_D", "청구 취소", adminId, now))
                 collectionLedgerRepository.delete(ledger)
             }
         }
@@ -219,7 +226,7 @@ class BillingCommandService(
             hstCd = "HST_D",
             hstMemo = "청구 취소",
             worker = adminId,
-            workDtime = LocalDateTime.now(),
+            workDtime = now,
             demandId = demand.demandId!!,
             demandDt = demand.demandDt,
             custCd = demand.custCd,
@@ -552,6 +559,7 @@ class BillingCommandService(
                         creator = adminId
                     )
                     val savedLedger = collectionLedgerRepository.save(ledger)
+                    collectionLedgerHstRepository.save(CollectionLedgerHst.of(savedLedger, "HST_C", "청구수가 재마감", adminId, now))
                     demand.assignColledgerId(savedLedger.colledgerId!!)
                     val savedDemand = demandRepository.save(demand)
 
@@ -566,8 +574,9 @@ class BillingCommandService(
                     demandHstRepository.save(buildDemandHst(demand, "HST_D", "청구수가 재마감", adminId, now))
 
                     current.colledgerId?.let { colledgerId ->
-                        collectionLedgerRepository.findById(colledgerId)?.let {
-                            collectionLedgerRepository.delete(it)
+                        collectionLedgerRepository.findById(colledgerId)?.let { ledger ->
+                            collectionLedgerHstRepository.save(CollectionLedgerHst.of(ledger, "HST_D", "청구수가 재마감", adminId, now))
+                            collectionLedgerRepository.delete(ledger)
                         }
                     }
 
@@ -595,6 +604,7 @@ class BillingCommandService(
                                 updater = adminId
                             )
                             collectionLedgerRepository.save(ledger)
+                            collectionLedgerHstRepository.save(CollectionLedgerHst.of(ledger, "HST_M", "청구수가 재마감", adminId, now))
                         }
                     }
 

@@ -20,7 +20,9 @@ import com.idrsys.ailis.sales.application.required.repository.cust.CustCustomRep
 import com.idrsys.ailis.sales.application.required.sap.CollectionErpPort
 import com.idrsys.ailis.sales.application.usecase.collection.CollectionCommandUseCase
 import com.idrsys.ailis.sales.domain.model.CollectionBill
+import com.idrsys.ailis.sales.domain.model.CollectionBillHst
 import com.idrsys.ailis.sales.domain.model.CollectionLedger
+import com.idrsys.ailis.sales.domain.model.CollectionLedgerHst
 import com.idrsys.web.exception.UserDefinedException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -42,6 +44,8 @@ import kotlin.String
 class CollectionCommandService(
     private val collectionBillRepository: CollectionBillRepository,
     private val collectionLedgerRepository: CollectionLedgerRepository,
+    private val collectionLedgerHstRepository: CollectionLedgerHstRepository,
+    private val collectionBillHstRepository: CollectionBillHstRepository,
     private val cardPaymentRepository: CardPaymentRepository,
     private val bankDepositRepository: BankDepositRepository,
     private val custCustomRepository: CustCustomRepository,
@@ -123,6 +127,10 @@ class CollectionCommandService(
         }
 
         val savedBill = collectionBillRepository.save(collectionBill)
+
+        val now = LocalDateTime.now()
+        collectionLedgerHstRepository.save(CollectionLedgerHst.of(savedLedger, "HST_C", "수금 등록", adminId, now))
+        collectionBillHstRepository.save(CollectionBillHst.of(savedBill, "HST_C", "수금 등록", adminId, now))
 
         // 4. 카드 미정산 금액 및 등록여부 계산
         val remainAmt = cardPayment.outamt.subtract(command.payAmt)
@@ -211,6 +219,10 @@ class CollectionCommandService(
 
         val savedBill = collectionBillRepository.save(collectionBill)
 
+        val now = LocalDateTime.now()
+        collectionLedgerHstRepository.save(CollectionLedgerHst.of(savedLedger, "HST_C", "수금 등록", adminId, now))
+        collectionBillHstRepository.save(CollectionBillHst.of(savedBill, "HST_C", "수금 등록", adminId, now))
+
         // 4. 은행 미정산 금액 및 등록여부 계산
         val remainAmt = bankDeposit.outamt?.subtract(command.payAmt)
 
@@ -284,6 +296,8 @@ class CollectionCommandService(
         }
 
         val saved = collectionBillRepository.save(updatedColBill)
+        val now = LocalDateTime.now()
+        collectionBillHstRepository.save(CollectionBillHst.of(saved, "HST_M", "수금 수정(카드)", adminId, now))
 
         // CollectionLedger 업데이트 (colledgerId가 있으면)
         colBill.colledgerId?.let { colledgerId ->
@@ -299,6 +313,7 @@ class CollectionCommandService(
             )
 
             collectionLedgerRepository.save(ledger)
+            collectionLedgerHstRepository.save(CollectionLedgerHst.of(ledger, "HST_M", "수금 수정(카드)", adminId, now))
         }
 
         // 카드 미정산 금액 및 등록여부 계산
@@ -366,6 +381,8 @@ class CollectionCommandService(
         }
 
         val saved = collectionBillRepository.save(updatedColBill)
+        val now = LocalDateTime.now()
+        collectionBillHstRepository.save(CollectionBillHst.of(saved, "HST_M", "수금 수정(은행)", adminId, now))
 
         // CollectionLedger 업데이트 (colledgerId가 있으면)
         colBill.colledgerId?.let { colledgerId ->
@@ -381,6 +398,7 @@ class CollectionCommandService(
             )
 
             collectionLedgerRepository.save(ledger)
+            collectionLedgerHstRepository.save(CollectionLedgerHst.of(ledger, "HST_M", "수금 수정(은행)", adminId, now))
         }
 
         // 은행 미정산 금액 및 등록여부 계산
@@ -417,6 +435,7 @@ class CollectionCommandService(
         colBill.setAsExisting()
 
         val saved = collectionBillRepository.save(colBill)
+        collectionBillHstRepository.save(CollectionBillHst.of(saved, "HST_M", "수금 마감 처리", adminId, LocalDateTime.now()))
         return CollectionBillResponse.from(saved)
     }
 
@@ -478,6 +497,10 @@ class CollectionCommandService(
 
         val savedBill = collectionBillRepository.save(collectionBill)
 
+        val now = LocalDateTime.now()
+        collectionLedgerHstRepository.save(CollectionLedgerHst.of(savedLedger, "HST_C", "수금 등록", adminId, now))
+        collectionBillHstRepository.save(CollectionBillHst.of(savedBill, "HST_C", "수금 등록", adminId, now))
+
         return CollectionBillResponse.from(savedBill, savedLedger.colledgerId)
     }
 
@@ -529,6 +552,8 @@ class CollectionCommandService(
             setAsExisting()
         }
         val saved = collectionBillRepository.save(updatedColBill)
+        val now = LocalDateTime.now()
+        collectionBillHstRepository.save(CollectionBillHst.of(saved, "HST_M", "수금 수정", adminId, now))
 
         // CollectionLedger 업데이트 (colledgerId가 있으면)
         colBill.colledgerId?.let { colledgerId ->
@@ -544,6 +569,7 @@ class CollectionCommandService(
             )
 
             collectionLedgerRepository.save(ledger)
+            collectionLedgerHstRepository.save(CollectionLedgerHst.of(ledger, "HST_M", "수금 수정", adminId, now))
         }
 
         return CollectionBillResponse.from(saved)
@@ -639,7 +665,10 @@ class CollectionCommandService(
                 creator = adminId
             )
 
-            collectionLedgerRepository.save(ledger)
+            val savedLedger = collectionLedgerRepository.save(ledger)
+            val now = LocalDateTime.now()
+            collectionLedgerHstRepository.save(CollectionLedgerHst.of(savedLedger, "HST_C", "수금 등록(분할)", adminId, now))
+            collectionBillHstRepository.save(CollectionBillHst.of(savedBill, "HST_C", "수금 등록(분할)", adminId, now))
 
             collectionBills.add(
                 CollectionBillResponse.from(savedBill)
@@ -683,10 +712,13 @@ class CollectionCommandService(
             throw UserDefinedException("INVALID_OPERATION", "ERP 전송된 수금 정보는 삭제할 수 없습니다")
         }
 
-        // 3. Delete associated ledger using colledgerId
+        val now = LocalDateTime.now()
+
+        // 3. Delete associated ledger using colledgerId (save history first)
         collectionBill.colledgerId?.let { colledgerId ->
             val ledger = collectionLedgerRepository.findById(colledgerId)
             if (ledger != null) {
+                collectionLedgerHstRepository.save(CollectionLedgerHst.of(ledger, "HST_D", "수금 삭제", adminId, now))
                 collectionLedgerRepository.delete(ledger)
             }
         }
@@ -724,7 +756,8 @@ class CollectionCommandService(
             }
         }
 
-        // 5. Delete collection bill
+        // 5. Delete collection bill (save history first)
+        collectionBillHstRepository.save(CollectionBillHst.of(collectionBill, "HST_D", "수금 삭제", adminId, now))
         collectionBillRepository.delete(collectionBill)
 
         // 6. Return response
